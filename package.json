@@ -13,9 +13,6 @@
     "url": "https://github.com/Zajno/common-utils/issues"
   },
   "homepage": "https://github.com/Zajno/common-utils#readme",
-  "exports": {
-    "./": "./src"
-  },
   "scripts": {
     "build": "rm -rf ./lib && ttsc",
     "build:w": "yarn build --watch",
