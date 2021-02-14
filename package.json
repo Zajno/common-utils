@@ -1,0 +1,40 @@
+{
+  "name": "zajno-common-utils",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zajno/common-utils.git"
+  },
+  "author": "Zajno",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Zajno/common-utils/issues"
+  },
+  "homepage": "https://github.com/Zajno/common-utils#readme",
+  "exports": {
+    "./": "./src"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:w": "yarn build --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.27",
+    "@types/ts-nameof": "^4.2.1",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.1",
+    "ts-nameof": "^5.0.0",
+    "ts-node": "^9.1.1",
+    "tslib": "^2.1.0",
+    "ttypescript": "^1.5.12",
+    "typescript": "^4.1.5"
+  },
+  "peerDependencies": {
+    "mobx": "^5"
+  }
+}
