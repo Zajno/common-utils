@@ -1,76 +1,17 @@
-import { IGenericLogger, ILogger, LoggerFunction, LogLevels } from './abstractions';
+import { ILogger, LoggerFunction } from './abstractions';
+import { NamedLogger } from './named';
 
 const CONSOLE = console;
-const EMPTY_FUNCTION = () => { /* no-op */ };
 
-function addArg(func: (...args: any[]) => any, value: string) {
-    return (...args: any[]) => func(value, ...args);
-}
+export class ConsoleLogger extends NamedLogger {
 
-export class ConsoleLogger implements ILogger, IGenericLogger {
+    protected get logFunction(): LoggerFunction { return CONSOLE.log; }
+    protected get warnFunction(): LoggerFunction { return CONSOLE.warn; }
+    protected get errorFunction(): LoggerFunction { return CONSOLE.error; }
 
-    private _log: LoggerFunction;
-    private _warn: LoggerFunction;
-    private _error: LoggerFunction;
-
-    private _name: string;
-
-    get log() { return this._log; }
-    get warn() { return this._warn; }
-    get error() { return this._error; }
-
-    constructor(
-        name: string,
-        enabled = true,
-        private readonly defaultLogger: { log: LoggerFunction, warn: LoggerFunction, error: LoggerFunction } = CONSOLE,
-    ) {
-        this._name = name;
-
-        if (enabled) {
-            this.enable();
-        } else {
-            this.disable();
-        }
+    constructor(name?: string, enabled = true) {
+        super(name, enabled);
     }
-
-    enable(overrideName: string = null) {
-        this._name = overrideName || this._name;
-
-        this._log = this._name
-            ? addArg(this.defaultLogger.log, this._name)
-            : this.defaultLogger.log;
-        this._warn = this._name
-            ? addArg(this.defaultLogger.warn, this._name)
-            : this.defaultLogger.warn;
-        this._error = this._name
-            ? addArg(this.defaultLogger.error, this._name)
-            : this.defaultLogger.error;
-    }
-
-    print(level: LogLevels, ...args: any[]): void {
-        switch (level) {
-            case 'warn': {
-                return this.warn(...args);
-            }
-
-            case 'error': {
-                return this.error(...args);
-            }
-
-            case 'log':
-            default: {
-                return this.log(...args);
-            }
-        }
-    }
-
-    disable() {
-        this._log = EMPTY_FUNCTION;
-        this._warn = EMPTY_FUNCTION;
-        this._error = EMPTY_FUNCTION;
-    }
-
-    flush() { /** no-op */ }
 }
 
 export class BufferedConsoleLogger implements ILogger {
