@@ -14,6 +14,7 @@
     "allowJs": true,
     "declaration": true,
     "declarationMap": true,
+    "composite": true,
     "importHelpers": true,
     "plugins": [{ "transform": "ts-nameof", "type": "raw" }],
     "baseUrl": "src",
