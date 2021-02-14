@@ -1,4 +1,4 @@
-import logger from '../logger';
+import logger from './logger';
 
 export interface IDisposable {
     dispose(): void;

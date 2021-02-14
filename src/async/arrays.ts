@@ -46,7 +46,9 @@ export async function mapAsync<T, R>(this: T[], cb: (v: T, index?: number, arr?:
     return results;
 }
 
-Array.prototype.someAsync = someAsync;
-Array.prototype.everyAsync = everyAsync;
-Array.prototype.forEachAsync = forEachAsync;
-Array.prototype.mapAsync = mapAsync;
+if (process.env.EXTEND_ARRAY_ASYNC) {
+    Array.prototype.someAsync = someAsync;
+    Array.prototype.everyAsync = everyAsync;
+    Array.prototype.forEachAsync = forEachAsync;
+    Array.prototype.mapAsync = mapAsync;
+}

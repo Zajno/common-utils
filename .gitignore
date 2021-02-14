@@ -4,6 +4,7 @@ dist/
 tmp/
 temp/
 public/
+coverage/
 
 .env
 yarn-error.log

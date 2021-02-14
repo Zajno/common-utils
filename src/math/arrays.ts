@@ -1,47 +1,4 @@
-
-export function clamp(val: number, min: number = undefined, max: number = undefined, cycle = false) {
-    if (min != null && val < min) {
-        return (max != null && cycle) ? max : min;
-    }
-
-    if (max != null && val > max) {
-        return (min != null && cycle) ? min : max;
-    }
-
-    return val;
-}
-
-export function clamp01(val: number) {
-    return clamp(val, 0, 1, false);
-}
-
-export function contains(val: number, from: number, to: number) {
-    const s = Math.min(from, to);
-    const e = Math.max(from, to);
-    return val >= s && val <= e;
-}
-
-export function getIntersection(v1: number, v2: number, r1: number, r2: number): false | { ranges: number[][], merged: { s: number, e: number} } {
-    const v = [v1, v2].sort();
-    const r = [r1, r2].sort();
-
-    const res = (v[0] >= r[0] && v[0] <= r[1])
-        || (v[1] >= r[0] && v[1] <= r[1])
-        || (r[0] >= v[0] && r[0] <= v[1])
-        || (r[1] >= v[0] && r[1] <= v[1]);
-
-    if (!res) {
-        return false;
-    }
-
-    return {
-        ranges: [v, r],
-        merged: {
-            s: Math.min(v[0], r[0]),
-            e: Math.max(v[1], r[1]),
-        },
-    };
-}
+import { random } from './calc';
 
 export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previous: T) => boolean): T {
     if (!Array.isArray(arr) || arr.length <= 0) {
@@ -139,27 +96,6 @@ export function normalize(arr: number[]): number[] {
     return arr.map(x => (x - min) / dist);
 }
 
-export function roundNumber(val: number, signs = 2, mode?: 'floor' | 'ceil') {
-    const k = 10 ** signs;
-    let v = (val + Number.EPSILON) * k;
-    switch (mode) {
-        case 'floor':   v = Math.floor(v); break;
-        case 'ceil':    v = Math.ceil(v); break;
-        default:        v = Math.round(v); break;
-    }
-    return v / k;
-}
-
-export function roundHalf(num: number): number {
-    return Math.round(num * 2) / 2;
-}
-
-export function random(min: number = 0, max: number = 1, trunc = true) {
-    const r = Math.random();
-    const res = min + r * (max - min);
-    return trunc ? Math.trunc(res) : res;
-}
-
 export function randomArrayItem<T>(arr: T[]): T {
     if (!arr.length) {
         return null;
@@ -235,43 +171,4 @@ export function findIndexLeast(num: number, arr: number[], sort = false) {
     }
 
     return arr.findIndex(i => i > num);
-}
-
-export function getNumberSuffix(num: number) {
-    const lastDigit = (num || 0) % 10;
-
-    switch (lastDigit) {
-        case 1:
-            return 'st';
-        case 2:
-            return 'nd';
-        case 3:
-            return 'rd';
-        default:
-            return 'th';
-    }
-}
-
-export function format(n: number, digits?: number) {
-    const res = n.toString();
-    if (digits && digits > res.length) {
-        return res.padStart(digits, '0');
-    }
-    return res;
-}
-
-export type Distribution<T extends keyof any> = { total: number, byType: Partial<Record<T, number>> };
-
-export function extendDistribution<T extends keyof any>(count: number, type: T, current?: Distribution<T>): Distribution<T> {
-    const res: Distribution<T> = current ?? { total: 0, byType: { } };
-    if (!res.byType) {
-        res.byType = { };
-    }
-
-    if (count > 0) {
-        res.byType[type] = (res.byType[type] || 0) + count;
-        res.total += count;
-    }
-
-    return res;
 }

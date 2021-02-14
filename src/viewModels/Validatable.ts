@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '../utils/Validations';
+import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '../validation';
 
 export type ValueValidator = ValidatorFunction | ValidatorFunctionAsync;
 export type ValidationErrorsStrings = { [code: number]: string };

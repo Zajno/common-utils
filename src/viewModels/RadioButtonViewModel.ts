@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 
-export default class RadioButtonViewModel {
+export class RadioButtonViewModel {
     constructor(label: string) {
         this._label = label;
     }

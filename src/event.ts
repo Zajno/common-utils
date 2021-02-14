@@ -1,5 +1,5 @@
-import './async';
-import { ILogger, ConsoleLogger } from '../logger';
+import './async/arrays';
+import { ILogger, ConsoleLogger } from './logger';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 

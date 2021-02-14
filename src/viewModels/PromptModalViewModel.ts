@@ -13,7 +13,7 @@ export type PromptModalAction = {
     awaitActions?: boolean;
 };
 
-export default class PromptModalViewModel {
+export class PromptModalViewModel {
     @observable
     private _isActive: boolean = false;
 

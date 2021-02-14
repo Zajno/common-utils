@@ -1,32 +1,5 @@
 import creditCard from './creditCard';
-import EnumHelper from './enumHelper';
-
-export enum ValidationErrors {
-    None = 0,
-    ShouldBeNonEmpty,
-    ShouldBeEqualTo,
-    InvalidNameFormat,
-    InvalidEmailFormat,
-    InvalidPasswordFormat,
-    OnlyEnglishLetters,
-    InvalidPhoneFormat,
-    InvalidCreditCardFormat,
-    InvalidCreditCardExpiryDateFormat,
-    InvalidCreditCardCvvFormat,
-    OnlyDigit,
-
-    EmailIsInUse,
-    FirstName,
-    LastName,
-    Occupation,
-    Goal,
-    Website,
-    Linkedin,
-}
-
-export namespace ValidationErrors {
-    export const Helper = new EnumHelper<ValidationErrors>(ValidationErrors);
-}
+import { ValidationErrors } from './ValidationErrors';
 
 const RE = {
     // There is at least first and last name
@@ -50,20 +23,6 @@ const RE = {
     website: /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
     linkedin: /^(http:\/\/www\.linkedin\.com\/in\/|https:\/\/www\.linkedin\.com\/in\/|http:\/\/linkedin\.com\/in\/|https:\/\/linkedin\.com\/in\/|www\.linkedin\.com\/in\/|linkedin\.com\/in\/)[\w-/]+$/,
 };
-
-export type ValidatorFunction<T = string> = (val: T) => ValidationErrors;
-export type ValidatorFunctionAsync<T = string> = (val: T) => Promise<ValidationErrors>;
-
-export type WrapperFunction = (val: ValidatorFunction) => ValidatorFunction;
-
-export class ValidationError extends Error {
-    readonly code: ValidationErrors;
-
-    constructor(message: string, code: ValidationErrors) {
-        super(message);
-        this.code = code;
-    }
-}
 
 export const Validators = {
 
@@ -94,70 +53,3 @@ export const Validators = {
     website: (val: string) => RE.website.test(val) ? ValidationErrors.None : ValidationErrors.Website,
     linkedin: (val: string) => RE.linkedin.test(val) ? ValidationErrors.None : ValidationErrors.Linkedin,
 };
-
-export function createShouldBeEqualTo<T = string>(getter: () => T): ValidatorFunction<T> {
-    return (val: T) => getter() === val ? ValidationErrors.None : ValidationErrors.ShouldBeEqualTo;
-}
-
-export const Wrappers = {
-    required<T = string>(validator: ValidatorFunction<T>): ValidatorFunction<T> {
-        return (val: T): ValidationErrors => {
-            return Validators.notEmpty(val) || validator(val);
-        };
-    },
-
-    notRequired<T = string>(validator: ValidatorFunction<T>): ValidatorFunction<T> {
-        return (val: T): ValidationErrors => {
-            return Validators.notEmpty(val) === ValidationErrors.ShouldBeNonEmpty
-                ? ValidationErrors.None
-                : validator(val);
-        };
-    },
-
-    thrower<T = string>(validator: ValidatorFunction<T>) {
-        return (val: T) => {
-            throwNotOk(validator(val));
-        };
-    },
-};
-
-export function throwNotOk(result: ValidationErrors, message = 'Validation error') {
-    if (result) {
-        throw new ValidationError(message, result);
-    }
-}
-
-export function validateObject<T>(
-    obj: T,
-    validators: { [P in keyof T]?: ValidatorFunction<T[P]> },
-): { [P in keyof T]?: ValidationErrors } {
-
-    const res: { [P in keyof T]?: ValidationErrors } = { };
-
-    Object.keys(obj).forEach(k => {
-        const kk = k as keyof T;
-        const validator: ValidatorFunction<T[typeof kk]> = validators[kk];
-        if (!validator) {
-            return;
-        }
-
-        const v = obj[k as keyof T];
-        // let str: string;
-        // if (typeof v === 'number') {
-        //     str = v + '';
-        // }
-
-        // if (typeof v !== 'string') {
-        //     return; // skip non-strings
-        // }
-
-        // str = v;
-
-        const err = validator(v);
-        if (err) {
-            res[kk] = err;
-        }
-    });
-
-    return res;
-}

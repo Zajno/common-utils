@@ -1,5 +1,5 @@
-import * as DateHelpers from '../dateHelpers';
-import { Granularity } from '../dateHelpers';
+import * as DateHelpers from '..';
+import { Granularity } from '..';
 
 describe('Date Helpers', () => {
     test('startOf', () => {
@@ -251,7 +251,7 @@ describe('Date Helpers', () => {
             null
         )).toThrow('Unsupported granularity');
     });
-    
+
     test('countDays', () => {
 
         expect(DateHelpers.countDays(
@@ -274,25 +274,25 @@ describe('Date Helpers', () => {
 
         expect(DateHelpers.countDays(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-11T13:26:15.893Z'),     
+            new Date('2020-11-11T13:26:15.893Z'),
             null)
         ).toStrictEqual(1);
 
         expect(DateHelpers.countDays(
             new Date('2020-12-10T13:26:15.893Z'),
-            new Date('2020-12-21T13:26:15.893Z'),     
+            new Date('2020-12-21T13:26:15.893Z'),
             null)
         ).toStrictEqual(12);
 
         expect(DateHelpers.countDays(
             new Date('2020-12-10T13:26:15.893Z'),
-            new Date('2020-12-21T13:26:15.893Z'),     
+            new Date('2020-12-21T13:26:15.893Z'),
             DateHelpers.isNetworkDate)
         ).toStrictEqual(8);
 
         expect(DateHelpers.countDays(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-11T13:26:15.893Z'),     
+            new Date('2020-11-11T13:26:15.893Z'),
             DateHelpers.isNetworkDate)
         ).toStrictEqual(0);
     });
@@ -301,56 +301,56 @@ describe('Date Helpers', () => {
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-02-12T19:36:14.893Z'),  
+            new Date('2020-02-12T19:36:14.893Z'),
             'year',
             true
         )).toBeTruthy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2018-11-29T13:26:15.893Z'),  
+            new Date('2018-11-29T13:26:15.893Z'),
             'year',
             true
         )).toBeFalsy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-02T19:26:15.893Z'),  
+            new Date('2020-11-02T19:26:15.893Z'),
             'month',
             true
         )).toBeTruthy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-10-24T13:26:15.893Z'),  
+            new Date('2020-10-24T13:26:15.893Z'),
             'month',
             true
         )).toBeFalsy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-12-02T19:26:15.893Z'),  
+            new Date('2020-12-02T19:26:15.893Z'),
             'week',
             true
         )).toBeTruthy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-24T13:26:15.893Z'),  
+            new Date('2020-11-24T13:26:15.893Z'),
             'week',
             true
         )).toBeFalsy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-29T19:26:15.893Z'),  
+            new Date('2020-11-29T19:26:15.893Z'),
             'day',
             true
         )).toBeTruthy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-11T13:26:15.893Z'),  
+            new Date('2020-11-11T13:26:15.893Z'),
             'day',
             true
         )).toBeFalsy();
@@ -399,27 +399,27 @@ describe('Date Helpers', () => {
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2020-11-29T13:26:15.893Z'),  
+            new Date('2020-11-29T13:26:15.893Z'),
             'millisecond',
             true
         )).toBeTruthy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2018-11-29T13:26:15.891Z'),  
+            new Date('2018-11-29T13:26:15.891Z'),
             'millisecond',
             true
         )).toBeFalsy();
 
         expect(DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2018-11-29T13:26:15.891Z'),  
+            new Date('2018-11-29T13:26:15.891Z'),
             'millisecond',
         )).toBeFalsy();
 
         expect(() => DateHelpers.isSame(
             new Date('2020-11-29T13:26:15.893Z'),
-            new Date('2018-11-29T13:26:15.891Z'),  
+            new Date('2018-11-29T13:26:15.891Z'),
             undefined,
         )).toThrow('Unsupported granularity');
     });
@@ -478,34 +478,34 @@ describe('Date Helpers', () => {
     test('convert', () => {
 
         expect(() => DateHelpers.convert(1000, undefined, 'second')).toThrow('Unsupported granularity');
-    
+
         expect(DateHelpers.convert(1000, 'millisecond', 'second')).toStrictEqual(1);
-        expect(DateHelpers.convert(1000, 'millisecond', 'minute')).toStrictEqual(1/60);
+        expect(DateHelpers.convert(1000, 'millisecond', 'minute')).toStrictEqual(1 / 60);
 
         expect(DateHelpers.convert(1000, 'second', 'millisecond')).toStrictEqual(Math.pow(1000, 2));
         expect(DateHelpers.convert(300, 'second', 'minute')).toStrictEqual(5);
-        expect(DateHelpers.convert(60*60, 'second', 'hour')).toStrictEqual(1);
-        expect(DateHelpers.convert(60*60*2, 'second', 'day')).toStrictEqual(1/12);
-        expect(DateHelpers.convert(60*60*24*1.5, 'second', 'week')).toStrictEqual(1.5/7);
+        expect(DateHelpers.convert(60 * 60, 'second', 'hour')).toStrictEqual(1);
+        expect(DateHelpers.convert(60 * 60 * 2, 'second', 'day')).toStrictEqual(1 / 12);
+        expect(DateHelpers.convert(60 * 60 * 24 * 1.5, 'second', 'week')).toStrictEqual(1.5 / 7);
 
         expect(DateHelpers.convert(123, 'minute', 'second')).toStrictEqual(7380);
         expect(DateHelpers.convert(3213, 'minute', 'hour')).toStrictEqual(53.55);
-        expect(DateHelpers.convert(60*61, 'minute', 'hour')).toStrictEqual(61);
-        expect(DateHelpers.convert(60*36, 'minute', 'day')).toStrictEqual(1.5);
-        expect(DateHelpers.convert(60*24*14, 'minute', 'week')).toStrictEqual(2);
+        expect(DateHelpers.convert(60 * 61, 'minute', 'hour')).toStrictEqual(61);
+        expect(DateHelpers.convert(60 * 36, 'minute', 'day')).toStrictEqual(1.5);
+        expect(DateHelpers.convert(60 * 24 * 14, 'minute', 'week')).toStrictEqual(2);
 
         expect(DateHelpers.convert(2.5, 'hour', 'second')).toStrictEqual(9000);
         expect(DateHelpers.convert(11.5, 'hour', 'minute')).toStrictEqual(690);
         expect(DateHelpers.convert(234, 'hour', 'day')).toStrictEqual(9.75);
-        expect(DateHelpers.convert(24*35, 'hour', 'week')).toStrictEqual(5);
+        expect(DateHelpers.convert(24 * 35, 'hour', 'week')).toStrictEqual(5);
 
-        expect(DateHelpers.convert(1/2, 'day', 'second')).toStrictEqual(43200);
-        expect(DateHelpers.convert(1/60, 'day', 'minute')).toStrictEqual(24);
+        expect(DateHelpers.convert(1 / 2, 'day', 'second')).toStrictEqual(43200);
+        expect(DateHelpers.convert(1 / 60, 'day', 'minute')).toStrictEqual(24);
         expect(DateHelpers.convert(11, 'day', 'minute')).toStrictEqual(15840);
         expect(DateHelpers.convert(4, 'day', 'hour')).toStrictEqual(96);
         expect(DateHelpers.convert(28, 'day', 'week')).toStrictEqual(4);
         expect(DateHelpers.convert(3.5, 'day', 'week')).toStrictEqual(0.5);
-    })
+    });
 
     test('min', () => {
 
@@ -562,54 +562,54 @@ describe('Date Helpers', () => {
         const now = new Date('2020-12-22T16:16:18.774Z');
 
         expect(() => DateHelpers.Period.forward(
-            {amount: 1, granularity: 'year'},
+            { amount: 1, granularity: 'year' },
             null
         )).toThrow();
 
         const aYearFromNow = new Date();
         aYearFromNow.setFullYear(aYearFromNow.getFullYear() + 1);
         aYearFromNow.setMilliseconds(0);
-        const forwardResult = DateHelpers.Period.forward({amount: 1, granularity: 'year'});
+        const forwardResult = DateHelpers.Period.forward({ amount: 1, granularity: 'year' });
         forwardResult.setMilliseconds(0);
         expect(forwardResult).toStrictEqual(aYearFromNow);
 
         expect(DateHelpers.Period.forward(
-            {amount: 1, granularity: 'year'},
+            { amount: 1, granularity: 'year' },
             now
         )).toStrictEqual(DateHelpers.add(now, 1, 'year'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 5, granularity: 'month'},
+            { amount: 5, granularity: 'month' },
             now
         )).toStrictEqual(DateHelpers.add(now, 5, 'month'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 12, granularity: 'week'},
+            { amount: 12, granularity: 'week' },
             now
         )).toStrictEqual(DateHelpers.add(now, 12, 'week'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 99, granularity: 'day'},
+            { amount: 99, granularity: 'day' },
             now
         )).toStrictEqual(DateHelpers.add(now, 99, 'day'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 24, granularity: 'hour'},
+            { amount: 24, granularity: 'hour' },
             now
         )).toStrictEqual(DateHelpers.add(now, 24, 'hour'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 60, granularity: 'minute'},
+            { amount: 60, granularity: 'minute' },
             now
         )).toStrictEqual(DateHelpers.add(now, 60, 'minute'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 630, granularity: 'second'},
+            { amount: 630, granularity: 'second' },
             now
         )).toStrictEqual(DateHelpers.add(now, 630, 'second'));
 
         expect(DateHelpers.Period.forward(
-            {amount: 2, granularity: 'millisecond'},
+            { amount: 2, granularity: 'millisecond' },
             now
         )).toStrictEqual(DateHelpers.add(now, 2, 'millisecond'));
     });
@@ -620,151 +620,152 @@ describe('Date Helpers', () => {
         const aYearAgo = new Date();
         aYearAgo.setFullYear(aYearAgo.getFullYear() - 1);
         aYearAgo.setMilliseconds(0);
-        const backwardResult = DateHelpers.Period.backward({amount: 1, granularity: 'year'});
+        const backwardResult = DateHelpers.Period.backward({ amount: 1, granularity: 'year' });
         backwardResult.setMilliseconds(0);
         expect(backwardResult).toStrictEqual(aYearAgo);
 
         expect(DateHelpers.Period.backward(
-            {amount: 1, granularity: 'year'},
+            { amount: 1, granularity: 'year' },
             now
         )).toStrictEqual(DateHelpers.add(now, -1, 'year'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 5, granularity: 'month'},
+            { amount: 5, granularity: 'month' },
             now
         )).toStrictEqual(DateHelpers.add(now, -5, 'month'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 12, granularity: 'week'},
+            { amount: 12, granularity: 'week' },
             now
         )).toStrictEqual(DateHelpers.add(now, -12, 'week'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 99, granularity: 'day'},
+            { amount: 99, granularity: 'day' },
             now
         )).toStrictEqual(DateHelpers.add(now, -99, 'day'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 24, granularity: 'hour'},
+            { amount: 24, granularity: 'hour' },
             now
         )).toStrictEqual(DateHelpers.add(now, -24, 'hour'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 60, granularity: 'minute'},
+            { amount: 60, granularity: 'minute' },
             now
         )).toStrictEqual(DateHelpers.add(now, -60, 'minute'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 630, granularity: 'second'},
+            { amount: 630, granularity: 'second' },
             now
         )).toStrictEqual(DateHelpers.add(now, -630, 'second'));
 
         expect(DateHelpers.Period.backward(
-            {amount: 2, granularity: 'millisecond'},
+            { amount: 2, granularity: 'millisecond' },
             now
         )).toStrictEqual(DateHelpers.add(now, -2, 'millisecond'));
 
     });
 
     test('Period.toMs', () => {
+        const now = new Date(2021, 0, 11, 11, 11);
 
-        expect(DateHelpers.Period.toMs({amount: 1, granularity: 'year'})).toStrictEqual(31622400000);
+        expect(DateHelpers.Period.toMs({ amount: 1, granularity: 'year' }, now)).toStrictEqual(31622400000);
 
-        expect(DateHelpers.Period.toMs({amount: 4.5, granularity: 'month'})).toStrictEqual(10540800000);
+        expect(DateHelpers.Period.toMs({ amount: 4.5, granularity: 'month' }, now)).toStrictEqual(10540800000);
 
-        expect(DateHelpers.Period.toMs({amount: 3, granularity: 'week'})).toStrictEqual(1814400000);
+        expect(DateHelpers.Period.toMs({ amount: 3, granularity: 'week' }, now)).toStrictEqual(1814400000);
 
-        expect(DateHelpers.Period.toMs({amount: 70, granularity: 'day'})).toStrictEqual(6048000000);
+        expect(DateHelpers.Period.toMs({ amount: 70, granularity: 'day' }, now)).toStrictEqual(6048000000);
 
-        expect(DateHelpers.Period.toMs({amount: 12, granularity: 'hour'})).toStrictEqual(43200000);
+        expect(DateHelpers.Period.toMs({ amount: 12, granularity: 'hour' }, now)).toStrictEqual(43200000);
 
-        expect(DateHelpers.Period.toMs({amount: 58, granularity: 'minute'})).toStrictEqual(3480000);
+        expect(DateHelpers.Period.toMs({ amount: 58, granularity: 'minute' }, now)).toStrictEqual(3480000);
 
-        expect(DateHelpers.Period.toMs({amount: 84, granularity: 'second'})).toStrictEqual(84000);
+        expect(DateHelpers.Period.toMs({ amount: 84, granularity: 'second' }, now)).toStrictEqual(84000);
 
-        expect(DateHelpers.Period.toMs({amount: 999, granularity: 'millisecond'})).toStrictEqual(999);
-    })
-    
+        expect(DateHelpers.Period.toMs({ amount: 999, granularity: 'millisecond' }, now)).toStrictEqual(999);
+    });
+
     test('Period.format', () => {
 
-        expect(DateHelpers.Period.format({amount: 2, granularity: 'year'})).toStrictEqual('2 years');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'year'})).toStrictEqual('1 year');
+        expect(DateHelpers.Period.format({ amount: 2, granularity: 'year' })).toStrictEqual('2 years');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'year' })).toStrictEqual('1 year');
 
-        expect(DateHelpers.Period.format({amount: 3, granularity: 'month'})).toStrictEqual('3 months');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'month'})).toStrictEqual('1 month');
+        expect(DateHelpers.Period.format({ amount: 3, granularity: 'month' })).toStrictEqual('3 months');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'month' })).toStrictEqual('1 month');
 
-        expect(DateHelpers.Period.format({amount: 343, granularity: 'week'})).toStrictEqual('343 weeks');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'week'})).toStrictEqual('1 week');
+        expect(DateHelpers.Period.format({ amount: 343, granularity: 'week' })).toStrictEqual('343 weeks');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'week' })).toStrictEqual('1 week');
 
-        expect(DateHelpers.Period.format({amount: 101, granularity: 'day'})).toStrictEqual('101 days');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'day'})).toStrictEqual('1 day');
+        expect(DateHelpers.Period.format({ amount: 101, granularity: 'day' })).toStrictEqual('101 days');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'day' })).toStrictEqual('1 day');
 
-        expect(DateHelpers.Period.format({amount: 3244, granularity: 'hour'})).toStrictEqual('3244 hours');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'hour'})).toStrictEqual('1 hour');
+        expect(DateHelpers.Period.format({ amount: 3244, granularity: 'hour' })).toStrictEqual('3244 hours');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'hour' })).toStrictEqual('1 hour');
 
-        expect(DateHelpers.Period.format({amount: 878, granularity: 'minute'})).toStrictEqual('878 minutes');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'minute'})).toStrictEqual('1 minute');
+        expect(DateHelpers.Period.format({ amount: 878, granularity: 'minute' })).toStrictEqual('878 minutes');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'minute' })).toStrictEqual('1 minute');
 
-        expect(DateHelpers.Period.format({amount: 7, granularity: 'second'})).toStrictEqual('7 seconds');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'second'})).toStrictEqual('1 second');
+        expect(DateHelpers.Period.format({ amount: 7, granularity: 'second' })).toStrictEqual('7 seconds');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'second' })).toStrictEqual('1 second');
 
-        expect(DateHelpers.Period.format({amount: 78, granularity: 'millisecond'})).toStrictEqual('78 milliseconds');
-        expect(DateHelpers.Period.format({amount: 1, granularity: 'millisecond'})).toStrictEqual('1 millisecond');
+        expect(DateHelpers.Period.format({ amount: 78, granularity: 'millisecond' })).toStrictEqual('78 milliseconds');
+        expect(DateHelpers.Period.format({ amount: 1, granularity: 'millisecond' })).toStrictEqual('1 millisecond');
     });
 
     test('YearDate.isValid', () => {
-    
-        expect(DateHelpers.YearDate.isValid({day: 12, month: 12})).toBeTruthy();
-        expect(DateHelpers.YearDate.isValid({day: 1, month: 31})).toBeTruthy();
-        expect(DateHelpers.YearDate.isValid({day: 132, month: 31})).toBeTruthy();
-        expect(DateHelpers.YearDate.isValid({day: 14234, month: 31333})).toBeTruthy();
+
+        expect(DateHelpers.YearDate.isValid({ day: 12, month: 12 })).toBeTruthy();
+        expect(DateHelpers.YearDate.isValid({ day: 1, month: 31 })).toBeTruthy();
+        expect(DateHelpers.YearDate.isValid({ day: 132, month: 31 })).toBeTruthy();
+        expect(DateHelpers.YearDate.isValid({ day: 14234, month: 31333 })).toBeTruthy();
     });
 
     test('YearDate.toDate', () => {
-        const currentYear = new Date().getFullYear()
-        expect(DateHelpers.YearDate.toDate({day: 30, month: 12}, 2020)).toStrictEqual(new Date('2021-01-30T12:00:00.000Z'));
-        expect(DateHelpers.YearDate.toDate({day: 1, month: 31}, 2021)).toStrictEqual(new Date('2023-08-01T12:00:00.000Z'));
-        expect(DateHelpers.YearDate.toDate({day: 14, month: 7}, 2020)).toStrictEqual(new Date('2020-08-14T12:00:00.000Z'));
-        expect(DateHelpers.YearDate.toDate({day: 6, month: 3}, 2022)).toStrictEqual(new Date('2022-04-06T12:00:00.000Z'));
-        expect(DateHelpers.YearDate.toDate(undefined, 2022)).toStrictEqual(null);
-        expect(DateHelpers.YearDate.toDate({day: null, month: null}, 2019)).toStrictEqual(new Date('2019-01-01T12:00:00.000Z'));
-        expect(DateHelpers.YearDate.toDate({day: null, month: null}, undefined)).toStrictEqual(new Date(`${currentYear}-01-01T12:00:00.000Z`));
+        const currentYear = new Date().getFullYear();
+        expect(DateHelpers.YearDate.toDate({ day: 30, month: 12 }, 2020)).toStrictEqual(new Date('2021-01-30T12:00:00.000Z'));
+        expect(DateHelpers.YearDate.toDate({ day: 1, month: 31 }, 2021)).toStrictEqual(new Date('2023-08-01T12:00:00.000Z'));
+        expect(DateHelpers.YearDate.toDate({ day: 14, month: 7 }, 2020)).toStrictEqual(new Date('2020-08-14T12:00:00.000Z'));
+        expect(DateHelpers.YearDate.toDate({ day: 6, month: 3 }, 2022)).toStrictEqual(new Date('2022-04-06T12:00:00.000Z'));
+        expect(DateHelpers.YearDate.toDate(undefined, 2022)).toBeNull();
+        expect(DateHelpers.YearDate.toDate({ day: null, month: null }, 2019)).toStrictEqual(new Date('2019-01-01T12:00:00.000Z'));
+        expect(DateHelpers.YearDate.toDate({ day: null, month: null }, undefined)).toStrictEqual(new Date(`${currentYear}-01-01T12:00:00.000Z`));
     });
 
     test('YearDate.equals', () => {
-        expect(DateHelpers.YearDate.equals({day: null, month: null}, {day: null, month: null})).toBeTruthy();
-        expect(DateHelpers.YearDate.equals(undefined, {day: 12, month: 12})).toBeFalsy();
+        expect(DateHelpers.YearDate.equals({ day: null, month: null }, { day: null, month: null })).toBeTruthy();
+        expect(DateHelpers.YearDate.equals(undefined, { day: 12, month: 12 })).toBeFalsy();
         expect(DateHelpers.YearDate.equals(undefined, undefined)).toBeTruthy();
-        expect(DateHelpers.YearDate.equals({day: 12, month: 12}, {day: 12, month: 12})).toBeTruthy();
-        expect(DateHelpers.YearDate.equals({day: 1, month: 31}, {day: 30, month: 12})).toBeFalsy();
-        expect(DateHelpers.YearDate.equals({day: 4, month: 4}, {day: 4, month: 4})).toBeTruthy();
-        expect(DateHelpers.YearDate.equals({day: 434, month: 434}, {day: 434, month: 434})).toBeTruthy();
+        expect(DateHelpers.YearDate.equals({ day: 12, month: 12 }, { day: 12, month: 12 })).toBeTruthy();
+        expect(DateHelpers.YearDate.equals({ day: 1, month: 31 }, { day: 30, month: 12 })).toBeFalsy();
+        expect(DateHelpers.YearDate.equals({ day: 4, month: 4 }, { day: 4, month: 4 })).toBeTruthy();
+        expect(DateHelpers.YearDate.equals({ day: 434, month: 434 }, { day: 434, month: 434 })).toBeTruthy();
     });
 
     test('YearDate.fromDate', () => {
 
-        expect(DateHelpers.YearDate.fromDate(new Date('2021-01-30T12:00:00.000Z'))).toStrictEqual({day: 30, month: 0});
-        expect(DateHelpers.YearDate.fromDate(new Date('2022-12-09T00:00:00.000Z'))).toStrictEqual({day: 9, month: 11});
-        expect(DateHelpers.YearDate.fromDate(new Date('2021-01-01T12:00:00.000Z'))).toStrictEqual({day: 1, month: 0});
-        expect(DateHelpers.YearDate.fromDate(new Date('2021-12-31T12:00:00.000Z'))).toStrictEqual({day: 31, month: 11});
-        expect(DateHelpers.YearDate.fromDate(new Date('2021-14-31T12:00:00.000Z'))).toStrictEqual({day: NaN, month: NaN});
+        expect(DateHelpers.YearDate.fromDate(new Date('2021-01-30T12:00:00.000Z'))).toStrictEqual({ day: 30, month: 0 });
+        expect(DateHelpers.YearDate.fromDate(new Date('2022-12-09T00:00:00.000Z'))).toStrictEqual({ day: 9, month: 11 });
+        expect(DateHelpers.YearDate.fromDate(new Date('2021-01-01T12:00:00.000Z'))).toStrictEqual({ day: 1, month: 0 });
+        expect(DateHelpers.YearDate.fromDate(new Date('2021-12-31T12:00:00.000Z'))).toStrictEqual({ day: 31, month: 11 });
+        expect(DateHelpers.YearDate.fromDate(new Date('2021-14-31T12:00:00.000Z'))).toStrictEqual({ day: NaN, month: NaN });
     });
 
     test('YearDate.matches', () => {
-        
-        expect(DateHelpers.YearDate.matches({month: 11, day: 12}, new Date('2020-12-12T12:00:00.000Z'), false)).toBeTruthy();
-        expect(DateHelpers.YearDate.matches({month: 11, day: 12}, new Date('2020-12-12T12:00:00.000Z'), true)).toBeTruthy();
-        expect(DateHelpers.YearDate.matches({month: 10, day: 22}, new Date('2020-11-22T12:00:00.000Z'), true)).toBeTruthy();
-        expect(DateHelpers.YearDate.matches({month: 12, day: 12}, new Date('2020-12-12T12:00:00.000Z'), false)).toBeFalsy();
-        expect(DateHelpers.YearDate.matches({month: 10, day: 22}, new Date('2020-10-22T12:00:00.000Z'), true)).toBeFalsy();
+
+        expect(DateHelpers.YearDate.matches({ month: 11, day: 12 }, new Date('2020-12-12T12:00:00.000Z'), false)).toBeTruthy();
+        expect(DateHelpers.YearDate.matches({ month: 11, day: 12 }, new Date('2020-12-12T12:00:00.000Z'), true)).toBeTruthy();
+        expect(DateHelpers.YearDate.matches({ month: 10, day: 22 }, new Date('2020-11-22T12:00:00.000Z'), true)).toBeTruthy();
+        expect(DateHelpers.YearDate.matches({ month: 12, day: 12 }, new Date('2020-12-12T12:00:00.000Z'), false)).toBeFalsy();
+        expect(DateHelpers.YearDate.matches({ month: 10, day: 22 }, new Date('2020-10-22T12:00:00.000Z'), true)).toBeFalsy();
         expect(DateHelpers.YearDate.matches(undefined, new Date('2020-10-22T12:00:00.000Z'), true)).toBeFalsy();
         expect(DateHelpers.YearDate.matches(undefined, new Date('2020-10-22T12:00:00.000Z'), false)).toBeFalsy();
-        expect(DateHelpers.YearDate.matches({month: null, day: null}, new Date('2020-12-12T12:00:00.000Z'), true)).toBeFalsy();
-        expect(DateHelpers.YearDate.matches({month: null, day: null}, new Date('2020-12-12T12:00:00.000Z'))).toBeFalsy();
-        expect(DateHelpers.YearDate.matches({month: undefined, day: undefined}, new Date('2020-12-12T12:00:00.000Z'), true)).toBeFalsy();
-        expect(DateHelpers.YearDate.matches({month: undefined, day: undefined}, new Date('2020-12-12T12:00:00.000Z'))).toBeFalsy();
-        expect(() => DateHelpers.YearDate.matches({month: null, day: null}, undefined)).toThrow();
-        expect(() => DateHelpers.YearDate.matches({month: null, day: null}, undefined, true)).toThrow();
+        expect(DateHelpers.YearDate.matches({ month: null, day: null }, new Date('2020-12-12T12:00:00.000Z'), true)).toBeFalsy();
+        expect(DateHelpers.YearDate.matches({ month: null, day: null }, new Date('2020-12-12T12:00:00.000Z'))).toBeFalsy();
+        expect(DateHelpers.YearDate.matches({ month: undefined, day: undefined }, new Date('2020-12-12T12:00:00.000Z'), true)).toBeFalsy();
+        expect(DateHelpers.YearDate.matches({ month: undefined, day: undefined }, new Date('2020-12-12T12:00:00.000Z'))).toBeFalsy();
+        expect(() => DateHelpers.YearDate.matches({ month: null, day: null }, undefined)).toThrow();
+        expect(() => DateHelpers.YearDate.matches({ month: null, day: null }, undefined, true)).toThrow();
         expect(() => DateHelpers.YearDate.matches(undefined, undefined)).toThrow();
     });
 
@@ -779,7 +780,7 @@ describe('Date Helpers', () => {
 
         expect(DateHelpers.getDate(new Date('2020-11-29T13:26:15.893Z'))).toStrictEqual(new Date('2020-11-29T13:26:15.893Z'));
         expect(DateHelpers.getDate(1600473600893)).toStrictEqual(new Date('2020-09-19T00:00:00.893Z'));
-        expect(DateHelpers.getDate(undefined)).toStrictEqual(null);
+        expect(DateHelpers.getDate(undefined)).toBeNull();
     });
 
     test('contains', () => {
@@ -905,23 +906,23 @@ describe('Date Helpers', () => {
 
     test('Format.yearDate', () => {
 
-        expect(DateHelpers.Format.yearDate({month: 9, day: 1})).toStrictEqual('October 1');
-        expect(DateHelpers.Format.yearDate({month: 9, day: 1}, true)).toStrictEqual('Oct 1');
+        expect(DateHelpers.Format.yearDate({ month: 9, day: 1 })).toStrictEqual('October 1');
+        expect(DateHelpers.Format.yearDate({ month: 9, day: 1 }, true)).toStrictEqual('Oct 1');
 
-        expect(DateHelpers.Format.yearDate({month: 7, day: 31})).toStrictEqual('August 31');
-        expect(DateHelpers.Format.yearDate({month: 7, day: 31}, true)).toStrictEqual('Aug 31');
+        expect(DateHelpers.Format.yearDate({ month: 7, day: 31 })).toStrictEqual('August 31');
+        expect(DateHelpers.Format.yearDate({ month: 7, day: 31 }, true)).toStrictEqual('Aug 31');
 
-        expect(DateHelpers.Format.yearDate({month: 3, day: 24})).toStrictEqual('April 24');
-        expect(DateHelpers.Format.yearDate({month: 3, day: 24}, true)).toStrictEqual('Apr 24');
+        expect(DateHelpers.Format.yearDate({ month: 3, day: 24 })).toStrictEqual('April 24');
+        expect(DateHelpers.Format.yearDate({ month: 3, day: 24 }, true)).toStrictEqual('Apr 24');
 
-        expect(DateHelpers.Format.yearDate({month: 9, day: null})).toStrictEqual('October 1');
-        expect(DateHelpers.Format.yearDate({month: 9, day: null}, true)).toStrictEqual('Oct 1');
+        expect(DateHelpers.Format.yearDate({ month: 9, day: null })).toStrictEqual('October 1');
+        expect(DateHelpers.Format.yearDate({ month: 9, day: null }, true)).toStrictEqual('Oct 1');
 
-        expect(DateHelpers.Format.yearDate({month: null, day: 1})).toStrictEqual('January 1');
-        expect(DateHelpers.Format.yearDate({month: null, day: 1}, true)).toStrictEqual('Jan 1');
+        expect(DateHelpers.Format.yearDate({ month: null, day: 1 })).toStrictEqual('January 1');
+        expect(DateHelpers.Format.yearDate({ month: null, day: 1 }, true)).toStrictEqual('Jan 1');
 
-        expect(DateHelpers.Format.yearDate({month: null, day: null})).toStrictEqual('January 1');
-        expect(DateHelpers.Format.yearDate({month: null, day: null}, true)).toStrictEqual('Jan 1');
+        expect(DateHelpers.Format.yearDate({ month: null, day: null })).toStrictEqual('January 1');
+        expect(DateHelpers.Format.yearDate({ month: null, day: null }, true)).toStrictEqual('Jan 1');
 
         expect(DateHelpers.Format.yearDate(undefined)).toStrictEqual('January 1');
         expect(DateHelpers.Format.yearDate(undefined, true)).toStrictEqual('Jan 1');
@@ -931,7 +932,7 @@ describe('Date Helpers', () => {
 
         expect(DateHelpers.Format.toLocalDate(new Date('2020-07-29T13:26:15.893Z'))).toStrictEqual('7/29/2020');
         expect(DateHelpers.Format.toLocalDate(1608729767257)).toStrictEqual('12/23/2020');
-        expect(DateHelpers.Format.toLocalDate(undefined)).toStrictEqual(null);
+        expect(DateHelpers.Format.toLocalDate(undefined)).toBeNull();
     });
 
     test('Parse.fromDatePicker', () => {
@@ -943,7 +944,7 @@ describe('Date Helpers', () => {
     test('Parse.toDistance', () => {
 
         expect(() => DateHelpers.Format.toDistance(undefined, new Date('2020-07-29T10:27:15.893Z'))).toThrow();
-        expect( DateHelpers.Format.toDistance(new Date('2020-07-29T10:26:15.893Z'), undefined)).toMatch(/weeks ago/);
+        expect(DateHelpers.Format.toDistance(new Date('2020-07-29T10:26:15.893Z'), undefined)).toMatch(/weeks ago/);
 
         expect(DateHelpers.Format.toDistance(new Date('2020-07-29T10:26:15.893Z'), new Date('2020-07-29T10:27:15.893Z'))).toStrictEqual('Today');
 
@@ -965,16 +966,16 @@ describe('Date Helpers', () => {
             new Date('2020-07-29T09:54:43.555Z'),
             new Date('2020-08-03T18:10:53.101Z')))
         .toStrictEqual(new Date('2020-07-29T09:54:43.555Z'));
-    
+
         expect(DateHelpers.clamp(
-            new Date('2020-07-29T10:26:15.893Z'), 
-            new Date('2020-07-29T09:54:43.555Z'), 
+            new Date('2020-07-29T10:26:15.893Z'),
+            new Date('2020-07-29T09:54:43.555Z'),
             new Date('2020-07-03T18:10:53.101Z')))
         .toStrictEqual(new Date('2020-07-03T18:10:53.101Z'));
-    
+
         expect(DateHelpers.clamp(
-            new Date('2020-07-29T10:26:15.893Z'), 
-            new Date('2020-07-29T10:26:15.893Z'), 
+            new Date('2020-07-29T10:26:15.893Z'),
+            new Date('2020-07-29T10:26:15.893Z'),
             new Date('2020-07-29T10:26:15.893Z')))
         .toStrictEqual(new Date('2020-07-29T10:26:15.893Z'));
     });
@@ -994,39 +995,39 @@ describe('Date Helpers', () => {
 
         expect(DateHelpers.decompose(
             new Date('2020-05-29T10:26:15.893Z'),
-            true, 
+            true,
             ...['day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 18411, hour: 10, minute: 26, second: 16} );
+        )).toStrictEqual({ day: 18411, hour: 10, minute: 26, second: 16 });
 
         expect(DateHelpers.decompose(
             new Date('2020-05-29T10:26:15.893Z'),
-            false, 
+            false,
             ...['day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 18411, hour: 10, minute: 26, second: 16} );
+        )).toStrictEqual({ day: 18411, hour: 10, minute: 26, second: 16 });
 
         expect(DateHelpers.decompose(
             new Date('2020-08-01T10:26:15.893Z'),
-            false, 
+            false,
             ...['hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {hour: 443410, minute: 26, second: 16} );
+        )).toStrictEqual({ hour: 443410, minute: 26, second: 16 });
 
         expect(DateHelpers.decompose(
             new Date('2020-01-01T00:00:00.000Z'),
-            false, 
+            false,
             ...['day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 18262, hour: 0, minute: 0, second: 0} );
+        )).toStrictEqual({ day: 18262, hour: 0, minute: 0, second: 0 });
 
         expect(DateHelpers.decompose(
             new Date('2020-12-31T23:59:59.999Z'),
-            false, 
+            false,
             ...['day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 18628, hour: 0, minute: 0, second: 0} );
+        )).toStrictEqual({ day: 18628, hour: 0, minute: 0, second: 0 });
 
         expect(DateHelpers.decompose(
             new Date('2020-12-31T23:59:59.000Z'),
-            false, 
+            false,
             ...['day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 18627, hour: 23, minute: 59, second: 59} );
+        )).toStrictEqual({ day: 18627, hour: 23, minute: 59, second: 59 });
     });
 
     test('decomposeMs', () => {
@@ -1034,22 +1035,22 @@ describe('Date Helpers', () => {
         expect(DateHelpers.decomposeMs(
             new Date('2020-12-31T23:59:59.000Z').getTime(),
             ...['hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {hour: 447071, minute: 59, second: 59} );
+        )).toStrictEqual({ hour: 447071, minute: 59, second: 59 });
 
         expect(DateHelpers.decomposeMs(
             new Date('2020-12-31T00:00:00.000Z').getTime(),
             ...['day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 18627, hour: 0, minute: 0, second: 0} );
+        )).toStrictEqual({ day: 18627, hour: 0, minute: 0, second: 0 });
 
         expect(DateHelpers.decomposeMs(
             new Date('2020-12-31T23:32:12.000Z').getTime(),
             ...['second'] as Granularity[]
-        )).toStrictEqual( {second: 1609457532} );
+        )).toStrictEqual({ second: 1609457532 });
 
         expect(DateHelpers.decomposeMs(
             new Date('2020-12-31T23:32:12.000Z').getTime(),
             'hour' as Granularity
-        )).toStrictEqual( {hour: 447071} );
+        )).toStrictEqual({ hour: 447071 });
     });
 
     test('decomposeDate', () => {
@@ -1058,19 +1059,19 @@ describe('Date Helpers', () => {
             new Date('2020-01-01T00:00:00.000Z'),
             false,
             ...['month', 'day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {month: 1, day: 1, hour: 0, minute: 0, second: 0} );
+        )).toStrictEqual({ month: 1, day: 1, hour: 0, minute: 0, second: 0 });
 
         expect(DateHelpers.decomposeDate(
             new Date('2020-12-31T23:59:59.000Z'),
             false,
             ...['week', 'day', 'hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {day: 31, hour: 23, minute: 59, second: 59} );
+        )).toStrictEqual({ day: 31, hour: 23, minute: 59, second: 59 });
 
         expect(DateHelpers.decomposeDate(
             new Date('2020-08-04T10:26:15.893Z'),
             false,
             ...['hour', 'minute', 'second'] as Granularity[]
-        )).toStrictEqual( {hour: 10, minute: 26, second: 15} );
+        )).toStrictEqual({ hour: 10, minute: 26, second: 15 });
     });
 
     test('Format.Presets.use', () => {
@@ -1100,7 +1101,7 @@ describe('Date Helpers', () => {
         expect(DateHelpers.Format.Presets.use(
             undefined,
             new Date('2020-08-12T10:26:15.893Z')
-        )).toStrictEqual(undefined);
+        )).toBeUndefined();
     });
 
     test('addDays', () => {
@@ -1129,27 +1130,27 @@ describe('Date Helpers', () => {
         const getDayWithOffset = (offset: number) => new Date().setDate(new Date().getDate() + offset);
 
         expect(DateHelpers.getDaysStreak(
-            [getDayWithOffset(0), getDayWithOffset(1), getDayWithOffset(2), getDayWithOffset(3), getDayWithOffset(4), getDayWithOffset(5)], 
+            [getDayWithOffset(0), getDayWithOffset(1), getDayWithOffset(2), getDayWithOffset(3), getDayWithOffset(4), getDayWithOffset(5)],
             false
         )).toStrictEqual(6);
 
         expect(DateHelpers.getDaysStreak(
-            [getDayWithOffset(0), getDayWithOffset(-1), getDayWithOffset(-2), getDayWithOffset(-3), getDayWithOffset(-4), getDayWithOffset(-5)], 
+            [getDayWithOffset(0), getDayWithOffset(-1), getDayWithOffset(-2), getDayWithOffset(-3), getDayWithOffset(-4), getDayWithOffset(-5)],
             true
         )).toStrictEqual(6);
 
         expect(DateHelpers.getDaysStreak(
-            [getDayWithOffset(1), getDayWithOffset(2), getDayWithOffset(5), getDayWithOffset(6), getDayWithOffset(7)], 
+            [getDayWithOffset(1), getDayWithOffset(2), getDayWithOffset(5), getDayWithOffset(6), getDayWithOffset(7)],
             false
         )).toStrictEqual(2);
 
         expect(DateHelpers.getDaysStreak(
-            [getDayWithOffset(3), getDayWithOffset(4), getDayWithOffset(5), getDayWithOffset(6), getDayWithOffset(7)], 
+            [getDayWithOffset(3), getDayWithOffset(4), getDayWithOffset(5), getDayWithOffset(6), getDayWithOffset(7)],
             false
         )).toStrictEqual(0);
 
         expect(DateHelpers.getDaysStreak(
-            [], 
+            [],
             false
         )).toStrictEqual(0);
     });
@@ -1186,7 +1187,7 @@ describe('Date Helpers', () => {
         expect(DateHelpers.DateX.set(baseDate(), 'year', true, 2018)).toStrictEqual(1534069575893);
         expect(DateHelpers.DateX.set(baseDate(), 'year', false, 2018)).toStrictEqual(1534069575893);
         expect(DateHelpers.DateX.set(baseDate(), 'year', false, 2018, 11)).toStrictEqual(1544610375893);
-        expect(DateHelpers.DateX.set(baseDate(), 'year', false, 2018, 11, 1)).toStrictEqual(1543659975893); 
+        expect(DateHelpers.DateX.set(baseDate(), 'year', false, 2018, 11, 1)).toStrictEqual(1543659975893);
 
         expect(() => DateHelpers.DateX.set(undefined, 'year', false, 2018)).toThrow();
         expect(DateHelpers.DateX.set(baseDate(), undefined, false, 2018)).toStrictEqual(1597227975893);
@@ -1261,43 +1262,43 @@ describe('Date Helpers', () => {
         type TestEnsureDates = {
             date: Date;
             start: Date;
-            end:  Date;
+            end: Date;
         };
 
         const testEnsureDatesNullValues: TestEnsureDates = {
             date: null,
-            start: null, 
+            start: null,
             end: null,
         };
-        
+
         const testEnsureDatesValidDates: TestEnsureDates = {
             date: new Date('2020-08-12T10:26:15.000Z'),
-            start: new Date('2020-05-09T11:02:55.000Z'), 
+            start: new Date('2020-05-09T11:02:55.000Z'),
             end: new Date('2020-11-23T12:34:56.000Z'),
         };
 
         const testEnsureDatesStringDates: TestEnsureDates = {
             date: '2020-08-12T10:26:15.000Z' as null,
-            start: '2020-05-09T11:02:55.000Z' as null, 
+            start: '2020-05-09T11:02:55.000Z' as null,
             end: '2020-11-23T12:34:56.000Z' as null,
         };
 
         const testEnsureDatesUnixDates: TestEnsureDates = {
             date: 1597227975000 as null,
-            start: 1589022175000 as null, 
+            start: 1589022175000 as null,
             end: 1606134896000 as null,
         };
 
-        const baseExpectedResult = { 
-            date: new Date('2020-08-12T10:26:15.000Z'), 
-            end: new Date('2020-11-23T12:34:56.000Z'), 
-            start: new Date('2020-05-09T11:02:55.000Z')
+        const baseExpectedResult = {
+            date: new Date('2020-08-12T10:26:15.000Z'),
+            end: new Date('2020-11-23T12:34:56.000Z'),
+            start: new Date('2020-05-09T11:02:55.000Z'),
         };
 
-        DateHelpers.ensureDates(testEnsureDatesNullValues, 'start', 'end', 'date')
-        expect(testEnsureDatesNullValues).toStrictEqual({date: null, end: null, start: null});
+        DateHelpers.ensureDates(testEnsureDatesNullValues, 'start', 'end', 'date');
+        expect(testEnsureDatesNullValues).toStrictEqual({ date: null, end: null, start: null });
 
-        DateHelpers.ensureDates(testEnsureDatesValidDates, 'start', 'end', 'date')
+        DateHelpers.ensureDates(testEnsureDatesValidDates, 'start', 'end', 'date');
         expect(testEnsureDatesValidDates).toStrictEqual(baseExpectedResult);
 
         DateHelpers.ensureDates(testEnsureDatesStringDates, 'start', 'end', 'date');
@@ -1307,7 +1308,7 @@ describe('Date Helpers', () => {
         expect(testEnsureDatesUnixDates).toStrictEqual(baseExpectedResult);
 
         const empty = undefined;
-        DateHelpers.ensureDates(undefined, 'start', 'end', 'date')
+        DateHelpers.ensureDates(undefined, 'start', 'end', 'date');
         expect(empty).toBeUndefined();
     });
 });
