@@ -1,4 +1,4 @@
-import { IPluggableController } from 'common/abstractions/controllers/IPluggableController';
+import { IPluggableController } from '../abstractions/controllers/IPluggableController';
 
 export { IPluggableController };
 

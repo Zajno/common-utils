@@ -17,8 +17,9 @@
     "./": "./src"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf ./lib && ttsc",
     "build:w": "yarn build --watch",
+    "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
   },
   "dependencies": {},

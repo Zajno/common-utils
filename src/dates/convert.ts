@@ -101,7 +101,6 @@ export function decomposeDate<K extends Granularity>(d: Date, local: boolean, ..
 }
 
 
-
 export function splitDatesByDay(dates: number[]): number[][] {
     if (!dates) {
         return [];

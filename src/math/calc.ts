@@ -47,9 +47,9 @@ export function roundNumber(val: number, signs = 2, mode?: 'floor' | 'ceil') {
     const k = 10 ** signs;
     let v = (val + Number.EPSILON) * k;
     switch (mode) {
-        case 'floor':   v = Math.floor(v); break;
-        case 'ceil':    v = Math.ceil(v); break;
-        default:        v = Math.round(v); break;
+        case 'floor': v = Math.floor(v); break;
+        case 'ceil': v = Math.ceil(v); break;
+        default: v = Math.round(v); break;
     }
     return v / k;
 }

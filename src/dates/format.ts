@@ -10,7 +10,7 @@ export namespace Format {
     }
 
     export namespace Presets {
-        const defaultFormat = new Intl.DateTimeFormat('default');
+        // const defaultFormat = new Intl.DateTimeFormat('default');
         const fullDayShortDate = new Intl.DateTimeFormat('default', {
             weekday: 'long',
         });

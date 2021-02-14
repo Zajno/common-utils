@@ -1,4 +1,4 @@
-import { ValidationErrors } from 'common/validation';
+import { ValidationErrors } from '../../validation';
 import { StringsShape } from './defaultShape';
 
 export type ValidationErrorsStrings = {[ error: number]: string };

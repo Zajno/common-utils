@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
-    "noEmit": true,
+    "outDir": "./lib",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictBindCallApply": true,
@@ -13,13 +12,20 @@
     "target": "es2017",
     "jsx": "react",
     "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "importHelpers": true,
     "plugins": [{ "transform": "ts-nameof", "type": "raw" }],
     "baseUrl": "src",
     "paths": {
        "common/*": ["./*"]
     }
   },
+  "include": [
+    "./src"
+  ],
   "exclude": [
-    "node_modules",
-  ]
+    "node_modules"
+  ],
+  "references": []
 }

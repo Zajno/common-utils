@@ -1,5 +1,5 @@
 import { observable, transaction } from 'mobx';
-import { createLogger } from 'common/logger';
+import { createLogger } from './logger';
 
 const logger = createLogger('[PromiseCache]', true);
 

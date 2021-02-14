@@ -1,5 +1,5 @@
 import { observable, autorun, computed, action } from 'mobx';
-import logger from 'common/logger';
+import logger from '../logger';
 import { ValidatableViewModel, ValidationConfig } from './Validatable';
 
 export type StringGetter = (() => string) | string;

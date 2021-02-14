@@ -90,7 +90,7 @@ export function normalize(arr: number[]): number[] {
     const max = arrayMax(arr);
     const dist = max - min;
     if (Math.abs(dist) < 0.000001) { // almost zero
-        return arr.map(_ => 1);
+        return arr.map(() => 1);
     }
 
     return arr.map(x => (x - min) / dist);

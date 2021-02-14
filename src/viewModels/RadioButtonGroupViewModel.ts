@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import { RadioButtonViewModel } from 'common/viewModels/RadioButtonViewModel';
+import { RadioButtonViewModel } from './RadioButtonViewModel';
 
 export class RadioButtonGroup {
     @observable
