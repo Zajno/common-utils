@@ -1,4 +1,3 @@
-
 export class EnumStringHelper<T extends string> {
     public readonly Keys: string[];
     public readonly Values: T[];
@@ -35,13 +34,15 @@ export class EnumStringHelper<T extends string> {
     }
 }
 
+type ValueToStringMap = { [val: number]: string };
+
 export default class EnumHelper<T extends number> {
     public readonly Keys: string[];
     public readonly Values: T[];
 
     constructor(
         protected readonly _obj: any,
-        private readonly _valuesToStrings: { [val: number]: string } = null,
+        private readonly _valuesToStrings: ValueToStringMap = null,
     ) {
         this.Keys = Object.keys(this._obj)
             .filter(k => typeof this._obj[k as any] === 'number');
@@ -49,9 +50,10 @@ export default class EnumHelper<T extends number> {
         this.Values = this.Keys.map(k => this._obj[k]);
     }
 
-    keyToString(key: string): string {
-        return this._valuesToStrings
-            ? this._valuesToStrings[this._obj[key]]
+    keyToString(key: string, overrideMap: ValueToStringMap = null): string {
+        const map = overrideMap || this._valuesToStrings;
+        return map
+            ? map[this._obj[key]]
             : key;
     }
 
@@ -60,8 +62,9 @@ export default class EnumHelper<T extends number> {
         return v == null ? null : v as T;
     }
 
-    valueToString(v: T): string {
-        const custom = this._valuesToStrings && this._valuesToStrings[v];
+    valueToString(v: T, overrideMap: ValueToStringMap = null): string {
+        const map = overrideMap || this._valuesToStrings;
+        const custom = map && map[v];
         return custom || this._obj[v];
     }
 
@@ -77,14 +80,18 @@ export default class EnumHelper<T extends number> {
 }
 
 export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
-    toStrings(value: T): string[] {
+    toStrings(value: T, overrideMap: ValueToStringMap = null): string[] {
+        if (value == 0) {
+            return [this.valueToString(value, overrideMap)];
+        }
+
         return this.Keys
             .filter(k => this._obj[k] && this.contains(value, this._obj[k]))
-            .map(k => this.keyToString(k));
+            .map(k => this.keyToString(k, overrideMap));
     }
 
-    toString(value: T, separator = ', '): string {
-        const strs = this.toStrings(value);
+    toString(value: T, separator = ', ', overrideMap: ValueToStringMap = null): string {
+        const strs = this.toStrings(value, overrideMap);
         return strs.length === 0
             ? this._obj[0]
             : strs.join(separator);
@@ -106,12 +113,7 @@ export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
         return value | other;
     }
 
-    intersection(v1: T, v2: T) {
-        return v1 & v2;
-    }
-
     remove(value: T, other: T) {
         return value & ~other;
     }
-
 }
