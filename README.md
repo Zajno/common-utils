@@ -34,7 +34,7 @@ yarn add git+https://github.com/Zajno/common-utils.git
 
 2. Tell TypeScript how to use it. Add to your `tsconfig.json`:
 
-```json
+```jsonc
 {
    "compilerOptions": {
       "baseUrl": ".",
