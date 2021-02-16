@@ -4,6 +4,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictBindCallApply": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -26,7 +27,8 @@
     "./src"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/__tests__/**"
   ],
   "references": []
 }

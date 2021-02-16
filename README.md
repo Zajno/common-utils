@@ -70,9 +70,44 @@ ModuleAlias.addAliases(aliases);
 
 ```
 
+5. For webpack support need to update `webpack.config.js`:
+
+```typescript
+// add an alias
+alias: {
+   // ...
+   common: pathResolve('./node_modules/zajno-common-utils/src/'),
+},
+
+// update `ts-loader`s config:
+{
+   test: /\.tsx?$/,
+   use: [
+      'babel-loader',
+      {
+            loader: 'ts-loader',
+            options: {
+               getCustomTransformers: () => ({ before: [tsNameof] }),
+               configFile: 'tsconfig.json',
+               // ADD THIS
+               allowTsInNodeModules: true,
+            },
+      },
+   ],
+   // REMOVE THIS
+   // exclude: [/node_modules/],
+},
+```
+
 Now it should be building and working within your project.
 
 If you have any improvements/suggestions/questions about the flow above – feel free to raise an issue or contact us.
+
+TODO Research: probably it's possible to implement such a workflow:
+
+1. on package post install – build it to `.js` & `.d.ts`
+2. use `exports` to correctly reference inner folder (don't want to have a single entry point)
+3. finally use it as usual npm package
 
 ### Local development
 
