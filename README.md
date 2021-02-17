@@ -42,24 +42,18 @@ If you have any improvements/suggestions/questions about the flow above – feel
 
 If you plan to update the sources while using it in your project, we'd recommend using [`yalc`](https://www.npmjs.com/package/yalc). It does some magic to allow both using it in your project and updating it.
 
-The flow will look like this:
+The flow will look like the following. [1] – operations made on this project, [2] – operations made on dependant project.
 
 1. install `yalc` globally
-2. fork (if you're outside Zajno) and clone this project, do `yarn`
-3. run `yalc publish --private`
-4. in your project run `yalc add @zajno/common && yarn`
-5. make changes in this package local copy, run tests and then `yalc push --private`
-6. in your project run
-
-```
-yalc remove @zajno/common && yarn && yalc add @zajno/common && yarn
-```
-
-– this is a workaround of [this yalc issue](https://github.com/wclr/yalc/issues/100)
-
-7. repeat 5-7 until you're done
-8. create a PR in this repo, wait until it get merged (optional)
-9. re-add the package into your project (or specify tag/commit)
+2. `[1]` fork (if you're outside Zajno) and clone this project, do `yarn`
+3. `[1]` run `yalc publish --private`
+4. `[2]` run `yalc add @zajno/common && yarn`
+5. `[1]` make changes in local copy, run tests etc.
+6. `[1]` run some magic: `yarn push:local` – this should deliver your updated copy to local project(s) [2]
+7. `[2]` notice the changes in your project, repeat 5-7 until you're done
+8. `[2]` to cleanup, run `yalc remove @zajno/common` or just `yalc remove --all`
+9. `[1]` push your changes after making sure it's OK, we'd say thank you for a PR!
+9. `[2]` re-add the package into your project or specify tag/commit (e.g. `yarn upgrade @zajno/common`)
 
 ## Challenges & TODOs
 

@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "private": true,
   "repository": {
@@ -16,6 +16,7 @@
   "scripts": {
     "build": "rm -rf ./lib && ttsc",
     "build:w": "yarn build --watch",
+    "push:local": "yalc push --private --replace --update",
     "postinstall": "yarn build",
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
