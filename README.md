@@ -9,7 +9,7 @@ The motivation to have this – just to control and organize some shared code th
 
 * [Math and Array extensions](./src/math/index.ts)
 * [Date extensions & helpers](./src/dates/index.ts)
-* [Logger interface & console implementation](./src/logger/index.ts)
+* [Logger interface & console implementation](./src/logger/index.ts) – enable logger instances by setting `process.env.COMMON_UTILS_LOGGER` to `'console'` before importing in your code
 * [Localization](./src/services/localization/LocalizationManager.ts) – attempt to have a simple runtime i18n manager
 * Cache, EnumHelper, Event, Lazy, Pool, Throttle, Unsubscriber
 

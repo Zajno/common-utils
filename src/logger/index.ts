@@ -5,7 +5,8 @@ export { NamedLogger } from './named';
 export { ILogger, LoggerFunction };
 export { ConsoleLogger };
 
-export const Enabled = process.env.NODE_ENV !== 'production';
+// TBD Introduce more logger types
+export const Enabled = process.env.COMMON_UTILS_LOGGER === 'console';
 
 export function createLogger(name = '', forceDisable = false): ILogger {
     const enabled = forceDisable ? false : Enabled;
