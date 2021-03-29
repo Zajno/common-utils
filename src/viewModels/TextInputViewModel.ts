@@ -1,4 +1,4 @@
-import { observable, autorun, computed, action } from 'mobx';
+import { observable, autorun, computed, action, makeObservable } from 'mobx';
 import logger from '../logger';
 import { ValidatableViewModel, ValidationConfig } from './Validatable';
 
@@ -35,6 +35,7 @@ export class Text {
     private _value: string;
 
     constructor(config: { value: StringGetter, async?: boolean, noSubscribe?: boolean }) {
+        makeObservable(this);
         FromGetter(config.value, val => this._value = val, config.async ? 100 : null, config.noSubscribe);
     }
 
@@ -58,6 +59,7 @@ export class TextInputVM extends ValidatableViewModel {
 
     constructor(config?: TextInputConfig) {
         super(config && config.validation);
+        makeObservable(this);
         config = config || {};
 
         const delay = config.async ? 100 : null;

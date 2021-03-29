@@ -1,4 +1,4 @@
-import { observable, transaction } from 'mobx';
+import { observable, transaction, makeObservable } from 'mobx';
 import { StringsShape } from './defaultShape';
 import createValidationErrorsStrings, { ValidationErrorsStrings } from './validationErrorsStrings';
 import { ILocalization } from './ILocalization';
@@ -22,6 +22,7 @@ export default class LocalizationManager<TLocaleType extends string, TStrings ex
         initialLocale: TLocaleType,
         defaultLocale: TLocaleType = null,
     ) {
+        makeObservable(this);
         this._defaultStrings = this.getStrings(defaultLocale || initialLocale);
         this.updateStrings(initialLocale);
     }

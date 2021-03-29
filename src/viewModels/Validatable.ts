@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '../validation';
 
 export type ValueValidator = ValidatorFunction | ValidatorFunctionAsync;
@@ -17,6 +17,7 @@ export abstract class ValidatableViewModel {
     private _validationError: ValidationError;
 
     constructor(config?: ValidationConfig) {
+        makeObservable(this);
         this._validator = (config && config.validator) || (() => ValidationErrors.None);
         this._strings = config && config.errors;
     }
@@ -57,7 +58,7 @@ export abstract class ValidatableViewModel {
 
     static async IsSomeInvalid(validatables: ValidatableViewModel[], stopOnFail = true) {
         if (stopOnFail) {
-            return validatables.someAsync(async v => !await v.validate());
+            return validatables.someAsync(async v => !(await v.validate()));
         }
 
         const results = await Promise.all(validatables.map(v => v.validate()));

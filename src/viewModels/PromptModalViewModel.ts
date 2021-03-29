@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 export type PromptModalAction = {
     title: string;
@@ -19,6 +19,10 @@ export class PromptModalViewModel {
 
     @observable
     private _currentAction: PromptModalAction;
+
+    constructor() {
+        makeObservable(this);
+    }
 
     get isActive() {
         return this._isActive;

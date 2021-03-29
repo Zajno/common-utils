@@ -1,4 +1,4 @@
-import { observable, computed } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 
 export class Select<T = any> {
     @observable
@@ -15,6 +15,7 @@ export class Select<T = any> {
         private readonly _accessor: (item: T) => string,
         initialIndex: number = undefined,
     ) {
+        makeObservable(this);
         this._index = initialIndex;
     }
 

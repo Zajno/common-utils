@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 
 export function formatMS(ms: number): string {
     if (!ms && ms !== 0) {
@@ -38,6 +38,7 @@ class Time {
     private _now: number = new Date().getTime();
 
     constructor() {
+        makeObservable(this);
         // Update _now once an hour
         setInterval(() => { this._now = new Date().getTime(); }, 1000 * 3600);
     }

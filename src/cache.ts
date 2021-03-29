@@ -1,4 +1,4 @@
-import { observable, transaction } from 'mobx';
+import { observable, transaction, makeObservable } from 'mobx';
 import { createLogger } from './logger';
 
 const logger = createLogger('[PromiseCache]', true);
@@ -34,7 +34,7 @@ export class PromiseCache<T, K = string> {
         readonly keyParser?: K extends string ? null : (id: string) => K,
         readonly observeItems = false,
     ) {
-
+        makeObservable(this);
     }
 
     private _pk(k: K): string {

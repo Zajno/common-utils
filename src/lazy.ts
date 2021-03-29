@@ -1,4 +1,4 @@
-import { observable, transaction } from 'mobx';
+import { observable, transaction, makeObservable } from 'mobx';
 
 export default class Lazy<T> {
 
@@ -6,6 +6,7 @@ export default class Lazy<T> {
     private _instance: T;
 
     constructor(private _factory: (() => T)) {
+        makeObservable(this);
     }
 
     get hasValue() { return this._instance != null; }
@@ -40,6 +41,7 @@ export class LazyPromise<T> {
         private readonly _factory: () => Promise<T>,
         private readonly initial: T = null,
     ) {
+        makeObservable(this);
         this._instance = initial;
     }
 

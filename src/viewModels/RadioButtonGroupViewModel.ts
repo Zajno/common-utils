@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import { RadioButtonViewModel } from './RadioButtonViewModel';
 
 export class RadioButtonGroup {
@@ -9,6 +9,7 @@ export class RadioButtonGroup {
     private _activeRadioButton: RadioButtonViewModel;
 
     constructor(items: string[]) {
+        makeObservable(this);
         items.forEach(item => {
             this._items.push(new RadioButtonViewModel(item));
         });
