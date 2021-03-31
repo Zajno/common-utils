@@ -1,4 +1,5 @@
 import './async/arrays';
+import { forEachAsync } from './async/arrays';
 import { ILogger, ConsoleLogger } from './logger';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
@@ -43,7 +44,7 @@ export class Event<T = any> implements IEvent<T> {
 
     public async triggerAsync(data?: T) {
         const hh = this._handlers.slice(0);
-        await hh.forEachAsync(async (cb: EventHandler<T>) => {
+        await forEachAsync(hh, async (cb: EventHandler<T>) => {
             try {
                 await cb(data);
             } catch (err) {
