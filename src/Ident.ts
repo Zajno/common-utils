@@ -1,4 +1,3 @@
-
 type Ident<T> = T & {
     id: string;
 };

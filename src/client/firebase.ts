@@ -16,7 +16,7 @@ let firebaseConfig: FirebaseConfig = null;
 
 const Settings = {
     functionsEmulator: null as { host: string, port: number },
-    firestoreEmulator: null as { host: string },
+    firestore: null as Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
 };
 
 export type FirebaseSettings = Partial<typeof Settings> & {
@@ -66,7 +66,7 @@ const functions = new Lazy(() => {
 
     const { functionsEmulator } = Settings;
     if (functionsEmulator) {
-        logger.log('Firebase functions Env.Firebase.FunctionsEmulator =', functionsEmulator);
+        logger.log('Firebase functions will use emulator:', functionsEmulator);
         fns.useEmulator(functionsEmulator.host, functionsEmulator.port);
     }
 
@@ -76,17 +76,18 @@ const functions = new Lazy(() => {
 const database = new Lazy<ClientFirestore>(() => {
     require('firebase/firestore');
 
-    const frstr = instance.firestore() as ClientFirestore;
+    const db = instance.firestore() as ClientFirestore;
 
-    if (Settings.firestoreEmulator) {
-        frstr.settings({
-            host: Settings.firestoreEmulator.host,
-            ssl: false,
-        });
+    if (Settings.firestore) {
+        const settings: firebase.firestore.Settings = { ...Settings.firestore };
+        if (settings.host) {
+            logger.log('Firestore will use emulator: ', settings.host);
+            settings.ssl = false;
+        }
+        db.settings(settings);
     }
-
-    frstr.isClient = true;
-    return frstr;
+    db.isClient = true;
+    return db;
 });
 
 const storage = new Lazy(() => {
