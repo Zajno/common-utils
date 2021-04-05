@@ -1,4 +1,4 @@
-import { observable, transaction, makeObservable } from 'mobx';
+import { observable, transaction, makeObservable, runInAction, action } from 'mobx';
 import { createLogger } from './logger';
 
 const logger = createLogger('[PromiseCache]', true);
@@ -100,9 +100,10 @@ export class PromiseCache<T, K = string> {
             const res = await this.fetcher(id);
             if (this._fetchCache[key]) {
                 logger.log(key, 'item\'s <promise> resolved to', res);
-                this._itemsCache[key] = res
+                const result = res
                     ? (this.observeItems ? observable.object(res) : res)
                     : null;
+                runInAction(() => this._itemsCache[key] = result);
             }
             return res;
         } finally {
@@ -133,12 +134,11 @@ export class PromiseCache<T, K = string> {
         return this.keys().map(this.keyParser);
     }
 
+    @action
     private _set(key: string, item: T, promise: Promise<T>, busy: boolean) {
-        transaction(() => {
-            _setX(key, this._fetchCache, promise);
-            _setX(key, this._itemsStatus, busy);
-            _setX(key, this._itemsCache, item);
-        });
+        _setX(key, this._fetchCache, promise);
+        _setX(key, this._itemsStatus, busy);
+        _setX(key, this._itemsCache, item);
     }
 }
 
