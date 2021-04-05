@@ -1200,7 +1200,7 @@
 
 "@zajno/common@git+https://github.com/Zajno/common-utils.git#main":
   version "1.0.6"
-  resolved "git+https://github.com/Zajno/common-utils.git#92fd355076bf9454774844b6fe22e4940e328e76"
+  resolved "git+https://github.com/Zajno/common-utils.git#2e0f5f83b5940ba99b0724f68f508239fd3d4e4f"
 
 abab@^2.0.3, abab@^2.0.5:
   version "2.0.5"
