@@ -132,15 +132,15 @@ export default abstract class AuthControllerBase implements IAuthController {
         const methods = await Firebase.Instance.auth.fetchSignInMethodsForEmail(email);
         const results = (methods || []).map(m => {
             switch (m) {
-                case Firebase.Instance.FirebaseAuth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD: {
+                case Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD: {
                     return AuthProviders.EmailAndPassword;
                 }
 
-                case Firebase.Instance.FirebaseAuth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD: {
+                case Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD: {
                     return AuthProviders.EmailLink;
                 }
 
-                case Firebase.Instance.FirebaseAuth.GoogleAuthProvider.PROVIDER_ID: {
+                case Firebase.Instance.types.FirebaseAuth.GoogleAuthProvider.PROVIDER_ID: {
                     return AuthProviders.Google;
                 }
 
@@ -166,6 +166,7 @@ export default abstract class AuthControllerBase implements IAuthController {
         return this.sendMagicLinkRequest(email, reason);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected async sendMagicLinkRequest(email: string, reason: MagicLinkRequestReasons, displayName?: string) {
         email = prepareEmail(email);
         logger.log('sendMagicLinkRequest', email, reason);
@@ -266,7 +267,7 @@ export default abstract class AuthControllerBase implements IAuthController {
             logger.log('failed to update password:', err.code);
             if (err.code === 'auth/requires-recent-login') {
                 if (oldPassword) {
-                    const cred = Firebase.Instance.FirebaseAuth.EmailAuthProvider.credential(this.authUser.email, oldPassword);
+                    const cred = Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.credential(this.authUser.email, oldPassword);
                     try {
                         logger.log('re-authenticating with email/password for', this.authUser.email);
                         await authUser.reauthenticateWithCredential(cred);
@@ -296,7 +297,7 @@ export default abstract class AuthControllerBase implements IAuthController {
     }
 
     protected doGoogleSignIn() {
-        const provider = new Firebase.Instance.GoogleProvider();
+        const provider = new Firebase.Instance.types.FirebaseAuth.GoogleAuthProvider();
         return Firebase.Instance.auth.signInWithPopup(provider);
     }
 
@@ -337,7 +338,7 @@ export default abstract class AuthControllerBase implements IAuthController {
 
             if (errorCode === 'auth/account-exists-with-different-credential') {
                 // Construct the email link credential from the current URL.
-                const emailCredential = Firebase.Instance.FirebaseAuth.EmailAuthProvider.credentialWithLink(
+                const emailCredential = Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.credentialWithLink(
                     email, this.locationUrl);
 
                 // Link the credential to the current user.

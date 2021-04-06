@@ -46,7 +46,7 @@ type AnyIded = Identify<{ }>;
 
 let queryCounter = 0;
 const logQueryCount = <T = DocumentData>(q: Query<T>, s: QuerySnapshot<T>, sub: boolean) => LOG_DOCS_COUNT && logger.log(
-    ' ===> querySnapshot',
+    '[Firestore] ===> querySnapshot',
     sub ? '(SUB)' : '',
     s.size,
     (queryCounter += s.size),
@@ -121,7 +121,7 @@ export async function querySnapshot<T extends AnyIded>(
 }
 
 let docsCounter = 0;
-const logDocCount = <T>(doc: DocumentReference<T>, sub: boolean) => LOG_DOCS_COUNT && logger.log(' ===> documentSnapshot', sub ? '(SUB)' : '', ++docsCounter, doc.path);
+const logDocCount = <T>(doc: DocumentReference<T>, sub: boolean) => LOG_DOCS_COUNT && logger.log('[Firestore] ===> documentSnapshot', sub ? '(SUB)' : '', ++docsCounter, doc.path);
 
 export function documentSnapshot<T extends AnyIded>(db: DBProvider, doc: DocumentReference<T>): Promise<T>;
 export function documentSnapshot<T extends AnyIded>(db: DBProvider, doc: DocumentReference<T>,

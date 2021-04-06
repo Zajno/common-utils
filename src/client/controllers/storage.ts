@@ -69,7 +69,7 @@ export class StorageController implements IStorageController {
     private async processTask(uploadTask: UploadTask, pp: ProgressListener) {
         pp(0);
 
-        uploadTask.on(Firebase.Instance.StorageEvent, snapshot => {
+        uploadTask.on(Firebase.Instance.types.FirebaseStorage.TaskEvent.STATE_CHANGED, snapshot => {
             const progress = snapshot.totalBytes > 0
                 ? snapshot.bytesTransferred / snapshot.totalBytes
                 : 0;

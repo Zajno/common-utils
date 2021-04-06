@@ -62,13 +62,19 @@ const auth = new Lazy(() => {
 const functions = new Lazy(() => {
     require('firebase/functions');
 
-    const fns = instance.functions();
+    const fns = instance.functions() as ReturnType<typeof firebase.functions> & {
+        create<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>): FunctionFactory<TArg, TResult>;
+    };
 
     const { functionsEmulator } = Settings;
     if (functionsEmulator) {
         logger.log('Firebase functions will use emulator:', functionsEmulator);
         fns.useEmulator(functionsEmulator.host, functionsEmulator.port);
     }
+
+    fns.create = function getFunction<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>) {
+        return new FunctionFactory<TArg, TResult>(definition, fns);
+    };
 
     return fns;
 });
@@ -103,19 +109,15 @@ const wrapper = {
     get database() { return database.value; },
     get storage() { return storage.value; },
 
-    get GoogleProvider() { return firebase.auth.GoogleAuthProvider; },
-
-    get FirebaseAuth() { return firebase.auth; },
-
-    getFunction<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>) {
-        return new FunctionFactory<TArg, TResult>(definition, wrapper.functions);
+    types: {
+        get FirebaseAuth(): Readonly<typeof firebase.auth> { return firebase.auth; },
+        get Firestore(): Readonly<typeof firebase.firestore> { return firebase.firestore; },
+        get FirebaseStorage(): Readonly<typeof firebase.storage> { return firebase.storage; },
     },
-
-    get StorageEvent() { return firebase.storage.TaskEvent.STATE_CHANGED; },
 };
 
 export default {
-    get Instance() {
+    get Instance(): Readonly<typeof wrapper> {
         if (!instance) {
             throw new Error('Firebase: run initializeAsync before accessing Firebase instance');
         }
