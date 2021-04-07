@@ -1,4 +1,4 @@
-import { observable, transaction, makeObservable, runInAction, action } from 'mobx';
+import { observable, makeObservable, runInAction, action } from 'mobx';
 import { createLogger } from './logger';
 
 const logger = createLogger('[PromiseCache]', true);
