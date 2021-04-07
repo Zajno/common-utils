@@ -2,7 +2,6 @@
   "name": "@zajno/common",
   "version": "1.0.6",
   "description": "",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-utils.git"
