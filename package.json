@@ -25,7 +25,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.27",
-    "@zajno/eslint-config": "git+https://github.com/Zajno/eslint-config.git#main",
+    "@zajno/eslint-config": "^1.0.0",
     "eslint": "^7.20.0",
     "jest": "^26.6.3",
     "mobx": "^6",

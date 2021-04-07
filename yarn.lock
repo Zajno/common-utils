@@ -705,9 +705,10 @@
     "@typescript-eslint/types" "4.21.0"
     eslint-visitor-keys "^2.0.0"
 
-"@zajno/eslint-config@git+https://github.com/Zajno/eslint-config.git#main":
+"@zajno/eslint-config@^1.0.0":
   version "1.0.0"
-  resolved "git+https://github.com/Zajno/eslint-config.git#d688bffdb88f1fb7756ed39ceb1a80e7488632c8"
+  resolved "https://npm.pkg.github.com/download/@zajno/eslint-config/1.0.0/d47bcb15172392b8e95073657eaedebdc2f91cf257caab1345e3aa4f0c276e64#bd9c748236a45b2c14664fca5b2404ab8b8a6732"
+  integrity sha512-DN8wxoih5MJn3tMH6y2AwAIJnyGUPCWAAbWLFgyTp+2Vp2iLLrEfytGHHGy9GOFfkyAkePhvk3866eGCnRziGg==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^4.21.0"
     "@typescript-eslint/eslint-plugin-tslint" "^4.21.0"
