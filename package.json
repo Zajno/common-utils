@@ -7,7 +7,7 @@
     "url": "git+https://github.com/Zajno/common-utils.git"
   },
   "author": "Zajno",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Zajno/common-utils/issues"
   },
