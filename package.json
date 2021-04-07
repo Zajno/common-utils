@@ -1,0 +1,41 @@
+{
+  "name": "@zajno/eslint-config",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zajno/eslint-config.git"
+  },
+  "keywords": [
+    "eslint",
+    "eslintconfig"
+  ],
+  "author": "Zajno",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Zajno/eslint-config/issues"
+  },
+  "homepage": "https://github.com/Zajno/eslint-config#readme",
+  "scripts": {
+    "push:local": "yalc push --private --replace --update",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
+    "eslint-plugin-jest": "^24.3.4",
+    "eslint-plugin-jsdoc": "^32.3.0",
+    "eslint-plugin-no-null": "^1.0.2",
+    "tslint": "^6.1.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.23.0",
+    "typescript": "^4.2.3"
+  },
+  "peerDependencies": {
+    "eslint": ">= 7",
+    "typescript": ">= 4"
+  }
+}
