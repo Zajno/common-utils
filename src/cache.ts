@@ -88,10 +88,10 @@ export class PromiseCache<T, K = string> {
             return promise;
         }
 
-        this._itemsStatus[key] = true;
+        runInAction(() => this._itemsStatus[key] = true);
         promise = this._doFetchAsync(id, key);
 
-        this._fetchCache[key] = promise;
+        runInAction(() => this._fetchCache[key] = promise);
         return promise;
     }
 
@@ -107,8 +107,10 @@ export class PromiseCache<T, K = string> {
             }
             return res;
         } finally {
-            delete this._fetchCache[key];
-            this._itemsStatus[key] = false;
+            runInAction(() => {
+                delete this._fetchCache[key];
+                this._itemsStatus[key] = false;
+            });
         }
     };
 
