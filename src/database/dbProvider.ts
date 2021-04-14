@@ -26,8 +26,10 @@ export type DocumentSnapshotCallback<T> = (item: T) => void | Promise<void>;
 
 export type UnsubscribeSnapshot = () => void;
 
-export type UpdateDiff<T> = {
-    [P in keyof T]?: T[P] | FirebaseClient.firestore.FieldValue | FirebaseFirestore.FieldValue;
-};
+export type FieldValue = FirebaseClient.firestore.FieldValue | FirebaseFirestore.FieldValue;
+
+export type UpdateDiff<T> = T extends Object
+    ? { [P in keyof T]?: UpdateDiff<T[P]> | FieldValue; }
+    : T;
 
 export default DBProvider;
