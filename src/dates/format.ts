@@ -4,14 +4,15 @@ import { YearDate } from './yearDate';
 
 export namespace Format {
 
+    export const DefaultLocale = 'en-US';
+
     export enum Presets {
         FullDay_ShortDate = 'ddd DD.MM.YYYY',
         ShortDate_FullTime = 'DD.MM.YYYY HH:mm:ss',
     }
 
     export namespace Presets {
-        // const defaultFormat = new Intl.DateTimeFormat('default');
-        const fullDayShortDate = new Intl.DateTimeFormat('default', {
+        const fullDayShortDate = new Intl.DateTimeFormat(DefaultLocale, {
             weekday: 'long',
         });
 
@@ -62,12 +63,12 @@ export namespace Format {
 
     export function toLocalDate(date: Date | number): string {
         if (!date) return null;
-        return getDate(date).toLocaleDateString();
+        return getDate(date).toLocaleDateString(DefaultLocale);
     }
 
     export function yearDate(yd: YearDate, short = false) {
-        const d = new Date(1900, yd?.month || 0, yd?.day || 1);
-        return d.toLocaleDateString('default', { month: short ? 'short' : 'long', day: 'numeric' });
+        const d = new Date(2020, yd?.month || 0, yd?.day || 1);
+        return d.toLocaleDateString(DefaultLocale, { month: short ? 'short' : 'long', day: 'numeric' });
     }
 
     // TODO draft

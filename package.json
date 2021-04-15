@@ -16,6 +16,7 @@
     "build": "rm -rf ./lib && tsc",
     "build:w": "yarn build --watch",
     "push:local": "yalc push --private --replace --update",
+    "prepare": "yarn build && yarn lint && yarn test",
     "postinstall": "yarn build",
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
