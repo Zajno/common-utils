@@ -5,7 +5,7 @@ import { ILogger, ConsoleLogger } from './logger';
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 
 export interface IEvent<T = any> {
-    on(handler: EventHandler<T>): void;
+    on(handler: EventHandler<T>): () => void;
     off(handler: EventHandler<T>): void;
 }
 
