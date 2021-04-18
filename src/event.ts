@@ -23,8 +23,11 @@ export class Event<T = any> implements IEvent<T> {
             : loggerOrName;
     }
 
-    public on(handler: EventHandler<T>): void {
+    public on(handler: EventHandler<T>): () => void {
         this._handlers.push(handler);
+        return () => {
+            this.off(handler);
+        };
     }
 
     public off(handler: EventHandler<T>): void {
