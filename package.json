@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "repository": {
     "type": "git",
@@ -11,6 +11,7 @@
     "build:w": "yarn build --watch",
     "push:local": "yalc push --private --replace --update",
     "postinstall": "yarn build",
+    "prepare": "yarn build && yarn lint",
     "lint": "eslint \"src/**/*.ts?(x)\""
   },
   "author": "Zajno",
