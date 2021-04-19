@@ -3,3 +3,5 @@ type Ident<T> = T & {
 };
 
 export default Ident;
+
+export type IdentAny = Ident<{}>;

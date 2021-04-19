@@ -11,7 +11,7 @@ type DBProvider = ClientFirestore | ServerFirestore;
 
 export type DocumentData = FirebaseClient.firestore.DocumentData | FirebaseFirestore.DocumentData;
 
-export type Query<T = DocumentData> = FirebaseClient.firestore.Query<T> | FirebaseFirestore.Query<T>;
+export type Query<T = DocumentData> = { _queryObj?: any } & (FirebaseClient.firestore.Query<T> | FirebaseFirestore.Query<T>);
 export type QuerySnapshot<T = DocumentData> = FirebaseClient.firestore.QuerySnapshot<T> | FirebaseFirestore.QuerySnapshot<T>;
 export type DocumentSnapshot<T = DocumentData> = FirebaseClient.firestore.DocumentSnapshot<T> | FirebaseFirestore.DocumentSnapshot<T>;
 export type QueryDocumentSnapshot<T = DocumentData> = FirebaseClient.firestore.QueryDocumentSnapshot<T> | FirebaseFirestore.QueryDocumentSnapshot<T>;

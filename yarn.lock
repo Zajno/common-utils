@@ -1244,10 +1244,10 @@
     "@typescript-eslint/types" "4.21.0"
     eslint-visitor-keys "^2.0.0"
 
-"@zajno/common@^1.0.6":
-  version "1.0.6"
-  resolved "https://npm.pkg.github.com/download/@zajno/common/1.0.6/eb3d8e8a5682116a4cbef4c450a0cb88c71b1e276484fb998a72493ac8c45ecc#ec77a69fb4766f9ac228b4be4bcb76c2d3800496"
-  integrity sha512-ziOntUHchVxYWQL678/IJNXKqbdPbdl5mrwxREA3NSC34paP3SwljR54im4rM4Q0YF+VaZ37SD9vqLXxgGfUWg==
+"@zajno/common@^1.0.8":
+  version "1.0.8"
+  resolved "https://npm.pkg.github.com/download/@zajno/common/1.0.8/3b8821a6d91aa12657b02b7e128edf0687d24f46a47360e53ab91065d1ca6a9e#31221172ab54a63ad4329834b0ffe0ff1991b47b"
+  integrity sha512-crRZSSde21guwxCKQ+SW8PqHBgUA0e7bToAtg3W5eHQEC5C27d4M9aGa4iy35wJpFFx/3BkbfrZobtLQ8p0L7g==
 
 "@zajno/eslint-config@^1.0.0":
   version "1.0.0"

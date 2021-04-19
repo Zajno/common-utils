@@ -3,7 +3,7 @@
 
 import type * as FirebaseAdmin from 'firebase-admin';
 import type FirebaseClient from 'firebase/app';
-import Identify from '../Ident';
+import Identify, { IdentAny } from '../Ident';
 import logger from '@zajno/common/lib/logger';
 import DBProvider, { CollectionReference, DocumentData, DocumentReference, DocumentSnapshot, DocumentSnapshotCallback, DocumentSnapshotConverterCallback, Query, QueryDocumentSnapshot, QuerySnapshot, QuerySnapshotCallback, QuerySnapshotConverterCallback, ServerFirestore, UnsubscribeSnapshot } from './dbProvider';
 
@@ -41,9 +41,6 @@ export function serverOnly(provider: DBProvider, err = new Error('This method is
     return provider;
 }
 
-
-type AnyIded = Identify<{ }>;
-
 let queryCounter = 0;
 const logQueryCount = <T = DocumentData>(q: Query<T>, s: QuerySnapshot<T>, sub: boolean) => LOG_DOCS_COUNT && logger.log(
     '[Firestore] ===> querySnapshot',
@@ -53,14 +50,18 @@ const logQueryCount = <T = DocumentData>(q: Query<T>, s: QuerySnapshot<T>, sub: 
     getQueryPath(q),
 );
 
-export function querySnapshot<T extends AnyIded>(db: DBProvider, query: Query<T>): Promise<T[]>;
-export function querySnapshot<T extends AnyIded>(db: DBProvider, query: Query<T>,
-    cb: QuerySnapshotCallback<T>): Promise<T[] | UnsubscribeSnapshot>;
-export function querySnapshot<T extends AnyIded>(db: DBProvider, query: Query<T>,
+export function querySnapshot<T extends IdentAny>(db: DBProvider, query: Query<T>): Promise<T[]>;
+export function querySnapshot<T extends IdentAny>(db: DBProvider, query: Query<T>,
+    cb: QuerySnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
+
+export function querySnapshot<T extends IdentAny>(db: ServerFirestore, query: Query<T>,
+        cb: QuerySnapshotCallback<T>): Promise<T[]>;
+
+export function querySnapshot<T extends IdentAny>(db: DBProvider, query: Query<T>,
     cb: QuerySnapshotCallback<T>,
     converter: QuerySnapshotConverterCallback<T>): Promise<T[] | UnsubscribeSnapshot>;
 
-export async function querySnapshot<T extends AnyIded>(
+export async function querySnapshot<T extends IdentAny>(
     db: DBProvider,
     query: Query<T>,
     cb: QuerySnapshotCallback<T> = null,
@@ -100,7 +101,7 @@ export async function querySnapshot<T extends AnyIded>(
                     }
 
                 }, (err: Error) => {
-                    console.warn(`querySnapshot fail: ${getQueryPath(query)}`);
+                    console.warn('querySnapshot fail:', getQueryPath(query));
                     console.error(err);
                     if (unsubscribe) {
                         unsubscribe();
@@ -123,14 +124,14 @@ export async function querySnapshot<T extends AnyIded>(
 let docsCounter = 0;
 const logDocCount = <T>(doc: DocumentReference<T>, sub: boolean) => LOG_DOCS_COUNT && logger.log('[Firestore] ===> documentSnapshot', sub ? '(SUB)' : '', ++docsCounter, doc.path);
 
-export function documentSnapshot<T extends AnyIded>(db: DBProvider, doc: DocumentReference<T>): Promise<T>;
-export function documentSnapshot<T extends AnyIded>(db: DBProvider, doc: DocumentReference<T>,
+export function documentSnapshot<T extends IdentAny>(db: DBProvider, doc: DocumentReference<T>): Promise<T>;
+export function documentSnapshot<T extends IdentAny>(db: DBProvider, doc: DocumentReference<T>,
     cb: DocumentSnapshotCallback<T>): Promise<T | UnsubscribeSnapshot>;
-export function documentSnapshot<T extends AnyIded>(db: DBProvider, doc: DocumentReference<T>,
+export function documentSnapshot<T extends IdentAny>(db: DBProvider, doc: DocumentReference<T>,
     cb: DocumentSnapshotCallback<T>,
     converter: DocumentSnapshotConverterCallback<T>): Promise<T | UnsubscribeSnapshot>;
 
-export async function documentSnapshot<T extends AnyIded>(
+export async function documentSnapshot<T extends IdentAny>(
     db: DBProvider,
     doc: DocumentReference<T>,
     cb: DocumentSnapshotCallback<T> = null,
@@ -194,11 +195,12 @@ export async function documentSnapshot<T extends AnyIded>(
     }
 }
 
-function getQueryPath(q: Query) {
-    const cr = q as CollectionReference;
-    return cr.path || '<query>';
+function getQueryPath(q: Query, forceString = false) {
+    return (q as CollectionReference).path
+        || (forceString ? (q._queryObj && JSON.stringify(q._queryObj)) : q._queryObj)
+        || (forceString ? '<path>' : q);
 }
 
-export function queryWhere<T, K extends (keyof T & string)>(q: Query<T>, key: K, op: FirebaseClient.firestore.WhereFilterOp, value: any): Query<T> {
+export function queryWhere<T, K extends (keyof T & string)>(q: Query<T>, key: K | string, op: FirebaseClient.firestore.WhereFilterOp, value: any): Query<T> {
     return q.where(key, op, value);
 }
