@@ -35,7 +35,7 @@ module.exports = {
         "@typescript-eslint/no-parameter-properties": "off",
         "@typescript-eslint/no-require-imports": "off",
         "@typescript-eslint/no-unused-expressions": "error",
-        "@typescript-eslint/no-unused-vars": 1,
+        "@typescript-eslint/no-unused-vars": [1, { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
         "@typescript-eslint/quotes": [
@@ -100,6 +100,7 @@ module.exports = {
         "no-underscore-dangle": "off",
         "no-unused-labels": "error",
         "no-unused-vars": 0,
+        "no-undef": 0,
         "no-var": "error",
         "prefer-const": [
             "error",

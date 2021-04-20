@@ -1,6 +1,6 @@
 {
   "name": "@zajno/eslint-config",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "repository": {
@@ -8,6 +8,7 @@
     "url": "git+https://github.com/Zajno/eslint-config.git"
   },
   "keywords": [
+    "zajno",
     "eslint",
     "eslintconfig"
   ],
@@ -17,6 +18,9 @@
     "url": "https://github.com/Zajno/eslint-config/issues"
   },
   "homepage": "https://github.com/Zajno/eslint-config#readme",
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com"
+  },
   "scripts": {
     "push:local": "yalc push --private --replace --update",
     "test": "echo \"Error: no test specified\" && exit 1"
