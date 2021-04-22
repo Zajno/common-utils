@@ -15,8 +15,8 @@ export class ConsoleLogger extends NamedLogger {
 }
 
 export class BufferedConsoleLogger implements ILogger {
-    private _name: string;
-    private _logs: string[];
+    private readonly _name: string;
+    private readonly _logs: string[] = [];
     private _level = 1;
 
     private _log = CONSOLE.log;
