@@ -113,6 +113,10 @@ export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
         return value | other;
     }
 
+    intersection(v1: T, v2: T) {
+        return v1 & v2;
+    }
+
     remove(value: T, other: T) {
         return value & ~other;
     }
