@@ -8,3 +8,4 @@ coverage/
 
 .env
 yarn-error.log
+.yalc

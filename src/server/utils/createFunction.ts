@@ -69,7 +69,7 @@ export class FunctionFactory<TArg, TResult, TWorker extends FirebaseFunctionCall
 
     create<TWorkerExt extends TWorker>(worker: TWorkerExt) {
         this._worker = worker;
-        this._worker.debugName = this._worker.debugName || this.Definition.FullName;
+        this._worker.debugName = this._worker.debugName || this.Definition.CallableName;
 
         this._func = null;
         this._authFunc = null;

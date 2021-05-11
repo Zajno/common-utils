@@ -12,13 +12,14 @@ export class FunctionDefinition<TArg, TResult> {
     readonly Arg: TArg = null;
     readonly Result: TResult = null;
 
-    readonly FullName: string;
-
     private _argProcessor: (arg: TArg) => any = a => a;
     private _resultProcessor: (result: any) => TResult = r => r as TResult;
 
-    public get ArgProrcessor() { return this._argProcessor; }
+    public get ArgProcessor() { return this._argProcessor; }
     public get ResultProcessor() { return this._resultProcessor; }
+
+    public get DisplayName() { return `${this.Namespace || 'global'}:${this.Name}`; }
+    public get CallableName() { return this.Namespace ? `${this.Namespace}-${this.Name}` : this.Name; }
 
     constructor(
         readonly Name: string,
@@ -26,9 +27,6 @@ export class FunctionDefinition<TArg, TResult> {
         readonly Timeout = 60,
         readonly Memory: FunctionsMemoryOptions = '256MB',
     ) {
-        this.FullName = this.Namespace
-            ? `${this.Namespace}-${this.Name}`
-            : this.Name;
     }
 
     public specify<TArg2, TResult2 = TResult>(

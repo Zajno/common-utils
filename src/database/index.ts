@@ -5,3 +5,6 @@ export {
     DBProvider,
     RepoError,
 };
+
+export * from './dbProvider';
+export * from './helpers';

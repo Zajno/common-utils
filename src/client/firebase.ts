@@ -15,7 +15,7 @@ let instance: firebase.app.App = null;
 let firebaseConfig: FirebaseConfig = null;
 
 const Settings = {
-    functionsEmulator: null as { host: string, port: number },
+    functionsEmulator: null as { url: string },
     firestore: null as Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
 };
 
@@ -27,7 +27,7 @@ export type FirebaseUser = firebase.User;
 
 const logger = createLogger('[Firebase]');
 
-export function initializeAsync(settings: FirebaseSettings) {
+export function initializeFirebase(settings: FirebaseSettings) {
     if (firebase.apps.length > 0) {
         logger.warn('Skipped creating the second instance of the app');
         return;
@@ -67,9 +67,10 @@ const functions = new Lazy(() => {
     };
 
     const { functionsEmulator } = Settings;
-    if (functionsEmulator) {
-        logger.log('Firebase functions will use emulator:', functionsEmulator);
-        fns.useEmulator(functionsEmulator.host, functionsEmulator.port);
+    if (functionsEmulator?.url) {
+        const { host, port } = new URL(functionsEmulator.url);
+        logger.log('Firebase functions will use emulator:', functionsEmulator.url, '=>', host, port);
+        fns.useEmulator(host, +port);
     }
 
     fns.create = function getFunction<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>) {
