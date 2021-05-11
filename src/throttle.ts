@@ -6,6 +6,8 @@ export class ThrottleAction<T = any> {
     private _postponedCb: () => (T | Promise<T>) = null;
     private _locked = false;
 
+    private _resolvers: (() => void)[] = [];
+
     constructor(public timeout = 1000) {}
 
     clear() {
@@ -37,9 +39,26 @@ export class ThrottleAction<T = any> {
                 return await cb();
             } finally {
                 this._locked = false;
+
+                const resolvers = this._resolvers.slice();
+                this._resolvers.length = 0;
+                // logger.log('getPromise: resolving', resolvers.length);
+                resolvers.forEach(r => r());
             }
         }
     };
+
+    getPromise() {
+        if (!this._locked && !this._timeoutRef) {
+            // logger.log('getPromise: nothing to wait for');
+            return Promise.resolve();
+        }
+
+        return new Promise<void>(resolve => {
+            // logger.log('getPromise: adding resolver');
+            this._resolvers.push(resolve);
+        });
+    }
 }
 
 export class ThrottleProcessor<TSubject> {
