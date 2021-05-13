@@ -1,7 +1,5 @@
 import { observable, makeObservable, runInAction, action } from 'mobx';
-import { createLogger } from './logger';
-
-const logger = createLogger('[PromiseCache]', true);
+import { createLogger, ILogger } from './logger';
 
 export type DeferredGetter<T> = {
     readonly current: T;
@@ -10,12 +8,13 @@ export type DeferredGetter<T> = {
 };
 
 export namespace DeferredGetter {
-    const _resolvedPromise = Promise.resolve(null);
-    export const Empty: DeferredGetter<null> = {
-        get current(): null { return null; },
-        get promise(): Promise<null> { return _resolvedPromise; },
-        get busy() { return false; },
-    };
+    const _resolvedPromise = Promise.resolve<undefined>(undefined);
+    export const Empty = {
+        get current(): undefined { return undefined; },
+        get promise(): Promise<undefined> { return _resolvedPromise; },
+        get busy() { return undefined; },
+        isEmpty: true,
+    } as DeferredGetter<null>;
 }
 
 export class PromiseCache<T, K = string> {
@@ -23,10 +22,12 @@ export class PromiseCache<T, K = string> {
     @observable.shallow
     private readonly _itemsCache: Record<string, T> = { };
 
-    @observable.shallow
+    @observable
     private readonly _itemsStatus: Record<string, boolean> = { };
 
     private readonly _fetchCache: Record<string, Promise<T>> = { };
+
+    private _logger: ILogger;
 
     constructor(
         readonly fetcher: (id: K) => Promise<T>,
@@ -53,6 +54,11 @@ export class PromiseCache<T, K = string> {
         return this.keyAdapter(k);
     }
 
+    useLogger(name?: string) {
+        this._logger = createLogger(`[PromiseCache:${name || '?'}]`);
+        return this;
+    }
+
     getDeferred(key: K): DeferredGetter<T> {
         const self = this;
         return {
@@ -71,6 +77,7 @@ export class PromiseCache<T, K = string> {
         const key = this._pk(id);
         const item = this._itemsCache[key];
         this.get(id);
+        this._logger?.log(key, 'getCurrent returns', item);
         return item;
     }
 
@@ -78,13 +85,13 @@ export class PromiseCache<T, K = string> {
         const key = this._pk(id);
         const item = this._itemsCache[key];
         if (item !== undefined) {
-            logger.log(key, 'item resolved to', item);
+            this._logger?.log(key, 'item resolved to', item);
             return Promise.resolve(item);
         }
 
         let promise = this._fetchCache[key];
         if (promise) {
-            logger.log(key, 'item resolved to <promise>');
+            this._logger?.log(key, 'item resolved to <promise>');
             return promise;
         }
 
@@ -99,7 +106,7 @@ export class PromiseCache<T, K = string> {
         try {
             const res = await this.fetcher(id);
             if (this._fetchCache[key]) {
-                logger.log(key, 'item\'s <promise> resolved to', res);
+                this._logger?.log(key, 'item\'s <promise> resolved to', res);
                 const result = res
                     ? (this.observeItems ? observable.object(res) : res)
                     : null;
