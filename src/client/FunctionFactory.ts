@@ -7,7 +7,7 @@ export class FunctionFactory<TArg, TResult> {
     private readonly logger: ILogger;
 
     constructor(readonly Definition: FunctionDefinition<TArg, TResult>, private readonly firebaseFunctions: firebase.functions.Functions) {
-        this.logger = createLogger(`[${Definition.DisplayName}]`);
+        this.logger = createLogger(`[${Definition.CallableName}]`);
     }
 
     async execute(arg: TArg): Promise<TResult> {
@@ -31,7 +31,7 @@ export class FunctionFactory<TArg, TResult> {
 
             return data;
         } catch (err) {
-            this.logger.warn('Failed with error, see details below', err.message);
+            this.logger.warn('Failed with error, see details below.', { code: err.code, message: err.message, details: err.details });
             // eslint-disable-next-line no-console
             console.error(err);
             throw err;

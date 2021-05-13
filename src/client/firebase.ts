@@ -68,9 +68,9 @@ const functions = new Lazy(() => {
 
     const { functionsEmulator } = Settings;
     if (functionsEmulator?.url) {
-        const { host, port } = new URL(functionsEmulator.url);
-        logger.log('Firebase functions will use emulator:', functionsEmulator.url, '=>', host, port);
-        fns.useEmulator(host, +port);
+        const { hostname, port } = new URL(functionsEmulator.url);
+        logger.log('Firebase functions will use emulator:', functionsEmulator.url, '=>', hostname, port);
+        fns.useEmulator(hostname, +port);
     }
 
     fns.create = function getFunction<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>) {
