@@ -6,3 +6,8 @@ export interface ILogger {
     warn: LoggerFunction;
     error: LoggerFunction;
 }
+
+export interface ILoggerSwitchable {
+    enable(): void;
+    disable(): void;
+}

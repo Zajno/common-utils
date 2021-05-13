@@ -1,4 +1,4 @@
-import { ILogger, LoggerFunction } from './abstractions';
+import { ILogger, ILoggerSwitchable, LoggerFunction } from './abstractions';
 
 const EMPTY_FUNCTION = () => { /* no-op */ };
 
@@ -6,7 +6,7 @@ function addArg(func: (...args: any[]) => any, value: string) {
     return (...args: any[]) => func(value, ...args);
 }
 
-export abstract class NamedLogger implements ILogger {
+export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
     private _log: LoggerFunction;
     private _warn: LoggerFunction;
     private _error: LoggerFunction;
