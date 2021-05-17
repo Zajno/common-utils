@@ -8,6 +8,7 @@ module.exports = {
         "@typescript-eslint/eslint-plugin",
         "@typescript-eslint/eslint-plugin-tslint",
         "jsdoc",
+        "proposal",
     ],
     "extends": [
         'eslint:recommended',
@@ -98,6 +99,7 @@ module.exports = {
         "no-unused-vars": 0,
         "no-undef": 0,
         "no-var": "error",
+        "proposal/class-property-no-initialized": 1, // must-have for observable class properties when using mobx makeObservable
         "prefer-const": [
             "error",
             {
