@@ -1,6 +1,6 @@
 module.exports = {
     "extends": [
-        "@zajno/eslint-config"
+        "@zajno/eslint-config/with-jest"
     ],
     "parserOptions": {
         "project": "tsconfig.eslint.json",

@@ -7,11 +7,11 @@ function addArg(func: (...args: any[]) => any, value: string) {
 }
 
 export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
-    private _log: LoggerFunction;
-    private _warn: LoggerFunction;
-    private _error: LoggerFunction;
+    private _log: LoggerFunction = null;
+    private _warn: LoggerFunction = null;
+    private _error: LoggerFunction = null;
 
-    private _name: string;
+    private _name: string = null;
 
     get log() { return this._log; }
     get warn() { return this._warn; }

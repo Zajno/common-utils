@@ -6,7 +6,7 @@ export type ValidatorFunctionAsync<T = string> = (val: T) => Promise<ValidationE
 export type WrapperFunction = (val: ValidatorFunction) => ValidatorFunction;
 
 export class ValidationError extends Error {
-    readonly code: ValidationErrors;
+    readonly code: ValidationErrors = null;
 
     constructor(message: string, code: ValidationErrors) {
         super(message);

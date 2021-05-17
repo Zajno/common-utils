@@ -9,13 +9,13 @@ export type ValidationConfig = { validator: ValueValidator, errors: ValidationEr
 
 export abstract class ValidatableViewModel {
 
-    private _validator: ValueValidator;
-    private _strings: ValidationErrorsStrings;
+    private _validator: ValueValidator = null;
+    private _strings: ValidationErrorsStrings = null;
 
     @observable
-    private _error: string;
+    private _error: string = null;
 
-    private _validationError: ValidationError;
+    private _validationError: ValidationError = null;
 
     constructor(config?: ValidationConfig) {
         makeObservable(this);

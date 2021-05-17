@@ -3,7 +3,7 @@ import { observable, transaction, makeObservable } from 'mobx';
 export default class Lazy<T> {
 
     @observable.ref
-    private _instance: T;
+    private _instance: T = null;
 
     constructor(private _factory: (() => T)) {
         makeObservable(this);
@@ -30,7 +30,7 @@ export default class Lazy<T> {
 export class LazyPromise<T> {
 
     @observable.ref
-    private _instance: T;
+    private _instance: T = null;
 
     @observable
     private _busy = false;

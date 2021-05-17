@@ -3,8 +3,8 @@ import { IPluggableController } from '../abstractions/controllers/IPluggableCont
 export { IPluggableController };
 
 export abstract class PluggableController<T = any> implements IPluggableController {
-    private _enabled: boolean;
-    private _config: T;
+    private _enabled: boolean = undefined;
+    private _config: T = null;
 
     get enabled() { return this._enabled; }
     get config() { return this._config; }

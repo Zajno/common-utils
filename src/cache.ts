@@ -27,7 +27,7 @@ export class PromiseCache<T, K = string> {
 
     private readonly _fetchCache: Record<string, Promise<T>> = { };
 
-    private _logger: ILogger;
+    private _logger: ILogger = null;
 
     constructor(
         readonly fetcher: (id: K) => Promise<T>,

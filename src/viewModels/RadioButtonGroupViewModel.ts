@@ -6,7 +6,7 @@ export class RadioButtonGroup {
     private _items: RadioButtonViewModel[] = [];
 
     @observable
-    private _activeRadioButton: RadioButtonViewModel;
+    private _activeRadioButton: RadioButtonViewModel = null;
 
     constructor(items: string[]) {
         makeObservable(this);

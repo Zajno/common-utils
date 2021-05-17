@@ -64,7 +64,7 @@ export class ThrottleAction<T = any> {
 export class ThrottleProcessor<TSubject> {
 
     private readonly _queue: TSubject[] = [];
-    private readonly _action: ThrottleAction;
+    private readonly _action: ThrottleAction = null;
 
     constructor(readonly process: (objs: TSubject[]) => Promise<any>, timeout = 1000) {
         if (!process) {

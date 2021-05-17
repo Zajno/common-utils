@@ -7,15 +7,15 @@ export { ILocalization };
 
 export default class LocalizationManager<TLocaleType extends string, TStrings extends StringsShape> implements ILocalization<TStrings> {
     @observable
-    private _currentLocale: TLocaleType;
+    private _currentLocale: TLocaleType = null;
 
     @observable
-    private _currentStrings: TStrings;
+    private _currentStrings: TStrings = null;
 
     @observable
-    private _validationErrors: ValidationErrorsStrings;
+    private _validationErrors: ValidationErrorsStrings = null;
 
-    private readonly _defaultStrings: TStrings;
+    private readonly _defaultStrings: TStrings = null;
 
     constructor(
         private readonly _dataSource: { [locale: string]: TStrings },

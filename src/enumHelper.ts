@@ -1,6 +1,6 @@
 export class EnumStringHelper<T extends string> {
-    public readonly Keys: string[];
-    public readonly Values: T[];
+    public readonly Keys: string[] = null;
+    public readonly Values: T[] = null;
 
     constructor(
         protected readonly _obj: any,
@@ -37,8 +37,8 @@ export class EnumStringHelper<T extends string> {
 type ValueToStringMap = { [val: number]: string };
 
 export default class EnumHelper<T extends number> {
-    public readonly Keys: string[];
-    public readonly Values: T[];
+    public readonly Keys: string[] = null;
+    public readonly Values: T[] = null;
 
     constructor(
         protected readonly _obj: any,

@@ -32,7 +32,7 @@ function FromGetter(getter: StringGetter, setter: (val: string) => void, autorun
 
 export class Text {
     @observable
-    private _value: string;
+    private _value: string = null;
 
     constructor(config: { value: StringGetter, async?: boolean, noSubscribe?: boolean }) {
         makeObservable(this);
@@ -50,12 +50,12 @@ export class TextInputVM extends ValidatableViewModel {
     private _focused = false;
 
     @observable
-    private _name: string;
+    private _name: string = null;
 
     @observable
-    private _title: string;
+    private _title: string = null;
 
-    private readonly _valueObserving: boolean;
+    private readonly _valueObserving: boolean = null;
 
     constructor(config?: TextInputConfig) {
         super(config && config.validation);

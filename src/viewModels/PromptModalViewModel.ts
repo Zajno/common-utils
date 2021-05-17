@@ -18,7 +18,7 @@ export class PromptModalViewModel {
     private _isActive: boolean = false;
 
     @observable
-    private _currentAction: PromptModalAction;
+    private _currentAction: PromptModalAction = null;
 
     constructor() {
         makeObservable(this);

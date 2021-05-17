@@ -2,13 +2,13 @@ import { observable, computed, makeObservable } from 'mobx';
 
 export class Select<T = any> {
     @observable
-    private _index: number;
+    private _index: number = undefined;
 
     @observable
-    private _open: boolean;
+    private _open: boolean = undefined;
 
     @observable
-    private _error: boolean;
+    private _error: boolean = undefined;
 
     constructor(
         private readonly _items: T[],

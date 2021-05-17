@@ -31,7 +31,7 @@ export class KeyStorage {
 }
 
 export class KeyStorageConverted<T> {
-    private readonly _storage: KeyStorage;
+    private readonly _storage: KeyStorage = null;
 
     constructor(
         storage: IStorageSync,

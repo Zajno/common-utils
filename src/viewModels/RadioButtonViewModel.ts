@@ -9,7 +9,7 @@ export class RadioButtonViewModel {
     private _checked: boolean = false;
 
     @observable
-    private _label: string;
+    private _label: string = null;
 
     get checked(){
         return this._checked;

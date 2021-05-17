@@ -11,7 +11,7 @@ export interface IEvent<T = any> {
 
 export class Event<T = any> implements IEvent<T> {
     private _handlers: EventHandler<T>[] = [];
-    private _logger: ILogger;
+    private _logger: ILogger = null;
 
     constructor();
     constructor(logger?: ILogger);
