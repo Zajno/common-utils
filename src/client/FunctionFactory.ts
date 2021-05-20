@@ -1,10 +1,10 @@
 import type firebase from 'firebase';
-import { FunctionDefinition } from '../abstractions/functions';
+import { FunctionDefinition } from '../functions';
 import { ILogger, createLogger } from '@zajno/common/lib/logger';
 
 export class FunctionFactory<TArg, TResult> {
 
-    private readonly logger: ILogger;
+    private readonly logger: ILogger = null;
 
     constructor(readonly Definition: FunctionDefinition<TArg, TResult>, private readonly firebaseFunctions: firebase.functions.Functions) {
         this.logger = createLogger(`[${Definition.CallableName}]`);

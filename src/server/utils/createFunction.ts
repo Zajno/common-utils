@@ -1,6 +1,7 @@
+/* eslint-disable proposal/class-property-no-initialized */
 import * as functions from 'firebase-functions';
 import * as RepoErrorAdapter from './RepoErrorAdapter';
-import { FunctionDefinition } from '../../abstractions/functions';
+import { FunctionDefinition } from '../../functions';
 
 export type FirebaseFunctionCall<T, TOut> = { debugName?: string } & ((data: T, context: functions.https.CallableContext) => Promise<TOut>);
 

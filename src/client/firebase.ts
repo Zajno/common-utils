@@ -7,7 +7,7 @@ export { FirebaseApp };
 import { createLogger } from '@zajno/common/lib/logger';
 
 import { ClientFirestore } from '../database/dbProvider';
-import { FunctionDefinition } from '../abstractions/functions';
+import { FunctionDefinition } from '../functions';
 import { FunctionFactory } from './FunctionFactory';
 import { FirebaseConfig } from '../config';
 

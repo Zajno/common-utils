@@ -1249,15 +1249,15 @@
     "@typescript-eslint/types" "4.21.0"
     eslint-visitor-keys "^2.0.0"
 
-"@zajno/common@^1.0.15":
-  version "1.0.15"
-  resolved "https://npm.pkg.github.com/download/@zajno/common/1.0.15/09f83a430a51a339a1ec3df877f2ec47848f63511324e66135d58f62814f39b7#015a143825160f436a94a6e2b92cdb757631a553"
-  integrity sha512-Ec5gc1IbP6+EN5k2wbRfiguGtaBrXpzz0tJYoe55nWlBU90FrCXoJdmOvttjzAfVE1W1me7N2ePvEca5HjVUGw==
+"@zajno/common@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-1.1.1.tgz#75237cc712b22a6c143ff6cb4248067a24fb3f81"
+  integrity sha512-dfT5aL0jdr0B5Ie7U8FEyoZK/nPTvaD4aaULPPCDbSQH+OeF3qGUxJvPSXLxlL2Ci22Mg0UBVkGzfTp1XJS9fw==
 
-"@zajno/eslint-config@^1.1.0":
-  version "1.1.0"
-  resolved "https://npm.pkg.github.com/download/@zajno/eslint-config/1.1.0/6f0648d55b8439fb62063adf1d7a85e3834808d5bbe62c99be3bfa0ab205b3ed#45460767544cb76459295c972f40612a8264232b"
-  integrity sha512-ol7dFMfhvicuGq2YpR1gElXB2IDlLydy0394qI39DvXDd4r0np6mk3QPj6KMaEBBu0O/7OJ63+FuvfGyWibh8Q==
+"@zajno/eslint-config@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@zajno/eslint-config/-/eslint-config-1.1.2.tgz#479f800e4f7e6e490ffbe19a7a592aad91962404"
+  integrity sha512-eYt4fN1MWWwUIkVbonVv9hyDBLO2c1fvvLyqvG3DBXlGwDtVX2xYdgKzr/ikvK+EX873MCbsWksZeH9BKT7BPQ==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^4.21.0"
     "@typescript-eslint/eslint-plugin-tslint" "^4.21.0"
@@ -1265,6 +1265,7 @@
     eslint-plugin-jest "^24.3.4"
     eslint-plugin-jsdoc "^32.3.0"
     eslint-plugin-no-null "^1.0.2"
+    eslint-plugin-proposal "^2.3.0"
     tslint "^6.1.3"
 
 abab@^2.0.3, abab@^2.0.5:
@@ -2252,6 +2253,13 @@ eslint-plugin-no-null@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/eslint-plugin-no-null/-/eslint-plugin-no-null-1.0.2.tgz#1236a812391390a1877ad4007c26e745341c951f"
   integrity sha1-EjaoEjkTkKGHetQAfCbnRTQclR8=
+
+eslint-plugin-proposal@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-proposal/-/eslint-plugin-proposal-2.3.0.tgz#150c525a89f46388f83b306c2523439a206341c0"
+  integrity sha512-8rIJ0cxfJ4RGO65z3unt1wdla3WmUUYTmlJ/3HYEbUdzZ/lbsvnwd/6dR80dv1kkCbRC0OblFJ1suRJqlDGMCg==
+  dependencies:
+    requireindex "^1.2.0"
 
 eslint-scope@^5.0.0, eslint-scope@^5.1.1:
   version "5.1.1"
@@ -4762,6 +4770,11 @@ require-main-filename@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
   integrity sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==
+
+requireindex@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.2.0.tgz#3463cdb22ee151902635aa6c9535d4de9c2ef1ef"
+  integrity sha512-L9jEkOi3ASd9PYit2cwRfyppc9NoABujTP8/5gFcbERmo5jUoAKovIC3fsF17pkTnGsrByysqX+Kxd2OTNI1ww==
 
 resolve-cwd@^3.0.0:
   version "3.0.0"
