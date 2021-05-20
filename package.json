@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "repository": {
     "type": "git",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.22",
     "@types/node": "^14.14.41",
-    "@zajno/eslint-config": "^1.1.1",
+    "@zajno/eslint-config": "^1.1.2",
     "eslint": "^7.24.0",
     "jest": "^26.6.3",
     "mobx": "^6",

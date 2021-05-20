@@ -709,10 +709,10 @@
     "@typescript-eslint/types" "4.23.0"
     eslint-visitor-keys "^2.0.0"
 
-"@zajno/eslint-config@^1.1.1":
-  version "1.1.1"
-  resolved "https://npm.pkg.github.com/download/@zajno/eslint-config/1.1.1/9b6ac5bbfd0348c12f1b0a09baaffd47c33614dc2896f1487128ee6097802723#431f1c2c243218119168eedebd6b8a845bac38cc"
-  integrity sha512-6wIhb+TCub2/D5k3GBroTOPmreecOvdBxD2vT/S4o7co7T+koxnwlmkfYfYFxmndhN0elWUmNhYt8YJM4siMPw==
+"@zajno/eslint-config@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@zajno/eslint-config/-/eslint-config-1.1.2.tgz#479f800e4f7e6e490ffbe19a7a592aad91962404"
+  integrity sha512-eYt4fN1MWWwUIkVbonVv9hyDBLO2c1fvvLyqvG3DBXlGwDtVX2xYdgKzr/ikvK+EX873MCbsWksZeH9BKT7BPQ==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^4.21.0"
     "@typescript-eslint/eslint-plugin-tslint" "^4.21.0"
