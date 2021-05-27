@@ -120,9 +120,13 @@ export class FunctionFactory<TArg, TResult, TWorker extends FirebaseFunctionCall
     }
 }
 
+type CompositeFunctionCall<T extends CompositeEndpointInfo> = {
+    [P in keyof T]?: FirebaseFunctionCall<ArgExtract<T, P>, ResExtract<T, P>>
+};
+
 export class FunctionCompositeFactory<T extends CompositeEndpointInfo> extends FunctionFactory<EndpointArg<T>, EndpointResult<T>> {
 
-    private _handlers: { [P in keyof T]?: FirebaseFunctionCall<ArgExtract<T, P>, ResExtract<T, P>> } = { };
+    private _handlers: CompositeFunctionCall<T> = { };
     private readonly _logger: ILogger;
 
     constructor(readonly Composition: FunctionComposite<T>) {
@@ -158,6 +162,21 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo> extends F
 
     public addHandler<P extends keyof T>(key: P, handler: FirebaseFunctionCall<ArgExtract<T, P>, ResExtract<T, P>>) {
         this._handlers[key] = handler;
+        return this;
+    }
+
+    public addHandlersMap(map: Required<CompositeFunctionCall<T>>): this;
+    public addHandlersMap(map: CompositeFunctionCall<T>, allowPartial: true): this;
+
+    public addHandlersMap(map: CompositeFunctionCall<T>, allowPartial = false) {
+        Object.keys(this.Composition.info).forEach((k: keyof T) => {
+            const h = map[k];
+            if (h) {
+                this._handlers[k] = h;
+            } else if (!allowPartial) {
+                throw new Error('Required all keys for function composition call. Missing key: ' + k);
+            }
+        });
         return this;
     }
 
