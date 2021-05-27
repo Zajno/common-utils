@@ -1,4 +1,3 @@
-import { FunctionDefinition } from './functions.definition';
-
-export { FunctionDefinition };
+export { FunctionDefinition } from './definition';
+export { IFunctionDefinition } from './interface';
 

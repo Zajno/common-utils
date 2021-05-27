@@ -18,7 +18,6 @@
     "importHelpers": true,
     "baseUrl": "src",
     "paths": {
-       "common/*": ["./*"]
     }
   },
   "include": [

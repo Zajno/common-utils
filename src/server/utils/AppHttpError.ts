@@ -25,6 +25,10 @@ namespace AppHttpError {
         return new functions.https.HttpsError('invalid-argument', message);
     }
 
+    export function NotFound(message = 'Not found') {
+        return new functions.https.HttpsError('not-found', message);
+    }
+
     export function AlreadyExists(message = 'The items already exists') {
         return new functions.https.HttpsError('already-exists', message);
     }

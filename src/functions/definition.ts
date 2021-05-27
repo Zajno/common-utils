@@ -1,19 +1,19 @@
+import {
+    IFunctionDefinition,
+    Converter,
+    Processor,
+    FunctionsMemoryOptions,
+    FunctionType,
+} from './interface';
 
-type FunctionResult<T> = Promise<{ data: T }>;
-type FunctionType<TArg, TResult> = (data: TArg) => FunctionResult<TResult>;
-
-type FunctionsMemoryOptions = '128MB' | '256MB' | '512MB' | '1GB' | '2GB';
-
-type Converter<T1, T2> = (a: T1) => T2;
-
-export class FunctionDefinition<TArg, TResult> {
+export class FunctionDefinition<TArg, TResult> implements IFunctionDefinition<TArg, TResult> {
     readonly Function: FunctionType<TArg, TResult> = null;
 
     readonly Arg: TArg = null;
     readonly Result: TResult = null;
 
-    private _argProcessor: (arg: TArg) => any = a => a;
-    private _resultProcessor: (result: any) => TResult = r => r as TResult;
+    private _argProcessor: Processor<TArg, any> = a => a;
+    private _resultProcessor: Processor<any, TResult> = r => r as TResult;
 
     public get ArgProcessor() { return this._argProcessor; }
     public get ResultProcessor() { return this._resultProcessor; }
@@ -38,14 +38,14 @@ export class FunctionDefinition<TArg, TResult> {
             .addResultProcessor(resConverter);
     }
 
-    public addArgProcessor(processArg: (arg: TArg) => any) {
+    public addArgProcessor(processArg: Processor<TArg, any>) {
         if (processArg) {
             this._argProcessor = processArg;
         }
         return this;
     }
 
-    public addResultProcessor(processRes: (res: any) => TResult) {
+    public addResultProcessor(processRes: Processor<any, TResult>) {
         if (processRes) {
             this._resultProcessor = processRes;
         }

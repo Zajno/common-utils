@@ -7,7 +7,7 @@ export { FirebaseApp };
 import { createLogger } from '@zajno/common/lib/logger';
 
 import { ClientFirestore } from '../database/dbProvider';
-import { FunctionDefinition } from '../functions';
+import { IFunctionDefinition } from '../functions';
 import { FunctionFactory } from './FunctionFactory';
 import { FirebaseConfig } from '../config';
 
@@ -63,7 +63,7 @@ const functions = new Lazy(() => {
     require('firebase/functions');
 
     const fns = instance.functions() as ReturnType<typeof firebase.functions> & {
-        create<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>): FunctionFactory<TArg, TResult>;
+        create<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>): FunctionFactory<TArg, TResult>;
     };
 
     const { functionsEmulator } = Settings;
@@ -73,7 +73,7 @@ const functions = new Lazy(() => {
         fns.useEmulator(hostname, +port);
     }
 
-    fns.create = function getFunction<TArg, TResult>(definition: FunctionDefinition<TArg, TResult>) {
+    fns.create = function getFunction<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>) {
         return new FunctionFactory<TArg, TResult>(definition, fns);
     };
 
