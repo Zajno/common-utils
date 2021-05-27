@@ -6,7 +6,9 @@ import { ArgExtract, CompositeEndpointInfo, EndpointArg, EndpointResult, Functio
 import { createLogger, ILogger } from '@zajno/common/lib/logger';
 import AppHttpError from './utils/AppHttpError';
 
-export type FirebaseFunctionCall<T, TOut> = { debugName?: string } & ((data: T, context: functions.https.CallableContext) => Promise<TOut>);
+export type FunctionContext = functions.https.CallableContext;
+
+export type FirebaseFunctionCall<T, TOut> = { debugName?: string } & ((data: T, context: FunctionContext) => Promise<TOut>);
 
 function filterRequestMethod<T, TOut>(handler: FirebaseFunctionCall<T, TOut>): FirebaseFunctionCall<T, TOut> {
     return (data, ctx) => {
@@ -30,7 +32,7 @@ export function createFunction<T = any, TOut = void>(worker: FirebaseFunctionCal
 }
 
 export function createAuthFunction<T = any, TOut = void>(worker: FirebaseFunctionCall<T, TOut>, options: functions.RuntimeOptions = null) {
-    const workerWrap: FirebaseFunctionCall<T, TOut> = (data: T, ctx: functions.https.CallableContext) => {
+    const workerWrap: FirebaseFunctionCall<T, TOut> = (data: T, ctx: FunctionContext) => {
         if (!ctx.auth || !ctx.auth.uid) {
             throw new functions.https.HttpsError('unauthenticated', 'User needs to be authenticated.');
         }
@@ -182,4 +184,5 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo> extends F
 
 }
 
+/** syntax sugar for implicit catching TS types of handler in/out */
 export function endpointHandler<TA, TR>(spec: IFunctionDefinition<TA, TR>, handler: FirebaseFunctionCall<TA, TR>) { return handler; }
