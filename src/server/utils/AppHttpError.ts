@@ -25,6 +25,10 @@ namespace AppHttpError {
         return new functions.https.HttpsError('invalid-argument', message);
     }
 
+    export function NotAuthenticated(message = 'This action requires authentication') {
+        return new functions.https.HttpsError('unauthenticated', message);
+    }
+
     export function NotFound(message = 'Not found') {
         return new functions.https.HttpsError('not-found', message);
     }

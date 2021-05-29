@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "rm -rf ./lib && tsc",
     "build:w": "yarn build --watch",
-    "push:local": "yalc push --replace --update",
+    "publish:local": "yalc push --replace --update",
     "postinstall": "yarn build",
     "prepare": "yarn build && yarn lint",
     "lint": "eslint \"src/**/*.ts?(x)\""

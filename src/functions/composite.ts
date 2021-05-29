@@ -6,7 +6,7 @@ export type EndpointSpec<TArg, TResult> = (arg: TArg) => TResult; // can be just
 export function spec<TArg, TResult>(fallback: EndpointSpec<TArg, TResult> = null): EndpointSpec<TArg, TResult> { return fallback || null; }
 
 export type CompositeEndpointInfo = {
-    [key: string]: EndpointSpec<unknown, unknown>;
+    [key: string]: EndpointSpec<any, any>;
 };
 
 export type ArgExtract<T, K extends keyof T> = T[K] extends EndpointSpec<infer TA, any> ? TA : never;

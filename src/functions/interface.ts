@@ -6,13 +6,15 @@ export type FunctionsMemoryOptions = '128MB' | '256MB' | '512MB' | '1GB' | '2GB'
 type FunctionResult<T> = Promise<{ data: T }>;
 export type FunctionType<TArg, TResult> = (data: TArg) => FunctionResult<TResult>;
 
-export interface IFunctionDefinition<TArg, TResult> {
+export interface IFunctionDefinitionInfo {
     readonly Name: string;
     readonly Namespace: string;
     readonly CallableName: string;
     readonly Timeout: number;
     readonly Memory: FunctionsMemoryOptions;
+}
 
+export interface IFunctionDefinition<TArg, TResult> extends IFunctionDefinitionInfo {
     readonly Function: FunctionType<TArg, TResult>;
 
     readonly ArgProcessor: Processor<TArg, any>;
