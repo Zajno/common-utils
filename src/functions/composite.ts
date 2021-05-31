@@ -6,11 +6,21 @@ export type EndpointSpec<TArg, TResult> = (arg: TArg) => TResult; // can be just
 export function spec<TArg, TResult>(fallback: EndpointSpec<TArg, TResult> = null): EndpointSpec<TArg, TResult> { return fallback || null; }
 
 export type CompositeEndpointInfo = {
-    [key: string]: EndpointSpec<any, any>;
+    [key: string]: EndpointSpec<any, any> | CompositeEndpointInfo;
 };
 
-export type ArgExtract<T, K extends keyof T> = T[K] extends EndpointSpec<infer TA, any> ? TA : never;
-export type ResExtract<T, K extends keyof T> = T[K] extends EndpointSpec<any, infer TR> ? TR : never;
+export type ArgExtract<T, K extends keyof T> = T[K] extends EndpointSpec<infer TA, any>
+    ? TA
+    : (T[K] extends CompositeEndpointInfo
+        ? { [P in keyof T[K]]?: ArgExtract<T[K], P> }
+        : never);
+
+export type ResExtract<T, K extends keyof T> = T[K] extends EndpointSpec<any, infer TR>
+    ? TR
+    : (T[K] extends CompositeEndpointInfo
+        // ? { [P in keyof T[K]]?: ResExtract<T[K], P> }
+        ? EndpointResult<T[K]>
+        : never);
 
 export type EndpointArg<T> = {
     [P in keyof T]?: ArgExtract<T, P>;
@@ -21,14 +31,16 @@ export type EndpointResult<T> = {
 };
 
 export type EndpointSpecFunctions<T extends CompositeEndpointInfo> = {
-    [P in keyof T]: IFunctionDefinition<ArgExtract<T, P>, ResExtract<T, P>>;
+    [P in keyof T]: T[P] extends CompositeEndpointInfo
+        ? EndpointSpecFunctions<T[P]>
+        : IFunctionDefinition<ArgExtract<T, P>, ResExtract<T, P>>;
 };
 
 export class FunctionComposite<T extends CompositeEndpointInfo> {
 
     /* eslint-disable proposal/class-property-no-initialized */
     private readonly _endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>;
-    private readonly _specs = { } as EndpointSpecFunctions<T>;
+    private readonly _specs: EndpointSpecFunctions<T>;
     /* eslint-enable proposal/class-property-no-initialized */
 
     constructor(
@@ -39,22 +51,44 @@ export class FunctionComposite<T extends CompositeEndpointInfo> {
         memory: FunctionsMemoryOptions = '256MB',
     ) {
         this._endpoint = new FunctionDefinition(name, namespace, timeout, memory);
-
-        Object.keys(info).map((k: keyof T) => {
-            this._specs[k] = this.getSpec(k);
-        });
+        this._specs = specsToFunctions(info, this._endpoint);
     }
 
     public get rootEndpoint(): IFunctionDefinition<EndpointArg<T>, EndpointResult<T>> { return this._endpoint; }
 
     public get specs(): Readonly<EndpointSpecFunctions<T>> { return this._specs; }
+}
 
-    private getSpec<K extends keyof T, TArg extends ArgExtract<T, K>, TResult extends ResExtract<T, K>>(key: K): IFunctionDefinition<TArg, TResult> {
-        return this._endpoint.specify<TArg, TResult>(
-            (a: TArg) => ({ [key]: a } as EndpointArg<T>),
-            (r: EndpointResult<T>) => r[key] as TResult,
-        );
+function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K] & CompositeEndpointInfo>(
+    key: K,
+    spec: P,
+    endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>,
+): EndpointSpecFunctions<P>;
+
+function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K] & EndpointSpec<TArg, TResult>, TArg extends ArgExtract<T, K>, TResult extends ResExtract<T, K>>(
+    key: K,
+    spec: P,
+    endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>,
+): IFunctionDefinition<TArg, TResult>;
+
+function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K]>(key: K, spec: P, endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>): IFunctionDefinition<any, any> | EndpointSpecFunctions<any> {
+    if (typeof spec === 'object') { // nested composition
+        return specsToFunctions(spec as CompositeEndpointInfo, endpoint);
     }
+
+    return endpoint.specify(
+        a => ({ [key]: a } as EndpointArg<T>),
+        (r: EndpointResult<T>) => r[key],
+    );
+}
+
+function specsToFunctions<T extends CompositeEndpointInfo>(this: void, info: T, endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>): EndpointSpecFunctions<T> {
+    const result = { } as EndpointSpecFunctions<T>;
+    Object.keys(info).map((k: keyof T) => {
+        const p = info[k];
+        result[k] = getSpec(k, p as any, endpoint) as any;
+    });
+    return result;
 }
 
 export type CompositionExport<T extends CompositeEndpointInfo> = {

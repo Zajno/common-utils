@@ -14,7 +14,6 @@ export namespace SpecTo {
     export function Middleware<A, R, C = never>(_spec: IFunctionDefinition<A, R>, _context?: C) {
         return new MiddlewareClass<A, R, C>();
     }
-
 }
 
 export namespace ContextTo {

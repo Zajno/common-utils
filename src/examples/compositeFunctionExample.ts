@@ -6,17 +6,27 @@ import AppHttpError from '../server/utils/AppHttpError';
 export namespace ExampleEndpoint {
     const api_v1 = {
         example: spec<{ id: string }, { ok: boolean }>(),
+        namespace: {
+            nested: spec<{ lol: string }, { kek: number }>(),
+        },
     };
 
     export const v1 = createCompositionExport(new FunctionComposite(api_v1, 'example', 'v1'));
 }
 
 export namespace Client {
-    export async function test(id: string) {
+    export async function test1(id: string) {
         const result = await Firebase.Instance.functions.create(ExampleEndpoint.v1.example)
            .execute({ id: id });
 
         return result.ok;
+    }
+
+    export async function test2(id: string) {
+        const result = await Firebase.Instance.functions.create(ExampleEndpoint.v1.namespace.nested)
+           .execute({ lol: id });
+
+        return result.kek;
     }
 }
 
@@ -58,6 +68,10 @@ export namespace Server {
             .mergeContext(null as CustomContext)
             // .useContextPopulist(CommonMiddlewares.CurrentUserContext.Middleware)
             .useFunction(exampleFunction);
+
+        export const nestedFunction = SpecTo.Function(ExampleEndpoint.v1.namespace.nested, async (data, ctx) => {
+            return { kek: ('kek' + (data.lol === ctx.data.currentUser.name ? data.lol : 'lol')).length };
+        }, null as Context);
     }
 
     export namespace ApiRoot {
@@ -68,6 +82,7 @@ export namespace Server {
 
         // populate spec middlewares
         Example.handlers.example = SubModule.exampleHandler;
+        Example.handlers.namespace.nested.useFunction(SubModule.nestedFunction);
     }
 
     export namespace ServerRoot {
