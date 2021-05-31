@@ -9,6 +9,10 @@ namespace AppHttpError {
     };
 
     export function InvalidArguments<T = any>(...list: InvalidArgDescription<T>[]) {
+        if (!list?.length) {
+            return new functions.https.HttpsError('invalid-argument', 'Invalid arguments');
+        }
+
         const strings = list.map(arg => {
             const details = [
                 arg.expected ? `expected: ${arg.expected}` : null,

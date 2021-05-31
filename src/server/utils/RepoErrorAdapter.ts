@@ -33,7 +33,7 @@ export function tryConvertToHttpError<T extends Error = Error>(err: T): function
         return toHttpError.call(err);
     }
 
-    const msg = (err && err.message) || '<no message>';
+    const msg = err?.message || '<no message>';
     return toHttpError.call(new RepoError(RepoError.Types.Unknown, msg));
 }
 

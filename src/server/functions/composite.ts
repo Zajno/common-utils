@@ -54,6 +54,9 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
 
     private async executeMap<H extends CompositeEndpointInfo>(info: H, map: MiddlewaresMap<H, TContext>, ctx: HandlerContext<EndpointArg<H>, EndpointResult<H>, TContext>) {
         const results: EndpointResult<H> = { };
+        if (!ctx.input) {
+            throw AppHttpError.InvalidArguments();
+        }
         const keys: (keyof H)[] = Object.keys(ctx.input)
             .filter(k => !!map[k]);
         for (const key of keys) {

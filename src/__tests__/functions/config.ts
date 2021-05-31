@@ -15,7 +15,6 @@ export function getNestedFunction<A, R, K extends (keyof A & keyof R)>(fn: Endpo
     return async (data, ctx) => {
         const parentArg = { [key]: data } as any as A;
         const result = await fn(parentArg, ctx);
-        return result[key] as R[K];
+        return result && result[key] as R[K];
     };
 }
-

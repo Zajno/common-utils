@@ -77,8 +77,8 @@ export namespace Server {
     export namespace ApiRoot {
         // create api root endpoint handler with global middlewares
         export const Example = new FunctionCompositeFactory(ExampleEndpoint.v1(), CommonMiddlewares.CurrentUserContext.Default)
-            .useContextPopulist(CommonMiddlewares.CurrentUserContext.Middleware)
-            .useAuth();
+            .useAuth()
+            .useContextPopulist(CommonMiddlewares.CurrentUserContext.Middleware);
 
         // populate spec middlewares
         Example.handlers.example = SubModule.exampleHandler;

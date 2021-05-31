@@ -20,13 +20,13 @@ export class Middleware<TArg, TResult, TContext extends { } = never> {
         return ctx.output;
     }
 
-    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H) {
-        this._chain = Middleware.add(this._chain, handler);
+    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string) {
+        this._chain = Middleware.add(this._chain, Middleware.safeNext(handler, name));
         return this;
     }
 
-    useBeforeAll<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H) {
-        this._chain = Middleware.add(handler, this._chain);
+    useBeforeAll<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string) {
+        this._chain = Middleware.add(handler, Middleware.safeNext(this._chain, name));
         return this;
     }
 
@@ -60,6 +60,8 @@ export class Middleware<TArg, TResult, TContext extends { } = never> {
 
 export namespace Middleware {
 
+    const EnableSafeMiddlewareNext = true;
+
     export function add<A, R, C = never>(h1: EndpointHandler<A, R, C>, h2: EndpointHandler<A, R, C>): EndpointHandler<A, R, C> {
         if (!h1 || !h2) {
             return combine(h1, h2);
@@ -90,20 +92,42 @@ export namespace Middleware {
     }
 
     export function wrapHandler<A, R, C = never>(handler: EndpointHandlerVoid<A, R, C>): EndpointHandler<A, R, C> {
-        return async (ctx, next) => {
+        const res = async (ctx, next) => {
             await handler(ctx);
             if (next) {
                 await next();
             }
         };
+        res._safeNext = true;
+        return res;
     }
 
     export function wrapFunction<A, R, C = never>(func: EndpointFunction<A, R, C>): EndpointHandler<A, R, C> {
-        return async (ctx, next) => {
+        const res = async (ctx, next) => {
             const output = await func(ctx.input, ctx);
             ctx.output = ctx.output ? Object.assign(ctx.output, output) : output;
             if (next) {
                 await next();
+            }
+        };
+        res._safeNext = true;
+        return res;
+    }
+
+    export function safeNext<A, R, C = never>(h: EndpointHandler<A, R, C>, name?: string): EndpointHandler<A, R, C> {
+        if (!EnableSafeMiddlewareNext || (h as any)._safeNext) {
+            return h;
+        }
+
+        return async (ctx, next) => {
+            let calledNext = false;
+            const n = async () => {
+                calledNext = true;
+                await next();
+            };
+            await h(ctx, n);
+            if (!calledNext) {
+                throw AppHttpError.Internal('the middleware did not call next: ' + (name || '<unknown>'));
             }
         };
     }
