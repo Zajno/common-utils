@@ -115,7 +115,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
             }
 
             const fieldInfo = info[k];
-            if (typeof fieldInfo === 'object') {
+            if (fieldInfo && typeof fieldInfo === 'object') {
                 // nested
                 const innerInfo = fieldInfo as H[keyof H] & CompositeEndpointInfo;
                 const innerMap = m as FunctionsMap<typeof innerInfo, TContext>;
