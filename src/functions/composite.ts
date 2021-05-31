@@ -72,7 +72,7 @@ function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T
 ): IFunctionDefinition<TArg, TResult>;
 
 function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K]>(key: K, spec: P, endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>): IFunctionDefinition<any, any> | EndpointSpecFunctions<any> {
-    if (typeof spec === 'object') { // nested composition
+    if (spec && typeof spec === 'object') { // nested composition
         return specsToFunctions(spec as CompositeEndpointInfo, endpoint);
     }
 

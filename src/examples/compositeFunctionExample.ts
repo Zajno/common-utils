@@ -1,7 +1,6 @@
 import { createCompositionExport, FunctionComposite, spec } from '../functions/composite';
 import Firebase from '../client/firebase';
 import { ContextTo, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions';
-import AppHttpError from '../server/utils/AppHttpError';
 
 export namespace ExampleEndpoint {
     const api_v1 = {
@@ -42,7 +41,8 @@ export namespace Server {
             // middleware for populating custom context
             export const Middleware = ContextTo.Populist(Default, async (ctx) => {
                 if (!ctx.auth?.uid) {
-                    throw AppHttpError.InvalidArguments();
+                    // throw AppHttpError.NotAuthenticated();
+                    return;
                 }
                 ctx.data = {
                     ...ctx.data, // this allows to merge custom contexts

@@ -46,7 +46,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         ? MiddlewaresMap<HT[keyof HT], TContext>
         : Middleware<ArgExtract<HT, keyof HT>, ResExtract<HT, keyof HT>, TContext> {
         const p = info[key];
-        if (typeof p === 'object') {
+        if (p && typeof p === 'object') {
             return this.getHandlersMap(p as CompositeEndpointInfo) as any;
         }
         return new Middleware<ArgExtract<HT, K>, ResExtract<HT, K>, TContext>() as any;
