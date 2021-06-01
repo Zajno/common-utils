@@ -1,6 +1,10 @@
 import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
 import { FunctionCompositeFactory } from '../../server/functions';
+import AppHttpError from '../../server/utils/AppHttpError';
 import { getNestedFunction, wrapEndpoint } from './config';
+import { Config as RepoErrorAdapterConfig } from '../../server/utils/RepoErrorAdapter';
+
+RepoErrorAdapterConfig.DisableErrorLogging = true;
 
 namespace BrokenApi {
     const api1 = {
@@ -19,6 +23,12 @@ describe('broken api', () => {
             await expect(
                 v1(null)
             ).rejects.toThrowError('Invalid arguments');
+        });
+
+        it('throws not found – arg is empty object', async () => {
+            await expect(
+                v1({ })
+            ).rejects.toMatchObject(AppHttpError.InvalidArguments());
         });
 
         it('throws not found – arg is correct', async () => {

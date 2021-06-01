@@ -1,5 +1,8 @@
 import * as Example from '../../examples/compositeFunctionExample';
 import { EndpointTestContext, getNestedFunction, wrapEndpoint } from './config';
+import { Config as RepoErrorAdapterConfig } from '../../server/utils/RepoErrorAdapter';
+
+RepoErrorAdapterConfig.DisableErrorLogging = true;
 
 describe('Function API', () => {
     const Endpoint = wrapEndpoint(Example.Server.ApiRoot.Example);

@@ -1,6 +1,10 @@
 import * as functions from 'firebase-functions';
 import RepoError from '../../database/RepoError';
 
+export const Config = {
+    DisableErrorLogging: false,
+};
+
 export function toHttpError(this: RepoError) {
     let code: functions.https.FunctionsErrorCode;
     switch (this.type) {
@@ -47,7 +51,9 @@ export function wrapRepoError<T extends any[], TOut>(
             return res;
         } catch (err) {
             // eslint-disable-next-line no-console
-            console.error(`Function "${workerName || worker.name}" failed with error:`, err);
+            if (!Config.DisableErrorLogging) {
+                console.error(`Function "${workerName || worker.name}" failed with error:`, err);
+            }
             throw tryConvertToHttpError(err);
         }
     };

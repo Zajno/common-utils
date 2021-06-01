@@ -52,13 +52,18 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         return new Middleware<ArgExtract<HT, K>, ResExtract<HT, K>, TContext>() as any;
     }
 
-    private async executeMap<H extends CompositeEndpointInfo>(info: H, map: MiddlewaresMap<H, TContext>, ctx: HandlerContext<EndpointArg<H>, EndpointResult<H>, TContext>) {
+    private async executeMap<H extends CompositeEndpointInfo>(info: H, map: MiddlewaresMap<H, TContext>, ctx: HandlerContext<EndpointArg<H>, EndpointResult<H>, TContext>, strict = false) {
         const results: EndpointResult<H> = { };
         if (!ctx.input) {
             throw AppHttpError.InvalidArguments();
         }
         const keys: (keyof H)[] = Object.keys(ctx.input)
             .filter(k => !!map[k]);
+
+        if (strict && keys.length === 0) {
+            throw AppHttpError.InvalidArguments();
+        }
+
         for (const key of keys) {
             const fieldInfo = info[key];
             const h = map[key];
@@ -95,7 +100,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
     protected createEndpointHandler() {
         // use it as the last
         this.useHandler(async (ctx) => {
-            ctx.output = await this.executeMap(this.Composition.info, this._handlers, ctx);
+            ctx.output = await this.executeMap(this.Composition.info, this._handlers, ctx, true);
         });
         return super.createEndpointHandler();
     }
