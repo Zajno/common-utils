@@ -11,7 +11,7 @@ export class Select<T = any> {
     private _error: boolean = undefined;
 
     constructor(
-        private readonly _items: T[],
+        private readonly _items: readonly T[],
         private readonly _accessor: (item: T) => string,
         initialIndex: number = undefined,
     ) {
@@ -82,7 +82,7 @@ export class Select<T = any> {
 }
 
 export class SelectString<T extends string = string> extends Select<T> {
-    constructor(items: T[], initialIndex: number = 0) {
+    constructor(items: readonly T[], initialIndex: number = 0) {
         super(items, v => v, initialIndex);
     }
 }
