@@ -7,6 +7,9 @@ export namespace ExampleEndpoint {
         example: spec<{ id: string }, { ok: boolean }>(),
         namespace: {
             nested: spec<{ lol: string }, { kek: number }>(),
+            inner: {
+                ['double-nested']: spec<{ in: string }, { out: string }>(),
+            },
         },
     };
 
@@ -83,6 +86,9 @@ export namespace Server {
         // populate spec middlewares
         Example.handlers.example = SubModule.exampleHandler;
         Example.handlers.namespace.nested.useFunction(SubModule.nestedFunction);
+
+        Example.handlers.namespace.inner['double-nested']
+            .useFunction(async (input) => ({ out: (input.in || '') + '_kek' }));
     }
 
     export namespace ServerRoot {

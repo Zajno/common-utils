@@ -50,8 +50,8 @@ export function wrapRepoError<T extends any[], TOut>(
             const res = await worker(...args);
             return res;
         } catch (err) {
-            // eslint-disable-next-line no-console
             if (!Config.DisableErrorLogging) {
+                // eslint-disable-next-line no-console
                 console.error(`Function "${workerName || worker.name}" failed with error:`, err);
             }
             throw tryConvertToHttpError(err);

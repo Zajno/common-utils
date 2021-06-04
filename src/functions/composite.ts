@@ -59,26 +59,18 @@ export class FunctionComposite<T extends CompositeEndpointInfo> {
     public get specs(): Readonly<EndpointSpecFunctions<T>> { return this._specs; }
 }
 
-function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K] & CompositeEndpointInfo>(
+function getSpec<
+    T extends CompositeEndpointInfo,
+    K extends keyof T,
+    TArg extends ArgExtract<T, K>,
+    TResult extends ResExtract<T, K>
+>(
     key: K,
-    spec: P,
     endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>,
-): EndpointSpecFunctions<P>;
-
-function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K] & EndpointSpec<TArg, TResult>, TArg extends ArgExtract<T, K>, TResult extends ResExtract<T, K>>(
-    key: K,
-    spec: P,
-    endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>,
-): IFunctionDefinition<TArg, TResult>;
-
-function getSpec<T extends CompositeEndpointInfo, K extends keyof T, P extends T[K]>(key: K, spec: P, endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>): IFunctionDefinition<any, any> | EndpointSpecFunctions<any> {
-    if (spec && typeof spec === 'object') { // nested composition
-        return specsToFunctions(spec as CompositeEndpointInfo, endpoint);
-    }
-
-    return endpoint.specify(
+): FunctionDefinition<TArg, TResult> {
+    return endpoint.specify<TArg, TResult>(
         a => ({ [key]: a } as EndpointArg<T>),
-        (r: EndpointResult<T>) => r[key],
+        (r: EndpointResult<T>) => r[key] as TResult,
     );
 }
 
@@ -86,7 +78,13 @@ function specsToFunctions<T extends CompositeEndpointInfo>(this: void, info: T, 
     const result = { } as EndpointSpecFunctions<T>;
     Object.keys(info).map((k: keyof T) => {
         const p = info[k];
-        result[k] = getSpec(k, p as any, endpoint) as any;
+        const innerEndpoint = getSpec(k, endpoint);
+        if (p && typeof p === 'object') { // nested composition
+            const innerSpec = p as (CompositeEndpointInfo & T[keyof T]);
+            result[k] = specsToFunctions(innerSpec, innerEndpoint as FunctionDefinition<EndpointArg<typeof innerSpec>, EndpointResult<typeof innerSpec>>) as any;
+        } else {
+            result[k] = innerEndpoint as any;
+        }
     });
     return result;
 }

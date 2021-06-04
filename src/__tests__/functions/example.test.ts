@@ -37,6 +37,8 @@ describe('Function API', () => {
 
     const ExampleNamespace = getNestedFunction(Endpoint, 'namespace');
     const ExampleNestedFunc = getNestedFunction(ExampleNamespace, 'nested');
+    const ExampleInner = getNestedFunction(ExampleNamespace, 'inner');
+    const ExampleDoubleNested = getNestedFunction(ExampleInner, 'double-nested');
 
     it('runs as composite – nested', async () => {
         await expect(
@@ -45,5 +47,11 @@ describe('Function API', () => {
         await expect(
             ExampleNestedFunc({ lol: 'test' }, ctx)
         ).resolves.toMatchObject({ kek: 7 });
+    });
+
+    it('runs as composite – double nested', async () => {
+        await expect(
+            ExampleDoubleNested({ in: 'x' }, ctx)
+        ).resolves.toMatchObject({ out: 'x_kek' });
     });
 });
