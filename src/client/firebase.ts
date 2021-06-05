@@ -17,6 +17,7 @@ let firebaseConfig: FirebaseConfig = null;
 const Settings = {
     functionsEmulator: null as { url: string },
     firestore: null as Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
+    authEmulator: null as { url: string },
 };
 
 export type FirebaseSettings = Partial<typeof Settings> & {
@@ -56,7 +57,12 @@ export function initializeFirebase(settings: FirebaseSettings) {
 
 const auth = new Lazy(() => {
     require('firebase/auth');
-    return instance.auth();
+    const auth = instance.auth();
+    if (Settings.authEmulator?.url) {
+        logger.log('Firebase Auth will use emulator:', Settings.authEmulator.url);
+        auth.useEmulator(Settings.authEmulator.url);
+    }
+    return auth;
 });
 
 const functions = new Lazy(() => {
