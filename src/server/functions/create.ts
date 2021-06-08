@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
-import { EndpointFunction } from './interface';
+import { EndpointFunction, FirebaseEndpoint } from './interface';
 import * as RepoErrorAdapter from '../utils/RepoErrorAdapter';
 
-export function createHttpsFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null) {
+export function createHttpsFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null): FirebaseEndpoint {
     const builder = options
         ? functions.runWith(options)
         : functions;
