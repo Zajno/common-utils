@@ -12,6 +12,7 @@ export class FunctionFactory<TArg, TResult> {
 
     async execute(arg: TArg): Promise<TResult> {
         const DefinitionFunction = this.Definition.Function;
+        const start = Date.now();
         try {
             const fn: typeof DefinitionFunction = this.firebaseFunctions.httpsCallable(
                 this.Definition.CallableName,
@@ -20,7 +21,6 @@ export class FunctionFactory<TArg, TResult> {
                 },
             );
             const processedArgs = await this.Definition.ArgProcessor(arg);
-            const start = Date.now();
             this.logger.log('Executing with args:', processedArgs);
 
             const res = await fn(processedArgs);
@@ -31,7 +31,7 @@ export class FunctionFactory<TArg, TResult> {
 
             return data;
         } catch (err) {
-            this.logger.warn('Failed with error, see details below.', { code: err.code, message: err.message, details: err.details });
+            this.logger.warn('Failed with error after', Date.now() - start, 'ms, see details below.', { code: err.code, message: err.message, details: err.details });
             // eslint-disable-next-line no-console
             console.error(err);
             throw err;

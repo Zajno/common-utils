@@ -17,6 +17,7 @@ let firebaseConfig: FirebaseConfig = null;
 const Settings = {
     functionsEmulator: null as { url: string },
     firestore: null as Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
+    realtimeDatabaseEmulator: null as { url: string },
     authEmulator: null as { url: string },
 };
 
@@ -103,6 +104,21 @@ const database = new Lazy<ClientFirestore>(() => {
     return db;
 });
 
+const realtimeDatabase = new Lazy(() => {
+    require('firebase/database');
+
+    const rdb = instance.database();
+
+    const emulator = Settings.realtimeDatabaseEmulator;
+    if (emulator?.url) {
+        const { hostname, port } = new URL(emulator.url);
+        logger.log('Firebase Realtime Database will use emulator:', emulator.url, '=>', hostname, port);
+        rdb.useEmulator(hostname, +port);
+    }
+
+    return rdb;
+});
+
 const storage = new Lazy(() => {
     require('firebase/storage');
     return instance.storage();
@@ -114,6 +130,7 @@ const wrapper = {
     get auth() { return auth.value; },
     get functions() { return functions.value; },
     get database() { return database.value; },
+    get realtimeDatabase() { return realtimeDatabase.value; },
     get storage() { return storage.value; },
 
     types: {
@@ -121,6 +138,8 @@ const wrapper = {
         get Firestore(): Readonly<typeof firebase.firestore> { return firebase.firestore; },
         get FirebaseStorage(): Readonly<typeof firebase.storage> { return firebase.storage; },
     },
+
+    get raw() { return firebase; },
 };
 
 export default {
