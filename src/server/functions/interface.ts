@@ -13,8 +13,10 @@ export type HandlerContext<TArg, TOut, TContext = never> = EndpointContext<TCont
     output: TOut,
 };
 
+export type NextFunction = () => Promise<void>;
+
 export type EndpointHandler<TArg, TOut, TContext = never> = {
-    (ctx: HandlerContext<TArg, TOut, TContext>, next: () => Promise<void>): Promise<void>;
+    (ctx: HandlerContext<TArg, TOut, TContext>, next: NextFunction): Promise<void>;
 };
 
 type OmitSecondParameter<T> = T extends (first: infer F, second: any, ...last: infer L) => infer R ? (first: F, ...last: L) => R : never;

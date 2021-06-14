@@ -8,9 +8,19 @@ namespace AppHttpError {
         error?: string;
     };
 
+    export const DefaultStrings: Partial<Record<functions.https.FunctionsErrorCode, string>> = {
+        'invalid-argument': 'Invalid arguments',
+        unauthenticated: 'This action requires authentication',
+        'not-found': 'Not found',
+        'already-exists': 'The items already exists',
+        'failed-precondition': 'Precondition failed',
+        'internal': 'Internal error',
+        'permission-denied': 'Incorrect permissions',
+    };
+
     export function InvalidArguments<T = any>(...list: InvalidArgDescription<T>[]) {
         if (!list?.length) {
-            return new functions.https.HttpsError('invalid-argument', 'Invalid arguments');
+            return new functions.https.HttpsError('invalid-argument', DefaultStrings['invalid-argument']);
         }
 
         const strings = list.map(arg => {
@@ -29,28 +39,28 @@ namespace AppHttpError {
         return new functions.https.HttpsError('invalid-argument', message);
     }
 
-    export function NotAuthenticated(message = 'This action requires authentication') {
-        return new functions.https.HttpsError('unauthenticated', message);
+    export function NotAuthenticated(message?: string) {
+        return new functions.https.HttpsError('unauthenticated', message || DefaultStrings.unauthenticated);
     }
 
-    export function NotFound(message = 'Not found') {
-        return new functions.https.HttpsError('not-found', message);
+    export function NotFound(message?: string) {
+        return new functions.https.HttpsError('not-found', message || DefaultStrings['not-found']);
     }
 
-    export function AlreadyExists(message = 'The items already exists') {
-        return new functions.https.HttpsError('already-exists', message);
+    export function AlreadyExists(message?: string) {
+        return new functions.https.HttpsError('already-exists', message || DefaultStrings['already-exists']);
     }
 
-    export function PreconditionFailed(message = 'Precondition failed') {
-        return new functions.https.HttpsError('failed-precondition', message);
+    export function PreconditionFailed(message?: string) {
+        return new functions.https.HttpsError('failed-precondition', message || DefaultStrings['failed-precondition']);
     }
 
-    export function Internal(message = 'Internal error') {
-        return new functions.https.HttpsError('internal', message);
+    export function Internal(message?: string) {
+        return new functions.https.HttpsError('internal', message || DefaultStrings.internal);
     }
 
-    export function NoPermission(message = 'Incorrect permissions') {
-        return new functions.https.HttpsError('permission-denied', message);
+    export function NoPermission(message?: string) {
+        return new functions.https.HttpsError('permission-denied', message || DefaultStrings['permission-denied']);
     }
 }
 

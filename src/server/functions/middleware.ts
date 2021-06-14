@@ -1,10 +1,24 @@
-import { EndpointContext, HandlerContext, EndpointHandler, EndpointHandlerVoid, EndpointFunction } from './interface';
+import { EndpointContext, HandlerContext, EndpointHandler, EndpointHandlerVoid, EndpointFunction, NextFunction } from './interface';
 import AppHttpError from '../utils/AppHttpError';
 
-export class Middleware<TArg, TResult, TContext extends { } = never> {
+export interface IMiddleware<TArg, TResult, TContext extends { } = never> {
+    readonly isEmpty: boolean;
+    readonly currentChain: EndpointHandler<TArg, TResult, TContext>;
+
+    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string): this;
+    useBeforeAll<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string): this;
+    useHandler<H extends EndpointHandlerVoid<TArg, TResult, TContext>>(handler: H): this;
+    useFunction<F extends EndpointFunction<TArg, TResult, TContext>>(func: F): this;
+    useAuth(): this;
+    useContextPopulist(populist: (ctx: EndpointContext<TContext>) => Promise<void>): this;
+    mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): IMiddleware<TArg, TResult, Partial<TContext & C>>;
+}
+
+export class Middleware<TArg, TResult, TContext extends { } = never> implements IMiddleware<TArg, TResult, TContext> {
     private _chain: EndpointHandler<TArg, TResult, TContext> = null;
 
     public get isEmpty() { return this._chain == null; }
+    public get currentChain() { return this._chain; }
 
     public async execute(arg: TArg, endpointContext: EndpointContext<TContext>): Promise<TResult> {
         if (!this._chain) {
@@ -39,11 +53,7 @@ export class Middleware<TArg, TResult, TContext extends { } = never> {
     }
 
     useAuth() {
-        return this.useHandler(async (ctx) => {
-            if (!ctx?.auth?.uid) {
-                throw AppHttpError.NotAuthenticated();
-            }
-        });
+        return this.useHandler(AuthValidator);
     }
 
     useContextPopulist(populist: (ctx: EndpointContext<TContext>) => Promise<void>) {
@@ -57,6 +67,12 @@ export class Middleware<TArg, TResult, TContext extends { } = never> {
         return this;
     }
 }
+
+const AuthValidator: EndpointHandlerVoid<any, any, any> = async (ctx) => {
+    if (!ctx?.auth?.uid) {
+        throw AppHttpError.NotAuthenticated();
+    }
+};
 
 export namespace Middleware {
 
@@ -80,15 +96,15 @@ export namespace Middleware {
             return hh[0];
         }
 
-        const moveNext = async (ctx: HandlerContext<A, R, C>, index: number) => {
+        const moveNext = (ctx: HandlerContext<A, R, C>, next: NextFunction, index: number) => {
             if (index >= hh.length) {
-                return;
+                return next();
             }
 
-            await hh[index](ctx, () => moveNext(ctx, index + 1));
+            return hh[index](ctx, () => moveNext(ctx, next, index + 1));
         };
 
-        return (ctx) => moveNext(ctx, 0);
+        return (ctx, next) => moveNext(ctx, next, 0);
     }
 
     export function wrapHandler<A, R, C = never>(handler: EndpointHandlerVoid<A, R, C>): EndpointHandler<A, R, C> {
@@ -130,5 +146,57 @@ export namespace Middleware {
                 throw AppHttpError.Internal('the middleware did not call next: ' + (name || '<unknown>'));
             }
         };
+    }
+
+    export function aggregate<TContext extends { } = never>(...middlewares: IMiddleware<any, any, TContext>[]): IMiddleware<any, any, TContext> {
+        return new MiddlewareAggregator(middlewares);
+    }
+}
+
+class MiddlewareAggregator<TContext extends { } = never> implements IMiddleware<any, any, TContext> {
+
+    private _chain: EndpointHandler<any, any, TContext> = undefined;
+
+    constructor(private readonly _middlewares: IMiddleware<any, any, TContext>[]) { }
+
+    get isEmpty(): boolean { return this.currentChain != null; }
+    get currentChain(): EndpointHandler<any, any, TContext> {
+        if (this._chain === undefined) {
+            this._chain = Middleware.combine(...this._middlewares.map(m => m.currentChain));
+        }
+        return this._chain;
+    }
+
+    use<H extends EndpointHandler<any, any, TContext>>(handler: H, name?: string): this {
+        this._middlewares.forEach(m => m.use(handler, name));
+        return this;
+    }
+
+    useBeforeAll<H extends EndpointHandler<any, any, TContext>>(handler: H, name?: string): this {
+        this._middlewares.forEach(m => m.useBeforeAll(handler, name));
+        return this;
+    }
+
+    useHandler<H extends EndpointHandlerVoid<any, any, TContext>>(handler: H): this {
+        return this.use(Middleware.wrapHandler(handler));
+    }
+
+    useFunction<F extends EndpointFunction<any, any, TContext>>(func: F): this {
+        return this.use(Middleware.wrapFunction(func));
+    }
+
+    useAuth(): this {
+        return this.useHandler(AuthValidator);
+    }
+
+    useContextPopulist(populist: (ctx: EndpointContext<TContext>) => Promise<void>): this {
+        return this.use(async (ctx, next) => {
+            await populist(ctx);
+            await next();
+        });
+    }
+
+    mergeContext<C extends TContext extends never ? never : {}>(_marker?: C): IMiddleware<any, any, Partial<TContext & C>> {
+        return this;
     }
 }
