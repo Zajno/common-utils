@@ -153,7 +153,7 @@ export namespace Middleware {
 
     export function safeNext<A, R, C = never>(h: EndpointHandler<A, R, C>, name?: string): EndpointHandler<A, R, C> {
         if (!h) {
-            throw new Error('Null argument');
+            return null;
         }
 
         if (!EnableSafeMiddlewareNext || (h as any)._safeNext) {

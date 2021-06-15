@@ -13,10 +13,41 @@ namespace BrokenApi {
     export const Api = createCompositionExport(new FunctionComposite(api1, 'broken'));
 }
 
+describe('declaration', () => {
+    const ENDPOINT = () => new FunctionCompositeFactory(BrokenApi.Api());
+
+    it('doesn\'t add empty', () => {
+        const v1 = ENDPOINT();
+        expect(() => v1.use(null)).not.toThrow();
+    });
+
+    it('adds beforeAll to empty', () => {
+        const v1 = ENDPOINT();
+        expect(() => v1.useBeforeAll((_ctx, next) => next())).not.toThrow();
+    });
+
+    it('called in correct order', async () => {
+        let str = '';
+        const v1 = wrapEndpoint(ENDPOINT()
+            .use((_ctx, next) => { str += '2'; return next(); })
+            .useBeforeAll((_ctx, next) => { str += '1'; return next(); })
+            .useFunctionsMap({ foo: async data => data + 1 })
+        );
+
+        await expect(getNestedFunction(v1, 'foo')(1)).resolves.toEqual(2);
+
+        expect(str).toEqual('12');
+    });
+});
+
 describe('broken api', () => {
 
     describe('v1 – not initialized', () => {
-        const v1 = wrapEndpoint(new FunctionCompositeFactory(BrokenApi.Api()));
+        const mockMiddleware = jest.fn();
+        const v1_endpoint = new FunctionCompositeFactory(BrokenApi.Api())
+            .use((_ctx, next) => { mockMiddleware(); return next(); });
+
+        const v1 = wrapEndpoint(v1_endpoint);
         const v1_foo = getNestedFunction(v1, 'foo');
 
         it('throws not found – arg is null', async () => {
@@ -35,6 +66,10 @@ describe('broken api', () => {
             await expect(
                 v1_foo(1)
             ).rejects.toThrowError('Not found');
+        });
+
+        it('mock has been called', () => {
+            expect(mockMiddleware).toBeCalledTimes(3);
         });
     });
 
