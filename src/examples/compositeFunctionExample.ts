@@ -18,6 +18,18 @@ export namespace ExampleEndpoint {
     };
 
     export const v1 = createCompositionExport(new FunctionComposite(api_v1, 'example', 'v1'));
+
+    const api_v2 = {
+        zero: spec<string, string>(),
+        n1: {
+            h1: spec<string, string>(),
+            n2: {
+                h2: spec<string, string>(),
+            },
+        },
+    };
+
+    export const v2 = createCompositionExport(new FunctionComposite(api_v2, 'example', 'v2'));
 }
 
 export namespace Client {
@@ -69,7 +81,7 @@ export namespace Server {
         // implementation
         const exampleFunction = SpecTo.Function(ExampleEndpoint.v1.example, async (data, ctx) => {
             if (!data?.id) {
-                throw AppHttpError.InvalidArguments();
+                throw AppHttpError.InvalidArguments({ name: 'id' });
             }
             if (!ctx.data?.currentUser) {
                 throw new Error('Middlewares did not run');
@@ -89,35 +101,50 @@ export namespace Server {
 
     export namespace ApiRoot {
         // create api root endpoint handler with global middlewares
-        export const Example = new FunctionCompositeFactory(ExampleEndpoint.v1(), CommonMiddlewares.CurrentUserContext.Default);
+        export const ExampleV1 = new FunctionCompositeFactory(ExampleEndpoint.v1(), CommonMiddlewares.CurrentUserContext.Default);
 
         // populate spec middlewares in various ways
-        Example.handlers.exampleAnon.useFunction(async (data) => `${data}`);
+        ExampleV1.handlers.useAuth();
 
-        Middleware.aggregate(Example.handlers.example, Example.handlers.namespace)
-            .useAuth()
+        ExampleV1.handlers.exampleAnon
+            .skipParentMiddlewares()
+            .useFunction(async (data) => `${data}`);
+
+        Middleware.aggregate(ExampleV1.handlers.example, ExampleV1.handlers.namespace)
             .useContextPopulist(CommonMiddlewares.CurrentUserContext.Middleware);
 
-        Example.handlers.example.use(SubModule.exampleHandler.currentChain);
+        ExampleV1.handlers.example.use(SubModule.exampleHandler.currentChain);
 
-        Example.handlers.namespace.nested
+        ExampleV1.handlers.namespace.nested
             .useFunction(SubModule.nestedFunction);
 
-        Example.handlers.namespace.inner['double-nested']
+        ExampleV1.handlers.namespace.inner['double-nested']
             .useFunction(async (input) => ({ out: (input.in || '') + '_kek' }));
 
         const m0 = new Middleware<string, string, string>().use(async (ctx, next) => { ctx.data = ctx.input + '_m0'; await next(); });
         const m1 = new Middleware<string, string, string>().use(Middleware.wrapHandler(async (ctx: EndpointContext<string>) => { ctx.data = ctx.data + '_m1'; }));
-        const m2 = new Middleware<string, string, string>().useFunction(async (_data, ctx: EndpointContext<string>) => { return ctx.data + '_m2'; });
+        const m2 = new Middleware<string, string, string>().useFunction(async (data, ctx: EndpointContext<string>) => { return (ctx.data || data) + '_m2'; });
 
-        Example.handlers.middlewaresCheck
+        ExampleV1.handlers.middlewaresCheck
             .mergeContext(null as string)
             .use(Middleware.aggregate(m0, m1, m2).currentChain);
+
+
+        export const ExampleV2 = new FunctionCompositeFactory(ExampleEndpoint.v2(), null as string);
+
+        ExampleV2.handlers.useAuth();
+        ExampleV2.handlers.zero.use(m2.currentChain);
+
+        ExampleV2.handlers.n1.skipParentMiddlewares();
+        ExampleV2.handlers.n1.h1.use(m2.currentChain);
+
+        ExampleV2.handlers.n1.n2.useAuth();
+        ExampleV2.handlers.n1.n2.h2.use(m2.currentChain);
     }
 
     export namespace ServerRoot {
         export const ServerEndpoints = { };
 
-        IFirebaseFunction.addTo(ServerEndpoints, true, ApiRoot.Example);
+        IFirebaseFunction.addTo(ServerEndpoints, true, ApiRoot.ExampleV1);
     }
 }

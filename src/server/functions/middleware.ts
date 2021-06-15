@@ -14,11 +14,21 @@ export interface IMiddleware<TArg, TResult, TContext extends { } = never> {
     mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): IMiddleware<TArg, TResult, Partial<TContext & C>>;
 }
 
+export interface IMiddlewareChild<TArg, TResult, TContext extends { } = never> extends IMiddleware<TArg, TResult, TContext> {
+    readonly isSkipParents: boolean;
+
+    skipParentMiddlewares(): this;
+}
+
 export class Middleware<TArg, TResult, TContext extends { } = never> implements IMiddleware<TArg, TResult, TContext> {
     private _chain: EndpointHandler<TArg, TResult, TContext> = null;
 
     public get isEmpty() { return this._chain == null; }
     public get currentChain() { return this._chain; }
+
+    constructor(other?: IMiddleware<TArg, TResult, TContext>) {
+        this._chain = other ? other.currentChain : null;
+    }
 
     public async execute(arg: TArg, endpointContext: EndpointContext<TContext>): Promise<TResult> {
         if (!this._chain) {
@@ -64,6 +74,17 @@ export class Middleware<TArg, TResult, TContext extends { } = never> implements 
     }
 
     mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): Middleware<TArg, TResult, Partial<TContext & C>> {
+        return this;
+    }
+}
+
+export class MiddlewareChild<TArg, TResult, TContext extends { } = never> extends Middleware<TArg, TResult, TContext> implements IMiddlewareChild<TArg, TResult, TContext> {
+    private _skipParents = false;
+
+    public get isSkipParents(): boolean { return this._skipParents; }
+
+    skipParentMiddlewares(value = true): this {
+        this._skipParents = value;
         return this;
     }
 }
@@ -131,6 +152,10 @@ export namespace Middleware {
     }
 
     export function safeNext<A, R, C = never>(h: EndpointHandler<A, R, C>, name?: string): EndpointHandler<A, R, C> {
+        if (!h) {
+            throw new Error('Null argument');
+        }
+
         if (!EnableSafeMiddlewareNext || (h as any)._safeNext) {
             return h;
         }

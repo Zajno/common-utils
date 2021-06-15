@@ -22,7 +22,7 @@ describe('broken api', () => {
         it('throws not found – arg is null', async () => {
             await expect(
                 v1(null)
-            ).rejects.toThrowError('Invalid arguments');
+            ).rejects.toThrowError('Expected fields: input');
         });
 
         it('throws not found – arg is empty object', async () => {

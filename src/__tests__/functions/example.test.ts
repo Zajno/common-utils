@@ -6,12 +6,12 @@ import AppHttpError from '../../server/utils/AppHttpError';
 RepoErrorAdapterConfig.DisableErrorLogging = true;
 
 describe('Function API', () => {
-    const Endpoint = wrapEndpoint(Example.Server.ApiRoot.Example);
+    const Endpoint = wrapEndpoint(Example.Server.ApiRoot.ExampleV1);
 
     const ctx: EndpointTestContext = { auth: { uid: 'uid' } };
 
     it('just compiles LOL', () => expect(Endpoint).toBeTruthy());
-    it('fails without auth', async () => {
+    it('fails with no auth', async () => {
         await expect(
             Endpoint({ example: null }),
         ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated);
@@ -37,7 +37,7 @@ describe('Function API', () => {
     });
 
     const ExampleAnonFunc = getNestedFunction(Endpoint, 'exampleAnon');
-    it('runs anon', async () => {
+    it('runs anon (skipped parent middlewares)', async () => {
         await expect(
             ExampleAnonFunc(123)
         ).resolves.toEqual('123');
@@ -69,5 +69,43 @@ describe('Function API', () => {
 
     const ExampleMiddlewareCheck = getNestedFunction(Endpoint, 'middlewaresCheck');
 
-    it('correctly applies middlewares', () => expect(ExampleMiddlewareCheck('lol')).resolves.toEqual('lol_m0_m1_m2'));
+    it('correctly applies middlewares', () => expect(
+        ExampleMiddlewareCheck('lol', ctx)
+    ).resolves.toEqual('lol_m0_m1_m2'));
+
+    describe('partial handlers', () => {
+
+        const v2 = wrapEndpoint(Example.Server.ApiRoot.ExampleV2);
+        describe('lvl 0', () => {
+            const v2_0 = getNestedFunction(v2, 'zero');
+
+            it('requires auth', () => expect(
+                v2_0('123')
+            ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated));
+
+            it('results', () => expect(
+                v2_0('123', ctx)
+            ).resolves.toEqual('123_m2'));
+        });
+
+        const v2_n1 = getNestedFunction(v2, 'n1');
+        describe('lvl 1', () => {
+            const v2_h1 = getNestedFunction(v2_n1, 'h1');
+            it('results (no auth)', () => expect(
+                v2_h1('123')
+            ).resolves.toEqual('123_m2'));
+        });
+
+        describe('lvl 2', () => {
+            const v2_n2 = getNestedFunction(v2_n1, 'n2');
+            const v2_h2 = getNestedFunction(v2_n2, 'h2');
+            it('requires auth', () => expect(
+                v2_h2('123')
+            ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated));
+            it('results', () => expect(
+                v2_h2('123', ctx)
+            ).resolves.toEqual('123_m2'));
+        });
+
+    });
 });
