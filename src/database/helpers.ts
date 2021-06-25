@@ -197,13 +197,7 @@ export async function documentSnapshot<T extends IdentAny>(
 }
 
 function getQueryPath(q: Query, debugName: string = null) {
-    const dn = debugName || q.debugName;
-    const prefix = dn ? `[${dn}] ` : '';
-
-    return prefix + (
-        (q as CollectionReference).path
-        || '<?path?>'
-    );
+    return debugName || q.debugName || (q as CollectionReference).path || `<${typeof q} ${q.constructor?.name}>`;
 }
 
 export function queryWhere<T, K extends (keyof T & string)>(q: Query<T>, key: K | string, op: FirebaseClient.firestore.WhereFilterOp, value: any): Query<T> {
