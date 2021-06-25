@@ -42,12 +42,12 @@ export function serverOnly(provider: DBProvider, err = new Error('This method is
 }
 
 let queryCounter = 0;
-const logQueryCount = <T = DocumentData>(q: Query<T>, s: QuerySnapshot<T>, sub: boolean) => LOG_DOCS_COUNT && logger.log(
+const logQueryCount = <T = DocumentData>(q: Query<T>, s: QuerySnapshot<T>, sub: boolean, name?: string) => LOG_DOCS_COUNT && logger.log(
     '[Firestore] ===> querySnapshot',
     sub ? '(SUB)' : '',
     s.size,
     (queryCounter += s.size),
-    getQueryPath(q),
+    getQueryPath(q, name),
 );
 
 export function querySnapshot<T extends IdentAny>(db: DBProvider, query: Query<T>): Promise<T[]>;
@@ -66,6 +66,7 @@ export async function querySnapshot<T extends IdentAny>(
     query: Query<T>,
     cb: QuerySnapshotCallback<T> = null,
     converter: QuerySnapshotConverterCallback<T> = null,
+    debugName?: string,
 ) {
     const convertSnapshots = (s: QuerySnapshot<T>): T[] => {
         const docs: DocumentSnapshot<T>[] = s.docs;
@@ -88,7 +89,7 @@ export async function querySnapshot<T extends IdentAny>(
             const unsubscribe = query
                 .onSnapshot(async (snapshot: QuerySnapshot<T>) => {
                     try {
-                        logQueryCount(query, snapshot, true);
+                        logQueryCount(query, snapshot, true, debugName);
 
                         const items = convertSnapshots(snapshot);
                         await cb(items);
@@ -115,7 +116,7 @@ export async function querySnapshot<T extends IdentAny>(
         return res;
     } else {
         const snapshot = await query.get();
-        logQueryCount(query, snapshot, false);
+        logQueryCount(query, snapshot, false, debugName);
 
         return convertSnapshots(snapshot);
     }
@@ -195,10 +196,14 @@ export async function documentSnapshot<T extends IdentAny>(
     }
 }
 
-function getQueryPath(q: Query, forceString = false) {
-    return (q as CollectionReference).path
-        || (forceString ? (q._queryObj && JSON.stringify(q._queryObj)) : q._queryObj)
-        || (forceString ? '<path>' : q);
+function getQueryPath(q: Query, debugName: string = null) {
+    const prefix = debugName ? `[${debugName}] ` : '';
+
+    return prefix + (
+        (q as CollectionReference).path
+        || debugName
+        || '<?path?>'
+    );
 }
 
 export function queryWhere<T, K extends (keyof T & string)>(q: Query<T>, key: K | string, op: FirebaseClient.firestore.WhereFilterOp, value: any): Query<T> {
