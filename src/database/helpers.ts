@@ -197,11 +197,11 @@ export async function documentSnapshot<T extends IdentAny>(
 }
 
 function getQueryPath(q: Query, debugName: string = null) {
-    const prefix = debugName ? `[${debugName}] ` : '';
+    const dn = debugName || q.debugName;
+    const prefix = dn ? `[${dn}] ` : '';
 
     return prefix + (
         (q as CollectionReference).path
-        || debugName
         || '<?path?>'
     );
 }
