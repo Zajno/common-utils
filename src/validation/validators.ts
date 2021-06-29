@@ -22,8 +22,8 @@ export const ValidatorsRegExps = {
     expiryDateCard: /^\d+$/,
     cvv: /^\d+$/,
     // eslint-disable-next-line no-useless-escape
-    website: /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
-    linkedin: /^(https?:\/\/.*)?linkedin\.com\/.*$/i,
+    website: /^(https?:\/\/)?([a-z0-9]+(-?[a-z0-9]+)*\.)+[a-z]{2,10}(:[0-9]{1,5})?(\/.*)?$/i,
+    linkedin: /^(https?:\/\/)?([a-z]+\d*[a-z]*\.)?linkedin\.com\/.*$/i,
 };
 
 export const Validators = {
