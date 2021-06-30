@@ -35,7 +35,7 @@ export abstract class ValidatableViewModel {
         }
 
         try {
-            const valid = await this._validator(this.valueToValidate.trim());
+            const valid = await this._validator((this.valueToValidate ?? '').trim());
             this._validationError = valid === ValidationErrors.None
                 ? null
                 : new ValidationError('Unknown error', valid);
