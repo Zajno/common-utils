@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
     "@zajno/common": "^1.1.6",
     "@zajno/eslint-config": "^1.1.2",
     "eslint": "^7.29.0",
-    "firebase": "^8.6",
+    "firebase": "8.6.5",
     "firebase-admin": "^9.10.0",
     "firebase-functions": "^3.14.1",
     "firebase-functions-test": "^0.3.0",

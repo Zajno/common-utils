@@ -58,7 +58,6 @@ export function initializeFirebase(settings: FirebaseSettings) {
 }
 
 const auth = new Lazy(() => {
-    require('firebase/auth');
     const auth = instance.auth();
     if (Settings.authEmulator?.url) {
         logger.log('Firebase Auth will use emulator:', Settings.authEmulator.url);
@@ -68,8 +67,6 @@ const auth = new Lazy(() => {
 });
 
 const functions = new Lazy(() => {
-    require('firebase/functions');
-
     const fns = instance.functions() as ReturnType<typeof firebase.functions> & {
         create<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>): FunctionFactory<TArg, TResult>;
     };
@@ -89,8 +86,6 @@ const functions = new Lazy(() => {
 });
 
 const database = new Lazy<ClientFirestore>(() => {
-    require('firebase/firestore');
-
     const db = instance.firestore() as ClientFirestore;
 
     if (Settings.firestore) {
@@ -106,7 +101,6 @@ const database = new Lazy<ClientFirestore>(() => {
 });
 
 const realtimeDatabase = new Lazy(() => {
-    require('firebase/database');
 
     const rdb = instance.database();
 
@@ -121,8 +115,6 @@ const realtimeDatabase = new Lazy(() => {
 });
 
 const storage = new Lazy(() => {
-    require('firebase/storage');
-
     const storageInstance = instance.storage();
 
     const emulator = Settings.storageEmulator;
