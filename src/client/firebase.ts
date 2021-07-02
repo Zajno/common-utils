@@ -19,6 +19,7 @@ const Settings = {
     firestore: null as Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
     realtimeDatabaseEmulator: null as { url: string },
     authEmulator: null as { url: string },
+    storageEmulator: null as { url: string },
 };
 
 export type FirebaseSettings = Partial<typeof Settings> & {
@@ -121,7 +122,17 @@ const realtimeDatabase = new Lazy(() => {
 
 const storage = new Lazy(() => {
     require('firebase/storage');
-    return instance.storage();
+
+    const storageInstance = instance.storage();
+
+    const emulator = Settings.storageEmulator;
+    if (emulator?.url) {
+        const { hostname, port } = new URL(emulator.url);
+        logger.log('Firebase Storage will use emulator:', emulator.url, '=>', hostname, port);
+        storageInstance.useEmulator(hostname, +port);
+    }
+
+    return storageInstance;
 });
 
 const wrapper = {
