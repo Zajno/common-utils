@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "1.1.6",
+  "version": "1.1.8",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
   "scripts": {
     "build": "rm -rf ./lib && tsc",
     "build:w": "yarn build --watch",
-    "push:local": "yalc push --replace --update",
+    "publish:local": "yalc push --replace --update",
     "prepare": "yarn build && yarn lint && yarn test",
     "postinstall": "yarn build",
     "lint": "eslint \"src/**/*.ts?(x)\"",

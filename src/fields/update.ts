@@ -29,3 +29,36 @@ export function updateFieldExtended<T>(
     return changed;
 
 }
+
+export function updateArray<T extends string>(current: T[] | null, updated: T[]): { changed: number, result: T[] } {
+    if (!updated) {
+        return { changed: 0, result: current };
+    }
+
+    let changed = 0;
+    const result = current || [];
+
+    // remove all missing elements
+    for (let i = 0; i < result.length; ++i) {
+        if (!updated.includes(result[i])) {
+            result.splice(i, 1);
+            ++changed;
+            --i;
+        }
+    }
+
+    // add all new elements
+    updated.forEach(i => {
+        if (!result.includes(i)) {
+            result.push(i);
+            ++changed;
+        }
+    });
+
+    result.sort();
+
+    return {
+        result,
+        changed,
+    };
+}
