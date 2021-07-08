@@ -44,12 +44,13 @@ export namespace transferFields {
 
     export function changed<T>(
         source: T,
+        compare: T,
         destination: Partial<T>,
         ...fields: (keyof T)[]
     ): number {
         return transferFields(
             source,
-            (f, v) => v !== undefined && source[f] !== destination[f],
+            (f, v) => v !== undefined && source[f] !== compare[f],
             destination,
             ...fields
         );
