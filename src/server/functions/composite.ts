@@ -7,7 +7,7 @@ import { EndpointFunction, HandlerContext } from './interface';
 
 type MiddlewareMapInner<T extends CompositeEndpointInfo, TContext = any> = MiddlewaresMap<T, TContext> & IMiddlewareChild<EndpointArg<T>, EndpointResult<T>, TContext>;
 
-type MiddlewaresMap<T extends CompositeEndpointInfo, TContext = any> = IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> & {
+export type MiddlewaresMap<T extends CompositeEndpointInfo, TContext = any> = IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> & {
     readonly [P in keyof T]: T[P] extends CompositeEndpointInfo
         ? MiddlewareMapInner<T[P], TContext>
         : IMiddlewareChild<ArgExtract<T, P>, ResExtract<T, P>, TContext>;

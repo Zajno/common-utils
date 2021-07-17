@@ -138,8 +138,12 @@ export namespace Server {
         ExampleV2.handlers.n1.skipParentMiddlewares();
         ExampleV2.handlers.n1.h1.use(m2.currentChain);
 
-        ExampleV2.handlers.n1.n2.useAuth();
-        ExampleV2.handlers.n1.n2.h2.use(m2.currentChain);
+        const n2Filler = SpecTo.partialEndpoint(ExampleEndpoint.v2().info.n1.n2, n2 => {
+            n2.useAuth();
+            n2.h2.use(m2.currentChain);
+        });
+
+        n2Filler(ExampleV2.handlers.n1.n2);
     }
 
     export namespace ServerRoot {
