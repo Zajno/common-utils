@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -17,7 +17,9 @@
   },
   "author": "Zajno",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@google-cloud/pubsub": "^2.16.1"
+  },
   "devDependencies": {
     "@google-cloud/pubsub": "^2.16.1",
     "@google-cloud/storage": "^5.3.0",
