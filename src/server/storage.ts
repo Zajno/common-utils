@@ -1,6 +1,7 @@
 import logger from '@zajno/common/lib/logger';
 import { AppConfig } from '../config';
 import Admin from './admin';
+import { Bucket } from '@google-cloud/storage';
 
 const storage = Admin.storage();
 
@@ -8,7 +9,7 @@ export const bucketName = AppConfig.value
     ? AppConfig.value.storageBucket
     : storage.bucket().name;
 
-export const bucket = storage.bucket(bucketName);
+export const bucket: Bucket = storage.bucket(bucketName);
 
 export default storage;
 
