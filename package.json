@@ -17,7 +17,9 @@
   },
   "author": "Zajno",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@google-cloud/pubsub": "^2.16.1"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.23",
     "@types/node": "^15.14.0",
