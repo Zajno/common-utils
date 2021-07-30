@@ -1,11 +1,11 @@
-import { PubSub } from '../../server/pubsub/pubsub';
+import { PubSub } from '../../server/pubsub/index';
 
 describe('PubSub instance', () => {
     it('create trigger for a topic', () => {
         expect(() => {
-            const pubsub = new PubSub.TopicDefinition('test');
+            const pubsub = new PubSub.Topic('test');
 
-            pubsub.createTrigger(() => { return; });
+            pubsub.triggerTopicHandler({});
         }).not.toThrow();
     });
 });
