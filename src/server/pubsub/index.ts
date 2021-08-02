@@ -8,8 +8,15 @@ import { Event } from '@zajno/common/lib/event';
 
 export namespace PubSub {
     export const topicCloudFunctions = {}; // values
+    export let isCloudFunctionsInitialized: boolean = false;
 
     const Instance: CloudPubsSub = new CloudPubsSub({ projectId: AppConfig.value?.appId });
+
+    export const getCloudFunctions = () => {
+        isCloudFunctionsInitialized = true;
+
+        return topicCloudFunctions;
+    };
 
     export class Topic<TData extends Object> {
         private readonly _onHandlerCalled = new Event<TData>();
@@ -25,6 +32,10 @@ export namespace PubSub {
         public get onHandlerCalled() { return this._onHandlerCalled.expose(); }
 
         private topicInitialize = () => {
+            if (isCloudFunctionsInitialized) {
+                throw new Error('CloudFunctions initialized! Topic don\'t created');
+            }
+
             const createdTopic: TopicBuilder = this.createTopic();
 
             this.setTopicHandler(createdTopic);
