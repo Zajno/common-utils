@@ -5,7 +5,7 @@ describe('PubSub instance', () => {
         expect(() => {
             const pubsub = new PubSub.Topic('test');
 
-            pubsub.triggerTopicHandler({});
+            pubsub.publish({});
         }).not.toThrow();
     });
 });

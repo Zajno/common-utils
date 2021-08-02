@@ -8,7 +8,7 @@ import { Event } from '@zajno/common/lib/event';
 
 export namespace PubSub {
     export const topicCloudFunctions = {}; // values
-    export let isCloudFunctionsInitialized: boolean = false;
+    let isCloudFunctionsInitialized: boolean = false;
 
     const Instance: CloudPubsSub = new CloudPubsSub({ projectId: AppConfig.value?.appId });
 
@@ -19,7 +19,7 @@ export namespace PubSub {
     };
 
     export class Topic<TData extends Object> {
-        private readonly _onHandlerCalled = new Event<TData>();
+        private readonly _handler = new Event<TData>();
 
         private _logger: ILogger = null;
 
@@ -29,11 +29,12 @@ export namespace PubSub {
             this.topicInitialize();
         }
 
-        public get onHandlerCalled() { return this._onHandlerCalled.expose(); }
+        public get handler() { return this._handler.expose(); }
 
         private topicInitialize = () => {
             if (isCloudFunctionsInitialized) {
-                throw new Error('CloudFunctions initialized! Topic don\'t created');
+                this._logger.warn(`Topics has been exported already so publishing to this one (${this.name}) will be no-op`);
+                return;
             }
 
             const createdTopic: TopicBuilder = this.createTopic();
@@ -57,7 +58,7 @@ export namespace PubSub {
                 const data = message.json as TData;
 
                 try {
-                    await this._onHandlerCalled.triggerAsync(data);
+                    await this._handler.triggerAsync(data);
                 } catch (e) {
                     this._logger.error('Failed to execute trigger, error: ', e);
                 }
@@ -71,7 +72,7 @@ export namespace PubSub {
             topicCloudFunctions[this.name] = cloudFunction;
         };
 
-        async triggerTopicHandler (data: TData) {
+        async publish (data: TData) {
             if (!topicCloudFunctions[this.name]) {
                 throw new Error('Trigger unsettled callback. Trigger canceled');
             }
