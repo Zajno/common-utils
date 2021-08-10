@@ -6,7 +6,7 @@ export const ValidatorsRegExps = {
     // eslint-disable-next-line no-useless-escape
     name: /^[a-z,\.'-]+( +[a-z,\.'-]+)+$/i,
     englishLetters: /^([a-zA-Z\s]+)$/,
-    email: /^([a-zA-Z0-9_.-\\+])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
+    email: /^([a-zA-Z0-9_.\-\\+])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
 
     // At least one English letter, (?=.*?[a-zA-Z])
     // At least one digit, (?=.*?[0-9])
