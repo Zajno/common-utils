@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
   "files": [
     "src/*",
     "tsconfig.json",
+    "LICENSE",
     "!.DS_Store",
     "!**/__tests__/**/*"
   ],
