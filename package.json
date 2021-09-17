@@ -21,6 +21,7 @@
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
   },
+  "dependencies": {},
   "devDependencies": {
     "@types/faker": "^5.5.8",
     "@types/jest": "^26.0.22",
