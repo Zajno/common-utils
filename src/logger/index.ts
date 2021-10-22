@@ -38,7 +38,7 @@ createdLoggers.push(logger);
 
 export function createLogger(name: string, forceDisable = false): ILogger {
     const result = _create(name, forceDisable);
-    const customLogger = new CustomLogger(result, name, forceDisable);
+    const customLogger = new CustomLogger(result, name, !forceDisable);
     createdLoggers.push(customLogger);
     return customLogger;
 }
