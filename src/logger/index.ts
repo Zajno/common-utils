@@ -1,5 +1,5 @@
-import { ILogger, ILoggerSwitchable, LoggerFunction } from './abstractions';
-import { ConsoleLogger } from './console';
+import { ILogger, LoggerFunction } from './abstractions';
+import { ConsoleLogger, CustomLogger } from './console';
 
 export { NamedLogger } from './named';
 export { ILogger, LoggerFunction };
@@ -7,39 +7,53 @@ export { ConsoleLogger };
 
 // TBD Introduce more logger types ?
 export type LoggerTypes = 'console';
+export type LoggerFactory = ((name?: string, enabled?: boolean) => ILogger);
+let Mode: LoggerTypes | false | LoggerFactory = process.env.COMMON_UTILS_LOGGER as LoggerTypes || false;
 
-let Enabled: LoggerTypes | false = process.env.COMMON_UTILS_LOGGER as LoggerTypes || false;
-
-const createdLoggers: ILoggerSwitchable[] = [];
+const createdLoggers: CustomLogger[] = [];
 
 function _create(name: string, forceDisable: boolean) {
-    switch (Enabled) {
+
+    switch (Mode) {
         case 'console': {
             return new ConsoleLogger(name, !forceDisable);
         }
 
+        case false: {
+            return new CustomLogger(null);
+        }
+
         default: {
-            return new ConsoleLogger(name, false);
+            if (typeof Mode === 'function') {
+                return Mode(name, !forceDisable);
+            }
+
+            return undefined;
         }
     }
 }
 
-export function createLogger(name = '', forceDisable = false): ILogger {
-    const result = _create(name, forceDisable);
-    createdLoggers.push(result);
-    return result;
-}
-
-const logger = new ConsoleLogger('', !!Enabled);
+const logger = new CustomLogger(null);
 createdLoggers.push(logger);
 
-export function setEnabled(enabled: LoggerTypes | false) {
-    Enabled = enabled;
+export function createLogger(name: string, forceDisable = false): ILogger {
+    const result = _create(name, forceDisable);
+    const customLogger = new CustomLogger(result, name, forceDisable);
+    createdLoggers.push(customLogger);
+    return customLogger;
+}
 
-    if (!Enabled) {
+export function setMode(mode: typeof Mode) {
+    if (Mode === mode) {
+        return;
+    }
+
+    Mode = mode;
+
+    if (!Mode) {
         createdLoggers.forEach(l => l.disable());
     } else {
-        createdLoggers.forEach(l => l.enable());
+        createdLoggers.forEach(l => l.logger = _create(l.name, false));
     }
 }
 
