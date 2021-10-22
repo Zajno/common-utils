@@ -17,43 +17,43 @@ describe('math/arrays', () => {
 
         expect(() => arrays.arrayCompare([1, 2, 3], false, null)).toThrow();
 
-        expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i > t)).toEqual(3);
-        expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i < t)).toEqual(1);
+        expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i > t)).toBe(3);
+        expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i < t)).toBe(1);
 
-        expect(arrays.arrayCompare([-1, 2, -3], true, (i, t) => i > t)).toEqual(3);
+        expect(arrays.arrayCompare([-1, 2, -3], true, (i, t) => i > t)).toBe(3);
         expect(arrays.arrayCompare([-1, 2, -3], true, (i, t) => i < t)).toEqual(-1);
     });
 
     it('arrayMax', () => {
         expect(arrays.arrayMax([], false)).toBeNull();
-        expect(arrays.arrayMax([1, 2, 3], false)).toEqual(3);
-        expect(arrays.arrayMax([-1, 2, -3], true)).toEqual(3);
+        expect(arrays.arrayMax([1, 2, 3], false)).toBe(3);
+        expect(arrays.arrayMax([-1, 2, -3], true)).toBe(3);
     });
 
     it('arrayMin', () => {
         expect(arrays.arrayMin([], false)).toBeNull();
-        expect(arrays.arrayMin([1, 2, 3], false)).toEqual(1);
+        expect(arrays.arrayMin([1, 2, 3], false)).toBe(1);
         expect(arrays.arrayMin([-1, 2, -3], true)).toEqual(-1);
     });
 
     it('arrayAverage', () => {
-        expect(arrays.arrayAverage(null)).toEqual(0);
-        expect(arrays.arrayAverage([])).toEqual(0);
-        expect(arrays.arrayAverage([1, 2, 3])).toEqual(2);
+        expect(arrays.arrayAverage(null)).toBe(0);
+        expect(arrays.arrayAverage([])).toBe(0);
+        expect(arrays.arrayAverage([1, 2, 3])).toBe(2);
         expect(arrays.arrayAverage([-2, 2, -3])).toEqual(-1);
-        expect(arrays.arrayAverage([-1, 2, -3], true)).toEqual(2);
+        expect(arrays.arrayAverage([-1, 2, -3], true)).toBe(2);
     });
 
     it('arrayCount', () => {
-        expect(arrays.arrayCount(null, null)).toEqual(0);
-        expect(arrays.arrayCount([], null)).toEqual(0);
+        expect(arrays.arrayCount(null, null)).toBe(0);
+        expect(arrays.arrayCount([], null)).toBe(0);
 
         expect(() => arrays.arrayCount([1, 2, 3], null)).toThrow();
-        expect(arrays.arrayCount([1, 2, 3], i => i >= 2)).toEqual(2);
+        expect(arrays.arrayCount([1, 2, 3], i => i >= 2)).toBe(2);
 
         type T = { a: number };
         const tArr: T[] = [ { a: 1 }, { a: 2 }, { a: 3 } ];
-        expect(arrays.arrayCount(tArr, i => i.a >= 2)).toEqual(2);
+        expect(arrays.arrayCount(tArr, i => i.a >= 2)).toBe(2);
     });
 
     it('arrayFirstResult', () => {
@@ -61,7 +61,7 @@ describe('math/arrays', () => {
         expect(arrays.arrayFirstResult([], null)).toBeFalsy();
 
         expect(() => arrays.arrayFirstResult([1, 2, 3], null)).toThrow();
-        expect(arrays.arrayFirstResult([1, 2, 3], i => i == 2 ? 'pass' : false)).toEqual('pass');
+        expect(arrays.arrayFirstResult([1, 2, 3], i => i == 2 ? 'pass' : false)).toBe('pass');
     });
 
     it('normalize', () => {
@@ -75,7 +75,7 @@ describe('math/arrays', () => {
         expect(() => arrays.randomArrayItem(null)).toThrow();
         expect(arrays.randomArrayItem([])).toBeNull();
 
-        expect(arrays.randomArrayItem([1])).toEqual(1);
+        expect(arrays.randomArrayItem([1])).toBe(1);
         expect([1, 2, 3]).toContain(arrays.randomArrayItem([1, 2, 3]));
 
         const arr1 = [1, 2, 3], arr2 = arr1.slice();
@@ -135,9 +135,9 @@ describe('math/arrays', () => {
     it('findIndexLeast', () => {
         expect(() => arrays.findIndexLeast(0, null)).toThrow();
 
-        expect(arrays.findIndexLeast(2, [3, 2, 1])).toEqual(0);
-        expect(arrays.findIndexLeast(2, [3, 2, 1], true)).toEqual(2);
-        expect(arrays.findIndexLeast(2, [1, 2, 3])).toEqual(2);
+        expect(arrays.findIndexLeast(2, [3, 2, 1])).toBe(0);
+        expect(arrays.findIndexLeast(2, [3, 2, 1], true)).toBe(2);
+        expect(arrays.findIndexLeast(2, [1, 2, 3])).toBe(2);
 
     });
 });
