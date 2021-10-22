@@ -57,4 +57,4 @@ export function setMode(mode: typeof Mode) {
     }
 }
 
-export default logger;
+export default logger as ILogger;
