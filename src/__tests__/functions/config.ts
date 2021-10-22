@@ -18,3 +18,5 @@ export function getNestedFunction<A, R, K extends (keyof A & keyof R)>(fn: Endpo
         return result && result[key] as R[K];
     };
 }
+
+afterAll(() => FFTest.cleanup());
