@@ -17,8 +17,6 @@ export enum ValidationErrors {
     EmailIsInUse,
     FirstName,
     LastName,
-    Occupation,
-    Goal,
     Website,
     Linkedin,
 }

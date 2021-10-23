@@ -32,8 +32,6 @@ export const Validators = {
 
     firstName: <T = string>(val: T) => val ? ValidationErrors.None : ValidationErrors.FirstName,
     lastName: <T = string>(val: T) => val ? ValidationErrors.None : ValidationErrors.LastName,
-    occupation: <T = string>(val: T) => val ? ValidationErrors.None : ValidationErrors.Occupation,
-    goal: <T = string>(val: T) => val ? ValidationErrors.None : ValidationErrors.Goal,
 
     fullName: (val: string) => ValidatorsRegExps.name.test(val.trim()) ? ValidationErrors.None : ValidationErrors.InvalidNameFormat,
     onlyEnglish: (val: string) => ValidatorsRegExps.englishLetters.test(val) ? ValidationErrors.None : ValidationErrors.OnlyEnglishLetters,

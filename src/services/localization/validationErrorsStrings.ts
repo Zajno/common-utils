@@ -18,8 +18,6 @@ export default function Create(strings: StringsShape): ValidationErrorsStrings {
 
         [ValidationErrors.FirstName]: strings.Validation.FirstName,
         [ValidationErrors.LastName]: strings.Validation.LastName,
-        [ValidationErrors.Occupation]: strings.Validation.Occupation,
-        [ValidationErrors.Goal]: strings.Validation.Goal,
         [ValidationErrors.OnlyDigit]: strings.Validation.OnlyDigit,
         [ValidationErrors.Website]: strings.Validation.Website,
         [ValidationErrors.Linkedin]: strings.Validation.Linkedin,
