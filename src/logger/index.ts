@@ -1,5 +1,6 @@
 import { ILogger, LoggerFunction } from './abstractions';
-import { ConsoleLogger, CustomLogger } from './console';
+import { CONSOLE, ConsoleLogger } from './console';
+import { EMPTY_LOGGER, ProxyLogger } from './proxy';
 
 export { NamedLogger } from './named';
 export { ILogger, LoggerFunction };
@@ -7,25 +8,25 @@ export { ConsoleLogger };
 
 // TBD Introduce more logger types ?
 export type LoggerTypes = 'console';
-export type LoggerFactory = ((name?: string, enabled?: boolean) => ILogger);
+export type LoggerFactory = (() => ILogger);
+
 let Mode: LoggerTypes | false | LoggerFactory = process.env.COMMON_UTILS_LOGGER as LoggerTypes || false;
 
-const createdLoggers: CustomLogger[] = [];
+const proxies: ProxyLogger[] = [];
 
-function _create(name: string, forceDisable: boolean) {
-
+function _createImplementation(): ILogger {
     switch (Mode) {
         case 'console': {
-            return new ConsoleLogger(name, !forceDisable);
+            return CONSOLE;
         }
 
         case false: {
-            return new CustomLogger(null);
+            return EMPTY_LOGGER;
         }
 
         default: {
             if (typeof Mode === 'function') {
-                return Mode(name, !forceDisable);
+                return Mode();
             }
 
             return undefined;
@@ -33,14 +34,11 @@ function _create(name: string, forceDisable: boolean) {
     }
 }
 
-const logger = new CustomLogger(null);
-createdLoggers.push(logger);
-
 export function createLogger(name: string, forceDisable = false): ILogger {
-    const result = _create(name, forceDisable);
-    const customLogger = new CustomLogger(result, name, !forceDisable);
-    createdLoggers.push(customLogger);
-    return customLogger;
+    const result = _createImplementation();
+    const proxy = new ProxyLogger(result, name, !forceDisable);
+    proxies.push(proxy);
+    return proxy;
 }
 
 export function setMode(mode: typeof Mode) {
@@ -51,10 +49,14 @@ export function setMode(mode: typeof Mode) {
     Mode = mode;
 
     if (!Mode) {
-        createdLoggers.forEach(l => l.disable());
+        proxies.forEach(l => l.disable());
     } else {
-        createdLoggers.forEach(l => l.logger = _create(l.name, false));
+        proxies.forEach(l => l.setLogger(_createImplementation()));
     }
 }
 
-export default logger as ILogger;
+export function getMode() { return Mode; }
+
+const logger: ILogger = createLogger('', false);
+
+export default logger;

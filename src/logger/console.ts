@@ -1,26 +1,13 @@
-import { ILogger, LoggerFunction } from './abstractions';
-import { EMPTY_FUNCTION, NamedLogger } from './named';
+import { ILogger } from './abstractions';
+import { NamedLogger } from './named';
 
-const CONSOLE = console;
+export const CONSOLE: ILogger = console;
 
 export class ConsoleLogger extends NamedLogger {
 
-    protected get logFunction(): LoggerFunction { return CONSOLE.log; }
-    protected get warnFunction(): LoggerFunction { return CONSOLE.warn; }
-    protected get errorFunction(): LoggerFunction { return CONSOLE.error; }
+    protected get implementation() { return CONSOLE; }
 
     constructor(name?: string, enabled = true) {
-        super(name, enabled);
-    }
-}
-
-export class CustomLogger extends NamedLogger {
-
-    protected get logFunction(): LoggerFunction { return this.logger ? () => this.logger.log : EMPTY_FUNCTION; }
-    protected get warnFunction(): LoggerFunction { return this.logger ? () => this.logger.warn : EMPTY_FUNCTION; }
-    protected get errorFunction(): LoggerFunction { return this.logger ? () => this.logger.error : EMPTY_FUNCTION; }
-
-    constructor(public logger: ILogger, name?: string, enabled = true) {
         super(name, enabled);
     }
 }
