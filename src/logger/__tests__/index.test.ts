@@ -7,8 +7,8 @@ const CONSOLE = console;
 
 describe('#logger-tests', () => {
 
-    const customLogger: LoggerFactory = () => ({ log: CONSOLE.log, warn: CONSOLE.warn, error: CONSOLE.error });
-    const loggerMethods: ['log', 'warn', 'error'] = ['log', 'warn', 'error'];
+  const customLogger: LoggerFactory = () => ({ log: CONSOLE.log, warn: CONSOLE.warn, error: CONSOLE.error });
+  const loggerMethods = ['log', 'warn', 'error'] as const;
 
   it('use logger without mode (default logger)', () => {
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.internet.url());
@@ -30,15 +30,40 @@ describe('#logger-tests', () => {
       });
   });
 
-  it('use logger with \'false\' mode', () => {
-    const logger = createLogger(faker.random.word());
-    setMode(false);
-    const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.internet.url());
-    let iteration = 0;
+  it('use logger with runtime mode nulling', () => {
+    const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
 
+    let iteration = 0;
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
-        const methodName = loggerMethods[iteration];
+        if (iteration % 2 === 0) { setMode('console'); setMode(customLogger); setMode(false); }
+        const logger = createLogger(faker.random.word());
+        if (iteration % 2 === 1) { setMode('console'); setMode(customLogger); setMode(false); }
+
+        const methodName = loggerMethods[iteration % 3];
+        logger[methodName](textToLog);
+
+        const spyLogger = jest.spyOn(customLogger(), methodName);
+
+        expect(getMode()).toBeFalsy();
+        expect(spyLogger).not.toHaveBeenCalled();
+        ++iteration;
+    }), {
+      numRuns: loggerMethods.length * 2,
+    });
+  });
+
+  it('use logger with \'false\' mode', () => {
+    const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.internet.url());
+
+    let iteration = 0;
+    fc.assert(
+      fc.property(_textToLog, (textToLog) => {
+        if (iteration % 2 === 0) setMode(false);
+        const logger = createLogger(faker.random.word());
+        if (iteration % 2 === 1) setMode(false);
+
+        const methodName = loggerMethods[iteration % 3];
         logger[methodName](textToLog);
 
         const spyLogger = jest.spyOn(CONSOLE, methodName);
@@ -47,20 +72,21 @@ describe('#logger-tests', () => {
         expect(spyLogger).not.toHaveBeenCalled();
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
+        numRuns: loggerMethods.length * 2,
       });
   });
 
   it('use logger with \'null\' mode', () => {
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.internet.url());
+
     let iteration = 0;
-
-    const logger = createLogger(faker.random.word());
-    setMode(null);
-
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
-        const methodName = loggerMethods[iteration];
+        if (iteration % 2 === 0) setMode(null);
+        const logger = createLogger(faker.random.word());
+        if (iteration % 2 === 1) setMode(null);
+
+        const methodName = loggerMethods[iteration % 3];
         logger[methodName](textToLog);
 
         const spyLogger = jest.spyOn(CONSOLE, methodName);
@@ -69,7 +95,7 @@ describe('#logger-tests', () => {
         expect(spyLogger).not.toHaveBeenCalled();
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
+        numRuns: loggerMethods.length * 2,
       });
   });
 
@@ -77,14 +103,14 @@ describe('#logger-tests', () => {
     const loggerName = `[${faker.random.word()}]`;
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
 
-    const logger = createLogger(loggerName);
-    setMode('console');
-
     let iteration = 0;
-
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
-        const methodName = loggerMethods[iteration];
+
+        if (iteration % 2 === 0) setMode('console');
+        const logger = createLogger(loggerName);
+        if (iteration % 2 === 1) setMode('console');
+        const methodName = loggerMethods[iteration % 3];
         logger[methodName](textToLog);
 
         const spyLogger = jest.spyOn(CONSOLE, methodName);
@@ -93,7 +119,7 @@ describe('#logger-tests', () => {
         expect(spyLogger).toHaveBeenCalledWith(loggerName, textToLog);
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
+        numRuns: loggerMethods.length * 2,
       });
   });
 
@@ -101,13 +127,14 @@ describe('#logger-tests', () => {
     const loggerName = `[${faker.random.word()}]`;
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
 
-    const logger = createLogger(loggerName);
-    setMode(customLogger);
-
     let iteration = 0;
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
-        const methodName = loggerMethods[iteration];
+        if (iteration % 2 === 0) setMode(customLogger);
+        const logger = createLogger(loggerName);
+        if (iteration % 2 === 1) setMode(customLogger);
+
+        const methodName = loggerMethods[iteration % 3];
         logger[methodName](textToLog);
 
         const spyLogger = jest.spyOn(CONSOLE, methodName);
@@ -116,32 +143,8 @@ describe('#logger-tests', () => {
         expect(spyLogger).toHaveBeenCalledWith(loggerName, textToLog);
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
+        numRuns: loggerMethods.length * 2,
       });
-  });
-
-  it('use logger with runtime mode nulling', () => {
-    const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
-    const logger = createLogger(faker.random.word());
-
-    setMode('console');
-    setMode(customLogger);
-    setMode(false);
-
-    let iteration = 0;
-    fc.assert(
-      fc.property(_textToLog, (textToLog) => {
-        const methodName = loggerMethods[iteration];
-        logger[methodName](textToLog);
-
-        const spyLogger = jest.spyOn(CONSOLE, methodName);
-
-        expect(getMode()).toBeFalsy();
-        expect(spyLogger).not.toHaveBeenCalledWith();
-        ++iteration;
-    }), {
-      numRuns: loggerMethods.length,
-    });
   });
 
 });
