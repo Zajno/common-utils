@@ -177,4 +177,38 @@ describe('TransitionObserver', () => {
         expect(cbE).not.toHaveBeenCalled();
         expect(cb).not.toHaveBeenCalled();
     });
+
+    it('promising', async () => {
+
+        const store = createStore<boolean>(true);
+        const cb = jest.fn();
+
+        const to = new TransitionObserver(() => store.value)
+            .to(false)
+            .cb(cb);
+
+        const p = to.getPromise();
+
+        store.setValue(false);
+
+        await expect(p).resolves.toBeUndefined();
+        expect(cb).not.toHaveBeenCalled();
+    });
+
+    it('promising – aborting', async () => {
+
+        const store = createStore<boolean>(true);
+        const cb = jest.fn();
+
+        const to = new TransitionObserver(() => store.value)
+            .to(false)
+            .cb(cb);
+
+        const p = to.getPromise();
+
+        to.dispose();
+
+        await expect(p).rejects.toThrow(/Aborted/);
+        expect(cb).not.toHaveBeenCalled();
+    });
 });

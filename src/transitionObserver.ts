@@ -17,6 +17,9 @@ export class TransitionObserver<T> implements IDisposable {
     private _cb: (v: T) => any;
     private _fireOnce = false;
 
+    private _promise: Promise<void> = null;
+    private _promiseReject: (err: Error) => any = null;
+
     private logger: ILogger = createLogger('', true);
 
     constructor(getter?: () => T) {
@@ -72,6 +75,16 @@ export class TransitionObserver<T> implements IDisposable {
         return this;
     }
 
+    getPromise() {
+        if (!this._promise) {
+            this._promise = new Promise<void>((resolve, reject) => {
+                this._promiseReject = reject;
+                this.cb(() => this._finishPromise(resolve));
+            });
+        }
+        return this._promise;
+    }
+
     reverse() {
         return new TransitionObserver<T>(this._getter)
             .from(this._to)
@@ -87,6 +100,9 @@ export class TransitionObserver<T> implements IDisposable {
         this.logger.log(' disposing... ');
         if (this._disposer) {
             this._disposer();
+        }
+        if (this._promiseReject) {
+            this._finishPromise(this._promiseReject, new Error('TransitionObserver Aborted'));
         }
     };
 
@@ -124,4 +140,13 @@ export class TransitionObserver<T> implements IDisposable {
 
         return trigger;
     };
+
+    private _finishPromise(cb: (e?: any) => any, err?: Error) {
+        this._promise = null;
+        this._promiseReject = null;
+        this._cb = null;
+        if (cb) {
+            cb(err);
+        }
+    }
 }
