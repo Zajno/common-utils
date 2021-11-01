@@ -20,7 +20,7 @@ export class EnumStringHelper<T extends string> {
 
     valueToString(v: T): string {
         const custom = this._valuesToStrings && this._valuesToStrings[v];
-        return custom || this._obj[v];
+        return custom || v;
     }
 
     validateValue(v: string): T | null {
@@ -98,13 +98,13 @@ export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
     }
 
     contains(base: T, target: T) {
-        return (base & target) === target;
+        return this.intersection(base, target) === target;
     }
 
     combine(...values: T[]) {
         let res = 0;
         values.forEach(v => {
-            res |= v;
+            res = this.add(res as T, v);
         });
         return res;
     }
