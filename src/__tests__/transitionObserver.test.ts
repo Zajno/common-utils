@@ -178,7 +178,7 @@ describe('TransitionObserver', () => {
         expect(cb).not.toHaveBeenCalled();
     });
 
-    it('promising', async () => {
+    it('promises 2 times', async () => {
 
         const store = createStore<boolean>(true);
         const cb = jest.fn();
@@ -187,12 +187,17 @@ describe('TransitionObserver', () => {
             .to(false)
             .cb(cb);
 
-        const p = to.getPromise();
+        for (let i = 1; i <= 2; ++i) {
+            store.setValue(true);
 
-        store.setValue(false);
+            const p = to.getPromise();
 
-        await expect(p).resolves.toBeUndefined();
-        expect(cb).not.toHaveBeenCalled();
+            store.setValue(false);
+
+            await expect(p).resolves.toBe(false);
+            expect(cb).not.toHaveBeenCalled();
+            cb.mockReset();
+        }
     });
 
     it('promising – aborting', async () => {

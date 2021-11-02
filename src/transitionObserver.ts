@@ -17,8 +17,8 @@ export class TransitionObserver<T> implements IDisposable {
     private _cb: (v: T) => any;
     private _fireOnce = false;
 
-    private _promise: Promise<void> = null;
-    private _promiseReject: (err: Error) => any = null;
+    private _promise: Promise<T> = null;
+    private _promiseReject: (err?: any) => any = null;
 
     private logger: ILogger = createLogger('', true);
 
@@ -30,6 +30,9 @@ export class TransitionObserver<T> implements IDisposable {
 
     public get event(): IEvent<T> { return this._event; }
     public get currentValue() { return this._prev; }
+
+    public get isObserving() { return this._disposer != null; }
+    private get isPromising() { return this._promiseReject != null; }
 
     observe(getter: () => T) {
         this.dispose();
@@ -50,6 +53,9 @@ export class TransitionObserver<T> implements IDisposable {
     }
 
     cb(cb: (v: T) => any) {
+        if (this.isPromising) {
+            throw new Error('Cannot set callback when promise is running');
+        }
         this._cb = cb;
         return this;
     }
@@ -77,10 +83,15 @@ export class TransitionObserver<T> implements IDisposable {
 
     getPromise() {
         if (!this._promise) {
-            this._promise = new Promise<void>((resolve, reject) => {
+            if (!this.isObserving) {
+                return Promise.reject(new Error('Cannot get promise for disposed TransitionObserver'));
+            }
+
+            this._promise = new Promise<T>((resolve, reject) => {
                 this._promiseReject = reject;
-                this.cb(() => this._finishPromise(resolve));
+                this._cb = (v => this._finishPromise(resolve, v));
             });
+            this.logger.log('started a new promise...');
         }
         return this._promise;
     }
@@ -100,8 +111,9 @@ export class TransitionObserver<T> implements IDisposable {
         this.logger.log(' disposing... ');
         if (this._disposer) {
             this._disposer();
+            this._disposer = null;
         }
-        if (this._promiseReject) {
+        if (this.isPromising) {
             this._finishPromise(this._promiseReject, new Error('TransitionObserver Aborted'));
         }
     };
@@ -141,12 +153,12 @@ export class TransitionObserver<T> implements IDisposable {
         return trigger;
     };
 
-    private _finishPromise(cb: (e?: any) => any, err?: Error) {
+    private _finishPromise<T>(cb: (a?: T) => any, arg?: T) {
         this._promise = null;
         this._promiseReject = null;
         this._cb = null;
         if (cb) {
-            cb(err);
+            cb(arg);
         }
     }
 }
