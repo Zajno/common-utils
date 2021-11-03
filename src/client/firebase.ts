@@ -31,12 +31,6 @@ export type FirebaseUser = firebase.User;
 const logger = createLogger('[Firebase]');
 
 export function initializeFirebase(settings: FirebaseSettings) {
-    if (firebase.apps.length > 0) {
-        logger.warn('Skipped creating the second instance of the app');
-        return;
-    }
-
-    // logger.log('FIREBASE CONFIG', settings.config);
     if (!settings.config) {
         throw new Error('Firebase config should be present in "settings.config".');
     }
@@ -46,9 +40,18 @@ export function initializeFirebase(settings: FirebaseSettings) {
         ...settings.config,
     };
 
-    logger.log('Loading... API KEY =', firebaseConfig.apiKey);
-
     Object.assign(Settings, settings);
+
+    createApp();
+}
+
+function createApp() {
+    if (instance || firebase.apps.length > 0) {
+        logger.warn('Skipped creating the second instance of the app');
+        return;
+    }
+
+    logger.log('Loading... API KEY =', firebaseConfig.apiKey);
     logger.log('Settings:', Settings);
 
     // Initialize Firebase
@@ -150,6 +153,29 @@ export default {
         if (!instance) {
             throw new Error('Firebase: run initializeAsync before accessing Firebase instance');
         }
+
+        // TODO allow to recreate app if firebaseConfig is present?
+
         return wrapper;
+    },
+
+    async destroy() {
+        if (!instance) {
+            return;
+        }
+
+        if (database.hasValue) {
+            await database.value.terminate();
+            await database.value.clearPersistence();
+        }
+
+        [auth, functions, database, realtimeDatabase, storage].forEach(lazy => {
+            if (lazy.hasValue) {
+                lazy.reset();
+            }
+        });
+
+        await instance.delete();
+        instance = null;
     },
 };

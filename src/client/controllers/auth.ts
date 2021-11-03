@@ -5,6 +5,7 @@ import { createLogger } from '@zajno/common/lib/logger';
 import { Event } from '@zajno/common/lib/event';
 import { prepareEmail } from '@zajno/common/lib/emails';
 import IStorage from '@zajno/common/lib/abstractions/services/storage';
+import { IDisposable, Unsubscriber } from '@zajno/common/lib/unsubscriber';
 
 export { IAuthController };
 export const logger = createLogger('[Auth]');
@@ -14,7 +15,7 @@ const UserSignInEmailStorageKey = 'auth:signin:email';
 const MagicLinkReasonKey = 'auth:signin:reason';
 const PasswordResetRequestedKey = 'auth:passwordreset';
 
-export default abstract class AuthControllerBase implements IAuthController {
+export default abstract class AuthControllerBase implements IAuthController, IDisposable {
     @observable
     private _authUser: AuthUser = null;
 
@@ -33,11 +34,15 @@ export default abstract class AuthControllerBase implements IAuthController {
     @observable
     private _firstInit = true;
 
+    protected readonly _disposer = new Unsubscriber();
+
     constructor() {
         makeObservable(this);
-        Firebase.Instance.auth.onAuthStateChanged(async () => {
-            this.doInitialization(this.processAuthUser.bind(this));
-        });
+        this._disposer.add(
+            Firebase.Instance.auth.onAuthStateChanged(async () => {
+                this.doInitialization(this.processAuthUser.bind(this));
+            }),
+        );
     }
 
     get authUser(): Readonly<AuthUser> { return this._authUser; }
@@ -402,5 +407,9 @@ export default abstract class AuthControllerBase implements IAuthController {
         } finally {
             runInAction(() => this._initializing--);
         }
+    }
+
+    public dispose() {
+        this._disposer.dispose();
     }
 }
