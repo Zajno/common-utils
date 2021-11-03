@@ -81,7 +81,7 @@ export class TransitionObserver<T> implements IDisposable {
         return this;
     }
 
-    getPromise() {
+    getPromise(timeout: number = null) {
         if (!this._promise) {
             if (!this.isObserving) {
                 return Promise.reject(new Error('Cannot get promise for disposed TransitionObserver'));
@@ -89,7 +89,19 @@ export class TransitionObserver<T> implements IDisposable {
 
             this._promise = new Promise<T>((resolve, reject) => {
                 this._promiseReject = reject;
-                this._cb = (v => this._finishPromise(resolve, v));
+
+                let timeoutHandle: any = null;
+                if (timeout) {
+                    timeoutHandle = setTimeout(() => {
+                        this._finishPromise(this._promiseReject, new Error(`TransitionObserver Aborted – timed out after ${timeout}ms`));
+                    }, timeout);
+                }
+
+                this._cb = (v => {
+                    clearTimeout(timeoutHandle);
+                    this._finishPromise(resolve, v);
+                });
+                this.forceCheck();
             });
             this.logger.log('started a new promise...');
         }

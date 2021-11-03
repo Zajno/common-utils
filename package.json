@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "repository": {
     "type": "git",
