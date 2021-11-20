@@ -1,7 +1,7 @@
 import { observable, computed, action, makeObservable, reaction } from 'mobx';
 import { Getter } from '../types';
 import logger from '../logger';
-import { ValidatableViewModel, ValidationConfig } from './Validatable';
+import { ValidatableModel, ValidationConfig } from './Validatable';
 
 export type TextInputConfig = {
     name?: Getter<string>;
@@ -9,7 +9,7 @@ export type TextInputConfig = {
     value?: Getter<string>;
     async?: boolean;
 
-    validation?: ValidationConfig;
+    validation?: ValidationConfig<string>;
     noSubscribe?: boolean;
 };
 
@@ -38,7 +38,7 @@ export class Text {
     get value() { return this._value; }
 }
 
-export class TextInputVM extends ValidatableViewModel {
+export class TextInputVM extends ValidatableModel {
     @observable
     private _value = '';
 
@@ -96,7 +96,7 @@ export class TextInputVM extends ValidatableViewModel {
         super.reset();
     }
 
-    protected get valueToValidate() { return this.value; }
+    protected get valueToValidate() { return (this.value ?? '').trim(); }
 
     private onBlur() {
         this.validate();

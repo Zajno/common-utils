@@ -1,28 +1,32 @@
 import { createLazy } from '../lazy.light';
-import { observable, computed, makeObservable, reaction, action } from 'mobx';
+import { observable, computed, makeObservable, reaction } from 'mobx';
 import { FlagModel } from './FlagModel';
 import { ILabeledFlagModel, LabeledFlagModel } from './LabeledFlagModel';
+import { ValidatableModel } from './Validatable';
 
-export class Select<T = any> {
+export class Select<T = any> extends ValidatableModel<T> {
     @observable
     private _index: number = undefined;
 
-    @observable
-    public error: boolean = undefined;
-
-    private readonly _opened = new FlagModel();
+    public readonly opened = new FlagModel();
     private _indexLocked = false;
+    private _initialIndex: number = null;
 
     private readonly _flags = createLazy(() => this.createFlags());
 
     constructor(
         private readonly _items: readonly T[],
         private readonly _accessor: (item: T) => string,
-        initialIndex: number = undefined,
+        initialIndex: number = 0,
     ) {
+        super();
         makeObservable(this);
+
+        this._initialIndex = initialIndex;
         this._index = initialIndex;
     }
+
+    protected get valueToValidate() { return this.selectedItem; }
 
     @computed
     get values(): readonly string[] {
@@ -31,14 +35,6 @@ export class Select<T = any> {
 
     get flags(): ReadonlyArray<ILabeledFlagModel> {
         return this._flags.value;
-    }
-
-    get open() {
-        return this._opened.value;
-    }
-
-    set open(value: boolean) {
-        this._opened.value = value;
     }
 
     get items() {
@@ -58,7 +54,7 @@ export class Select<T = any> {
     }
 
     get selectedItem(): T {
-        return this._items[this._index];
+        return this._items.length ? this._items[this._index] : null;
     }
 
     set selectedItem(item: T) {
@@ -91,14 +87,17 @@ export class Select<T = any> {
         }
     }
 
-    @action
     reset = () => {
-        this.index = 0;
+        super.reset();
+        this.index = this._initialIndex;
     };
 
     private createFlags() {
-        const flags = this._items.map(i => new LabeledFlagModel(() => this._accessor(i)));
-        flags.forEach((f, i) => f.value = i === this.index);
+        const flags = this._items
+            .map((item, index) => new LabeledFlagModel(
+                () => this._accessor(item),
+                index === this.index,
+            ));
 
         // react on every flag is changed directly
         flags.forEach((f, index) => {
@@ -111,6 +110,7 @@ export class Select<T = any> {
         return flags;
     }
 }
+
 
 export class SelectString<T extends string = string> extends Select<T> {
     constructor(items: readonly T[], initialIndex: number = 0) {

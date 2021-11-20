@@ -1,10 +1,10 @@
 import { configure } from 'mobx';
-import { Select, SelectString } from '../SelectViewModel';
+import { Select, SelectString } from '../SelectModel';
 
 configure({ enforceActions: 'never' });
 
 describe('SelectViewModel', () => {
-    it('consistent', () => {
+    it('consistent', async () => {
         expect(() => new Select(null, null).values).toThrow();
         expect(() => new Select([1], null).values).toThrow();
 
@@ -29,8 +29,8 @@ describe('SelectViewModel', () => {
         vm.selectedValue = '123';
         expect(vm.index).toBe(initialIndex);
 
-        vm.open = true;
-        expect(vm.open).toBe(true);
+        vm.opened.value = true;
+        expect(vm.opened.value).toBe(true);
 
         vm.index = 1;
         expect(vm.index).toBe(1);
@@ -59,7 +59,11 @@ describe('SelectViewModel', () => {
         expect(vm.selectedValue).toBe(values[1]);
 
         vm.reset();
-        expect(vm.index).toBe(0);
+        expect(vm.index).toBe(initialIndex);
+
+        expect(vm.error).toBeNull();
+
+        await expect(vm.validate()).resolves.toBeTruthy();
 
         const vmS = new SelectString(values);
         expect(vmS.values).toStrictEqual(values);

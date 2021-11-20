@@ -1,5 +1,6 @@
 export * from './PromptModalViewModel';
-export * from './SelectViewModel';
+export * from './SelectModel';
+export * from './MultiSelectModel';
 export * from './TextInputViewModel';
 export * from './Validatable';
 export * from './FlagModel';

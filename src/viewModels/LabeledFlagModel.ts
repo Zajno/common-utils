@@ -11,8 +11,8 @@ export type ILabeledFlagModelReadonly<T = string> = ILabel<T> & IFlagModelReadon
 export class LabeledFlagModel<T = string> extends FlagModel implements ILabeledFlagModelReadonly<T>, ILabeledFlagModel<T> {
     private readonly _label: Getter<T>;
 
-    constructor(label: Getter<T>) {
-        super();
+    constructor(label: Getter<T> = null, initial = false) {
+        super(initial);
         this._label = label;
     }
 
