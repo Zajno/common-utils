@@ -1,40 +1,36 @@
-import { observable, autorun, computed, action, makeObservable } from 'mobx';
+import { observable, computed, action, makeObservable, reaction } from 'mobx';
+import { Getter } from '../types';
 import logger from '../logger';
 import { ValidatableViewModel, ValidationConfig } from './Validatable';
 
-export type StringGetter = (() => string) | string;
-
 export type TextInputConfig = {
-    name?: StringGetter;
-    title?: StringGetter;
-    value?: StringGetter;
+    name?: Getter<string>;
+    title?: Getter<string>;
+    value?: Getter<string>;
     async?: boolean;
 
     validation?: ValidationConfig;
     noSubscribe?: boolean;
 };
 
-function FromGetter(getter: StringGetter, setter: (val: string) => void, autorunDelay: number = null, noAutorun: boolean = null) {
-    if (typeof getter === 'function') {
-        if (noAutorun) {
-            setter(getter());
-        } else {
-            autorun(() => {
-                setter(getter());
-            }, { delay: autorunDelay });
-            return true;
-        }
-    } else if (typeof getter === 'string') {
-        setter(getter);
+function FromGetter(getter: Getter<string>, setter: (val: string) => void, autorunDelay: number = null, noAutorun: boolean = null) {
+    if (noAutorun || typeof getter !== 'function') {
+        setter(Getter.getValue(getter));
+        return null;
     }
-    return false;
+
+    return reaction(
+        () => Getter.getValue(getter),
+        setter,
+        { delay: autorunDelay, fireImmediately: true },
+    );
 }
 
 export class Text {
     @observable
     private _value: string = null;
 
-    constructor(config: { value: StringGetter, async?: boolean, noSubscribe?: boolean }) {
+    constructor(config: { value: Getter<string>, async?: boolean, noSubscribe?: boolean }) {
         makeObservable(this);
         FromGetter(config.value, val => this._value = val, config.async ? 100 : null, config.noSubscribe);
     }
@@ -55,7 +51,7 @@ export class TextInputVM extends ValidatableViewModel {
     @observable
     private _title: string = null;
 
-    private readonly _valueObserving: boolean = null;
+    private readonly _valueObserving: () => void = null;
 
     constructor(config?: TextInputConfig) {
         super(config && config.validation);

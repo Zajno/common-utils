@@ -1,5 +1,5 @@
 import { createLazy } from '../lazy.light';
-import { observable, computed, makeObservable, reaction } from 'mobx';
+import { observable, computed, makeObservable, reaction, action } from 'mobx';
 import { FlagModel } from './FlagModel';
 import { ILabeledFlagModel, LabeledFlagModel } from './LabeledFlagModel';
 
@@ -91,12 +91,13 @@ export class Select<T = any> {
         }
     }
 
+    @action
     reset = () => {
         this.index = 0;
     };
 
     private createFlags() {
-        const flags = this._items.map(i => new LabeledFlagModel(this._accessor(i)));
+        const flags = this._items.map(i => new LabeledFlagModel(() => this._accessor(i)));
         flags.forEach((f, i) => f.value = i === this.index);
 
         // react on every flag is changed directly

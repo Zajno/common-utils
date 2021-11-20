@@ -1,22 +1,22 @@
+import { Getter } from '../types';
 import { FlagModel, IFlagModel, IFlagModelReadonly } from './FlagModel';
 
-export interface ILabeledFlagModelReadonly<T = string> extends IFlagModelReadonly {
+interface ILabel<T> {
     readonly label: T;
 }
 
-export interface ILabeledFlagModel<T = string> extends IFlagModel {
-    readonly label: T;
-}
+export type ILabeledFlagModel<T = string> = ILabel<T> & IFlagModel;
+export type ILabeledFlagModelReadonly<T = string> = ILabel<T> & IFlagModelReadonly;
 
 export class LabeledFlagModel<T = string> extends FlagModel implements ILabeledFlagModelReadonly<T>, ILabeledFlagModel<T> {
-    private _label: T;
+    private readonly _label: Getter<T>;
 
-    constructor(label: T) {
+    constructor(label: Getter<T>) {
         super();
         this._label = label;
     }
 
     get label() {
-        return this._label;
+        return Getter.getValue(this._label);
     }
 }

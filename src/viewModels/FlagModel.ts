@@ -1,20 +1,18 @@
 import { makeObservable, observable } from 'mobx';
 
-export interface IFlagModelReadonly {
-    readonly value: boolean;
-}
-
 export interface IFlagModel {
     value: boolean;
 }
 
-export class FlagModel implements IFlagModelReadonly, IFlagModel {
-    constructor() {
-        makeObservable(this);
-    }
+export type IFlagModelReadonly = Readonly<IFlagModel>;
+export class FlagModel implements IFlagModel, IFlagModelReadonly {
 
     @observable
     private _value: boolean = false;
+
+    constructor() {
+        makeObservable(this);
+    }
 
     get value() {
         return this._value;

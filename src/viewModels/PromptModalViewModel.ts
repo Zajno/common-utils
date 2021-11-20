@@ -1,4 +1,5 @@
 import { observable, makeObservable } from 'mobx';
+import { FlagModel } from './FlagModel';
 
 export type PromptModalAction = {
     title: string;
@@ -7,17 +8,16 @@ export type PromptModalAction = {
     rejectText?: string;
     onConfirm: () => Promise<void> | void;
     onReject?: () => Promise<void> | void;
-    modalImage?: number;
+    modalImage?: any;
     confirmColor?: string;
     rejectColor?: string;
     awaitActions?: boolean;
 };
 
 export class PromptModalViewModel {
-    @observable
-    private _isActive: boolean = false;
+    private readonly _isActive = new FlagModel();
 
-    @observable
+    @observable.ref
     private _currentAction: PromptModalAction = null;
 
     constructor() {
@@ -25,11 +25,11 @@ export class PromptModalViewModel {
     }
 
     get isActive() {
-        return this._isActive;
+        return this._isActive.value;
     }
 
     set isActive(val: boolean) {
-        this._isActive = val;
+        this._isActive.value = val;
     }
 
     get currentAction() { return this._currentAction; }
@@ -40,11 +40,11 @@ export class PromptModalViewModel {
 
     openModal(action: PromptModalAction) {
         this._currentAction = action;
-        this._isActive = true;
+        this._isActive.value = true;
     }
 
     public closeModal() {
-        this._isActive = false;
+        this._isActive.value = false;
     }
 
     onConfirm = async () => {
