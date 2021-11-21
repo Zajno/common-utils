@@ -1,5 +1,5 @@
 export * from './Validatable';
-export * from './TextInputViewModel';
+export * from './TextModel';
 export * from './FlagModel';
 export * from './NumberModel';
 export * from './wrappers';
