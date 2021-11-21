@@ -1,10 +1,11 @@
 import { createLazy } from '../lazy.light';
 import { observable, computed, makeObservable, reaction } from 'mobx';
-import { FlagModel } from './FlagModel';
-import { ILabeledFlagModel, LabeledFlagModel } from './LabeledFlagModel';
+import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
+import { IValueModel } from './ValuesCollector';
+import { withLabel } from './wrappers';
 
-export class Select<T = any> extends ValidatableModel<T> {
+export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string> {
     @observable
     private _index: number = undefined;
 
@@ -33,7 +34,7 @@ export class Select<T = any> extends ValidatableModel<T> {
         return this._items.map(i => this._accessor(i));
     }
 
-    get flags(): ReadonlyArray<ILabeledFlagModel> {
+    get flags() {
         return this._flags.value;
     }
 
@@ -41,11 +42,13 @@ export class Select<T = any> extends ValidatableModel<T> {
         return this._items;
     }
 
+    get value() { return this.selectedValue; }
     get selectedValue() {
         const vs = this.values;
         return vs.length ? vs[this._index] : null;
     }
 
+    set value(v: string) { this.selectedValue = v; }
     set selectedValue(value: string) {
         const index = this.values.indexOf(value);
         if (index >= 0) {
@@ -93,20 +96,23 @@ export class Select<T = any> extends ValidatableModel<T> {
     };
 
     private createFlags() {
-        const flags = this._items
-            .map((item, index) => new LabeledFlagModel(
-                () => this._accessor(item),
-                index === this.index,
-            ));
+        const flags: ReadonlyArray<ILabeledFlagModel> = this._items
+            .map((item, index) => {
+                const flag: ILabeledFlagModel = withLabel(
+                    new FlagModel(index === this.index),
+                    () => this._accessor(item),
+                );
 
-        // react on every flag is changed directly
-        flags.forEach((f, index) => {
-            reaction(() => f.value, isSelected => {
-                if (isSelected) {
-                    this.index = index;
-                }
+                // react on every flag is changed directly
+                reaction(() => flag.value, isSelected => {
+                    if (isSelected) {
+                        this.index = index;
+                    }
+                });
+
+                return flag;
             });
-        });
+
         return flags;
     }
 }

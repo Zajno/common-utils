@@ -2,6 +2,7 @@ import { observable, computed, action, makeObservable, reaction } from 'mobx';
 import { Getter } from '../types';
 import logger from '../logger';
 import { ValidatableModel, ValidationConfig } from './Validatable';
+import { IValueModel } from './ValuesCollector';
 
 export type TextInputConfig = {
     name?: Getter<string>;
@@ -38,7 +39,7 @@ export class Text {
     get value() { return this._value; }
 }
 
-export class TextInputVM extends ValidatableModel {
+export class TextInputVM extends ValidatableModel implements IValueModel<string> {
     @observable
     private _value = '';
 

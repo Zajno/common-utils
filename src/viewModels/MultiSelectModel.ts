@@ -1,10 +1,11 @@
 import { createLazy } from '../lazy.light';
 import { action, computed, makeObservable, observable, reaction } from 'mobx';
-import { FlagModel } from './FlagModel';
+import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
-import { LabeledFlagModel } from './LabeledFlagModel';
+import { IValueModel } from './ValuesCollector';
+import { withLabel } from './wrappers';
 
-export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> {
+export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]> {
 
     @observable
     private _indexes = new Set<number>();
@@ -48,6 +49,9 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> {
         const values = this.values;
         return this.selectedIndexes.map(i => values[i]);
     }
+
+    get value() { return this.selectedValues; }
+    set value(v: readonly string[]) { v.forEach(this.selectValue); }
 
     getIsIndexSelected(index: number) { return this._indexes.has(index); }
 
@@ -110,18 +114,19 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> {
     }
 
     private createFlags() {
-        const flags = this._items
-            .map((item, index) => new LabeledFlagModel(
-                () => this._accessor(item),
-                this._indexes.has(index),
-            ));
+        const flags: ReadonlyArray<ILabeledFlagModel> = this._items
+            .map((item, index) => {
+                const flag = withLabel(
+                    new FlagModel(this._indexes.has(index)),
+                    () => this._accessor(item),
+                );
 
-        // react on every flag is changed directly
-        flags.forEach((f, index) => {
-            reaction(() => f.value, isSelected => {
-                this.setIndexSelected(index, isSelected);
+                // react on every flag is changed directly
+                reaction(() => flag.value, isSelected => {
+                    this.setIndexSelected(index, isSelected);
+                });
+                return flag;
             });
-        });
         return flags;
     }
 }
