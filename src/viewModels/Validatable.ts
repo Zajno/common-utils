@@ -61,13 +61,18 @@ export abstract class ValidatableModel<T = string> {
         return this._validationError == null;
     }
 
+    async getIsInvalid() {
+        const valid = await this.validate();
+        return !valid;
+    }
+
     @action
     reset() {
         this._validationError = null;
         this._error = null;
     }
 
-    static async IsSomeInvalid(validatables: ValidatableModel[], stopOnFail = true) {
+    static async IsSomeInvalid(validatables: ReadonlyArray<Readonly<ValidatableModel>>, stopOnFail = true) {
         if (stopOnFail) {
             return someAsync(validatables, async v => !(await v.validate()));
         }

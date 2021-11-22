@@ -30,7 +30,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     @computed
     get selectedIndexes(): ReadonlyArray<number> { return Array.from(this._indexes); }
 
-    get items(): ReadonlyArray<Readonly<T>> { return this._items; }
+    get items(): ReadonlyArray<T> { return this._items; }
 
     get flags() { return this._flags.value; }
 
@@ -40,7 +40,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     }
 
     @computed
-    get selectedItems(): ReadonlyArray<Readonly<T>> {
+    get selectedItems(): ReadonlyArray<T> {
         return this.selectedIndexes.map(i => this._items[i]);
     }
 
@@ -51,9 +51,10 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     }
 
     get value() { return this.selectedValues; }
-    set value(v: readonly string[]) { v.forEach(this.selectValue); }
+    set value(v: readonly string[]) { this.selectValues(v); }
 
-    getIsIndexSelected(index: number) { return this._indexes.has(index); }
+    isIndexSelected(index: number) { return this._indexes.has(index); }
+    isValueSelected(value: string) { return this.values.includes(value); }
 
     get isEmpty() { return this._indexes.size === 0; }
 
@@ -69,6 +70,11 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     selectItem = (item: T) => this.setItemSelected(item, true);
     deSelectItem = (item: T) => this.setItemSelected(item, false);
 
+    @action
+    selectItems = (items: readonly T[]) => {
+        items.forEach(this.selectItem);
+    };
+
     setValueSelected = (value: string, selected: boolean) => {
         const i = this.values.indexOf(value);
         if (i >= 0) {
@@ -78,6 +84,11 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
 
     selectValue = (value: string) => this.setValueSelected(value, true);
     deSelectValue = (value: string) => this.setValueSelected(value, false);
+
+    @action
+    selectValues = (values: readonly string[]) => {
+        values.forEach(this.selectValue);
+    };
 
     @action
     setIndexSelected = (index: number, selected: boolean) => {
@@ -133,7 +144,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
 
 export class MultiSelectString<T extends string = string> extends MultiSelect<T> {
 
-    constructor(items: ReadonlyArray<Readonly<T>>, ...selected: number[]) {
+    constructor(items: ReadonlyArray<T>, ...selected: number[]) {
         super(items, v => v, ...selected);
     }
 }

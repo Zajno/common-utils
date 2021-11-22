@@ -2,15 +2,18 @@ import { action, makeObservable, observable } from 'mobx';
 import { ILabel } from './wrappers';
 import { IValueModel } from './ValuesCollector';
 
-export interface IFlagModel {
-    value: boolean;
+export interface IFlagModel extends IValueModel<boolean> {
+    toggle(): void;
+    reset(): void;
 }
 
-export type IFlagModelReadonly = Readonly<IFlagModel>;
+export type IFlagModelReadonly = {
+    readonly value: boolean;
+};
 
 export type ILabeledFlagModel = IFlagModel & ILabel<string>;
 
-export class FlagModel implements IFlagModel, IFlagModelReadonly, IValueModel<boolean> {
+export class FlagModel implements IFlagModel, IFlagModelReadonly {
 
     @observable
     private _value: boolean = false;

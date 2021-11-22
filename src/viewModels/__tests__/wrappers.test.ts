@@ -1,9 +1,9 @@
-import { inject, withLabel } from '../wrappers';
+import { inject, withLabel, mixinLabel } from '../wrappers';
 import { NumberModel } from '../NumberModel';
 import { FlagModel } from '../FlagModel';
 
 describe('labeled', () => {
-    test('consistensy', () => {
+    test('consistency', () => {
 
         const initial = 0;
         const num = new NumberModel(initial);
@@ -58,5 +58,22 @@ describe('inject', () => {
 
         flag.value = true;
         expect(flag.value).toBe(true);
+    });
+});
+
+describe('labelize', () => {
+    test('consistency', () => {
+
+        const Mixin = mixinLabel(FlagModel);
+
+        expect(() => new Mixin()).not.toThrow();
+
+        let label = '123';
+        const vm = new Mixin(() => label, false);
+        expect(vm.value).toBe(false);
+        expect(vm.label).toBe(label);
+
+        label = '312';
+        expect(vm.label).toBe(label);
     });
 });

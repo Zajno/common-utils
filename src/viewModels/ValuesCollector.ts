@@ -13,13 +13,26 @@ type SimpleCollector<T> = {
     set: (t: T) => void,
 };
 
-type CollectorsMap<T> = {
+type SimpleCollectorsMap<T> = {
+    [P in keyof T]?: SimpleCollector<T[P]>;
+};
+
+export type ModelCollectorsMap<T> = {
+    [P in keyof T]?: IValueModel<T[P]>;
+};
+
+export type CollectorsMap<T> = {
     [P in keyof T]?: SimpleCollector<T[P]>;
 };
 
 export class ModelCollector<T extends Object> {
 
-    private readonly _collectors: CollectorsMap<T> = { };
+    private readonly _collectors: SimpleCollectorsMap<T> = { };
+
+    public addModels(models: ModelCollectorsMap<T>) {
+        Object.entries(models).forEach(pair => this.addModel(pair[0] as keyof T, pair[1]));
+        return this;
+    }
 
     public addModel<TKey extends keyof T, TSource extends IValueModel<T[TKey]>>(key: TKey, source: TSource) {
         this._collectors[key] = {

@@ -17,7 +17,7 @@ describe('MultiSelectModel', () => {
         expect(vm.selectedIndexes).toStrictEqual(initialSelected);
 
         initialSelected.forEach(index => {
-            expect(vm.getIsIndexSelected(index)).toBe(initialSelected.includes(index));
+            expect(vm.isIndexSelected(index)).toBe(initialSelected.includes(index));
         });
     });
 });
