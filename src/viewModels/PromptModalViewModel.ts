@@ -1,71 +1,65 @@
-import { observable, makeObservable } from 'mobx';
+import { observable, makeObservable, action } from 'mobx';
+import { FlagModel } from './FlagModel';
 
-export type PromptModalAction = {
-    title: string;
-    message: string;
-    confirmText: string;
-    rejectText?: string;
-    onConfirm: () => Promise<void> | void;
-    onReject?: () => Promise<void> | void;
-    modalImage?: number;
-    confirmColor?: string;
-    rejectColor?: string;
-    awaitActions?: boolean;
+export type BaseModalAction = {
+    title?: string;
+    message?: string;
 };
 
-export class PromptModalViewModel {
-    @observable
-    private _isActive: boolean = false;
+export class ModalActionModel<T extends BaseModalAction = BaseModalAction> {
+    public readonly isActive = new FlagModel();
 
-    @observable
-    private _currentAction: PromptModalAction = null;
+    @observable.ref
+    private _currentAction: T = null;
 
     constructor() {
         makeObservable(this);
     }
 
-    get isActive() {
-        return this._isActive;
-    }
-
-    set isActive(val: boolean) {
-        this._isActive = val;
-    }
-
     get currentAction() { return this._currentAction; }
 
-    get confirmColor() { return this._currentAction.confirmColor; }
-
-    get rejectColor() { return this._currentAction.rejectColor; }
-
-    openModal(action: PromptModalAction) {
+    @action
+    public openModal = (action: T) => {
         this._currentAction = action;
-        this._isActive = true;
-    }
+        this.isActive.value = true;
+    };
 
-    public closeModal() {
-        this._isActive = false;
-    }
+    @action
+    public closeModal = () => {
+        this.isActive.value = false;
+        this._currentAction = null;
+    };
 
-    onConfirm = async () => {
-        if (this.currentAction.onConfirm) {
-            const promise = this.currentAction.onConfirm();
-            if (this.currentAction.awaitActions) {
+    protected runAction = async (cb: () => Promise<void> | void, close = true, awaitAction = false) => {
+        if (cb) {
+            const promise = cb();
+            if (awaitAction) {
                 await promise;
             }
         }
 
-        this.closeModal();
-    };
-
-    onReject = async () => {
-        if (this.currentAction.onReject) {
-            const promise = this.currentAction.onReject();
-            if (this.currentAction.awaitActions) {
-                await promise;
-            }
+        if (close) {
+            this.closeModal();
         }
-
-        this.closeModal();
     };
+}
+
+export type PromptModalAction = BaseModalAction & {
+    confirmText?: string;
+    rejectText?: string;
+    onConfirm?: () => Promise<void> | void;
+    onReject?: () => Promise<void> | void;
+    awaitActions?: boolean;
+    modalImage?: any;
+    confirmColor?: string;
+    rejectColor?: string;
+};
+
+export class PromptModalViewModel extends ModalActionModel<PromptModalAction> {
+    get confirmColor() { return this.currentAction.confirmColor; }
+
+    get rejectColor() { return this.currentAction.rejectColor; }
+
+    onConfirm = () => this.runAction(this.currentAction.onConfirm, true, this.currentAction.awaitActions);
+    onReject = () => this.runAction(this.currentAction.onConfirm, true, this.currentAction.awaitActions);
 }
