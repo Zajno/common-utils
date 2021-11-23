@@ -1,15 +1,19 @@
-import { observable, makeObservable } from 'mobx';
+import { observable, makeObservable, action } from 'mobx';
 import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '../validation';
 import { someAsync } from '../async/arrays';
 
-export type ValueValidator = ValidatorFunction | ValidatorFunctionAsync;
+export type ValueValidator<T> = ValidatorFunction<T> | ValidatorFunctionAsync<T>;
 export type ValidationErrorsStrings = { [code: number]: string };
 
-export type ValidationConfig = { validator: ValueValidator, errors: ValidationErrorsStrings };
+export type ValidationConfig<T> = {
+    validator: ValueValidator<Readonly<T>>,
+    errors: ValidationErrorsStrings,
+};
 
-export abstract class ValidatableViewModel {
+const EmptyValidator = () => ValidationErrors.None;
+export abstract class ValidatableModel<T = string> {
 
-    private _validator: ValueValidator = null;
+    private _validator: ValueValidator<Readonly<T>> = null;
     private _strings: ValidationErrorsStrings = null;
 
     @observable
@@ -17,17 +21,22 @@ export abstract class ValidatableViewModel {
 
     private _validationError: ValidationError = null;
 
-    constructor(config?: ValidationConfig) {
+    constructor(config?: ValidationConfig<T>) {
         makeObservable(this);
-        this._validator = (config && config.validator) || (() => ValidationErrors.None);
-        this._strings = config && config.errors;
+        this.setValidationConfig(config);
     }
 
-    protected abstract get valueToValidate(): string;
+    protected abstract get valueToValidate(): Readonly<T>;
 
     get isValid() { return !this._error; }
 
     get error() { return this._error; }
+
+    public setValidationConfig(config?: ValidationConfig<T>) {
+        this._validator = config?.validator || EmptyValidator;
+        this._strings = config?.errors;
+        return this;
+    }
 
     async validate() {
         if (!this._validator) {
@@ -35,7 +44,7 @@ export abstract class ValidatableViewModel {
         }
 
         try {
-            const valid = await this._validator((this.valueToValidate ?? '').trim());
+            const valid = await this._validator(this.valueToValidate);
             this._validationError = valid === ValidationErrors.None
                 ? null
                 : new ValidationError('Unknown error', valid);
@@ -52,12 +61,18 @@ export abstract class ValidatableViewModel {
         return this._validationError == null;
     }
 
+    async getIsInvalid() {
+        const valid = await this.validate();
+        return !valid;
+    }
+
+    @action
     reset() {
         this._validationError = null;
         this._error = null;
     }
 
-    static async IsSomeInvalid(validatables: ValidatableViewModel[], stopOnFail = true) {
+    static async IsSomeInvalid(validatables: ReadonlyArray<Readonly<ValidatableModel>>, stopOnFail = true) {
         if (stopOnFail) {
             return someAsync(validatables, async v => !(await v.validate()));
         }
