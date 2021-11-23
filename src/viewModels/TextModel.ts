@@ -1,4 +1,4 @@
-import { observable, computed, action, makeObservable, reaction } from 'mobx';
+import { observable, computed, makeObservable, reaction } from 'mobx';
 import { Getter } from '../types';
 import logger from '../logger';
 import { ValidatableModel, ValidationConfig } from './Validatable';
@@ -103,7 +103,6 @@ export class TextInputVM extends ValidatableModel implements IValueModel<string>
         this.validate();
     }
 
-    @action
     reset() {
         this._value = '';
         this._focused = false;
