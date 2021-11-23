@@ -8,7 +8,7 @@ import { withLabel } from './wrappers';
 export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]> {
 
     @observable
-    private _indexes = new Set<number>();
+    private readonly _indexes = new Set<number>();
 
     public readonly opened = new FlagModel();
     private readonly _initial: number[] = null;
@@ -122,6 +122,10 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     private setInitialIndexes() {
         this._indexes.clear();
         this._initial.forEach(i => this._indexes.add(i));
+
+        if (this._flags.hasValue) {
+            this._flags.value.forEach((flag, index) => flag.value = this._indexes.has(index));
+        }
     }
 
     private createFlags() {
