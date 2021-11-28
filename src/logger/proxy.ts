@@ -13,8 +13,8 @@ export class ProxyLogger extends NamedLogger {
 
     private _logger: ILogger = null;
 
-    constructor(logger: ILogger, name?: string, enabled = true) {
-        super(name, enabled);
+    constructor(logger: ILogger, name: string) {
+        super(name, logger != null);
         this._logger = logger;
     }
 

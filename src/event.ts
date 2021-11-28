@@ -1,6 +1,6 @@
 import './async/arrays';
 import { forEachAsync } from './async/arrays';
-import { ILogger, ConsoleLogger } from './logger';
+import { ILogger, createLogger } from './logger';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 
@@ -19,7 +19,7 @@ export class Event<T = any> implements IEvent<T> {
 
     constructor(loggerOrName?: ILogger | string) {
         this._logger = (!loggerOrName || typeof loggerOrName === 'string')
-            ? new ConsoleLogger(`[Event:${loggerOrName || '?'}]`)
+            ? createLogger(`[Event:${loggerOrName || '?'}]`)
             : loggerOrName;
     }
 

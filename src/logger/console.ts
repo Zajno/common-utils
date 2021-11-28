@@ -4,12 +4,7 @@ import { NamedLogger } from './named';
 export const CONSOLE: ILogger = console;
 
 export class ConsoleLogger extends NamedLogger {
-
     protected get implementation() { return CONSOLE; }
-
-    constructor(name?: string, enabled = true) {
-        super(name, enabled);
-    }
 }
 
 export class BufferedConsoleLogger implements ILogger {

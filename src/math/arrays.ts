@@ -1,3 +1,4 @@
+import { Predicate } from '../types';
 import { random } from './calc';
 
 export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previous: T) => boolean): T {
@@ -171,4 +172,17 @@ export function findIndexLeast(num: number, arr: number[], sort = false) {
     }
 
     return arr.findIndex(i => i > num);
+}
+
+type NonFunction<T> = T extends Function ? never : T;
+
+export function removeItem<T>(array: T[], item: NonFunction<T> | Predicate<T>): T {
+    const index = typeof item === 'function'
+        ? array.findIndex(item as Predicate<T>)
+        : array.indexOf(item);
+    if (index < 0) {
+        return null;
+    }
+
+    return array.splice(index, 1)[0];
 }

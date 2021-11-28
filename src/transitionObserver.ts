@@ -20,7 +20,7 @@ export class TransitionObserver<T> implements IDisposable {
     private _promise: Promise<T> = null;
     private _promiseReject: (err?: any) => any = null;
 
-    private logger: ILogger = createLogger('', true);
+    private logger: ILogger = createLogger('', false);
 
     constructor(getter?: () => T) {
         if (getter) {
@@ -115,7 +115,7 @@ export class TransitionObserver<T> implements IDisposable {
     }
 
     enableLogging(name: string) {
-        this.logger = createLogger(name, !name);
+        this.logger = createLogger(name, name ? undefined : false);
         return this;
     }
 
