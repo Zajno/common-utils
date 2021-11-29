@@ -38,3 +38,11 @@ jobs:
 
       - name: Run tests
         run: yarn test
+
+      - name: codecov-umbrella
+        uses: codecov/codecov-action@v2
+        with:
+          directory: coverage
+          flags: unittests
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
