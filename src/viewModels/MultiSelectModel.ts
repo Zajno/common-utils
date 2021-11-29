@@ -56,7 +56,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     set value(v: readonly string[]) { this.selectValues(v); }
 
     isIndexSelected(index: number) { return this._indexes.has(index); }
-    isValueSelected(value: string) { return this.values.includes(value); }
+    isValueSelected(value: string) { return this.selectedValues.includes(value); }
 
     get count() { return this._items.length; }
     get selectedCount() { return this._indexes.size; }
