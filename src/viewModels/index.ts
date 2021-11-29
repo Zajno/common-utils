@@ -1,3 +1,4 @@
+export * from './types';
 export * from './Validatable';
 export * from './TextModel';
 export * from './FlagModel';

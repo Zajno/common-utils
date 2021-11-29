@@ -1,9 +1,5 @@
 import { Getter } from '../types';
-import { IValueModel } from './ValuesCollector';
-
-export interface ILabel<T> {
-    readonly label: T;
-}
+import { ILabel, IValueModel } from './types';
 
 export function withLabel<T, TModel extends IValueModel<T>, TLabel = string>(model: TModel, label: Getter<TLabel>) {
     const _label = label;

@@ -1,8 +1,9 @@
 import { observable, computed, makeObservable, reaction } from 'mobx';
 import { Getter } from '../types';
+import { IValueModel } from './types';
 import logger from '../logger';
 import { ValidatableModel, ValidationConfig } from './Validatable';
-import { IValueModel } from './ValuesCollector';
+import { IResetableModel } from 'viewModels';
 
 export type TextInputConfig = {
     name?: Getter<string>;
@@ -39,7 +40,7 @@ export class Text {
     get value() { return this._value; }
 }
 
-export class TextInputVM extends ValidatableModel implements IValueModel<string> {
+export class TextInputVM extends ValidatableModel implements IValueModel<string>, IResetableModel {
     @observable
     private _value = '';
 
@@ -103,10 +104,10 @@ export class TextInputVM extends ValidatableModel implements IValueModel<string>
         this.validate();
     }
 
-    reset() {
+    reset = () => {
         this._value = '';
         this._focused = false;
         super.reset();
-    }
+    };
 
 }

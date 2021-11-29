@@ -2,10 +2,11 @@ import { createLazy } from '../lazy.light';
 import { observable, computed, makeObservable, reaction } from 'mobx';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
-import { IValueModel } from './ValuesCollector';
+import { IValueModel } from './types';
 import { withLabel } from './wrappers';
+import { IResetableModel } from 'viewModels';
 
-export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string> {
+export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel {
     @observable
     private _index: number = undefined;
 
@@ -66,6 +67,8 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
             this.index = index;
         }
     }
+
+    get isDefault() { return this._index === this._initialIndex; }
 
     get index() {
         return this._index;

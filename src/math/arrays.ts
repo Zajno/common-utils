@@ -1,4 +1,4 @@
-import { Predicate } from '../types';
+import { Comparator, Predicate } from '../types';
 import { random } from './calc';
 
 export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previous: T) => boolean): T {
@@ -80,6 +80,71 @@ export function arrayFirstResult<T, V>(arr: ReadonlyArray<T>, mapper: (o: T) => 
     }
 
     return false;
+}
+
+export function arraysCompare<T>(base: readonly T[], target: readonly T[], comparator?: Comparator<T>) {
+    if (!base || !target) {
+        return null;
+    }
+
+    const compare = comparator || Comparator.Default;
+    const result = {
+        missing: [] as T[],
+        extra: [] as T[],
+        diff: 0,
+    };
+
+    for (let i = 0; i < base.length; ++i) {
+        const baseItem = base[i];
+        const targetItem = target[i];
+        if (compare(baseItem, targetItem)) {
+            continue;
+        }
+
+        result.missing.push(baseItem);
+    }
+
+    for (let i = base.length; i < target.length; ++i) {
+        result.extra.push(target[i]);
+    }
+
+    result.diff = result.missing.length + result.extra.length;
+    return result;
+}
+
+export function arraysCompareDistinct<T>(base: readonly T[], target: readonly T[]) {
+    if (!base || !target) {
+        return null;
+    }
+
+    const baseSet = new Set(base);
+    const targetSet = new Set(target);
+    const result = {
+        missing: [] as T[],
+        extra: [] as T[],
+        diff: 0,
+    };
+
+    for (const item of baseSet) {
+        if (!targetSet.has(item)) {
+            result.missing.push(item);
+        } else {
+            // reduce iterations for 'extra'
+            targetSet.delete(item);
+        }
+    }
+
+    for (const item of targetSet) {
+        // all items left in 'target' is missing in 'base'
+        result.extra.push(item);
+    }
+
+    result.diff = result.missing.length + result.extra.length;
+    return result;
+}
+
+export function arrayDistinct<T>(arr: readonly T[]) {
+    return Array.from(new Set(arr || []));
 }
 
 export function normalize(arr: number[]): number[] {

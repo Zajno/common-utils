@@ -2,10 +2,12 @@ import { createLazy } from '../lazy.light';
 import { action, computed, makeObservable, observable, reaction } from 'mobx';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
-import { IValueModel } from './ValuesCollector';
+import { IValueModel } from './types';
 import { withLabel } from './wrappers';
+import { ICountableModel, IResetableModel } from 'viewModels';
+import { arraysCompareDistinct } from '../math';
 
-export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]> {
+export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]>, IResetableModel, ICountableModel {
 
     @observable
     private readonly _indexes = new Set<number>();
@@ -56,7 +58,12 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     isIndexSelected(index: number) { return this._indexes.has(index); }
     isValueSelected(value: string) { return this.values.includes(value); }
 
-    get isEmpty() { return this._indexes.size === 0; }
+    get count() { return this._items.length; }
+    get selectedCount() { return this._indexes.size; }
+    get isEmpty() { return this.selectedCount === 0; }
+
+    @computed
+    get isDefault() { return arraysCompareDistinct(this.selectedIndexes, this._initial)?.diff === 0; }
 
     protected get valueToValidate() { return this.selectedItems; }
 

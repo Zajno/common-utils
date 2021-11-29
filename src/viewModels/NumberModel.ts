@@ -1,7 +1,8 @@
 import { action, makeObservable, observable } from 'mobx';
-import { IValueModel } from './ValuesCollector';
+import { IResetableModel } from 'viewModels';
+import { IValueModel } from './types';
 
-export interface INumberModel {
+export interface INumberModel extends IResetableModel {
     value: number;
 }
 
@@ -20,6 +21,8 @@ export class NumberModel implements INumberModel, IValueModel<number> {
 
     get value() { return this._value; }
     set value(v: number) { this._value = v; }
+
+    get isDefault() { return this._value === this._initial; }
 
     @action
     reset = () => {

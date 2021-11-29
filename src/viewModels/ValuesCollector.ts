@@ -1,7 +1,4 @@
-
-export interface IValueModel<TValue> {
-    value: TValue;
-}
+import { IValueModel } from './types';
 
 export interface IValueCollector<TSource, TValue> {
     getValue(source: TSource): TValue;

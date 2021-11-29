@@ -64,6 +64,45 @@ describe('math/arrays', () => {
         expect(arrays.arrayFirstResult([1, 2, 3], i => i == 2 ? 'pass' : false)).toBe('pass');
     });
 
+    it('arraysCompare', () => {
+        expect(arrays.arraysCompare(null, null)).toBeNull();
+        expect(arrays.arraysCompare([], null)).toBeNull();
+
+        const result = (missing, extra, diff) => ({ missing, extra, diff });
+
+        expect(arrays.arraysCompare([], [])).toStrictEqual(result([], [], 0));
+        expect(arrays.arraysCompare([1], [])).toStrictEqual(result([1], [], 1));
+        expect(arrays.arraysCompare([1, 2], [1])).toStrictEqual(result([2], [], 1));
+        expect(arrays.arraysCompare([1], [1])).toStrictEqual(result([], [], 0));
+        expect(arrays.arraysCompare([], [1])).toStrictEqual(result([], [1], 1));
+        expect(arrays.arraysCompare([1, 2, 3], [3, 2, 1])).toStrictEqual(result([1, 3], [], 2));
+    });
+
+    it('arraysCompareDistinct', () => {
+        expect(arrays.arraysCompareDistinct(null, null)).toBeNull();
+        expect(arrays.arraysCompareDistinct([], null)).toBeNull();
+
+        const result = (missing, extra, diff) => ({ missing, extra, diff });
+
+        expect(arrays.arraysCompareDistinct([], [])).toStrictEqual(result([], [], 0));
+        expect(arrays.arraysCompareDistinct([1], [])).toStrictEqual(result([1], [], 1));
+        expect(arrays.arraysCompareDistinct([1, 2], [1])).toStrictEqual(result([2], [], 1));
+        expect(arrays.arraysCompareDistinct([1], [1])).toStrictEqual(result([], [], 0));
+        expect(arrays.arraysCompareDistinct([], [1])).toStrictEqual(result([], [1], 1));
+        expect(arrays.arraysCompareDistinct([1, 2], [2, 1, 1])).toStrictEqual(result([], [], 0));
+        expect(arrays.arraysCompareDistinct([1, 2, 3], [3, 2, 1])).toStrictEqual(result([], [], 0));
+    });
+
+    it('arrayDistinct', () => {
+        expect(arrays.arrayDistinct(null)).toStrictEqual([]);
+        expect(arrays.arrayDistinct([])).toStrictEqual([]);
+        expect(arrays.arrayDistinct([1])).toStrictEqual([1]);
+        expect(arrays.arrayDistinct([1, 2, 3])).toStrictEqual([1, 2, 3]);
+        expect(arrays.arrayDistinct([1, '2', 3])).toStrictEqual([1, '2', 3]);
+        expect(arrays.arrayDistinct([1, 1, 1])).toStrictEqual([1]);
+        expect(arrays.arrayDistinct(['1', '1', '1'])).toStrictEqual(['1']);
+    });
+
     it('normalize', () => {
         expect(arrays.normalize([])).toHaveLength(0);
 
@@ -85,8 +124,12 @@ describe('math/arrays', () => {
     });
 
     it('shuffle', () => {
+        expect(arrays.shuffle(null)).toStrictEqual([]);
+        expect(arrays.shuffle(null, true)).toStrictEqual([]);
+
         const arr1 = [1, 2, 3], arr2 = arr1.slice();
         arrays.shuffle(arr2);
+        arrays.shuffle(arr2, true);
         expect(arr2).toHaveLength(arr1.length);
         arr2.forEach(i => {
             expect(arr1).toContain(i);
@@ -138,6 +181,16 @@ describe('math/arrays', () => {
         expect(arrays.findIndexLeast(2, [3, 2, 1])).toBe(0);
         expect(arrays.findIndexLeast(2, [3, 2, 1], true)).toBe(2);
         expect(arrays.findIndexLeast(2, [1, 2, 3])).toBe(2);
+    });
 
+    it('removeItem', () => {
+        const check = (input: any[], remove: any, output: any[]) => {
+            arrays.removeItem(input, remove);
+            expect(input).toStrictEqual(output);
+        };
+
+        check([1, 2, 3], 1, [2, 3]);
+        check([1, 2, 3], item => item === 1, [2, 3]);
+        check([1, 2, 3], '1', [1, 2, 3]);
     });
 });

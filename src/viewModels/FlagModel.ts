@@ -1,10 +1,9 @@
 import { action, makeObservable, observable } from 'mobx';
-import { ILabel } from './wrappers';
-import { IValueModel } from './ValuesCollector';
+import { IResetableModel } from 'viewModels';
+import { ILabel, IValueModel } from './types';
 
-export interface IFlagModel extends IValueModel<boolean> {
+export interface IFlagModel extends IValueModel<boolean>, IResetableModel {
     toggle(): void;
-    reset(): void;
 }
 
 export type IFlagModelReadonly = {
@@ -30,6 +29,8 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     set value(value: boolean) {
         this._value = value;
     }
+
+    get isDefault() { return this._value === false; }
 
     @action
     toggle = () => {
