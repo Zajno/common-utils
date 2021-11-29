@@ -1,4 +1,4 @@
-import { Comparator, Predicate } from '../types';
+import { Comparator, Getter, Predicate } from '../types';
 import { random } from './calc';
 
 export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previous: T) => boolean): T {
@@ -250,4 +250,12 @@ export function removeItem<T>(array: T[], item: NonFunction<T> | Predicate<T>): 
     }
 
     return array.splice(index, 1)[0];
+}
+
+export function arrayRepeat<T>(factory: Getter<T>, count = 1) {
+    const res: T[] = [];
+    for (let i = 0; i < count; ++i) {
+        res.push(Getter.getValue(factory));
+    }
+    return res;
 }
