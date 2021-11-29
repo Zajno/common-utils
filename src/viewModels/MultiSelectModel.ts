@@ -121,6 +121,9 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
         }
     };
 
+    selectIndex = (index: number) => this.setIndexSelected(index, true);
+    deSelectIndex = (index: number) => this.setIndexSelected(index, false);
+
     reset = () => {
         super.reset();
         this.setInitialIndexes();
