@@ -61,5 +61,5 @@ export class PromptModalViewModel extends ModalActionModel<PromptModalAction> {
     get rejectColor() { return this.currentAction.rejectColor; }
 
     onConfirm = () => this.runAction(this.currentAction.onConfirm, true, this.currentAction.awaitActions);
-    onReject = () => this.runAction(this.currentAction.onConfirm, true, this.currentAction.awaitActions);
+    onReject = () => this.runAction(this.currentAction.onReject, true, this.currentAction.awaitActions);
 }
