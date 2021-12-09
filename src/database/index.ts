@@ -1,9 +1,9 @@
 import DBProvider from './dbProvider';
-import RepoError from './RepoError';
+import LogicError from './LogicError';
 
 export {
     DBProvider,
-    RepoError,
+    LogicError as RepoError,
 };
 
 export * from './dbProvider';

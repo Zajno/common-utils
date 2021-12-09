@@ -1,9 +1,7 @@
 import * as Example from '../../examples/compositeFunctionExample';
 import { EndpointTestContext, getNestedFunction, wrapEndpoint } from './config';
-import { Config as RepoErrorAdapterConfig } from '../../server/utils/RepoErrorAdapter';
 import AppHttpError from '../../server/utils/AppHttpError';
 
-RepoErrorAdapterConfig.DisableErrorLogging = true;
 
 describe('Function API', () => {
     const Endpoint = wrapEndpoint(Example.Server.ApiRoot.ExampleV1);
@@ -72,6 +70,27 @@ describe('Function API', () => {
     it('correctly applies middlewares', () => expect(
         ExampleMiddlewareCheck('lol', ctx)
     ).resolves.toEqual('lol_m0_m1_m2'));
+
+    it('contains correct context', async () => {
+        const endpointDataHandler = jest.fn().mockImplementation(null);
+
+        const endpointCopy = Example.Server.ApiRoot.ExampleV1.clone();
+        endpointCopy.handlers
+            .use((ctx, next) => {
+                endpointDataHandler(ctx.requestPath);
+                return next();
+            });
+
+        const endpoint = wrapEndpoint(endpointCopy);
+
+        await endpoint({ example: { id: '123' } }, ctx);
+        expect(endpointDataHandler).toHaveBeenCalledWith('example');
+        endpointDataHandler.mockClear();
+
+        await endpoint({ namespace: { inner: { 'double-nested': { in: 'abc' } } } }, ctx);
+        expect(endpointDataHandler).toHaveBeenCalledWith('namespace/inner/double-nested');
+        endpointDataHandler.mockClear();
+    });
 
     describe('partial handlers', () => {
 

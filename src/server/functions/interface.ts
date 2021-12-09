@@ -1,12 +1,18 @@
+import { ILogger } from '@zajno/common/lib/logger';
 import * as functions from 'firebase-functions';
 import { IFunctionDefinitionInfo } from '../../functions/interface';
 
-export type EndpointContext<T = never> = functions.https.CallableContext & {
+export type BaseFunctionContext = functions.https.CallableContext;
+
+export type EndpointContext<T = never> = BaseFunctionContext & {
     data?: T;
+    readonly requestPath: string;
+    readonly requestId: string;
+    readonly logger: ILogger;
+    readonly endpoint: IEndpointRuntimeInfo;
 };
 
-export type EndpointFunction<T, TOut, TContext = never> = { debugName?: string }
-    & ((data: T, context: EndpointContext<TContext>) => Promise<TOut>);
+export type EndpointFunction<T, TOut, TContext = never> = (data: T, context: EndpointContext<TContext>) => Promise<TOut>;
 
 export type HandlerContext<TArg, TOut, TContext = never> = EndpointContext<TContext> & {
     input: TArg,
@@ -28,6 +34,10 @@ export type FirebaseEndpoint = functions.HttpsFunction & functions.Runnable<any>
 export interface IFirebaseFunction {
     readonly Definition: IFunctionDefinitionInfo;
     readonly Endpoint: FirebaseEndpoint;
+}
+
+export interface IEndpointRuntimeInfo {
+    readonly definition: IFunctionDefinitionInfo;
 }
 
 export namespace IFirebaseFunction {

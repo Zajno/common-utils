@@ -22,16 +22,15 @@ type FunctionsMap<T extends CompositeEndpointInfo, TContext = any> = {
 export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext extends { } = any>
     extends FunctionFactory<EndpointArg<T>, EndpointResult<T>, TContext> {
 
-    // eslint-disable-next-line proposal/class-property-no-initialized
     private readonly _handlers: MiddlewaresMap<T, TContext>;
-    // eslint-disable-next-line proposal/class-property-no-initialized
     private readonly _logger: ILogger;
 
-    constructor(readonly Composition: FunctionComposite<T>, _context?: TContext) {
+    constructor(readonly Composition: FunctionComposite<T>, _context?: TContext, handlers?: MiddlewaresMap<T, TContext>) {
         super(Composition.rootEndpoint);
 
-        this._logger = createLogger(`[FunctionComposite:${Composition.rootEndpoint.CallableName}]`);
-        this._handlers = this.getHandlersMap(this.Composition.info);
+        this._logger = createLogger(`[FC][${Composition.rootEndpoint.CallableName}]`);
+        this._handlers = FunctionCompositeFactory.cloneHandlers(handlers) ||
+            this.getHandlersMap(this.Composition.info);
     }
 
     public get handlers(): MiddlewaresMap<T, TContext> { return this._handlers; }
@@ -56,6 +55,24 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
             return this.getHandlersMap(p as CompositeEndpointInfo) as any;
         }
         return new MiddlewareChild<ArgExtract<HT, K>, ResExtract<HT, K>, TContext>() as any;
+    }
+
+    private static cloneHandlers<T extends CompositeEndpointInfo, TContext extends { }>(handlers: MiddlewaresMap<T, TContext>): MiddlewaresMap<T, TContext> {
+        if (!handlers) {
+            return null;
+        }
+
+        const res = new MiddlewareChild(handlers, (handlers as any).isSkipParents || false) as any as MiddlewaresMap<T, TContext>;
+        Object.keys(handlers).forEach(key => {
+            const k = key as keyof T;
+            if (res[k] !== undefined) {
+                return;
+            }
+            const src = handlers[k] as any;
+            res[k] = FunctionCompositeFactory.cloneHandlers(src) as any;
+        });
+
+        return res;
     }
 
     private async executeMap<H extends CompositeEndpointInfo>(
@@ -105,28 +122,23 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
             } else if (executeThisKey) {
                 const final = new Middleware(Middleware.aggregate(...currents, m));
 
-                try {
-                    const result = await final.execute(input, ctx);
-                    results[key] = result;
-                } catch (err) {
-                    this._logger.error(`failed with input: ${input}\r\nERROR:`, err);
-                    throw err;
-                }
-
+                const result = await final.execute(input, ctx);
+                results[key] = result;
             } else {
-                this._logger.warn('no handler for key', key, '; input is:', ctx.input);
                 throw AppHttpError.NotFound();
             }
         }
         return results;
     }
 
-    protected createEndpointHandler() {
-        // use it as the last
-        this.useHandler(async (ctx) => {
+    protected get onAfterAll() {
+        return Middleware.wrapHandler(async (ctx: HandlerContext<EndpointArg<T>, EndpointResult<T>, TContext>) => {
             ctx.output = await this.executeMap(this.Composition.info, this._handlers, ctx, [], true);
         });
-        return super.createEndpointHandler();
+    }
+
+    protected generatedPathForInput(data: EndpointArg<T>) {
+        return argumentObjectToPath(data);
     }
 
     public mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): FunctionCompositeFactory<T, Partial<TContext & C>> {
@@ -136,6 +148,10 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
     public useFunctionsMap(map: FunctionsMap<T, TContext>) {
         this._useFunctionMap(this.Composition.info, map, this._handlers);
         return this;
+    }
+
+    public clone(): FunctionCompositeFactory<T, TContext> {
+        return new FunctionCompositeFactory(this.Composition, null as TContext, this._handlers);
     }
 
     private _useFunctionMap<H extends CompositeEndpointInfo>(info: H, map: FunctionsMap<H, TContext>, handlers: MiddlewaresMap<H, TContext>) {
@@ -162,4 +178,31 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         });
     }
 
+}
+
+function argumentObjectToPath(obj: any): string {
+    if (!obj || typeof obj !== 'object') {
+        return '';
+    }
+
+    const keys = Object.keys(obj);
+    if (!keys.length) {
+        return '';
+    }
+
+    const parts = keys.map(key => {
+        if (typeof obj[key] !== 'object') {
+            return null;
+        }
+
+        const nested = argumentObjectToPath(obj[key]);
+        if (nested) {
+            return `${key}/${nested}`;
+        }
+        return key;
+    }).filter(r => r);
+
+    const res = parts.join('|');
+
+    return parts.length > 1 ? `(${res})` : res;
 }

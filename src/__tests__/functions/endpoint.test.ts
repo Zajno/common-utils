@@ -1,10 +1,7 @@
-import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
 import { FunctionCompositeFactory } from '../../server/functions';
+import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
 import AppHttpError from '../../server/utils/AppHttpError';
 import { getNestedFunction, wrapEndpoint } from './config';
-import { Config as RepoErrorAdapterConfig } from '../../server/utils/RepoErrorAdapter';
-
-RepoErrorAdapterConfig.DisableErrorLogging = true;
 
 namespace BrokenApi {
     const api1 = {

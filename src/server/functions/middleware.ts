@@ -31,18 +31,37 @@ export class Middleware<TArg, TResult, TContext extends { } = never> implements 
     }
 
     public async execute(arg: TArg, endpointContext: EndpointContext<TContext>): Promise<TResult> {
-        if (!this._chain) {
+        // finally compose chain w/ hooks
+        let chain = this._chain;
+
+        // add hooks
+        const beforeAll = this.onBeforeAll;
+        if (beforeAll) {
+            chain = Middleware.add(beforeAll, chain);
+        }
+        const afterAll = this.onAfterAll;
+        if (afterAll) {
+            chain = Middleware.add(chain, afterAll);
+        }
+
+        if (!chain) {
             throw new Error('No handlers/middleware were added');
         }
 
+        // compose context
         const ctx = endpointContext as HandlerContext<TArg, TResult, TContext>;
         ctx.input = arg;
         ctx.output = null;
 
-        await this._chain(ctx, () => Promise.resolve());
+        // call compiled chain
+        await chain(ctx, () => Promise.resolve());
 
+        // assume output will be populated
         return ctx.output;
     }
+
+    protected get onBeforeAll(): EndpointHandler<TArg, TResult, TContext> { return null; }
+    protected get onAfterAll(): EndpointHandler<TArg, TResult, TContext> { return null; }
 
     use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string) {
         this._chain = Middleware.add(this._chain, Middleware.safeNext(handler, name));
@@ -82,6 +101,11 @@ export class MiddlewareChild<TArg, TResult, TContext extends { } = never> extend
     private _skipParents = false;
 
     public get isSkipParents(): boolean { return this._skipParents; }
+
+    constructor(other?: IMiddleware<TArg, TResult, TContext>, skipParents = false) {
+        super(other);
+        this._skipParents = skipParents;
+    }
 
     skipParentMiddlewares(value = true): this {
         this._skipParents = value;
