@@ -25,15 +25,22 @@ describe('declaration', () => {
 
     it('called in correct order', async () => {
         let str = '';
-        const v1 = wrapEndpoint(ENDPOINT()
+        const endpointV1 = ENDPOINT()
             .use((_ctx, next) => { str += '2'; return next(); })
             .useBeforeAll((_ctx, next) => { str += '1'; return next(); })
-            .useFunctionsMap({ foo: async data => data + 1 })
-        );
+            .useFunctionsMap({ foo: async data => {
+                str += '_';
+                return data + 1;
+            } });
 
-        await expect(getNestedFunction(v1, 'foo')(1)).resolves.toEqual(2);
 
-        expect(str).toEqual('12');
+        endpointV1.use((_ctx, next) => { str += '3'; return next(); });
+
+        const v1 = wrapEndpoint(endpointV1);
+        const fooFunc = getNestedFunction(v1, 'foo');
+        await expect(fooFunc(1)).resolves.toEqual(2);
+
+        expect(str).toEqual('12_3');
     });
 });
 

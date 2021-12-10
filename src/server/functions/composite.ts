@@ -1,4 +1,3 @@
-import { createLogger, ILogger } from '@zajno/common/lib/logger';
 import AppHttpError from '../utils/AppHttpError';
 import { ArgExtract, CompositeEndpointInfo, EndpointArg, EndpointResult, FunctionComposite, ResExtract } from '../../functions/composite';
 import { FunctionFactory } from './factory';
@@ -23,17 +22,27 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
     extends FunctionFactory<EndpointArg<T>, EndpointResult<T>, TContext> {
 
     private readonly _handlers: MiddlewaresMap<T, TContext>;
-    private readonly _logger: ILogger;
+    private _handlersUsed: boolean = false;
 
     constructor(readonly Composition: FunctionComposite<T>, _context?: TContext, handlers?: MiddlewaresMap<T, TContext>) {
         super(Composition.rootEndpoint);
 
-        this._logger = createLogger(`[FC][${Composition.rootEndpoint.CallableName}]`);
         this._handlers = FunctionCompositeFactory.cloneHandlers(handlers) ||
             this.getHandlersMap(this.Composition.info);
     }
 
     public get handlers(): MiddlewaresMap<T, TContext> { return this._handlers; }
+
+    public useHandlers() {
+        if (this._handlersUsed) {
+            return;
+        }
+
+        this.useHandler(async (ctx: HandlerContext<EndpointArg<T>, EndpointResult<T>, TContext>) => {
+            ctx.output = await this.executeMap(this.Composition.info, this._handlers, ctx, [], true);
+        });
+        this._handlersUsed = true;
+    }
 
     private getHandlersMap<HT extends CompositeEndpointInfo>(info: HT) {
         const result = new MiddlewareChild<any, any, TContext>() as any as MiddlewaresMap<HT, TContext>;
@@ -131,10 +140,9 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         return results;
     }
 
-    protected get onAfterAll() {
-        return Middleware.wrapHandler(async (ctx: HandlerContext<EndpointArg<T>, EndpointResult<T>, TContext>) => {
-            ctx.output = await this.executeMap(this.Composition.info, this._handlers, ctx, [], true);
-        });
+    protected createEndpointHandler() {
+        this.useHandlers();
+        return super.createEndpointHandler();
     }
 
     protected generatedPathForInput(data: EndpointArg<T>) {
@@ -147,6 +155,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
 
     public useFunctionsMap(map: FunctionsMap<T, TContext>) {
         this._useFunctionMap(this.Composition.info, map, this._handlers);
+        this.useHandlers();
         return this;
     }
 
