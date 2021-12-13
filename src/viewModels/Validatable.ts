@@ -38,6 +38,14 @@ export abstract class ValidatableModel<T = string> {
         return this;
     }
 
+    public async testValidate(value: T) {
+        if (this._validator) {
+            const res = await this._validator(value);
+            return res;
+        }
+        return null;
+    }
+
     async validate() {
         if (!this._validator) {
             return true;
