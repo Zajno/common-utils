@@ -28,11 +28,16 @@ describe('declaration', () => {
         const endpointV1 = ENDPOINT()
             .use((_ctx, next) => { str += '2'; return next(); })
             .useBeforeAll((_ctx, next) => { str += '1'; return next(); })
+            .useMiddlewaresMap({
+                foo: async (_ctx, next) => {
+                    str += '_4';
+                    await next();
+                },
+            } as any)
             .useFunctionsMap({ foo: async data => {
                 str += '_';
                 return data + 1;
             } });
-
 
         endpointV1.use((_ctx, next) => { str += '3'; return next(); });
 
@@ -40,7 +45,7 @@ describe('declaration', () => {
         const fooFunc = getNestedFunction(v1, 'foo');
         await expect(fooFunc(1)).resolves.toEqual(2);
 
-        expect(str).toEqual('12_3');
+        expect(str).toEqual('12_4_3');
     });
 });
 

@@ -106,6 +106,13 @@ export namespace Server {
         // populate spec middlewares in various ways
         ExampleV1.handlers.useAuth();
 
+        // use middlewares for all endpoints
+        ExampleV1.useMiddlewaresMap({
+            foo: async (_, next: any) => {
+                await next();
+            },
+        } as any);
+
         ExampleV1.handlers.exampleAnon
             .skipParentMiddlewares()
             .useFunction(async (data) => `${data}`);
@@ -128,7 +135,6 @@ export namespace Server {
         ExampleV1.handlers.middlewaresCheck
             .mergeContext(null as string)
             .use(Middleware.aggregate(m0, m1, m2).currentChain);
-
 
         export const ExampleV2 = new FunctionCompositeFactory(ExampleEndpoint.v2(), null as string);
 

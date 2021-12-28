@@ -2,7 +2,7 @@ import AppHttpError from '../utils/AppHttpError';
 import { ArgExtract, CompositeEndpointInfo, EndpointArg, EndpointResult, FunctionComposite, ResExtract } from '../../functions/composite';
 import { FunctionFactory } from './factory';
 import { IMiddleware, IMiddlewareChild, Middleware, MiddlewareChild } from './middleware';
-import { EndpointFunction, HandlerContext } from './interface';
+import { EndpointFunction, EndpointHandler, HandlerContext } from './interface';
 
 type MiddlewareMapInner<T extends CompositeEndpointInfo, TContext = any> = MiddlewaresMap<T, TContext> & IMiddlewareChild<EndpointArg<T>, EndpointResult<T>, TContext>;
 
@@ -159,6 +159,12 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         return this;
     }
 
+    public useMiddlewaresMap(map: MiddlewaresMap<T, TContext>) {
+        this._useMiddlewareMap(this.Composition.info, map, this._handlers);
+        this.useHandlers();
+        return this;
+    }
+
     public clone(): FunctionCompositeFactory<T, TContext> {
         return new FunctionCompositeFactory(this.Composition, null as TContext, this._handlers);
     }
@@ -187,6 +193,29 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         });
     }
 
+    private _useMiddlewareMap<H extends CompositeEndpointInfo>(info: H, map: MiddlewaresMap<H, TContext>, handlers: MiddlewaresMap<H, TContext>) {
+        const keys: (keyof H)[] = Object.keys(info);
+        keys.forEach(k => {
+            const m = map[k];
+            if (!m) {
+                return;
+            }
+
+            const fieldInfo = info[k];
+            if (fieldInfo && typeof fieldInfo === 'object') {
+                // nested
+                const innerInfo = fieldInfo as H[keyof H] & CompositeEndpointInfo;
+                const innerMap = m as MiddlewaresMap<typeof innerInfo, TContext>;
+                const innerHandlers = handlers[k] as MiddlewaresMap<typeof innerInfo, TContext>;
+                this._useMiddlewareMap(innerInfo, innerMap, innerHandlers);
+            } else {
+                // not nested
+                const h = handlers[k] as IMiddleware<ArgExtract<H, keyof H>, ResExtract<H, keyof H>, TContext>;
+                const f = m as unknown as EndpointHandler<ArgExtract<H, keyof H>, ResExtract<H, keyof H>, TContext>;
+                h.use(f);
+            }
+        });
+    }
 }
 
 function argumentObjectToPath(obj: any): string {

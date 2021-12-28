@@ -23,7 +23,7 @@ export namespace PubSub {
 
         private _logger: ILogger = null;
 
-        constructor (private readonly name: string, private readonly timeout: number = 60, private readonly memory: FunctionsMemoryOptions = '256MB') {
+        constructor (private readonly name: string, private readonly timeout: number = 60, private readonly memory: FunctionsMemoryOptions = '256MB', private readonly retry: boolean = false) {
             this._logger = createLogger(`[Pubsub topic:${name}]`);
 
             this.topicInitialize();
@@ -43,7 +43,7 @@ export namespace PubSub {
         };
 
         private createTopic = () => {
-            const builder = functions.runWith({ timeoutSeconds: this.timeout, memory: this.memory });
+            const builder = functions.runWith({ timeoutSeconds: this.timeout, memory: this.memory, failurePolicy: this.retry });
 
             return builder.pubsub.topic(this.name);
         };
