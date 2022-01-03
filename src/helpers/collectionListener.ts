@@ -1,7 +1,7 @@
 import { makeObservable, observable, runInAction } from 'mobx';
 import { IDisposable, Unsubscriber } from '@zajno/common/lib/unsubscriber';
 import { Event } from '@zajno/common/lib/event';
-import { IdentAny } from '../Ident';
+import { IdentAny } from '@zajno/common/lib/ident';
 import { DBProvider } from '../database';
 import { Query, QuerySnapshotCallback } from '../database/dbProvider';
 import { querySnapshot } from '../database/helpers';

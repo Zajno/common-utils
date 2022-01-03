@@ -3,7 +3,7 @@
 
 import type * as FirebaseAdmin from 'firebase-admin';
 import type FirebaseClient from 'firebase/app';
-import Identify, { IdentAny } from '../Ident';
+import Identify, { IdentAny } from '@zajno/common/lib/ident';
 import logger from '@zajno/common/lib/logger';
 import DBProvider, { CollectionReference, DocumentData, DocumentReference, DocumentSnapshot, DocumentSnapshotCallback, DocumentSnapshotConverterCallback, Query, QueryDocumentSnapshot, QuerySnapshot, QuerySnapshotCallback, QuerySnapshotConverterCallback, ServerFirestore, UnsubscribeSnapshot } from './dbProvider';
 
