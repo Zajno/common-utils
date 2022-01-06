@@ -10,6 +10,8 @@ import { ClientFirestore } from '../database/dbProvider';
 import { IFunctionDefinition } from '../functions';
 import { FunctionFactory } from './FunctionFactory';
 import { FirebaseConfig } from '../config';
+import { IFirestoreContext } from '../database';
+import { ClientRealtimeDB, IDatabaseContext } from '../database/realtime';
 
 let instance: firebase.app.App = null;
 let firebaseConfig: FirebaseConfig = null;
@@ -142,13 +144,14 @@ const wrapper = {
     types: {
         get FirebaseAuth(): Readonly<typeof firebase.auth> { return firebase.auth; },
         get Firestore(): Readonly<typeof firebase.firestore> { return firebase.firestore; },
+        get RealtimeDatabase(): Readonly<typeof firebase.database> { return firebase.database; },
         get FirebaseStorage(): Readonly<typeof firebase.storage> { return firebase.storage; },
     },
 
     get raw() { return firebase; },
 };
 
-export default {
+const Firebase = {
     get Instance(): Readonly<typeof wrapper> {
         if (!instance) {
             throw new Error('Firebase: run initializeAsync before accessing Firebase instance');
@@ -178,4 +181,16 @@ export default {
         await instance.delete();
         instance = null;
     },
+} as const;
+
+export const FirestoreContext: IFirestoreContext<ClientFirestore> = {
+    get db() { return Firebase.Instance.database; },
+    get FieldValue() { return Firebase.Instance.types.Firestore.FieldValue; },
 };
+
+export const DatabaseContext: IDatabaseContext<ClientRealtimeDB> = {
+    get db() { return Firebase.Instance.realtimeDatabase; },
+    get ServerValue() { return Firebase.Instance.types.RealtimeDatabase.ServerValue; },
+};
+
+export default Firebase;

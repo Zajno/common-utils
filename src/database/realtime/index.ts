@@ -8,6 +8,8 @@ export type ServerRealtimeDB = FirebaseAdmin.database.Database;
 
 export type RealtimeDBProvider = ClientRealtimeDB | ServerRealtimeDB;
 
+export type DatabaseServerValue = typeof FirebaseClient.database.ServerValue | typeof FirebaseAdmin.database.ServerValue;
+
 export type Reference = FirebaseClient.database.Reference | FirebaseAdmin.database.Reference;
 
 type DataSnapshot = FirebaseClient.database.DataSnapshot | FirebaseAdmin.database.DataSnapshot;
@@ -35,4 +37,9 @@ export async function getData<T = any>(ref: Reference, cb?: DocumentSnapshotCall
             }
         }, reject);
     });
+}
+
+export interface IDatabaseContext<DB extends RealtimeDBProvider = RealtimeDBProvider> {
+    readonly db: DB;
+    readonly ServerValue: DatabaseServerValue;
 }
