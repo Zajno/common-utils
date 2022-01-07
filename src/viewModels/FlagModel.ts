@@ -33,6 +33,20 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     get isDefault() { return this._value === false; }
 
     @action
+    setTrue = () => {
+        const v = this.value;
+        this.value = true;
+        return !v;
+    };
+
+    @action
+    setFalse = () => {
+        const v = this.value;
+        this.value = false;
+        return v;
+    };
+
+    @action
     toggle = () => {
         this._value = !this._value;
     };

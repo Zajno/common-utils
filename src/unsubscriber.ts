@@ -68,3 +68,10 @@ export class Unsubscriber {
 export function combineDisposers(...items: Disposer[]): Disposer {
     return () => items.forEach(i => i());
 }
+
+export class Disposable implements IDisposable {
+
+    protected readonly disposer = new Unsubscriber();
+
+    public dispose = () => this.disposer.dispose();
+}
