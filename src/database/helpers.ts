@@ -1,35 +1,23 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 /* eslint-disable no-console */
-
-import type * as FirebaseAdmin from 'firebase-admin';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type * as _FirebaseAdmin from 'firebase-admin';
 import type FirebaseClient from 'firebase/app';
-import Identify, { IdentAny } from '@zajno/common/lib/ident';
+import { IdentAny } from '@zajno/common/lib/ident';
 import logger from '@zajno/common/lib/logger';
-import DBProvider, { CollectionReference, DocumentData, DocumentReference, DocumentSnapshot, DocumentSnapshotCallback, DocumentSnapshotConverterCallback, Query, QueryDocumentSnapshot, QuerySnapshot, QuerySnapshotCallback, QuerySnapshotConverterCallback, ServerFirestore, UnsubscribeSnapshot } from './dbProvider';
-
-type FirestoreDataConverter<T> = FirebaseClient.firestore.FirestoreDataConverter<T> | FirebaseAdmin.firestore.FirestoreDataConverter<T>;
-type SnapshotOptions = FirebaseClient.firestore.SnapshotOptions;
-
-type DataProcessor<T> = (data: T) => T;
-
-export function getIdentConverter<T extends Identify<{ }>>(read?: DataProcessor<T>, write?: DataProcessor<T>): FirestoreDataConverter<T> {
-    return {
-        toFirestore(model: T) {
-            Object.keys(model).forEach(k => {
-                if (model[k] === undefined) {
-                    model[k] = null;
-                }
-            });
-
-            return write ? write(model) : model;
-        },
-        fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): T {
-            const d = snapshot.data(options) as T;
-            d.id = snapshot.id;
-            return read(d as T);
-        },
-    };
-}
+import DBProvider, {
+    CollectionReference,
+    DocumentData,
+    DocumentReference,
+    DocumentSnapshot,
+    DocumentSnapshotCallback,
+    DocumentSnapshotConverterCallback,
+    Query,
+    QuerySnapshot,
+    QuerySnapshotCallback,
+    QuerySnapshotConverterCallback,
+    ServerFirestore,
+    UnsubscribeSnapshot,
+} from './dbProvider';
 
 let LOG_DOCS_COUNT = true;
 export function enableQueriesLogging(v: boolean) { LOG_DOCS_COUNT = v; }

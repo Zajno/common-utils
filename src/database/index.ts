@@ -1,4 +1,4 @@
-import DBProvider, { FieldValueClass } from './dbProvider';
+import DBProvider from './dbProvider';
 import LogicError from './LogicError';
 
 export {
@@ -8,8 +8,7 @@ export {
 
 export * from './dbProvider';
 export * from './helpers';
+export * from './converters';
 
-export interface IFirestoreContext<DB extends DBProvider = DBProvider> {
-    readonly db: DB;
-    readonly FieldValue: FieldValueClass;
-}
+export * from './firestoreContext';
+export * from './baseRepo';
