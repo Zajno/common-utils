@@ -58,9 +58,13 @@ export class StorageController implements IStorageController {
         }
     }
 
-    generateFileNameByDate(dotExtension: string): string {
+    generateFileNameByDate(extension: string): string {
         const now = new Date();
         const nowStr = formatDate(now);
+
+        const dotExtension = extension.startsWith('.')
+            ? extension
+            : ('.' + extension);
 
         const filename = `${nowStr}${dotExtension}`;
         return filename;
