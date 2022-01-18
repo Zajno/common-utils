@@ -5,7 +5,7 @@ import { createLogger } from '@zajno/common/lib/logger';
 import { Event } from '@zajno/common/lib/event';
 import { prepareEmail } from '@zajno/common/lib/emails';
 import IStorage from '@zajno/common/lib/abstractions/services/storage';
-import { IDisposable, Unsubscriber } from '@zajno/common/lib/unsubscriber';
+import { IDisposable, Disposer } from '@zajno/common/lib/disposer';
 
 export { IAuthController };
 export const logger = createLogger('[Auth]');
@@ -34,7 +34,7 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
     @observable
     private _firstInit = true;
 
-    protected readonly _disposer = new Unsubscriber();
+    protected readonly _disposer = new Disposer();
 
     constructor() {
         makeObservable(this);

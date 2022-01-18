@@ -1,5 +1,5 @@
 import { makeObservable, observable, runInAction } from 'mobx';
-import { IDisposable, Unsubscriber } from '@zajno/common/lib/unsubscriber';
+import { IDisposable, Disposer } from '@zajno/common/lib/disposer';
 import { Event } from '@zajno/common/lib/event';
 import { IdentAny } from '@zajno/common/lib/ident';
 import { DBProvider } from '../database';
@@ -10,7 +10,7 @@ export type CollectionListenerGeneric<T extends IdentAny> = Omit<CollectionListe
 
 export class CollectionListener<T extends IdentAny> implements IDisposable {
 
-    private readonly _disposer = new Unsubscriber();
+    private readonly _disposer = new Disposer();
 
     @observable.shallow
     private readonly _items: T[] = [];
