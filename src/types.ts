@@ -24,3 +24,7 @@ export type Comparator<T, C = boolean> = (v1: T, v2: T) => C;
 export namespace Comparator {
     export const Default: Comparator<any> = (a, b) => a === b;
 }
+
+export type TypedKeys<T extends Object, K> = {
+    [P in keyof T]: T[P] extends K ? P : never
+}[keyof T];
