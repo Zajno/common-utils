@@ -1,18 +1,7 @@
 import { DateX } from './datex';
+import { getDate, getTime } from './parse';
 import { isSame, startOf } from './shift';
 import { ConstantGranularity, Granularity } from './types';
-
-export function getTime(d: Date | number): number {
-    return d instanceof Date ? d.getTime() : d;
-}
-
-export function getDate(d: Date | number | string): Date {
-    if (!d) {
-        return null;
-    }
-
-    return new Date(d);
-}
 
 type DateFields<T> = {
     [P in keyof T]: T[P] extends Date ? P : never;

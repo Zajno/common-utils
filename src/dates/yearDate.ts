@@ -1,4 +1,4 @@
-import { getDate } from './convert';
+import { getDate } from './parse';
 
 /** Useful for recurring dates like birthday */
 export type YearDate = { day: number, month: number };

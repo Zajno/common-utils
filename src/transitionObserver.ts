@@ -1,7 +1,7 @@
 import { reaction } from 'mobx';
 import { IEvent, Event } from './event';
 import { ILogger, createLogger } from './logger';
-import { IDisposable } from './unsubscriber';
+import { IDisposable } from './disposer';
 
 export class TransitionObserver<T> implements IDisposable {
 

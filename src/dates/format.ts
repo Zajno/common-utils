@@ -1,5 +1,6 @@
 import * as MathX from '../math';
-import { decompose, decomposeDate, getDate, getDiscreteDiff, getTime } from './convert';
+import { decompose, decomposeDate, getDiscreteDiff } from './convert';
+import { getDate, getTime } from './parse';
 import { YearDate } from './yearDate';
 
 export namespace Format {

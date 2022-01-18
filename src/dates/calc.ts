@@ -1,4 +1,4 @@
-import { getTime } from './convert';
+import { getTime } from './parse';
 import { endOf, startOf } from './shift';
 import { Granularity } from './types';
 

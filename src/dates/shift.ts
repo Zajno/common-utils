@@ -1,4 +1,4 @@
-import { getDate, getTime } from './convert';
+import { getDate, getTime } from './parse';
 import { DateX } from './datex';
 import { ConstantGranularity, Granularity } from './types';
 
