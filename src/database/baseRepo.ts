@@ -6,6 +6,7 @@ import {
     Query,
     QuerySnapshotCallback,
     QuerySnapshotConverterCallback,
+    UnsubscribeSnapshot,
 } from './dbProvider';
 import { IFirestoreContext } from './firestoreContext';
 import { documentSnapshot, querySnapshot } from './helpers';
@@ -31,9 +32,15 @@ export class BaseRepo<T extends IdentAny> {
         return this;
     }
 
-    query(query: Query<T>, cb: QuerySnapshotCallback<T> = null) {
+    public query(query: Query<T>): Promise<T[]>;
+    public query(query: Query<T>, cb: QuerySnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
+
+    query(query: Query<T>, cb?: QuerySnapshotCallback<T>) {
         return querySnapshot(this.db, query, cb, this.queryConverter);
     }
+
+    document(doc: DocumentReference<T>): Promise<T>;
+    document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
 
     document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T> = null) {
         return documentSnapshot(this.db, doc, cb, this.docConverter);
