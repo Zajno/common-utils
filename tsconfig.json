@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "outDir": "./lib",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "strict": false,
+    "noUnusedLocals": true,
     "strictBindCallApply": true,
+    "outDir": "./lib",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "target": "ES2019",
     "module": "CommonJS",
@@ -18,7 +20,7 @@
     "importHelpers": true,
     "baseUrl": "src",
     "paths": {
-    }
+    },
   },
   "include": [
     "./src"

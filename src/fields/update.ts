@@ -1,3 +1,4 @@
+import { safeCall } from '../functions';
 import { Comparator } from '../types';
 
 export namespace Fields {
@@ -8,7 +9,7 @@ export namespace Fields {
 }
 
 
-export function updateField<T>(target: T, source: Partial<T>, diff: Partial<T>, key: keyof T, hasChanged: Fields.Comparer<T> = null): boolean {
+export function updateField<T>(target: T, source: Partial<T>, diff: Partial<T>, key: keyof T, hasChanged: null | Fields.Comparer<T> = null): boolean {
     return updateFieldExtended(target, source, diff, t => t[key], (t, v) => t[key] = v, hasChanged);
 }
 
@@ -18,7 +19,7 @@ export function updateFieldExtended<T>(
     diff: Partial<T>,
     get: Fields.Getter<T>,
     set: Fields.Setter<T>,
-    hasChanged: Fields.Comparer<T> = null,
+    hasChanged: null | Fields.Comparer<T> = null,
 ): boolean {
 
     hasChanged = hasChanged || ((v1: T, v2: T) => (get(v1) !== get(v2)));
@@ -44,6 +45,13 @@ export type UpdateArrayOptions<T> = {
     comparator?: Comparator<T>,
     updater?: Fields.Updater<T>,
     sorter?: Comparator<T, number> | null | undefined,
+    hooks?: UpdateArrayHooks<T>,
+};
+
+export type UpdateArrayHooks<T> = {
+    onAdded?: (item: T) => void,
+    onDeleted?: (item: T) => void,
+    onUpdated?: (previous: T, next: T) => void,
 };
 
 export function updateArray<T>(
@@ -62,12 +70,18 @@ export function updateArray<T>(
 
     const comparator = options?.comparator || DefaultComparator;
     const updater = options?.updater || DefaultUpdater;
+    const onDeleted = options?.hooks?.onDeleted;
+    const onUpdate = options?.hooks?.onUpdated;
+    const onAdded = options?.hooks?.onAdded;
 
     // remove all missing elements
     if (!options?.additive) {
         for (let i = 0; i < result.length; ++i) {
             if (source.find(item => comparator(item, result[i])) == null) {
-                result.splice(i, 1);
+                // DELETE
+                const removed = result.splice(i, 1);
+                safeCall(onDeleted, removed[0]);
+
                 ++changed;
                 --i;
             }
@@ -80,9 +94,14 @@ export function updateArray<T>(
         const existingItem = result[existingIndex];
         if (existingIndex < 0) {
             result.push(i);
+            safeCall(onAdded, i);
             ++changed;
         } else if (typeof existingItem === 'object') {
+            const before = onUpdate != null ? { ...existingItem } : undefined;
             result[existingIndex] = updater(existingItem, i);
+            if (onUpdate != null) {
+                onUpdate(before!, result[existingIndex]);
+            }
         }
     });
 

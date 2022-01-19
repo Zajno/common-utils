@@ -7,10 +7,8 @@ export type RemoveFunctionFields<T> = {
     readonly [P in PropertiesOf<T>]: T[P];
 };
 
-export function safeCall<T extends (...args: any) => any>(cb: T, ...args: Parameters<T>): ReturnType<T> {
+export function safeCall<T extends (...args: any) => any>(cb: T | undefined, ...args: Parameters<T>): ReturnType<T> | void {
     if (cb) {
         return cb.apply(null, args);
     }
 }
-
-export type SortingFunction<T> = (i1: T, i2: T) => number;
