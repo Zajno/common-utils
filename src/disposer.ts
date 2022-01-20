@@ -59,9 +59,12 @@ export class Disposer {
             );
         }
 
-        this._disposers.forEach(d => d());
+        const copy = this._disposers.slice().reverse();
         this._disposers.length = 0;
         this._map.clear();
+
+        // this should separate side effects
+        copy.forEach(d => d());
     }
 }
 

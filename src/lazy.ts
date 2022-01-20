@@ -1,6 +1,7 @@
-import { observable, transaction, makeObservable } from 'mobx';
+import type { IDisposable } from 'disposer';
+import { observable, makeObservable, action } from 'mobx';
 
-export default class Lazy<T> {
+export default class Lazy<T> implements IDisposable {
 
     @observable.ref
     private _instance: T = null;
@@ -25,9 +26,11 @@ export default class Lazy<T> {
     reset() {
         this._instance = null;
     }
+
+    dispose = () => this.reset();
 }
 
-export class LazyPromise<T> {
+export class LazyPromise<T> implements IDisposable {
 
     @observable.ref
     private _instance: T = null;
@@ -50,23 +53,27 @@ export class LazyPromise<T> {
     get() {
         if (!this._loaded && !this._busy) {
             this._busy = true;
-            this._factory().then(res => {
-                transaction(() => {
-                    this._busy = false;
-                    this._loaded = true;
-                    this._instance = res;
-                });
-            });
+            this._factory().then(this.setInstance);
         }
 
         return this._instance;
     }
 
+    @action
+    private setInstance = (res: T) => {
+        const wasBusy = this._busy;
+
+        this._busy = false;
+        this._loaded = wasBusy;
+        this._instance = wasBusy ? res : null;
+    };
+
+    @action
     reset() {
-        transaction(() => {
-            this._busy = false;
-            this._instance = this.initial;
-            this._loaded = false;
-        });
+        this._busy = false;
+        this._instance = this.initial;
+        this._loaded = false;
     }
+
+    dispose = () => this.reset();
 }

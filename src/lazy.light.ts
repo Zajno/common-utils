@@ -1,5 +1,6 @@
+import type { IDisposable } from './disposer';
 
-export type LazyLight<T> = {
+export type LazyLight<T> = IDisposable & {
     readonly value: T;
     readonly hasValue: boolean;
 
@@ -7,19 +8,22 @@ export type LazyLight<T> = {
 };
 
 export function createLazy<T>(factory: () => T) {
-    return {
-        _factory: factory,
-        _instance: undefined as T,
-        get value() {
-            if (this._instance === undefined) {
-                this._instance = this._factory();
-            }
-            return this._instance;
-        },
-        get hasValue() { return this._instance !== undefined; },
-        reset() {
-            this._instance = undefined;
-        },
+    const _factory = factory;
+    let _instance: T = undefined;
 
-    } as LazyLight<T>;
+    const res: LazyLight<T> = {
+        get value() {
+            if (_instance === undefined) {
+                _instance = _factory();
+            }
+            return _instance;
+        },
+        get hasValue() { return _instance !== undefined; },
+        reset: () => {
+            _instance = undefined;
+        },
+        dispose: () => res.reset(),
+    };
+
+    return res;
 }
