@@ -1,13 +1,13 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.6.7",
+  "version": "1.6.9",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-firebase.git"
   },
   "scripts": {
-    "build": "rm -rf ./lib && tsc",
+    "build": "rimraf ./lib && tsc",
     "build:w": "yarn build --watch",
     "publish:local": "yalc push --replace --update",
     "postinstall": "yarn build",
@@ -17,7 +17,9 @@
   },
   "author": "Zajno",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "rimraf": "^3"
+  },
   "devDependencies": {
     "@google-cloud/pubsub": "^2.18.1",
     "@types/jest": "^27.0.2",
