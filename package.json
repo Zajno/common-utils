@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "1.3.11",
+  "version": "1.3.13",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "homepage": "https://github.com/Zajno/common-utils#readme",
   "scripts": {
-    "build": "rm -rf ./lib && tsc",
+    "build": "rimraf ./lib && tsc",
     "build:w": "yarn build --watch",
     "publish:local": "yalc push --replace --update",
     "prepare": "yarn build && yarn lint && yarn test",
@@ -21,7 +21,9 @@
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "rimraf": "^3"
+  },
   "devDependencies": {
     "@types/faker": "^5.5.9",
     "@types/jest": "^27.0.2",
