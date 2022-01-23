@@ -2,28 +2,28 @@ import { observable, makeObservable, action } from 'mobx';
 import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '../validation';
 import { someAsync } from '../async/arrays';
 
-export type ValueValidator<T> = ValidatorFunction<T> | ValidatorFunctionAsync<T>;
-export type ValidationErrorsStrings = { [code: number]: string };
+export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
+export type ValidationErrorsStrings<TErrors extends string | number = number> = Record<TErrors, string>;
 
-export type ValidationConfig<T> = {
-    validator: ValueValidator<Readonly<T>>,
-    errors: ValidationErrorsStrings,
+export type ValidationConfig<T, TErrors extends string | number = ValidationErrors> = {
+    validator: ValueValidator<Readonly<T>, TErrors>,
+    errors: ValidationErrorsStrings<TErrors>,
 };
 
-const EmptyValidator = () => ValidationErrors.None;
+const EmptyValidator = () => 0;
+
 export abstract class ValidatableModel<T = string> {
 
-    private _validator: ValueValidator<Readonly<T>> = null;
-    private _strings: ValidationErrorsStrings = null;
+    private _validator: ValueValidator<Readonly<T>, any> = null;
+    private _strings: ValidationErrorsStrings<any> = null;
 
     @observable
     private _error: string = null;
 
     private _validationError: ValidationError = null;
 
-    constructor(config?: ValidationConfig<T>) {
+    constructor() {
         makeObservable(this);
-        this.setValidationConfig(config);
     }
 
     protected abstract get valueToValidate(): Readonly<T>;
@@ -32,7 +32,7 @@ export abstract class ValidatableModel<T = string> {
 
     get error() { return this._error; }
 
-    public setValidationConfig(config?: ValidationConfig<T>) {
+    public setValidationConfig<TErrors extends string | number = ValidationErrors>(config?: ValidationConfig<T, TErrors>) {
         this._validator = config?.validator || EmptyValidator;
         this._strings = config?.errors;
         return this;
@@ -52,10 +52,10 @@ export abstract class ValidatableModel<T = string> {
         }
 
         try {
-            const valid = await this._validator(this.valueToValidate);
-            this._validationError = valid === ValidationErrors.None
+            const validationResult = await this._validator(this.valueToValidate);
+            this._validationError = !validationResult
                 ? null
-                : new ValidationError('Unknown error', valid);
+                : new ValidationError('Unknown error', validationResult);
         } catch (err) {
             this._validationError = err as ValidationError;
         }

@@ -2,7 +2,7 @@ import { observable, computed, makeObservable, reaction } from 'mobx';
 import { Getter } from '../types';
 import { IValueModel } from './types';
 import logger from '../logger';
-import { ValidatableModel, ValidationConfig } from './Validatable';
+import { ValidatableModel } from './Validatable';
 import { IResetableModel } from 'viewModels';
 
 export type TextInputConfig = {
@@ -11,7 +11,6 @@ export type TextInputConfig = {
     value?: Getter<string>;
     async?: boolean;
 
-    validation?: ValidationConfig<string>;
     noSubscribe?: boolean;
 };
 
@@ -40,7 +39,7 @@ export class Text {
     get value() { return this._value; }
 }
 
-export class TextInputVM extends ValidatableModel implements IValueModel<string>, IResetableModel {
+export class TextInputVM extends ValidatableModel<string> implements IValueModel<string>, IResetableModel {
     @observable
     private _value = '';
 
@@ -56,7 +55,7 @@ export class TextInputVM extends ValidatableModel implements IValueModel<string>
     private readonly _valueObserving: () => void = null;
 
     constructor(config?: TextInputConfig) {
-        super(config && config.validation);
+        super();
         makeObservable(this);
         config = config || {};
 
