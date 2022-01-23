@@ -1,11 +1,12 @@
 import { IAuthController, AuthUser, AuthProviders, MagicLinkRequestReasons, AuthResult, AuthErrors } from '../../abstractions/IAuthController';
-import { action, makeObservable, observable, runInAction } from 'mobx';
+import { makeObservable, observable, runInAction } from 'mobx';
 import Firebase from '../../client/firebase';
 import { createLogger } from '@zajno/common/lib/logger';
 import { Event } from '@zajno/common/lib/event';
 import { prepareEmail } from '@zajno/common/lib/emails';
 import IStorage from '@zajno/common/lib/abstractions/services/storage';
-import { IDisposable, Disposer } from '@zajno/common/lib/disposer';
+import { Disposable } from '@zajno/common/lib/disposer';
+import { FlagModel, NumberModel } from '@zajno/common/lib/viewModels';
 
 export { IAuthController };
 export const logger = createLogger('[Auth]');
@@ -15,30 +16,26 @@ const UserSignInEmailStorageKey = 'auth:signin:email';
 const MagicLinkReasonKey = 'auth:signin:reason';
 const PasswordResetRequestedKey = 'auth:passwordreset';
 
-export default abstract class AuthControllerBase implements IAuthController, IDisposable {
+export default abstract class AuthControllerBase extends Disposable implements IAuthController {
     @observable
     private _authUser: AuthUser = null;
 
-    @observable
-    protected _initializing = 0;
+    protected readonly _initializing = new NumberModel(0);
 
     private _nextProvider: AuthProviders = null;
     private readonly _magicLinkSucceeded = new Event<MagicLinkRequestReasons>();
 
-    @observable
-    private _setPasswordMode: boolean = false;
+    private readonly _setPasswordMode = new FlagModel(false);
 
     private readonly _onSignOut = new Event();
     private readonly _onPreProcessUser = new Event<AuthUser>();
 
-    @observable
-    private _firstInit = true;
-
-    protected readonly _disposer = new Disposer();
+    private readonly _firstInit = new FlagModel(true);
 
     constructor() {
+        super();
         makeObservable(this);
-        this._disposer.add(
+        this.disposer.add(
             Firebase.Instance.auth.onAuthStateChanged(async () => {
                 this.doInitialization(this.processAuthUser.bind(this));
             }),
@@ -46,10 +43,10 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
     }
 
     get authUser(): Readonly<AuthUser> { return this._authUser; }
-    get initializing() { return this._firstInit || this._initializing !== 0; }
+    get initializing() { return this._firstInit.value || this._initializing.value !== 0; }
     get magicLinkSucceeded() { return this._magicLinkSucceeded.expose(); }
 
-    get setPasswordMode() { return this._setPasswordMode; }
+    get setPasswordMode() { return this._setPasswordMode.value; }
     get needsCreatePassword(): boolean | null {
         if (!this.authUser || !this.authUser.providers || !this.authUser.currentProvider
             || this.authUser.currentProvider === AuthProviders.Google
@@ -72,10 +69,10 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
     get logger() { return logger; }
 
     protected async processAuthUser() {
-        runInAction(() => this._firstInit = false);
+        this._firstInit.setFalse();
         const authUser = Firebase.Instance.auth.currentUser;
 
-        const methods = authUser && await this.getEmailAuthMethod(authUser.email);
+        const methods = authUser?.email && await this.getEmailAuthMethod(authUser.email);
 
         let provider: AuthProviders;
         if (!authUser) {
@@ -112,19 +109,17 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
             const resetPassword = provider === AuthProviders.EmailLink && (await this.Storage.getValue(PasswordResetRequestedKey)) === 'true';
             if (createPassword || resetPassword) {
                 logger.log('Setting _setPasswordMode = true createPassword =', createPassword, 'resetPassword =', resetPassword);
-                runInAction(() => this._setPasswordMode = true);
+                this._setPasswordMode.setTrue();
             }
         }
     }
 
-    @action
     protected forceEnableSetPasswordMode() {
-        this._setPasswordMode = true;
+        this._setPasswordMode.setTrue();
     }
 
-    @action
     public skipPasswordMode(): void {
-        this._setPasswordMode = false;
+        this._setPasswordMode.setFalse();
         this.Storage.remove(PasswordResetRequestedKey);
     }
 
@@ -134,7 +129,7 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
     }
 
     async getEmailAuthMethod(email: string): Promise<AuthProviders[]> {
-        const methods = await Firebase.Instance.auth.fetchSignInMethodsForEmail(email);
+        const methods = email && typeof email === 'string' && await Firebase.Instance.auth.fetchSignInMethodsForEmail(email);
         const results = (methods || []).map(m => {
             switch (m) {
                 case Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD: {
@@ -208,7 +203,7 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
             this.logger.log('processEmailLink reason =', reason);
             if (reason === MagicLinkRequestReasons.PasswordReset) {
                 await this.Storage.setValue(PasswordResetRequestedKey, 'true');
-                this._setPasswordMode = true;
+                this._setPasswordMode.setTrue();
             }
 
             await this.Storage.remove(MagicLinkReasonKey);
@@ -264,7 +259,7 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
             await authUser.updatePassword(password);
             logger.log('password updated successfully!!');
             this._authUser.providers = await this.getEmailAuthMethod(authUser.email);
-            this._setPasswordMode = false;
+            this._setPasswordMode.setFalse();
             await this.Storage.remove(PasswordResetRequestedKey);
 
             return { result: true };
@@ -365,7 +360,7 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
         logger.log('Signing out...');
         this.doInitialization(async () => {
             try {
-                this._setPasswordMode = false;
+                this._setPasswordMode.setFalse();
 
                 await this._onSignOut.triggerAsync();
 
@@ -401,15 +396,11 @@ export default abstract class AuthControllerBase implements IAuthController, IDi
 
     protected async doInitialization<T>(cb: () => Promise<T>): Promise<T> {
         try {
-            runInAction(() => this._initializing++);
+            this._initializing.increment(1);
             const res = await cb();
             return res;
         } finally {
-            runInAction(() => this._initializing--);
+            this._initializing.decrement(1);
         }
-    }
-
-    public dispose() {
-        this._disposer.dispose();
     }
 }
