@@ -1,4 +1,12 @@
-import { IAuthController, AuthUser, AuthProviders, MagicLinkRequestReasons, AuthResult, AuthErrors } from '../../abstractions/IAuthController';
+import {
+    IAuthController,
+    AuthUser,
+    AuthUserWithProviders,
+    AuthProviders,
+    MagicLinkRequestReasons,
+    AuthResult,
+    AuthErrors,
+} from '../../abstractions/IAuthController';
 import { makeObservable, observable, runInAction } from 'mobx';
 import Firebase from '../../client/firebase';
 import { createLogger } from '@zajno/common/lib/logger';
@@ -16,9 +24,9 @@ const UserSignInEmailStorageKey = 'auth:signin:email';
 const MagicLinkReasonKey = 'auth:signin:reason';
 const PasswordResetRequestedKey = 'auth:passwordreset';
 
-export default abstract class AuthControllerBase extends Disposable implements IAuthController {
+export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> extends Disposable implements IAuthController {
     @observable
-    private _authUser: AuthUser = null;
+    private _authUser: AuthUserWithProviders<TUser> = null;
 
     protected readonly _initializing = new NumberModel(0);
 
@@ -28,7 +36,7 @@ export default abstract class AuthControllerBase extends Disposable implements I
     private readonly _setPasswordMode = new FlagModel(false);
 
     private readonly _onSignOut = new Event();
-    private readonly _onPreProcessUser = new Event<AuthUser>();
+    private readonly _onPreProcessUser = new Event<AuthUserWithProviders<TUser>>();
 
     private readonly _firstInit = new FlagModel(true);
 
@@ -42,7 +50,7 @@ export default abstract class AuthControllerBase extends Disposable implements I
         );
     }
 
-    get authUser(): Readonly<AuthUser> { return this._authUser; }
+    get authUser(): Readonly<AuthUserWithProviders<TUser>> { return this._authUser; }
     get initializing() { return this._firstInit.value || this._initializing.value !== 0; }
     get magicLinkSucceeded() { return this._magicLinkSucceeded.expose(); }
 
@@ -89,16 +97,11 @@ export default abstract class AuthControllerBase extends Disposable implements I
         logger.log('Initializing with user:', authUser?.email, '; provider =', provider, '; uid =', authUser?.uid);
 
         const signedIn = !this._authUser && authUser;
-
-        const result: AuthUser = authUser ? {
-            email: authUser.email,
-            displayName: authUser.displayName,
-            uid: authUser.uid,
-            photoURL: authUser.photoURL,
-            emailVerified: authUser.emailVerified,
-            providers: methods || [],
-            currentProvider: provider,
-        } : null;
+        const result = this.createAuthUser() as AuthUserWithProviders<TUser>;
+        if (result) {
+            result.providers = methods || [];
+            result.currentProvider = provider;
+        }
 
         await this._onPreProcessUser.triggerAsync(result);
 
@@ -112,6 +115,21 @@ export default abstract class AuthControllerBase extends Disposable implements I
                 this._setPasswordMode.setTrue();
             }
         }
+    }
+
+    protected createAuthUser(): TUser {
+        const authUser = Firebase.Instance.auth.currentUser;
+
+        const result: AuthUser = authUser ? {
+            uid: authUser.uid,
+            displayName: authUser.displayName,
+            email: authUser.email,
+            emailVerified: authUser.emailVerified,
+            phoneNumber: authUser.phoneNumber,
+            photoURL: authUser.photoURL,
+        } : null;
+
+        return result as TUser;
     }
 
     protected forceEnableSetPasswordMode() {

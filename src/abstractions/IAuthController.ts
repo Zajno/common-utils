@@ -6,10 +6,16 @@ export type FirebaseUser = firebase.User;
 export type AuthUser = {
     uid: string,
     displayName: string,
+
     email: string,
-    photoURL: string,
     emailVerified: boolean,
 
+    phoneNumber: string,
+
+    photoURL: string,
+};
+
+export type AuthUserWithProviders<T> = T & {
     providers: ReadonlyArray<AuthProviders>,
     currentProvider: AuthProviders,
 };
