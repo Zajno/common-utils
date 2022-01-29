@@ -27,8 +27,13 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     }
 
     set value(value: boolean) {
-        this._value = value;
+        this.setValue(value);
     }
+
+    @action
+    public readonly setValue = (value: boolean) => {
+        this._value = value;
+    };
 
     get isDefault() { return this._value === false; }
 

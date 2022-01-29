@@ -1,4 +1,4 @@
-import { observable, computed, makeObservable, reaction } from 'mobx';
+import { observable, makeObservable, reaction, action } from 'mobx';
 import { Getter } from '../types';
 import { IValueModel } from './types';
 import logger from '../logger';
@@ -46,10 +46,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
     @observable
     private _focused = false;
 
-    @observable
     private _name: string = null;
-
-    @observable
     private _title: string = null;
 
     private readonly _valueObserving: () => void = null;
@@ -71,14 +68,18 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
     get title() { return this._title; }
 
     set value(val) {
+        this.setValue(val);
+    }
+
+    @action
+    public readonly setValue = (value: string) => {
         if (!this._valueObserving) {
-            this._value = val;
+            this._value = value;
         } else {
             logger.warn('[TextInputViewModel] Setting value is not allowed when value is observing');
         }
-    }
+    };
 
-    @computed
     get isEmpty() {
         return !this._value;
     }
@@ -87,15 +88,20 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         return this._focused;
     }
 
-    set focused(val) {
-        this._focused = val;
-        if (!val) {
+    set focused(val: boolean) {
+        this.setFocused(val);
+    }
+
+    @action
+    public readonly setFocused = (value = true) => {
+        this._focused = value;
+        if (!value) {
             this.onBlur();
             return;
         }
 
         super.reset();
-    }
+    };
 
     protected get valueToValidate() { return (this.value ?? '').trim(); }
 

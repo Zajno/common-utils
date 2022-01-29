@@ -1,4 +1,4 @@
-import { observable, makeObservable, action } from 'mobx';
+import { observable, makeObservable, action, runInAction } from 'mobx';
 import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '../validation';
 import { someAsync } from '../async/arrays';
 
@@ -60,12 +60,14 @@ export abstract class ValidatableModel<T = string> {
             this._validationError = err as ValidationError;
         }
 
-        if (!this._validationError) {
-            this._error = null;
-        } else {
-            const code = this._validationError.code;
-            this._error = this._strings && this._strings[code];
-        }
+        runInAction(() => {
+            if (!this._validationError) {
+                this._error = null;
+            } else {
+                const code = this._validationError.code;
+                this._error = this._strings && this._strings[code];
+            }
+        });
         return this._validationError == null;
     }
 

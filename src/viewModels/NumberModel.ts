@@ -20,7 +20,12 @@ export class NumberModel implements INumberModel, IValueModel<number> {
     }
 
     get value() { return this._value; }
-    set value(v: number) { this._value = v; }
+    set value(v: number) { this.setValue(v); }
+
+    @action
+    public readonly setValue = (v: number) => {
+        this._value = v;
+    };
 
     get isDefault() { return this._value === this._initial; }
 
