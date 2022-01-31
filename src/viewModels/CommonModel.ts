@@ -1,18 +1,22 @@
 import { action, makeObservable, observable } from 'mobx';
+import { Getter } from '../types';
 import { ValidatableModel } from './Validatable';
 
 export class CommonModel<T = any> extends ValidatableModel<T> {
 
-    @observable.ref
-    private _value: T = null;
+    private _value: T;
 
-    private _defaultValue: T = null;
+    private _defaultValue: Getter<T> = null;
 
-    constructor(v: T = null) {
+    constructor(v: Getter<T> = null, useRefObservable = true) {
         super();
-        makeObservable(this);
-        this._value = v;
+        this._value = Getter.getValue(v) || null;
         this._defaultValue = v;
+
+        makeObservable<CommonModel<T>, '_value'>(this, {
+            _value: useRefObservable ? observable.ref : observable,
+            setValue: action,
+        });
     }
 
     protected get valueToValidate(): Readonly<T> {
@@ -24,7 +28,6 @@ export class CommonModel<T = any> extends ValidatableModel<T> {
         this.setValue(v);
     }
 
-    @action
     public readonly setValue = (value: T) => {
         this._value = value;
 
@@ -34,7 +37,7 @@ export class CommonModel<T = any> extends ValidatableModel<T> {
     };
 
     reset = () => {
+        this._value = Getter.getValue(this._defaultValue);
         super.reset();
-        this.value = this._defaultValue;
     };
 }
