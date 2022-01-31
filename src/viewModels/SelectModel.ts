@@ -1,5 +1,5 @@
 import { createLazy } from '../lazy.light';
-import { observable, computed, makeObservable, reaction } from 'mobx';
+import { observable, computed, makeObservable, reaction, action } from 'mobx';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import { IValueModel } from './types';
@@ -75,11 +75,20 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
     }
 
     set index(val: number) {
+       this.setIndex(val);
+    }
+
+    @action
+    public setIndex = (val: number) => {
         if (this._indexLocked) {
             return;
         }
 
         this._index = val;
+
+        if (this._validateOnChange) {
+            this.validate();
+        }
 
         // update all flags to be properly selected
         try {
@@ -91,7 +100,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         } finally {
             this._indexLocked = false;
         }
-    }
+    };
 
     reset = () => {
         super.reset();

@@ -75,6 +75,10 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
     public readonly setValue = (value: string) => {
         if (!this._valueObserving) {
             this._value = value;
+
+            if (this._validateOnChange) {
+                this.validate();
+            }
         } else {
             logger.warn('[TextInputViewModel] Setting value is not allowed when value is observing');
         }

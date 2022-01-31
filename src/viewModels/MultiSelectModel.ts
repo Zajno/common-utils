@@ -109,6 +109,10 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
             this._indexes.delete(index);
         }
 
+        if (this._validateOnChange) {
+            this.validate();
+        }
+
         if (!this._flags.hasValue) {
             return;
         }

@@ -7,18 +7,12 @@ export class CommonModel<T = any> extends ValidatableModel<T> {
     private _value: T = null;
 
     private _defaultValue: T = null;
-    private _validateOnChange = false;
 
     constructor(v: T = null) {
         super();
         makeObservable(this);
         this._value = v;
         this._defaultValue = v;
-    }
-
-    validateOnChange(enable = true) {
-        this._validateOnChange = enable;
-        return this;
     }
 
     protected get valueToValidate(): Readonly<T> {

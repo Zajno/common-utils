@@ -21,6 +21,7 @@ export abstract class ValidatableModel<T = string> {
     private _error: string = null;
 
     private _validationError: ValidationError = null;
+    protected _validateOnChange = false;
 
     constructor() {
         makeObservable(this);
@@ -35,6 +36,11 @@ export abstract class ValidatableModel<T = string> {
     public setValidationConfig<TErrors extends string | number = ValidationErrors>(config?: ValidationConfig<T, TErrors>) {
         this._validator = config?.validator || EmptyValidator;
         this._strings = config?.errors;
+        return this;
+    }
+
+    public validateOnChange(enable = true) {
+        this._validateOnChange = enable;
         return this;
     }
 
