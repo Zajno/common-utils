@@ -3,7 +3,7 @@ import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, Validation
 import { someAsync } from '../async/arrays';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
-export type ValidationErrorsStrings<TErrors extends string | number = number> = Record<TErrors, string>;
+export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0 | null>>;
 
 export type ValidationConfig<T, TErrors extends string | number = ValidationErrors> = {
     validator: ValueValidator<Readonly<T>, TErrors>,

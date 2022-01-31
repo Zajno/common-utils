@@ -1,5 +1,6 @@
 export * from './types';
 export * from './Validatable';
+export * from './CommonModel';
 export * from './TextModel';
 export * from './FlagModel';
 export * from './NumberModel';
