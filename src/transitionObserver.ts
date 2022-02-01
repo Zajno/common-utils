@@ -174,3 +174,10 @@ export class TransitionObserver<T> implements IDisposable {
         }
     }
 }
+
+export function waitFor<T>(current: () => T, toBe: T) {
+    return new TransitionObserver(current)
+        .to(toBe)
+        .fireOnce()
+        .getPromise();
+}
