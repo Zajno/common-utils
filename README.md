@@ -9,9 +9,9 @@ The motivation to have this – just to control and organize some shared code th
 
 * [Math and Array extensions](./src/math/index.ts)
 * [Date extensions & helpers](./src/dates/index.ts)
-* [Logger interface & console implementation](./src/logger/index.ts) – enable logger instances by setting `process.env.COMMON_UTILS_LOGGER` to `'console'` before importing in your code, or call `setEnabled`
+* [Logger interface & console implementation](./src/logger/index.ts) – create instance of logger, inject your own implementation or globally enable/disable logger instances by callling `setMode`
 * [Localization](./src/services/localization/LocalizationManager.ts) – attempt to have a simple runtime i18n manager
-* Cache, EnumHelper, Event, Lazy, Pool, Throttle, Unsubscriber
+* Cache, EnumHelper, Event, Lazy, Pool, Throttle, Disposer
 
 ...and other more or less noteworthy stuff.
 
@@ -22,10 +22,10 @@ The source code is written in TypeScript, and intended to be used in TS project,
 
 It can be used a git submodule if you're brave enough, but it's possible to use it as npm package (kinda) as well. In your project:
 
-1. Add it directly from GitHub
+1. Install from NPM
 
 ```
-yarn add git+https://github.com/Zajno/common-utils.git
+yarn add @zajno/common
 ```
 
 2. In your code, use each module separately:
@@ -57,5 +57,5 @@ The flow will look like the following. [1] – operations made on this project, 
 
 ## Challenges & TODOs
 
-1. This library should be and will be updated frequently. When and how to integrate these changes? For small projects that would not be required, but for long-running once would be essential.
+1. This library should be and will be updated frequently. When and how to integrate these changes? For small projects that would not be required, but for long-running ones the strategy would be essential.
 2. It needs [more] tests.

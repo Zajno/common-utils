@@ -1,4 +1,5 @@
 import { observable, makeObservable, runInAction, action } from 'mobx';
+import { NumberModel } from './viewModels/NumberModel';
 import { createLogger, ILogger } from './logger';
 
 export type DeferredGetter<T> = {
@@ -28,14 +29,25 @@ export class PromiseCache<T, K = string> {
     private readonly _fetchCache: Record<string, Promise<T>> = { };
 
     private _logger: ILogger = null;
+    private _observeItems = false;
+
+    private readonly _busyCount = new NumberModel(0);
 
     constructor(
         readonly fetcher: (id: K) => Promise<T>,
         readonly keyAdapter?: K extends string ? null : (k: K) => string,
         readonly keyParser?: K extends string ? null : (id: string) => K,
-        readonly observeItems = false,
+        observeItems = false,
     ) {
         makeObservable(this);
+        this._observeItems = observeItems;
+    }
+
+    public get busyCount() { return this._busyCount.value; }
+
+    useObserveItems(observeItems: boolean) {
+        this._observeItems = observeItems;
+        return this;
     }
 
     private _pk(k: K): string {
@@ -73,10 +85,12 @@ export class PromiseCache<T, K = string> {
         return this._itemsStatus[key];
     }
 
-    getCurrent(id: K): T {
+    getCurrent(id: K, initiateFetch = true): T {
         const key = this._pk(id);
         const item = this._itemsCache[key];
-        this.get(id);
+        if (initiateFetch) {
+            this.get(id);
+        }
         this._logger?.log(key, 'getCurrent returns', item);
         return item;
     }
@@ -104,17 +118,19 @@ export class PromiseCache<T, K = string> {
 
     private _doFetchAsync = async (id: K, key: string) => {
         try {
+            this._busyCount.increment();
             const res = await this.fetcher(id);
             if (this._fetchCache[key]) {
                 this._logger?.log(key, 'item\'s <promise> resolved to', res);
                 const result = res
-                    ? (this.observeItems ? observable.object(res) : res)
+                    ? (this._observeItems ? observable.object(res) : res)
                     : null;
                 runInAction(() => this._itemsCache[key] = result);
             }
             return res;
         } finally {
             runInAction(() => {
+                this._busyCount.decrement();
                 delete this._fetchCache[key];
                 this._itemsStatus[key] = false;
             });
@@ -129,6 +145,11 @@ export class PromiseCache<T, K = string> {
     updateValueDirectly(id: K, value: T) {
         const key = this._pk(id);
         this._set(key, value, undefined, undefined);
+    }
+
+    hasKey(id: K) {
+        const key = this._pk(id);
+        return this._itemsCache[key] !== undefined || this._itemsStatus[key] !== undefined;
     }
 
     keys() {

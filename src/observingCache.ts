@@ -1,0 +1,135 @@
+import { action } from 'mobx';
+import { Disposable } from './disposer';
+import { PromiseCache, DeferredGetter } from './cache';
+import { ObserversMap } from './observersMap';
+import { Fields } from './fields';
+
+export type Unsub = () => void;
+export type Fetcher<T> = (key: string, cb: (val: T) => Promise<void> | void) => Unsub | Promise<Unsub>;
+
+type ObserveStrategy = boolean | 'short' | number;
+
+export interface IObservingCache<T> {
+    get(key: string): DeferredGetter<T>;
+}
+
+export class ObservingCache<T> extends Disposable implements IObservingCache<T> {
+
+    private readonly _cache: PromiseCache<T>;
+    private readonly _observers: ObserversMap;
+
+    private _observeStrategy: ObserveStrategy = null;
+    private readonly _observeStrategyOverrides: Record<string, ObserveStrategy> = { };
+
+    private _updater: Fields.Updater<T> = null;
+
+    constructor(readonly fetcher: Fetcher<T>) {
+        super();
+
+        this._cache = new PromiseCache(this._fetch);
+        this._observers = new ObserversMap(this._subscribe);
+
+        this.disposer.add(this._observers);
+    }
+
+    public get loadingCount() { return this._cache.busyCount; }
+    public get observersCount() { return this._observers.count; }
+
+    useObservingStrategy(observe: ObserveStrategy) {
+        this._observeStrategy = observe;
+        if (!this._observeStrategy) {
+            this._observers.clear();
+        } else {
+            const currentKeys = this._cache.keys();
+            const timeout = getObserveTimeout(this._observeStrategy);
+            currentKeys.forEach(key => this._observers.enable(key, true, timeout));
+        }
+
+        return this;
+    }
+
+    useUpdater(updater: Fields.Updater<T>) {
+        this._updater = updater;
+        this._cache.useObserveItems(updater != null);
+        return this;
+    }
+
+    get(key: string, overrideStrategy?: ObserveStrategy): DeferredGetter<T> {
+        this._observeStrategyOverrides[key] = overrideStrategy;
+
+        const strategy = overrideStrategy || this._observeStrategy;
+        if (strategy && !this._observers.getIsObserving(key)) {
+            // ensure observe
+            if (this._cache.hasKey(key)) {
+                // the request has been initiated already
+                const timeout = getObserveTimeout(strategy);
+                this._observers.enable(key, true, timeout);
+            }
+        }
+
+        return this._cache.getDeferred(key);
+    }
+
+    populate = (key: string, item: T) => {
+        this._updateItem(key, item);
+    };
+
+    private _fetch = async (key: string): Promise<T> => {
+        let firstLoad = true;
+
+        return new Promise<T>((resolve) => {
+            Promise.resolve<Unsub>(
+                this.fetcher(key, item => {
+                    if (firstLoad) {
+                        resolve(item);
+                        firstLoad = false;
+                    } else {
+                        this._updateItem(key, item);
+                    }
+                })
+            ).then(unsub => {
+                const strategy = this._observeStrategyOverrides[key] || this._observeStrategy;
+                if (!strategy) {
+                    // immediate unsub in case no observing strategy has been set
+                    unsub();
+                } else {
+                    const timeout = getObserveTimeout(strategy);
+                    this._observers.enable(key, true, timeout, [unsub]);
+                }
+            });
+        });
+    };
+
+    private _subscribe = (key: string) => {
+        return Promise.all([
+            this.fetcher(key, item => this._updateItem(key, item)),
+        ]);
+    };
+
+    private _updateItem = action((key: string, item: T) => {
+        if (this._updater != null) {
+            const current = this._cache.getCurrent(key, false);
+            if (current != null) {
+                const result = this._updater(current, item);
+                // re-set existing item but with updated contents
+                this._cache.updateValueDirectly(key, result);
+                return;
+            }
+        }
+
+        this._cache.updateValueDirectly(key, item);
+    });
+}
+
+function getObserveTimeout(s: ObserveStrategy) {
+    if (!s) {
+        return undefined;
+    }
+
+    return typeof s === 'number'
+        ? s
+        : (s === 'short'
+            ? 5 * 60 * 1000
+            : null
+        );
+}

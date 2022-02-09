@@ -1,23 +1,33 @@
 import { createLogger, ILogger } from './logger';
 import { combineDisposers, IDisposable } from './disposer';
+import { NumberModel } from './viewModels/NumberModel';
 
 type Unsub = () => void;
 
-export class Observers implements IDisposable {
+export class ObserversMap implements IDisposable {
+    /** Unsusbcrobers map: key => unsub fn */
     private readonly _map = new Map<string, () => void>();
+    /** Timeouts map: key => timeout handle */
     private readonly _timeouts = new Map<string, any>();
 
     private readonly _logger: ILogger = null;
+    private readonly _count = new NumberModel();
 
-    constructor(readonly subscribe: (key: string) => Promise<Unsub[]>, readonly name?: string) {
+    constructor(readonly subscribe: null | ((key: string) => Promise<Unsub[]>), readonly name?: string) {
         this._logger = createLogger(`[Observers:${this.name || '?'}]`);
     }
+
+    public get count() { return this._count.value; }
 
     public getIsObserving(key: string) {
         return this._map.has(key);
     }
 
-    public async enable(key: string, enable: boolean, clearAfter: number = null) {
+    public getHasObserveTimeout(key: string) {
+        return this.getIsObserving(key) && this._timeouts.has(key);
+    }
+
+    public async enable(key: string, enable: boolean, clearAfter: number = null, existingUnsubs: Unsub[] = null) {
         if (enable === this.getIsObserving(key)) {
             this.refreshTimeout(key, enable, clearAfter, true);
             return;
@@ -32,13 +42,18 @@ export class Observers implements IDisposable {
 
             this._map.set(key, marker);
 
-            const unsubs = await this.subscribe(key);
+            if (!this.subscribe && !existingUnsubs) {
+                throw new Error('Neither subscribe function nor existingUnsubs has been configured');
+            }
+
+            const unsubs = existingUnsubs || await this.subscribe(key);
             const result = combineDisposers(...unsubs);
 
             if (disabed) { // unsubscribe was requested
                 result();
             } else {
                 this._map.set(key, result);
+                this._count.increment();
                 this.refreshTimeout(key, true, clearAfter);
             }
         } else {
@@ -47,6 +62,7 @@ export class Observers implements IDisposable {
             const unsub = this._map.get(key);
             this._map.delete(key);
             unsub();
+            this._count.decrement();
         }
     }
 
@@ -68,15 +84,22 @@ export class Observers implements IDisposable {
         }
     }
 
-    public dispose() {
-        for (const u of this._map.values()) {
-            u();
-        }
-        this._map.clear();
-
+    public clear() {
+        // Clear timeouts
         for (const t of this._timeouts.values()) {
             clearTimeout(t);
         }
         this._timeouts.clear();
+
+        // Invoke unsubscribers
+        for (const u of this._map.values()) {
+            u();
+        }
+        this._map.clear();
+        this._count.setValue(0);
+    }
+
+    public dispose() {
+        this.clear();
     }
 }
