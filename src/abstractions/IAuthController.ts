@@ -65,8 +65,12 @@ export interface IAuthController {
 
     updatePassword(password: string, oldPassword?: string): Promise<AuthResult>;
 
+    /** @deprecated Use `updateProfile` instead */
     updatePhotoUrl(photoUrl: string): Promise<void>;
+    updateProfile(data: AuthUserUpdate): Promise<void>;
 }
+
+export type AuthUserUpdate = Partial<Pick<AuthUser, 'displayName' | 'photoURL'>>;
 
 export type FirebaseError = Error & { code: string };
 

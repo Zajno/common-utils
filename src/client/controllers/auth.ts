@@ -6,11 +6,13 @@ import {
     MagicLinkRequestReasons,
     AuthResult,
     AuthErrors,
+    AuthUserUpdate,
 } from '../../abstractions/IAuthController';
 import { makeObservable, observable, runInAction } from 'mobx';
 import Firebase from '../../client/firebase';
 import { createLogger } from '@zajno/common/lib/logger';
 import { Event } from '@zajno/common/lib/event';
+import { transferFields } from '@zajno/common/lib/fields/transfer';
 import { prepareEmail } from '@zajno/common/lib/emails';
 import IStorage from '@zajno/common/lib/abstractions/services/storage';
 import { Disposable } from '@zajno/common/lib/disposer';
@@ -403,14 +405,27 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         await this.googleSignOut();
     }
 
-    async updatePhotoUrl(photoUrl: string): Promise<void> {
-        await Firebase.Instance.auth.currentUser.updateProfile({
-            photoURL: photoUrl,
-        });
-
-        runInAction(() => this._authUser.photoURL = Firebase.Instance.auth.currentUser.photoURL);
-        logger.log('User photo URL updated:', this._authUser.photoURL);
+    updatePhotoUrl(photoUrl: string): Promise<void> {
+        return this.updateProfile({ photoURL: photoUrl });
     }
+
+    async updateProfile(data: AuthUserUpdate): Promise<void> {
+        const diff: typeof data = { };
+        if (!transferFields.changed(data, this._authUser, diff, 'displayName', 'photoURL')) {
+            return;
+        }
+
+        await Firebase.Instance.auth.currentUser.updateProfile(diff);
+
+        runInAction(() => {
+            const user = Firebase.Instance.auth.currentUser;
+
+            this._authUser.photoURL = user.photoURL;
+            this._authUser.displayName = user.displayName;
+        });
+        logger.log('AuthUser profile updated:', this._authUser);
+    }
+
 
     protected async doInitialization<T>(cb: () => Promise<T>): Promise<T> {
         try {
