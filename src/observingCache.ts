@@ -54,10 +54,21 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
         return this;
     }
 
-    get(key: string, overrideStrategy?: ObserveStrategy): DeferredGetter<T> {
-        this._observeStrategyOverrides[key] = overrideStrategy;
+    getIsCached(key: string) {
+        return this._cache.hasKey(key);
+    }
 
-        const strategy = overrideStrategy || this._observeStrategy;
+    getCurent(key: string) {
+        return this._cache.getCurrent(key, false);
+    }
+
+    get(key: string, overrideStrategy?: ObserveStrategy): DeferredGetter<T> {
+        if (overrideStrategy !== undefined) {
+            this._observeStrategyOverrides[key] = overrideStrategy;
+        }
+
+        const strategy = firstDefined(this._observeStrategyOverrides[key], this._observeStrategy);
+
         if (strategy && !this._observers.getIsObserving(key)) {
             // ensure observe
             if (this._cache.hasKey(key)) {
@@ -88,7 +99,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
                     }
                 })
             ).then(unsub => {
-                const strategy = this._observeStrategyOverrides[key] || this._observeStrategy;
+                const strategy = firstDefined(this._observeStrategyOverrides[key], this._observeStrategy);
                 if (!strategy) {
                     // immediate unsub in case no observing strategy has been set
                     unsub();
@@ -132,4 +143,8 @@ function getObserveTimeout(s: ObserveStrategy) {
             ? 5 * 60 * 1000
             : null
         );
+}
+
+function firstDefined<T>(...values: (T | undefined)[]) {
+    return values.find(v => v !== undefined);
 }
