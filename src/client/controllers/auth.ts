@@ -42,18 +42,22 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
     private readonly _firstInit = new FlagModel(true);
 
-    constructor() {
+    constructor(forceInitialize = false) {
         super();
         makeObservable(this);
+
+        const initialize = () => this.doInitialization(this.processAuthUser.bind(this), true);
         this.disposer.add(
-            Firebase.Instance.auth.onAuthStateChanged(async () => {
-                this.doInitialization(this.processAuthUser.bind(this));
-            }),
+            Firebase.Instance.auth.onAuthStateChanged(initialize),
         );
+
+        if (forceInitialize) {
+            initialize();
+        }
     }
 
     get authUser(): Readonly<AuthUserWithProviders<TUser>> { return this._authUser; }
-    get initializing() { return this._firstInit.value || this._initializing.value !== 0; }
+    get initializing() { return this._firstInit.value || !this._initializing.isDefault; }
     get magicLinkSucceeded() { return this._magicLinkSucceeded.expose(); }
 
     get setPasswordMode() { return this._setPasswordMode.value; }
@@ -79,7 +83,6 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
     get logger() { return logger; }
 
     protected async processAuthUser() {
-        this._firstInit.setFalse();
         const authUser = Firebase.Instance.auth.currentUser;
 
         const methods = authUser?.email && await this.getEmailAuthMethod(authUser.email);
@@ -427,13 +430,16 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
     }
 
 
-    protected async doInitialization<T>(cb: () => Promise<T>): Promise<T> {
+    protected async doInitialization<T>(cb: () => Promise<T>, useFirstInit = false): Promise<T> {
         try {
             this._initializing.increment(1);
             const res = await cb();
             return res;
         } finally {
             this._initializing.decrement(1);
+            if (useFirstInit) {
+                this._firstInit.setFalse();
+            }
         }
     }
 }
