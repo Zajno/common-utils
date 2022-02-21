@@ -51,14 +51,14 @@ export class ProgressBar {
 
         if (inSeconds < 60) {
             result = {
-                seconds: inSeconds,
+                seconds: Math.trunc(inSeconds) || inSeconds,
                 minutes: null,
                 hours: null,
             };
         } else if (inSeconds >= 60 && inSeconds < 3600) {
             result = {
                 minutes: Math.trunc(inSeconds / 60),
-                seconds: inSeconds % 60,
+                seconds: Math.trunc(inSeconds % 60),
                 hours: null,
             };
         } else if (inSeconds >= 3600) {
@@ -66,7 +66,7 @@ export class ProgressBar {
 
             result = {
                 hours: Math.trunc(inMinutes / 60),
-                minutes: inMinutes % 60,
+                minutes: Math.trunc(inMinutes % 60),
                 seconds: null,
             };
         }
