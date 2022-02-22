@@ -19,7 +19,7 @@ namespace AppHttpError {
         'permission-denied': 'Incorrect permissions',
     };
 
-    export function SendError(code: FunctionsErrorCode, message: string) {
+    export function Construct(code: FunctionsErrorCode, message: string) {
         return new functions.https.HttpsError(code, message || DefaultStrings[code]);
     }
 
