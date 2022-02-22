@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+import { FunctionsErrorCode } from 'firebase-functions/lib/providers/https';
 
 namespace AppHttpError {
     export type InvalidArgDescription<T = any> = {
@@ -17,6 +18,10 @@ namespace AppHttpError {
         'internal': 'Internal error',
         'permission-denied': 'Incorrect permissions',
     };
+
+    export function SendError(code: FunctionsErrorCode, message: string) {
+        return new functions.https.HttpsError(code, message || DefaultStrings[code]);
+    }
 
     export function InvalidArguments<T = any>(...list: InvalidArgDescription<T>[]) {
         if (!list?.length) {
@@ -61,6 +66,10 @@ namespace AppHttpError {
 
     export function NoPermission(message?: string) {
         return new functions.https.HttpsError('permission-denied', message || DefaultStrings['permission-denied']);
+    }
+
+    export function Unknown(message?: string) {
+        return new functions.https.HttpsError('unknown', message || DefaultStrings.unknown);
     }
 }
 
