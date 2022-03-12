@@ -9,14 +9,26 @@ namespace AppHttpError {
         error?: string;
     };
 
+    export enum ErrorCodes {
+        InvalidArguments = 'invalid-argument',
+        Unauthenticated = 'unauthenticated',
+        NotFound = 'not-found',
+        AlreadyExists = 'already-exists',
+        PreconditionFailed = 'failed-precondition',
+        Internal = 'internal',
+        NoPermission = 'permission-denied',
+        Unknown = 'unknown'
+    }
+
     export const DefaultStrings: Partial<Record<functions.https.FunctionsErrorCode, string>> = {
-        'invalid-argument': 'Invalid arguments',
-        unauthenticated: 'This action requires authentication',
-        'not-found': 'Not found',
-        'already-exists': 'The items already exists',
-        'failed-precondition': 'Precondition failed',
-        'internal': 'Internal error',
-        'permission-denied': 'Incorrect permissions',
+        [ErrorCodes.InvalidArguments]: 'Invalid arguments',
+        [ErrorCodes.Unauthenticated]: 'This action requires authentication',
+        [ErrorCodes.NotFound]: 'Not found',
+        [ErrorCodes.AlreadyExists]: 'The items already exists',
+        [ErrorCodes.PreconditionFailed]: 'Precondition failed',
+        [ErrorCodes.Internal]: 'Internal error',
+        [ErrorCodes.NoPermission]: 'Incorrect permissions',
+        [ErrorCodes.Unknown]: 'Unknown error',
     };
 
     export function Construct(code: FunctionsErrorCode, message: string) {
