@@ -45,15 +45,22 @@ export class Event<T = any> implements IEvent<T> {
         });
     }
 
-    public async triggerAsync(data?: T) {
+    public async triggerAsync(data?: T): Promise<any[] | void> {
         const hh = this._handlers.slice(0);
+
+        const errors = [];
+
         await forEachAsync(hh, async (cb: EventHandler<T>) => {
             try {
                 await cb(data);
             } catch (err) {
                 this.logError(data, cb, err);
+
+                errors.push(err);
             }
         });
+
+        return errors;
     }
 
     public expose(): IEvent<T> {
