@@ -12,12 +12,17 @@ export namespace PubSub {
 
     const Instance: CloudPubsSub = new CloudPubsSub({ projectId: AppConfig.value?.appId });
 
+    let ErrorHandler: Function | null = null;
+
+    export function useErrorHandler(handler: (error: any) => void) {
+        ErrorHandler = handler;
+    }
+
     export const getCloudFunctions = () => {
         isCloudFunctionsInitialized = true;
 
         return topicCloudFunctions;
     };
-
     export class Topic<TData extends Object> {
         private readonly _handler = new Event<TData>();
 
@@ -57,10 +62,18 @@ export namespace PubSub {
             const cloudFunction = builder.onPublish(async (message, _) => {
                 const data = message.json as TData;
 
+                let errors: any[] | null = null;
+
                 try {
-                    await this._handler.triggerAsync(data);
+                    errors = await this._handler.triggerAsync(data) as any[];
                 } catch (e) {
                     this._logger.error('Failed to execute trigger, error: ', e);
+                }
+
+                if (errors && ErrorHandler) {
+                    errors.forEach((error) => {
+                        ErrorHandler(error);
+                    });
                 }
             });
 
