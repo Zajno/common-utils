@@ -1,21 +1,15 @@
-import { observable, transaction, makeObservable } from 'mobx';
-import { StringsShape } from './defaultShape';
-import createValidationErrorsStrings, { ValidationErrorsStrings } from './validationErrorsStrings';
-import { ILocalization } from './ILocalization';
+import { observable, makeObservable, action } from 'mobx';
+import { ILocalization, ILocalizationDependency } from './abstractions';
 
-export { ILocalization };
-
-export default class LocalizationManager<TLocaleType extends string, TStrings extends StringsShape> implements ILocalization<TStrings> {
+export class LocalizationManager<TLocaleType extends string, TStrings extends { }> implements ILocalization<TStrings> {
     @observable
     private _currentLocale: TLocaleType = null;
 
-    @observable
+    @observable.ref
     private _currentStrings: TStrings = null;
 
-    @observable
-    private _validationErrors: ValidationErrorsStrings = null;
-
     private readonly _defaultStrings: TStrings = null;
+    private readonly _dependants: ILocalizationDependency<TStrings, TLocaleType>[] = [];
 
     constructor(
         private readonly _dataSource: { [locale: string]: TStrings },
@@ -24,21 +18,28 @@ export default class LocalizationManager<TLocaleType extends string, TStrings ex
     ) {
         makeObservable(this);
         this._defaultStrings = this.getStrings(defaultLocale || initialLocale);
-        this.updateStrings(initialLocale);
+        this.useLocale(initialLocale);
     }
 
-    get Locale() { return this._currentLocale; }
+    public get Locale() { return this._currentLocale; }
+    public get Current() { return this._currentStrings; }
 
-    get Current() { return this._currentStrings; }
+    @action
+    public useLocale(locale: TLocaleType) {
+        this._currentLocale = locale;
+        this._currentStrings = this.getStrings(this._currentLocale) || this._defaultStrings;
+        this._dependants.forEach(d => d.updateLocale(this._currentStrings, this._currentLocale));
+        return this;
+    }
 
-    get ValidationErrors() { return this._validationErrors; }
-
-    updateStrings(locale: TLocaleType) {
-        transaction(() => {
-            this._currentLocale = locale;
-            this._currentStrings = this.getStrings(this._currentLocale) || this._defaultStrings;
-            this._validationErrors = createValidationErrorsStrings(this._currentStrings);
-        });
+    public useDependency(dep: ILocalizationDependency<TStrings, TLocaleType>, remove = false) {
+        const i = this._dependants.indexOf(dep);
+        if (i >= 0 && !remove) {
+            this._dependants.push(dep);
+        } else if (i < 0 && remove) {
+            this._dependants.splice(i, 1);
+        }
+        return this;
     }
 
     private getStrings(locale: string): TStrings {

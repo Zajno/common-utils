@@ -1,9 +1,9 @@
-import { ValidationErrors } from '../../validation';
-import { StringsShape } from './defaultShape';
+import { ValidationErrorsStrings } from 'services/localization';
+import { StringsShape } from 'services/localization/defaultShape';
+import { LocalaziedValidationErrors } from 'services/localization/LocalaziedValidationErrors';
+import { ValidationErrors } from './ValidationErrors';
 
-export type ValidationErrorsStrings = {[ error: number]: string };
-
-export default function Create(strings: StringsShape): ValidationErrorsStrings {
+function locationFactory(strings: StringsShape): ValidationErrorsStrings<ValidationErrors> {
     return {
         [ValidationErrors.None]: '',
         [ValidationErrors.ShouldBeNonEmpty]: strings.Validation.Empty,
@@ -23,3 +23,5 @@ export default function Create(strings: StringsShape): ValidationErrorsStrings {
         [ValidationErrors.Linkedin]: strings.Validation.Linkedin,
     };
 }
+
+export const ValidationErrorsLocalized = new LocalaziedValidationErrors<StringsShape, ValidationErrors>(locationFactory);
