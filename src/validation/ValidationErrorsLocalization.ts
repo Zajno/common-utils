@@ -1,6 +1,6 @@
-import { ValidationErrorsStrings } from 'services/localization';
-import { StringsShape } from 'services/localization/defaultShape';
-import { LocalaziedValidationErrors } from 'services/localization/LocalaziedValidationErrors';
+import { ValidationErrorsStrings } from '../services/localization';
+import { StringsShape } from '../services/localization/defaultShape';
+import { LocalaziedValidationErrors } from '../services/localization/LocalaziedValidationErrors';
 import { ValidationErrors } from './ValidationErrors';
 
 function locationFactory(strings: StringsShape): ValidationErrorsStrings<ValidationErrors> {
