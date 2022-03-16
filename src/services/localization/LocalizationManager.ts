@@ -28,18 +28,23 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends { 
     public useLocale(locale: TLocaleType) {
         this._currentLocale = locale;
         this._currentStrings = this.getStrings(this._currentLocale) || this._defaultStrings;
-        this._dependants.forEach(d => d.updateLocale(this._currentStrings, this._currentLocale));
+        this.updateDependencies();
         return this;
     }
 
     public useDependency(dep: ILocalizationDependency<TStrings, TLocaleType>, remove = false) {
         const i = this._dependants.indexOf(dep);
-        if (i >= 0 && !remove) {
+        if (i < 0 && !remove) {
             this._dependants.push(dep);
-        } else if (i < 0 && remove) {
+            this.updateDependencies();
+        } else if (i >= 0 && remove) {
             this._dependants.splice(i, 1);
         }
         return this;
+    }
+
+    private updateDependencies() {
+        this._dependants.forEach(d => d.updateLocale(this._currentStrings, this._currentLocale));
     }
 
     private getStrings(locale: string): TStrings {
