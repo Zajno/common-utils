@@ -14,11 +14,18 @@ export type ILabeledFlagModel = IFlagModel & ILabel<string>;
 
 export class FlagModel implements IFlagModel, IFlagModelReadonly {
 
-    @observable
+    // @observable
     private _value: boolean = false;
 
     constructor(initial = false) {
-        makeObservable(this);
+        makeObservable<FlagModel, '_value'>(this, {
+            _value: observable,
+            setValue: action,
+            setTrue: action,
+            setFalse: action,
+            toggle: action,
+            reset: action,
+        });
         this._value = initial;
     }
 
@@ -30,33 +37,33 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
         this.setValue(value);
     }
 
-    @action
+    // @action
     public readonly setValue = (value: boolean) => {
         this._value = value;
     };
 
     get isDefault() { return this._value === false; }
 
-    @action
+    // @action
     setTrue = () => {
         const v = this.value;
         this.value = true;
         return !v;
     };
 
-    @action
+    // @action
     setFalse = () => {
         const v = this.value;
         this.value = false;
         return v;
     };
 
-    @action
+    // @action
     toggle = () => {
         this._value = !this._value;
     };
 
-    @action
+    // @action
     reset = () => {
         this._value = false;
     };

@@ -2,6 +2,8 @@ import { ValidationErrors } from '../../validation';
 import { CommonModel } from '../CommonModel';
 import { LoadingModel } from '../LoadingModel';
 import { setTimeoutAsync } from '../../async/timeout';
+import { SelectString } from '../SelectModel';
+import { TextInputVM } from '../TextModel';
 
 describe('CommonModel', () => {
     const NotEmptyError = 'should be not empty';
@@ -68,5 +70,19 @@ describe('LoadingModel', () => {
         await promise;
 
         expect(m.isLoading).toBeFalsy();
+    });
+});
+
+describe('Others', () => {
+    it('has no mobx errors', async () => {
+
+        await expect((async () => {
+            return new SelectString([]);
+        })()).resolves.not.toThrow();
+
+        await expect((async () => {
+            return new TextInputVM();
+        })()).resolves.not.toThrow();
+
     });
 });

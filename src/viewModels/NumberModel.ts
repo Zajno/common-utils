@@ -8,13 +8,19 @@ export interface INumberModel extends IResetableModel {
 
 export class NumberModel implements INumberModel, IValueModel<number> {
 
-    @observable
+    // @observable
     private _value: number = 0;
 
     private _initial: number = 0;
 
     constructor(initial: number = 0) {
-        makeObservable(this);
+        makeObservable<NumberModel, '_value'>(this, {
+            _value: observable,
+            setValue: action,
+            reset: action,
+            increment: action,
+            decrement: action,
+        });
         this._initial = initial;
         this._value = this._initial;
     }
@@ -22,22 +28,22 @@ export class NumberModel implements INumberModel, IValueModel<number> {
     get value() { return this._value; }
     set value(v: number) { this.setValue(v); }
 
-    @action
+    // @action
     public readonly setValue = (v: number) => {
         this._value = v;
     };
 
     get isDefault() { return this._value === this._initial; }
 
-    @action
+    // @action
     reset = () => {
         this._value = this._initial;
     };
 
-    @action
+    // @action
     increment = (d = 1) => this.value += d;
 
-    @action
+    // @action
     decrement = (d = 1) => this.value -= d;
 }
 

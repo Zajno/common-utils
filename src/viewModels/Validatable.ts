@@ -17,14 +17,17 @@ export abstract class ValidatableModel<T = string> {
     private _validator: ValueValidator<Readonly<T>, any> = null;
     private _strings: ValidationErrorsStrings<any> = null;
 
-    @observable
+    // @observable
     private _error: string = null;
 
     private _validationError: ValidationError = null;
     protected _validateOnChange = false;
 
     constructor() {
-        makeObservable(this);
+        makeObservable<ValidatableModel<T>, '_error'>(this, {
+            '_error': observable,
+            reset: action,
+        });
     }
 
     protected abstract get valueToValidate(): Readonly<T>;
@@ -82,7 +85,7 @@ export abstract class ValidatableModel<T = string> {
         return !valid;
     }
 
-    @action
+    // @action
     reset() {
         this._validationError = null;
         this._error = null;

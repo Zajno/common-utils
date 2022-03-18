@@ -40,10 +40,10 @@ export class Text {
 }
 
 export class TextInputVM extends ValidatableModel<string> implements IValueModel<string>, IResetableModel {
-    @observable
+    // @observable
     private _value = '';
 
-    @observable
+    // @observable
     private _focused = false;
 
     private _name: string = null;
@@ -53,7 +53,12 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
 
     constructor(config?: TextInputConfig) {
         super();
-        makeObservable(this);
+        makeObservable<TextInputVM, '_value' | '_focused'>(this, {
+            _value: observable,
+            _focused: observable,
+            setValue: action,
+            setFocused: action,
+        });
         config = config || {};
 
         const delay = config.async ? 100 : null;
@@ -71,7 +76,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         this.setValue(val);
     }
 
-    @action
+    // @action
     public readonly setValue = (value: string) => {
         if (!this._valueObserving) {
             this._value = value;
@@ -96,7 +101,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         this.setFocused(val);
     }
 
-    @action
+    // @action
     public readonly setFocused = (value = true) => {
         this._focused = value;
         if (!value) {

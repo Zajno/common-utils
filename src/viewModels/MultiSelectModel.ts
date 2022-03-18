@@ -9,7 +9,7 @@ import { arraysCompareDistinct } from '../math';
 
 export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]>, IResetableModel, ICountableModel {
 
-    @observable
+    // @observable
     private readonly _indexes = new Set<number>();
 
     public readonly opened = new FlagModel();
@@ -24,29 +24,39 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
         ...selected: number[]
     ) {
         super();
-        makeObservable(this);
+        makeObservable<MultiSelect<T>, '_indexes'>(this, {
+            '_indexes': observable,
+            selectedIndexes: computed,
+            values: computed,
+            selectedItems: computed,
+            selectedValues: computed,
+            isDefault: computed,
+            selectItems: action,
+            selectValues: action,
+            setIndexSelected: action,
+        });
         this._initial = selected;
         this.setInitialIndexes();
     }
 
-    @computed
+    // @computed
     get selectedIndexes(): ReadonlyArray<number> { return Array.from(this._indexes); }
 
     get items(): ReadonlyArray<T> { return this._items; }
 
     get flags() { return this._flags.value; }
 
-    @computed
+    // @computed
     get values(): ReadonlyArray<string> {
         return this._items.map(i => this._accessor(i));
     }
 
-    @computed
+    // @computed
     get selectedItems(): ReadonlyArray<T> {
         return this.selectedIndexes.map(i => this._items[i]);
     }
 
-    @computed
+    // @computed
     get selectedValues(): ReadonlyArray<string> {
         const values = this.values;
         return this.selectedIndexes.map(i => values[i]);
@@ -62,7 +72,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     get selectedCount() { return this._indexes.size; }
     get isEmpty() { return this.selectedCount === 0; }
 
-    @computed
+    // @computed
     get isDefault() { return arraysCompareDistinct(this.selectedIndexes, this._initial)?.diff === 0; }
 
     protected get valueToValidate() { return this.selectedItems; }
@@ -77,7 +87,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     selectItem = (item: T) => this.setItemSelected(item, true);
     deSelectItem = (item: T) => this.setItemSelected(item, false);
 
-    @action
+    // @action
     selectItems = (items: readonly T[]) => {
         items.forEach(this.selectItem);
     };
@@ -92,12 +102,12 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     selectValue = (value: string) => this.setValueSelected(value, true);
     deSelectValue = (value: string) => this.setValueSelected(value, false);
 
-    @action
+    // @action
     selectValues = (values: readonly string[]) => {
         values.forEach(this.selectValue);
     };
 
-    @action
+    // @action
     setIndexSelected = (index: number, selected: boolean) => {
         if (this._indexesLocked) {
             return;

@@ -7,7 +7,7 @@ import { withLabel } from './wrappers';
 import { IResetableModel } from 'viewModels';
 
 export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel {
-    @observable
+    // @observable
     private _index: number = undefined;
 
     public readonly opened = new FlagModel();
@@ -22,7 +22,11 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         initialIndex: number = 0,
     ) {
         super();
-        makeObservable(this);
+        makeObservable<Select<T>, '_index'>(this, {
+            '_index': observable,
+            values: computed,
+            setIndex: action,
+        });
 
         this._initialIndex = initialIndex;
         this._index = initialIndex;
@@ -30,7 +34,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
     protected get valueToValidate() { return this.selectedItem; }
 
-    @computed
+    // @computed
     get values(): readonly string[] {
         return this._items.map(i => this._accessor(i));
     }
@@ -78,7 +82,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
        this.setIndex(val);
     }
 
-    @action
+    // @action
     public setIndex = (val: number) => {
         if (this._indexLocked) {
             return;
