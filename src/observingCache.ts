@@ -85,6 +85,11 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
         this._updateItem(key, item);
     };
 
+    invalidate = (key: string) => {
+        this._observers.enable(key, false);
+        this._cache.invalidate(key);
+    };
+
     private _fetch = async (key: string): Promise<T> => {
         let firstLoad = true;
 
@@ -118,7 +123,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
     };
 
     private _updateItem = action((key: string, item: T) => {
-        if (this._updater != null) {
+        if (this._updater != null && item != null) {
             const current = this._cache.getCurrent(key, false);
             if (current != null) {
                 const result = this._updater(current, item);

@@ -14,7 +14,7 @@ const EmptyValidator = () => 0;
 
 export abstract class ValidatableModel<T = string> {
 
-    private _validator: ValueValidator<Readonly<T>, any> = null;
+    private _validator: ValueValidator<T | Readonly<T>, any> = null;
     private _strings: ValidationErrorsStrings<any> = null;
 
     // @observable
@@ -30,7 +30,7 @@ export abstract class ValidatableModel<T = string> {
         });
     }
 
-    protected abstract get valueToValidate(): Readonly<T>;
+    protected abstract get valueToValidate(): T | Readonly<T>;
 
     get isValid() { return !this._error; }
 
@@ -91,7 +91,7 @@ export abstract class ValidatableModel<T = string> {
         this._error = null;
     }
 
-    static async IsSomeInvalid(validatables: ReadonlyArray<Readonly<ValidatableModel>>, stopOnFail = true) {
+    static async IsSomeInvalid(validatables: ReadonlyArray<ValidatableModel<any>>, stopOnFail = true) {
         if (stopOnFail) {
             return someAsync(validatables, async v => !(await v.validate()));
         }
