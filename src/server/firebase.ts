@@ -24,6 +24,7 @@ const StorageBucket = createLazy(() => {
 export const FirestoreContext: IFirestoreContext<ServerFirestore> = {
     get db() { return FirestoreDb.value; },
     get FieldValue() { return AdminLib.firestore.FieldValue; },
+    get FieldPath() { return AdminLib.firestore.FieldPath; },
     get Timestamp() { return AdminLib.firestore.Timestamp; },
 };
 

@@ -186,6 +186,7 @@ const Firebase = {
 export const FirestoreContext: IFirestoreContext<ClientFirestore> = {
     get db() { return Firebase.Instance.database; },
     get FieldValue() { return Firebase.Instance.types.Firestore.FieldValue; },
+    get FieldPath() { return Firebase.Instance.types.Firestore.FieldPath; },
     get Timestamp() { return Firebase.Instance.types.Firestore.Timestamp; },
 };
 

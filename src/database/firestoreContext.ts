@@ -1,9 +1,10 @@
 import { TypedKeys } from '@zajno/common/lib/types';
-import DBProvider, { FieldValue, FieldValueClass, TimestampClass } from './dbProvider';
+import DBProvider, { FieldPathClass, FieldValue, FieldValueClass, TimestampClass } from './dbProvider';
 
 export interface IFirestoreContext<DB extends DBProvider = DBProvider> {
     readonly db: DB;
     readonly FieldValue: FieldValueClass;
+    readonly FieldPath: FieldPathClass;
     readonly Timestamp: TimestampClass;
 }
 

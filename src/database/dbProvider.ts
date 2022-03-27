@@ -29,6 +29,9 @@ export type UnsubscribeSnapshot = () => void;
 export type FieldValue = FirebaseClient.firestore.FieldValue | FirebaseFirestore.FieldValue;
 export type FieldValueClass = typeof FirebaseClient.firestore.FieldValue | typeof FirebaseFirestore.FieldValue;
 
+export type FieldPath = FirebaseClient.firestore.FieldPath | FirebaseFirestore.FieldPath;
+export type FieldPathClass = typeof FirebaseClient.firestore.FieldPath | typeof FirebaseFirestore.FieldPath;
+
 export type FirestoreDataConverter<T> = FirebaseClient.firestore.FirestoreDataConverter<T> | FirebaseFirestore.FirestoreDataConverter<T>;
 
 export type Timestamp = FirebaseClient.firestore.Timestamp | FirebaseFirestore.Timestamp;
