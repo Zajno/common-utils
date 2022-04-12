@@ -1,5 +1,12 @@
 import { IFunctionDefinition } from '../../functions';
-import { FirebaseEndpoint, EndpointFunction, EndpointContext, IFirebaseFunction, NextFunction, BaseFunctionContext } from './interface';
+import {
+    EndpointFunction,
+    EndpointContext,
+    IFirebaseFunction,
+    NextFunction,
+    BaseFunctionContext,
+    FirebaseEndpointRunnable,
+} from './interface';
 import { createHttpsFunction } from './create';
 import { Middleware } from './middleware';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter';
@@ -9,7 +16,7 @@ export class FunctionFactory<TArg, TResult, TContext extends { } = never>
     extends Middleware<TArg, TResult, TContext>
     implements IFirebaseFunction {
 
-    private _endpoint: FirebaseEndpoint = null;
+    private _endpoint: FirebaseEndpointRunnable = null;
 
     public static DefaultLogErrors: boolean = true;
     public LogErrors: boolean = FunctionFactory.DefaultLogErrors;

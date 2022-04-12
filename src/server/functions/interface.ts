@@ -29,7 +29,8 @@ type OmitSecondParameter<T> = T extends (first: infer F, second: any, ...last: i
 
 export type EndpointHandlerVoid<TArg, TOut, TContext = never> = OmitSecondParameter<EndpointHandler<TArg, TOut, TContext>>;
 
-export type FirebaseEndpoint = functions.HttpsFunction & functions.Runnable<any>;
+export type FirebaseEndpoint = functions.HttpsFunction;
+export type FirebaseEndpointRunnable = FirebaseEndpoint & functions.Runnable<any>;
 
 export interface IFirebaseFunction {
     readonly Definition: IFunctionDefinitionInfo;
@@ -64,4 +65,3 @@ export namespace IFirebaseFunction {
         });
     }
 }
-

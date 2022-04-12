@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
-import { EndpointFunction, FirebaseEndpoint, EndpointHandler } from './interface';
+import { EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface';
 import logger from '@zajno/common/lib/logger';
 
-export function createHttpsFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null): FirebaseEndpoint {
+export function createHttpsFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null): FirebaseEndpointRunnable {
     const builder = options
         ? functions.runWith(options)
         : functions;
