@@ -31,8 +31,8 @@ namespace AppHttpError {
         [ErrorCodes.Unknown]: 'Unknown error',
     };
 
-    export function Construct(code: FunctionsErrorCode, message: string) {
-        return new functions.https.HttpsError(code, message || DefaultStrings[code]);
+    export function Construct(code: ErrorCodes | FunctionsErrorCode, message: string, details: unknown = undefined) {
+        return new functions.https.HttpsError(code, message || DefaultStrings[code], details);
     }
 
     export function InvalidArguments<T = any>(...list: InvalidArgDescription<T>[]) {
@@ -53,35 +53,35 @@ namespace AppHttpError {
         });
         const message = `Expected fields: ${strings.join(', ')}`;
 
-        return new functions.https.HttpsError('invalid-argument', message);
+        return new functions.https.HttpsError('invalid-argument', message, { list });
     }
 
-    export function NotAuthenticated(message?: string) {
-        return new functions.https.HttpsError('unauthenticated', message || DefaultStrings.unauthenticated);
+    export function NotAuthenticated(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('unauthenticated', message || DefaultStrings.unauthenticated, details);
     }
 
-    export function NotFound(message?: string) {
-        return new functions.https.HttpsError('not-found', message || DefaultStrings['not-found']);
+    export function NotFound(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('not-found', message || DefaultStrings['not-found'], details);
     }
 
-    export function AlreadyExists(message?: string) {
-        return new functions.https.HttpsError('already-exists', message || DefaultStrings['already-exists']);
+    export function AlreadyExists(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('already-exists', message || DefaultStrings['already-exists'], details);
     }
 
-    export function PreconditionFailed(message?: string) {
-        return new functions.https.HttpsError('failed-precondition', message || DefaultStrings['failed-precondition']);
+    export function PreconditionFailed(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('failed-precondition', message || DefaultStrings['failed-precondition'], details);
     }
 
-    export function Internal(message?: string) {
-        return new functions.https.HttpsError('internal', message || DefaultStrings.internal);
+    export function Internal(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('internal', message || DefaultStrings.internal, details);
     }
 
-    export function NoPermission(message?: string) {
-        return new functions.https.HttpsError('permission-denied', message || DefaultStrings['permission-denied']);
+    export function NoPermission(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('permission-denied', message || DefaultStrings['permission-denied'], details);
     }
 
-    export function Unknown(message?: string) {
-        return new functions.https.HttpsError('unknown', message || DefaultStrings.unknown);
+    export function Unknown(message?: string, details: unknown = undefined) {
+        return new functions.https.HttpsError('unknown', message || DefaultStrings.unknown, details);
     }
 }
 
