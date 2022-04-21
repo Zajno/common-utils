@@ -1,4 +1,6 @@
-import { observable, makeObservable } from 'mobx';
+
+// eslint-disable-next-line no-console
+console.warn('"timeHelper" module is deprecated. Please use "dates" one.');
 
 /** @deprecated */
 export function formatMS(ms: number): string {
@@ -35,20 +37,3 @@ export function secToFormattedMin(totalSec: number): string {
 
     return res;
 }
-
-class Time {
-    @observable
-    private _now: number = new Date().getTime();
-
-    constructor() {
-        makeObservable(this);
-        // Update _now once an hour
-        setInterval(() => { this._now = new Date().getTime(); }, 1000 * 3600);
-    }
-
-    get now() {
-        return this._now;
-    }
-}
-
-export const TimeHelper = new Time();
