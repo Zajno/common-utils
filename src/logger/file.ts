@@ -1,46 +1,66 @@
+
+/* eslint-disable no-console */
+import * as Path from 'path';
 import * as FS from 'fs';
 import * as Util from 'util';
+
 import { ILogger } from './abstractions';
-import { Getter } from '../types';
 
 export class FileLoggerNode implements ILogger {
-    private readonly _buffer: string[];
+    private readonly _buffer: string[] = [];
+    private _logFilePath: string = null;
 
-    constructor(readonly fileName: Getter<string>, bufferMode = false) {
-        this._buffer = bufferMode ? [] : null;
+    constructor(readonly extraLogger: ILogger = console, readonly instantFlush = false) {
+        this.setLogName('');
     }
 
-    /** @example Path.resolve(__dirname, `../run.${new Date().toISOString()}.log`) */
-    private get logFilePath() { return Getter.getValue(this.fileName); }
+    setLogFilePath(path: string) {
+        this._logFilePath = path;
+        return this;
+    }
+
+    setLogName(name: string) {
+        const n = name ? `-${name}` : '';
+        this._logFilePath = Path.resolve(__dirname, `../run${n}.${new Date().toISOString()}.log`);
+        return this;
+    }
+
+    private append(..._args: any[]) {
+        // @ts-ignore
+        const str = Util.format.apply(null, arguments) + '\n';
+        this._buffer.push(str);
+
+        if (this.instantFlush) {
+            this.flush();
+        }
+    }
 
     log = (...args: any[]) => {
-        this.appendToFile(...args);
+        this.extraLogger?.log(...args);
+        this.append(...args);
     };
 
-    warn(...args: any[]) {
-        this.appendToFile(...args);
-    }
+    warn = (...args: any[]) => {
+        this.extraLogger?.warn(...args);
+        this.append(...args);
+    };
 
-    error(...args: any[]) {
-        this.appendToFile(...args);
-    }
+    error = (...args: any[]) => {
+        this.extraLogger?.error(...args);
+        this.append(...args);
+    };
 
-    public flush() {
-        if (!this._buffer) {
+    flush() {
+        if (!this._buffer.length) {
             return;
         }
 
-        FS.writeFileSync(this.logFilePath, this._buffer.join(''));
-        this._buffer.length = 0;
-    }
-
-    private appendToFile(..._args: any[]) {
-        // @ts-ignore
-        const str = Util.format.apply(null, arguments) + '\n';
-        if (this._buffer) {
-            this._buffer.push(str);
-        } else {
-            FS.appendFileSync(this.logFilePath, str);
+        try {
+            FS.appendFileSync(this._logFilePath, this._buffer.join(''));
+        } catch (err) {
+            console.warn('Failed to flush file, error', err);
+        } finally {
+            this._buffer.length = 0;
         }
     }
 }
