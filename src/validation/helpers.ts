@@ -1,5 +1,10 @@
-import { ValidationError, ValidatorFunction } from './types';
 import { ValidationErrors } from './ValidationErrors';
+import {
+    ValidationConfig,
+    ValidationError,
+    ValidationResults,
+    ValidatorFunction,
+} from './types';
 
 export function createShouldBeEqualTo<T = string>(getter: () => T): ValidatorFunction<T> {
     return (val: T) => getter() === val ? ValidationErrors.None : ValidationErrors.ShouldBeEqualTo;
@@ -11,33 +16,27 @@ export function throwNotOk(result: ValidationErrors, message = 'Validation error
     }
 }
 
-export function validateObject<T>(
+export function validateObject<T, TErrors = ValidationErrors>(
     obj: T,
-    validators: { [P in keyof T]?: ValidatorFunction<T[P]> },
-): { [P in keyof T]?: ValidationErrors } {
+    validators: ValidationConfig<T, TErrors>,
+    onlyTruethy = false,
+): ValidationResults<T, TErrors> {
 
-    const res: { [P in keyof T]?: ValidationErrors } = { };
+    const res: ValidationResults<T, TErrors> = { };
 
     Object.keys(obj).forEach(k => {
         const kk = k as keyof T;
-        const validator: ValidatorFunction<T[typeof kk]> = validators[kk];
+        const validator: ValidatorFunction<T[typeof kk], TErrors, T> = validators[kk];
         if (!validator) {
             return;
         }
 
         const v = obj[k as keyof T];
-        // let str: string;
-        // if (typeof v === 'number') {
-        //     str = v + '';
-        // }
+        if (onlyTruethy && !v) {
+            return;
+        }
 
-        // if (typeof v !== 'string') {
-        //     return; // skip non-strings
-        // }
-
-        // str = v;
-
-        const err = validator(v);
+        const err = validator(v, obj);
         if (err) {
             res[kk] = err;
         }
@@ -45,4 +44,3 @@ export function validateObject<T>(
 
     return res;
 }
-
