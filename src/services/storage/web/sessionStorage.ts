@@ -9,7 +9,7 @@ if (typeof window === undefined) {
 }
 
 class WebSessionStorage extends WebStorage {
-    protected get storage() { return window.localStorage; }
+    protected get storage() { return window.sessionStorage; }
 }
 
 export const SessionStorage: IStorageSync = new WebSessionStorage();
