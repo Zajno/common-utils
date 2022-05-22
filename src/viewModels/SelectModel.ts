@@ -1,30 +1,39 @@
-import { createLazy } from '../lazy.light';
 import { observable, computed, makeObservable, reaction, action } from 'mobx';
+import { createLazy } from '../lazy.light';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import { IValueModel } from './types';
 import { withLabel } from './wrappers';
-import { IResetableModel } from 'viewModels';
+import { IResetableModel } from './types';
+import { Getter } from '../types';
 
 export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel {
     // @observable
     private _index: number = undefined;
 
-    public readonly opened = new FlagModel();
+    private readonly _items: Getter<readonly T[]>;
+
     private _indexLocked = false;
     private _initialIndex: number = null;
 
     private readonly _flags = createLazy(() => this.createFlags());
 
+    public readonly opened = new FlagModel();
+
     constructor(
-        private readonly _items: readonly T[],
+        items: Getter<readonly T[]>,
         private readonly _accessor: (item: T) => string,
         initialIndex: number = 0,
     ) {
         super();
-        makeObservable<Select<T>, '_index'>(this, {
+
+        this._items = items;
+
+        makeObservable<Select<T>, '_index' | '_items'>(this, {
             '_index': observable,
+            '_items': observable.ref,
             values: computed,
+            items: computed,
             setIndex: action,
         });
 
@@ -36,15 +45,16 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
     // @computed
     get values(): readonly string[] {
-        return this._items.map(i => this._accessor(i));
+        return this.items.map(i => this._accessor(i));
     }
 
     get flags() {
         return this._flags.value;
     }
 
-    get items() {
-        return this._items;
+    // @computed
+    get items(): readonly T[] {
+        return Getter.getValue(this._items);
     }
 
     get value() { return this.selectedValue; }
@@ -62,11 +72,12 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
     }
 
     get selectedItem(): T {
-        return this._items.length ? this._items[this._index] : null;
+        const items = this.items;
+        return items.length ? items[this._index] : null;
     }
 
     set selectedItem(item: T) {
-        const index = this._items.indexOf(item);
+        const index = this.items.indexOf(item);
         if (index >= 0) {
             this.index = index;
         }
@@ -106,13 +117,13 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         }
     };
 
-    reset = () => {
+    public reset = () => {
         super.reset();
         this.index = this._initialIndex;
     };
 
     private createFlags() {
-        const flags: ReadonlyArray<ILabeledFlagModel> = this._items
+        const flags: ReadonlyArray<ILabeledFlagModel> = this.items
             .map((item, index) => {
                 const flag: ILabeledFlagModel = withLabel(
                     new FlagModel(index === this.index),
