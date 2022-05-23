@@ -20,6 +20,7 @@ export function validateObject<T, TErrors = ValidationErrors>(
     obj: T,
     validators: ValidationConfig<T, TErrors>,
     onlyTruethy = false,
+    context?: T,
 ): ValidationResults<T, TErrors> {
 
     const res: ValidationResults<T, TErrors> = { };
@@ -36,7 +37,7 @@ export function validateObject<T, TErrors = ValidationErrors>(
             return;
         }
 
-        const err = validator(v, obj);
+        const err = validator(v, context || obj);
         if (err) {
             res[kk] = err;
         }
