@@ -51,24 +51,43 @@ describe('CommonModel', () => {
     });
 });
 
-describe('LoadingModel', () => {
+describe('LoadingModel works', () => {
+    const worker = async () => {
+        await setTimeoutAsync(100);
+        return 100;
+    };
 
-    it('works', async () => {
+    it('basic', async () => {
 
         const m = new LoadingModel();
-        expect(m.value).toBe(0);
+        expect(m.value).toBe(false);
         expect(m.isLoading).toBeFalsy();
-
-        const worker = async () => {
-            await setTimeoutAsync(100);
-            return 100;
-        };
 
         const promise = m.useLoading(worker);
         expect(m.isLoading).toBeTruthy();
 
         await promise;
 
+        expect(m.isLoading).toBeFalsy();
+    });
+
+    it('with exclusive', async () => {
+        const m = new LoadingModel();
+
+        const first = m.useLoading(worker, true);
+        expect(m.isLoading).toBeTruthy();
+
+        const second = m.useLoading(worker, true);
+        expect(m.isLoading).toBeTruthy();
+
+        await expect(() => m.useLoading(worker, 'throw')).rejects.toThrow();
+
+        expect(m.isLoading).toBeTruthy();
+
+        await expect(second).resolves.toBe(false);
+        await expect(first).resolves.toBe(100);
+
+        expect(m.value).toBe(false);
         expect(m.isLoading).toBeFalsy();
     });
 });

@@ -1,5 +1,9 @@
 
-export interface IValueModel<TValue> {
+export interface IValueModelReadonly<TValue> {
+    readonly value: TValue;
+}
+
+export interface IValueModel<TValue> extends IValueModelReadonly<TValue> {
     value: TValue;
 }
 
