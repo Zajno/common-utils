@@ -3,6 +3,7 @@ import { Disposable } from './disposer';
 import { PromiseCache, DeferredGetter } from './cache';
 import { ObserversMap } from './observersMap';
 import { Fields } from './fields';
+import logger from './logger';
 
 export type Unsub = () => void;
 export type Fetcher<T> = (key: string, cb: (val: T) => Promise<void> | void) => Unsub | Promise<Unsub>;
@@ -62,7 +63,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
         return this._cache.getCurrent(key, false);
     }
 
-    get(key: string, overrideStrategy?: ObserveStrategy): DeferredGetter<T> {
+    get(key: string, overrideStrategy?: ObserveStrategy, observingStartedPromise?: (p: Promise<void>) => void): DeferredGetter<T> {
         if (overrideStrategy !== undefined) {
             this._observeStrategyOverrides[key] = overrideStrategy;
         }
@@ -74,7 +75,11 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
             if (this._cache.hasKey(key)) {
                 // the request has been initiated already
                 const timeout = getObserveTimeout(strategy);
-                this._observers.enable(key, true, timeout);
+                const promise = this._observers.enable(key, true, timeout);
+                if (observingStartedPromise) {
+                    observingStartedPromise(promise);
+                }
+                promise.catch(err => logger.error('[ObservingCache] Error on starting observe', key, strategy, err));
             }
         }
 
