@@ -41,6 +41,7 @@ const DefaultUpdater: Fields.Updater<any> = (v1, v2) => Object.assign(v1, v2);
 
 export type UpdateArrayOptions<T> = {
     additive?: boolean,
+    unshift?: boolean,
     clone?: boolean,
     comparator?: Comparator<T>,
     updater?: Fields.Updater<T>,
@@ -49,14 +50,14 @@ export type UpdateArrayOptions<T> = {
 };
 
 export type UpdateArrayHooks<T> = {
-    onAdded?: (item: T) => void,
-    onDeleted?: (item: T) => void,
-    onUpdated?: (previous: T, next: T) => void,
+    onAdded?: (item: T, index?: number) => void,
+    onDeleted?: (item: T, index?: number) => void,
+    onUpdated?: (previous: T, next: T, index?: number) => void,
 };
 
 export function updateArray<T>(
     target: T[] | null,
-    source: T[],
+    source: T[] | null,
     options?: UpdateArrayOptions<T>,
 ): { changed: number, result: T[] } {
     if (!source) {
@@ -80,7 +81,7 @@ export function updateArray<T>(
             if (source.find(item => comparator(item, result[i])) == null) {
                 // DELETE
                 const removed = result.splice(i, 1);
-                safeCall(onDeleted, removed[0]);
+                safeCall(onDeleted, removed[0], i);
 
                 ++changed;
                 --i;
@@ -88,19 +89,25 @@ export function updateArray<T>(
         }
     }
 
+    const unshift = options?.unshift || false;
+
     // add all new elements and update existing
-    source.forEach(i => {
-        const existingIndex = result.findIndex(item => comparator(i, item));
+    source.forEach(item => {
+        const existingIndex = result.findIndex(i => comparator(item, i));
         const existingItem = result[existingIndex];
         if (existingIndex < 0) {
-            result.push(i);
-            safeCall(onAdded, i);
+            if (unshift) {
+                result.unshift(item);
+            } else {
+                result.push(item);
+            }
+            safeCall(onAdded, item, unshift ? 0 : result.length - 1);
             ++changed;
         } else if (typeof existingItem === 'object') {
             const before = onUpdate != null ? { ...existingItem } : undefined;
-            result[existingIndex] = updater(existingItem, i);
+            result[existingIndex] = updater(existingItem, item);
             if (onUpdate != null) {
-                onUpdate(before!, result[existingIndex]);
+                onUpdate(before!, result[existingIndex], existingIndex);
             }
         }
     });
