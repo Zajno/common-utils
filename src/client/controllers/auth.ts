@@ -381,7 +381,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
     async signOut() {
         logger.log('Signing out...');
-        this.doInitialization(async () => {
+        await this.doInitialization(async () => {
             try {
                 this._setPasswordMode.setFalse();
 

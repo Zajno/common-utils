@@ -43,14 +43,14 @@ export class BaseRepo<T extends IdentAny> {
     document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
 
     document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T> = null): Promise<T | UnsubscribeSnapshot> {
-        return documentSnapshot(this.db, doc, cb, this.docConverter);
+        return documentSnapshot(this.db, doc, cb, this.convertDocumentSnapshot);
     }
 
     protected queryConverter: QuerySnapshotConverterCallback<T> = (items) => {
-        return items.map(this.docConverter);
+        return items.map(this.convertDocumentSnapshot);
     };
 
-    protected docConverter: DocumentSnapshotConverterCallback<T> = item => {
+    public convertDocumentSnapshot: DocumentSnapshotConverterCallback<T> = item => {
         let d = item.data() as T;
         d.id = item.id;
         if (this._readConverter) {
