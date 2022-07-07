@@ -92,4 +92,16 @@ describe('validation websites', () => {
     it('valid website with directory path', () => {
         expect(validation.Validators.website('http://www.regexbuddy.com/index.html?source=library')).toEqual(ValidationErrors.None);
     });
+
+    it('valid website with many dashes', () => {
+        expect(validation.Validators.website('https://www.test-test-test-test.com')).toEqual(ValidationErrors.None);
+    });
+
+    it('valid website with short domain', () => {
+        expect(validation.Validators.website('https://t.me')).toEqual(ValidationErrors.None);
+    });
+
+    it('test url with few dashes in a row', () => {
+        expect(validation.Validators.website('https://dashedurl-------.com')).toEqual(ValidationErrors.Website);
+    });
 });
