@@ -35,6 +35,10 @@ export class Event<T = any> implements IEvent<T> {
     }
 
     public trigger(data?: T) {
+        if (!this._handlers.length) {
+            return;
+        }
+
         const hh = this._handlers.slice(0);
         hh.forEach(cb => {
             try {
@@ -46,6 +50,10 @@ export class Event<T = any> implements IEvent<T> {
     }
 
     public async triggerAsync(data?: T): Promise<Error[]> {
+        if (!this._handlers.length) {
+            return [];
+        }
+
         const hh = this._handlers.slice(0);
 
         const errors: Error[] = [];
