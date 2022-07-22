@@ -4,7 +4,7 @@ import { WebStorage } from './webStorage';
 
 /* global window */
 
-if (typeof window === undefined) {
+if (typeof window === 'undefined') {
     throw new Error("Can't use web/Storage module outside browser environment!");
 }
 

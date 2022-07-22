@@ -23,7 +23,7 @@ export class EnumStringHelper<T extends string> {
         return custom || v;
     }
 
-    validateValue(v: string): T | null {
+    validateValue(v: string | null): T | null {
         if (!v) {
             return null;
         }
@@ -68,7 +68,7 @@ export default class EnumHelper<T extends number> {
         return custom || this._obj[v];
     }
 
-    validateValue(v: number): T | null {
+    validateValue(v: number | null): T | null {
         if (v == null || Number.isNaN(v)) {
             return null;
         }

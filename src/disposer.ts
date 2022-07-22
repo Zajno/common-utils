@@ -13,9 +13,18 @@ export class Disposer {
     private readonly _disposers: DisposeFunction[] = [];
     private readonly _map = new Map<string, DisposeFunction>();
 
-    constructor(readonly logName: string = null) { }
+    private _loggerName: string = null;
 
-    add(d: DisposeFunction | IDisposable, id?: string) {
+    constructor(loggerName: string = null) {
+        this._loggerName = loggerName;
+    }
+
+    public setLoggerName(loggerName: string) {
+        this._loggerName = loggerName;
+        return this;
+    }
+
+    public add(d: DisposeFunction | IDisposable, id?: string) {
         if (!d) {
             return;
         }
@@ -36,7 +45,7 @@ export class Disposer {
         }
     }
 
-    execute(id: string) {
+    public execute(id: string) {
         const d = this._map.get(id);
         if (!d) {
             return;
@@ -51,10 +60,10 @@ export class Disposer {
         d();
     }
 
-    dispose(log = false) {
+    public dispose(log = false) {
         if (log) {
             logger.log(
-                `[Disposer:${this.logName || '<unknown>'}] Disposing ${this._disposers.length} items including named ones:`,
+                `[Disposer:${this._loggerName || '<unknown>'}] Disposing ${this._disposers.length} items including named ones:`,
                 Array.from(this._map.entries()).map(e => e[0]),
             );
         }
@@ -74,8 +83,12 @@ export function combineDisposers(...items: DisposeFunction[]): DisposeFunction {
 
 export class Disposable implements IDisposable {
 
-    protected readonly disposer = new Disposer();
+    protected readonly disposer: Disposer;
     protected _isDisposed = false;
+
+    constructor(loggerName: string = null) {
+        this.disposer = new Disposer(loggerName);
+    }
 
     public dispose = () => {
         this._isDisposed = true;
