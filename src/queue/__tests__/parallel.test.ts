@@ -1,3 +1,4 @@
+import 'jest-extended';
 import { ParallelQueue } from '../parallel';
 import { setTimeoutAsync } from '../../async/timeout';
 import { setMode } from '../../logger';
@@ -41,10 +42,10 @@ describe('ParallelQueue', () => {
         expect(q.inProgress).toBeFalsy();
         expect(q.currentoPriority).toBe(1);
 
-        expect(f1).toHaveBeenCalled();
-        expect(f2).toHaveBeenCalled();
-        expect(f3).toHaveBeenCalled();
-        expect(f4).toHaveBeenCalled();
+        expect(f1).toHaveBeenCalledBefore(f2);
+        expect(f2).toHaveBeenCalledAfter(f1);
+        expect(f3).toHaveBeenCalledAfter(f2);
+        expect(f4).toHaveBeenCalledAfter(f3);
 
         const f5 = createLoader();
 
@@ -52,6 +53,6 @@ describe('ParallelQueue', () => {
 
         await setTimeoutAsync(100);
 
-        expect(f5).toHaveBeenCalled();
+        expect(f5).toHaveBeenCalledAfter(f4);
     });
 });

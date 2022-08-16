@@ -35,7 +35,7 @@ export class ParallelQueue {
 
         // if it's started and the priority has been processing already
         // or it has just finished
-        if (this._inProgress && p <= this._currentIndex || this._inProgress === false) {
+        if (this._inProgress && p < this._currentIndex || this._inProgress === false) {
             // just start the loader
             this._executeLoader(cb, p, 1000);
             return () => false;
