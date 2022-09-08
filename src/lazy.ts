@@ -39,6 +39,7 @@ export class LazyPromise<T> implements IDisposable {
     private _busy = false;
 
     private _loaded = false;
+    private _promise: Promise<T> = null;
 
     constructor(
         private readonly _factory: () => Promise<T>,
@@ -50,10 +51,16 @@ export class LazyPromise<T> implements IDisposable {
 
     get busy() { return this._busy; }
 
+    get promise() {
+
+        return this._promise;
+    }
+
     get() {
         if (!this._loaded && !this._busy) {
             this._busy = true;
-            this._factory().then(this.setInstance);
+            this._promise = this._factory();
+            this._promise.then(this.setInstance);
         }
 
         return this._instance;

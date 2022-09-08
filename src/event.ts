@@ -1,3 +1,4 @@
+import type { Predicate } from './types';
 import './async/arrays';
 import { forEachAsync } from './async/arrays';
 import { ILogger, createLogger } from './logger';
@@ -77,4 +78,15 @@ export class Event<T = any> implements IEvent<T> {
     private logError(data: T, cb: EventHandler<T>, err: Error) {
         this._logger.error(`[Event.${typeof data}] Handler ${cb.name} thrown an exception: `, err);
     }
+}
+
+export function oneTimeSubscription<T>(e: IEvent<T>, filter?: Predicate<T>): Promise<T> {
+    return new Promise<T>((resolve) => {
+        const unsub = e.on(v => {
+            if (!filter || filter(v)) {
+                unsub();
+                resolve(v);
+            }
+        });
+    });
 }

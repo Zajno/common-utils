@@ -18,7 +18,7 @@ export class ParallelQueue {
     private readonly _beforePriorityRun = new Event<number>();
     private readonly _afterPriorityRun = new Event<number>();
 
-    public get currentoPriority() { return this._currentIndex; }
+    public get currentPriority() { return this._currentIndex; }
     public get inProgress() { return this._inProgress; }
 
     public get beforePriorityRun() { return this._beforePriorityRun.expose(); }

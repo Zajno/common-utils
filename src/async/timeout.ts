@@ -48,3 +48,37 @@ export function setTimeoutFramesAsync(frames: number) {
         cb();
     });
 }
+
+export function timeoutPromise<T>(p: Promise<T>, timeoutMs: number, waitForMinElapsed?: number): Promise<{ resolved: T, timedOut?: boolean, elapsed: number }> {
+    const started = Date.now();
+
+    return new Promise((resolve, reject) => {
+        let finished = false;
+        const finish = (res: T, timedOut: boolean) => {
+            if (finished) {
+                return;
+            }
+
+            finished = true;
+
+            const getElapsed = () => (Date.now() - started);
+            const doFinish = () => resolve({ resolved: res, timedOut: timedOut, elapsed: getElapsed() });
+
+            const left = waitForMinElapsed != null ? (waitForMinElapsed - getElapsed()) : -1;
+            if (left >= 0) {
+                setTimeout(doFinish, left);
+            } else {
+                doFinish();
+            }
+        };
+
+        const timeoutRef = setTimeout(() => {
+            finish(undefined, true);
+        }, timeoutMs);
+
+        p.then(res => {
+            clearTimeout(timeoutRef);
+            finish(res, false);
+        }).catch(reject);
+    });
+}

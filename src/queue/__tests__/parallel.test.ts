@@ -26,7 +26,7 @@ describe('ParallelQueue', () => {
         const res = q.start();
         expect(q.inProgress).toBeTruthy();
 
-        expect(q.currentoPriority).toBe(0);
+        expect(q.currentPriority).toBe(0);
 
         const f3 = createLoader();
         const f4 = createLoader();
@@ -40,7 +40,7 @@ describe('ParallelQueue', () => {
         await expect(res).resolves.toBe(true);
 
         expect(q.inProgress).toBeFalsy();
-        expect(q.currentoPriority).toBe(1);
+        expect(q.currentPriority).toBe(1);
 
         expect(f1).toHaveBeenCalledBefore(f2);
         expect(f2).toHaveBeenCalledAfter(f1);
