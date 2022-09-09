@@ -17,12 +17,15 @@ export class ParallelQueue {
 
     private readonly _beforePriorityRun = new Event<number>();
     private readonly _afterPriorityRun = new Event<number>();
+    private readonly _finished = new Event();
 
     public get currentPriority() { return this._currentIndex; }
     public get inProgress() { return this._inProgress; }
 
     public get beforePriorityRun() { return this._beforePriorityRun.expose(); }
     public get afterPriorityRun() { return this._afterPriorityRun.expose(); }
+
+    public get finished() { return this._finished.expose(); }
 
     public withLogger(name?: string) {
         this._logger = createLogger(`[Queue:${name || '?'}]`);
@@ -120,6 +123,7 @@ export class ParallelQueue {
             // looks like we've finished!
             this._inProgress = false;
             this._logger?.log('Finished processing at index =', this._currentIndex);
+            this._finished.trigger();
             return;
         }
 
