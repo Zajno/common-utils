@@ -48,7 +48,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         const result = new MiddlewareChild<any, any, TContext>() as any as MiddlewaresMap<HT, TContext>;
         Object.keys(info).forEach((k: keyof HT) => {
             if (result[k] !== undefined) {
-                throw new Error(`Field '${k}' is already occupied. Probably it's reserved or duplicated.`);
+                throw new Error(`Field '${String(k)}' is already occupied. Probably it's reserved or duplicated.`);
             }
             result[k] = this.getHandler(info, k) as any;
         });

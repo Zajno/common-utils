@@ -49,7 +49,7 @@ namespace AppHttpError {
             const detailsStr = details.length > 0
                 ? ` (${details.join(', ')})`
                 : '';
-            return `${arg.name}${detailsStr}`;
+            return `${String(arg.name)}${detailsStr}`;
         });
         const message = `Expected fields: ${strings.join(', ')}`;
 
