@@ -1,0 +1,14 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "test": "eslint *.ts"
+  },
+  "dependencies": {
+    "eslint": "file:../node_modules/eslint"
+  },
+  "devDependencies": {
+    "mobx": "^6.6.2"
+  }
+}
