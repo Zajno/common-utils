@@ -1,5 +1,5 @@
 import fc from 'fast-check';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 export const toArbitrary = (fakerGen) => {
     return fc.integer()

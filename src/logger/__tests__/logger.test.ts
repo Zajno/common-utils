@@ -1,4 +1,4 @@
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 import logger, { batchLoggers, createLogger, getMode, ILogger, setMode } from '..';
 import fc from 'fast-check';
 import { toArbitrary } from '../../__tests__/helpers/main';
@@ -9,16 +9,16 @@ const CONSOLE = console;
 describe('#logger-tests', () => {
 
   const customLogger = {
-    log: jest.fn().mockImplementation(null),
-    warn: jest.fn().mockImplementation(null),
-    error: jest.fn().mockImplementation(null),
+    log: jest.fn().mockImplementation(),
+    warn: jest.fn().mockImplementation(),
+    error: jest.fn().mockImplementation(),
   };
   const customLoggerGetter = () => customLogger;
 
   const consoleMocks: Record<keyof ILogger, jest.SpyInstance> = {
-    log: jest.spyOn(CONSOLE, 'log').mockImplementation(null),
-    warn: jest.spyOn(CONSOLE, 'warn').mockImplementation(null),
-    error: jest.spyOn(CONSOLE, 'error').mockImplementation(null),
+    log: jest.spyOn(CONSOLE, 'log').mockImplementation(),
+    warn: jest.spyOn(CONSOLE, 'warn').mockImplementation(),
+    error: jest.spyOn(CONSOLE, 'error').mockImplementation(),
   } as const;
   const loggerMethods = Object.keys(consoleMocks) as (keyof ILogger)[];
 

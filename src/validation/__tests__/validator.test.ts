@@ -1,6 +1,6 @@
 import * as validation from '..';
 import { ValidationErrors } from '../ValidationErrors';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 import fc from 'fast-check';
 import { toArbitrary } from '../../__tests__/helpers/main';
 

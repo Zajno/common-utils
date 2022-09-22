@@ -4,7 +4,7 @@ import { ValidationErrors } from './ValidationErrors';
 export const ValidatorsRegExps = {
     // There is at least first and last name
     // eslint-disable-next-line no-useless-escape
-    name: /^[a-z,\.'-]+( +[a-z,\.'-]+)+$/i,
+    name: /^[\p{L},\.'-]+( +[\p{L},\.'-]+)+$/iu,
     englishLetters: /^([a-zA-Z\s]+)$/,
     email: /^([a-zA-Z0-9_.\-\\+])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+/,
 
@@ -22,7 +22,7 @@ export const ValidatorsRegExps = {
     expiryDateCard: /^\d+$/,
     cvv: /^\d+$/,
     // eslint-disable-next-line no-useless-escape
-    website: /^(https?:\/\/)?([a-z0-9]+((((-?[a-z0-9]{2,})+)?)\.))+[a-z]{2,}(:[0-9]{1,})?(\/.*)?$/i,
+    website: /^(https?:\/\/)?((\p{N}|\p{L})+((((-?(\p{N}|\p{L})+)+)?)\.))+\p{L}{2,}(:[0-9]+)?(\/.*)?$/iu,
     linkedin: /^(https?:\/\/)?([a-z]+\d*[a-z]*\.)?linkedin\.com\/.*$/i,
 };
 
