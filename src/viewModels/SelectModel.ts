@@ -1,5 +1,5 @@
 import { observable, computed, makeObservable, reaction, action } from 'mobx';
-import { createLazy } from '../lazy.light';
+import { createLazy } from '../lazy/light';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import { IValueModel } from './types';

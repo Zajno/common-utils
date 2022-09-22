@@ -1,3 +1,6 @@
+
+// DEPRECATED MODULE. Delete in future versions
+
 import logger from './logger';
 
 export {

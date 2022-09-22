@@ -1,29 +1,8 @@
-import type { IDisposable } from './disposer';
 
-export type LazyLight<T> = IDisposable & {
-    readonly value: T;
-    readonly hasValue: boolean;
+// DEPRECATED MODULE. Delete in future versions
 
-    reset(): void;
-};
+import logger from './logger';
 
-export function createLazy<T>(factory: () => T) {
-    const _factory = factory;
-    let _instance: T = undefined;
+export * from './lazy/light';
 
-    const res: LazyLight<T> = {
-        get value() {
-            if (_instance === undefined) {
-                _instance = _factory();
-            }
-            return _instance;
-        },
-        get hasValue() { return _instance !== undefined; },
-        reset: () => {
-            _instance = undefined;
-        },
-        dispose: () => res.reset(),
-    };
-
-    return res;
-}
+logger.warn('@zajno/common: importing module "lazy.light" is deprecated; please change your import to "lazy/light" module.');
