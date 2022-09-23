@@ -1,4 +1,4 @@
-import { createLazy } from '@zajno/common/lib/lazy.light';
+import { createLazy } from '@zajno/common/lib/lazy/light';
 import { IDatabaseContext, ServerRealtimeDB } from '../database/realtime';
 import { IFirestoreContext, ServerFirestore } from '../database';
 import Admin, { AdminLib } from './admin';

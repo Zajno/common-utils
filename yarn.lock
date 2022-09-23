@@ -907,10 +907,10 @@
   resolved "https://registry.yarnpkg.com/@google-cloud/promisify/-/promisify-2.0.4.tgz#9d8705ecb2baa41b6b2673f3a8e9b7b7e1abc52a"
   integrity sha512-j8yRSSqswWi1QqUGKVEKOG03Q7qOoZP6/h2zN2YO+F5h2+DHU0bSrHCK9Y7lo2DI9fBd8qGAw795sf+3Jva4yA==
 
-"@google-cloud/pubsub@^3.1.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@google-cloud/pubsub/-/pubsub-3.1.1.tgz#884345a1f7e57f46be378157891f66fd2ffb5a72"
-  integrity sha512-TWEhNH0IPWMiWez6kV0MeYmI0W7/JHXD3UzPbuvMHzqGTYHeWDmben9l/2+6oBAT7ySUx9l0RxvQE6vRMUCT4A==
+"@google-cloud/pubsub@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/pubsub/-/pubsub-3.2.0.tgz#03e421240b660957b867921640c34ee142463c20"
+  integrity sha512-QYRbrR7Jk/UnxeU4mYW29/i6WZ8vhzwYH83z55Ki9UFbK0uKL8B0D0o7JMOpk6KRJnmZira48m1dxagv3Av74A==
   dependencies:
     "@google-cloud/paginator" "^4.0.0"
     "@google-cloud/precise-date" "^3.0.0"
@@ -924,6 +924,7 @@
     extend "^3.0.2"
     google-auth-library "^8.0.2"
     google-gax "^3.3.0"
+    heap-js "^2.2.0"
     is-stream-ended "^0.1.4"
     lodash.snakecase "^4.1.1"
     p-defer "^3.0.0"
@@ -1729,10 +1730,10 @@
     "@typescript-eslint/types" "5.38.0"
     eslint-visitor-keys "^3.3.0"
 
-"@zajno/common@^1.5.10":
-  version "1.5.10"
-  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-1.5.10.tgz#48e6cfa5a6c8d247720fcb965f08acfde16b7357"
-  integrity sha512-M6H6AQIkCLd5/LoLgLB/IlYvavmKea4cc+1yDsujvsNiAUj9m9x5J8OgCjL9MPSktPYJJ5g599Ef+ZRlw3jjwg==
+"@zajno/common@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-1.6.2.tgz#ab2152dabfd3723131dda6ed4651393c17ae043c"
+  integrity sha512-G4EsP1ZsiCXJDMl5ENSm1uqwK/ihJ7WSi3eqSPjnkkcnYvjn/xVDCfkZxqOrnvEotR3tnio+G1PXNSUKRQrnXg==
   dependencies:
     rimraf "^3"
 
@@ -3200,6 +3201,11 @@ hash-stream-validation@^0.2.2:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/hash-stream-validation/-/hash-stream-validation-0.2.4.tgz#ee68b41bf822f7f44db1142ec28ba9ee7ccb7512"
   integrity sha512-Gjzu0Xn7IagXVkSu9cSFuK1fqzwtLwFhNhVL8IFJijRNMgUttFbBSIAzKuSIrsFMO1+g1RlsoN49zPIbwPDMGQ==
+
+heap-js@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/heap-js/-/heap-js-2.2.0.tgz#f4418874cd2aedc2cf3a7492d579afe23b627c5d"
+  integrity sha512-G3uM72G9F/zo9Hph/T7m4ZZVlVu5bx2f5CiCS78TBHz2mNIXnB5KRdEEYssXZJ7ldLDqID29bZ1D5ezCKQD2Zw==
 
 html-escaper@^2.0.0:
   version "2.0.2"

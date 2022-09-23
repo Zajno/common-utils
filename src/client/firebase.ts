@@ -1,6 +1,6 @@
 import firebase from 'firebase/app';
 import type FirebaseApp from 'firebase/app';
-import Lazy from '@zajno/common/lib/lazy';
+import { createLazy } from '@zajno/common/lib/lazy/light';
 
 export { FirebaseApp };
 
@@ -62,7 +62,7 @@ function createApp() {
     logger.log('Initialized successfully');
 }
 
-const auth = new Lazy(() => {
+const auth = createLazy(() => {
     const auth = instance.auth();
     if (Settings.authEmulator?.url) {
         logger.log('Firebase Auth will use emulator:', Settings.authEmulator.url);
@@ -71,7 +71,7 @@ const auth = new Lazy(() => {
     return auth;
 });
 
-const functions = new Lazy(() => {
+const functions = createLazy(() => {
     const fns = instance.functions() as ReturnType<typeof firebase.functions> & {
         create<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>): FunctionFactory<TArg, TResult>;
     };
@@ -90,7 +90,7 @@ const functions = new Lazy(() => {
     return fns;
 });
 
-const database = new Lazy<ClientFirestore>(() => {
+const database = createLazy<ClientFirestore>(() => {
     const db = instance.firestore() as ClientFirestore;
 
     if (Settings.firestore) {
@@ -105,7 +105,7 @@ const database = new Lazy<ClientFirestore>(() => {
     return db;
 });
 
-const realtimeDatabase = new Lazy(() => {
+const realtimeDatabase = createLazy(() => {
 
     const rdb = instance.database();
 
@@ -119,7 +119,7 @@ const realtimeDatabase = new Lazy(() => {
     return rdb;
 });
 
-const storage = new Lazy(() => {
+const storage = createLazy(() => {
     const storageInstance = instance.storage();
 
     const emulator = Settings.storageEmulator;

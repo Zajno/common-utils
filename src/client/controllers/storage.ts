@@ -1,6 +1,6 @@
 import Firebase, { FirebaseApp } from '../firebase';
 import { createLogger } from '@zajno/common/lib/logger';
-import Lazy from '@zajno/common/lib/lazy';
+import { createLazy } from '@zajno/common/lib/lazy/light';
 
 const logger = createLogger('[Storage]');
 
@@ -42,7 +42,7 @@ function formatDate(date: Date) {
 
 export class StorageController implements IStorageController {
 
-    private static _instance = new Lazy(() => new StorageController());
+    private static _instance = createLazy(() => new StorageController());
 
     public static get Instance() { return StorageController._instance.value; }
 
