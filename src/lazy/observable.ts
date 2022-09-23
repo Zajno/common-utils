@@ -23,10 +23,14 @@ export class LazyPromiseObservable<T> extends LazyPromise<T> {
     ) {
         super(factory, initial);
 
-        makeObservable<LazyPromise<T>, '_instance' | '_busy' | 'setInstance'>(this, {
+        makeObservable<
+            LazyPromise<T>,
+            '_instance' | '_busy' | 'setInstance' | 'ensureInstanceLoading'
+        >(this, {
             _instance: observable.ref,
             _busy: observable,
             setInstance: action,
+            ensureInstanceLoading: action,
             reset: action,
         });
     }

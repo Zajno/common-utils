@@ -18,17 +18,21 @@ export class LazyPromise<T> implements IDisposable {
     get hasValue() { return this._busy === false; }
 
     get promise() {
+        this.ensureInstanceLoading();
         return this._promise;
     }
 
     get value() {
+        this.ensureInstanceLoading();
+        return this._instance;
+    }
+
+    protected ensureInstanceLoading() {
         if (this._busy === null) {
             this._busy = true;
             this._promise = this._factory();
             this._promise.then(this.setInstance);
         }
-
-        return this._instance;
     }
 
     private setInstance = (res: T) => {

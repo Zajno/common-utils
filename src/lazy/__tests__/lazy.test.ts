@@ -75,6 +75,7 @@ describe('LazyPromise', () => {
 
         expect(l.value).toBeUndefined();
         expect(l.busy).toBeTrue();
+        expect(l.promise).not.toBeNull();
 
         const listener = jest.fn().mockImplementation();
         const clean = reaction(() => l.value, listener, { fireImmediately: true });
