@@ -1,13 +1,35 @@
 import type firebase from 'firebase';
 import { IFunctionDefinition } from '../functions';
+import { IFunctionDefinitionInfo } from '../functions/interface';
 import { ILogger, createLogger } from '@zajno/common/lib/logger';
+import { Event, IEvent } from '@zajno/common/lib/event';
+
+const _onFactoryCreated = new Event<FunctionFactoryHook>();
+
+export const OnFactoryCreated: IEvent<FunctionFactoryHook> = _onFactoryCreated;
+
+export type FunctionFactoryHook = {
+    readonly definition: IFunctionDefinitionInfo;
+    addMeta(meta: any): void;
+};
 
 export class FunctionFactory<TArg, TResult> {
 
     private readonly logger: ILogger = null;
+    private _meta: any = null;
 
     constructor(readonly Definition: IFunctionDefinition<TArg, TResult>, private readonly firebaseFunctions: firebase.functions.Functions) {
         this.logger = createLogger(`[${Definition.CallableName}]`);
+
+        _onFactoryCreated.trigger({
+            definition: Definition,
+            addMeta: meta => this.addMeta(meta),
+        });
+    }
+
+    addMeta<TMeta>(meta?: TMeta) {
+        this._meta = meta;
+        return this;
     }
 
     async execute(arg: TArg): Promise<TResult> {
@@ -21,7 +43,15 @@ export class FunctionFactory<TArg, TResult> {
                 },
             );
             const processedArgs = await this.Definition.ArgProcessor(arg);
-            this.logger.log('Executing with args:', processedArgs);
+            this.logger.log('Executing with args:', processedArgs, ...(this._meta ? ['with meta:', this._meta] : []));
+
+            if (this._meta != null) {
+                if ((processedArgs as any).__meta != null) {
+                    this.logger.warn('Skipping adding metadata because field "__meta" is occupied already:', (processedArgs as any).__meta);
+                } else {
+                    Object.assign(processedArgs, { __meta: this._meta });
+                }
+            }
 
             const res = await fn(processedArgs);
 

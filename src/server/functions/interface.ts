@@ -10,6 +10,7 @@ export type EndpointContext<T = never> = BaseFunctionContext & {
     readonly requestId: string;
     readonly logger: ILogger;
     readonly endpoint: IEndpointRuntimeInfo;
+    readonly meta?: any;
 };
 
 export type EndpointFunction<T, TOut, TContext = never> = (data: T, context: EndpointContext<TContext>) => Promise<TOut>;

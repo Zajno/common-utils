@@ -45,12 +45,18 @@ export class FunctionFactory<TArg, TResult, TContext extends { } = never>
             const path = this.generatedPathForInput(data);
             const id = Math.random().toString(26).slice(2, 8);
 
+            const meta = (data as any)?.__meta;
+            if (meta) {
+                delete (data as any).meta;
+            }
+
             const endpointContext: EndpointContext<TContext> = {
                 ...ctx,
                 endpoint: { definition: this.Definition },
                 requestId: id,
                 requestPath: path,
                 logger: createLogger(`[API:${this.Definition.CallableName}/${path}:${id}]`),
+                meta: meta,
             };
 
             return this.execute(data, endpointContext);
