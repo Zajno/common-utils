@@ -1,6 +1,6 @@
 
 import { timeoutPromise } from '../timeout';
-import { Event, oneTimeSubscription } from '../../event';
+import { Event, oneTimeSubscription } from '../../observing/event';
 
 describe('Timeouts', () => {
 

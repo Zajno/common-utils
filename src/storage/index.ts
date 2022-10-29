@@ -1,4 +1,4 @@
-import IStorage, { IStorageSync } from '../../abstractions/services/storage';
+import IStorage, { IStorageSync } from '../abstractions/services/storage';
 
 export class StorageAsyncWrapper implements IStorage {
 

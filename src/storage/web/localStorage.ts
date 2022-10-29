@@ -1,5 +1,5 @@
 import { KeyStorage, KeyStorageConverted, StorageAsyncWrapper } from '..';
-import IStorage, { IStorageSync } from '../../../abstractions/services/storage';
+import IStorage, { IStorageSync } from '../../abstractions/services/storage';
 import { WebStorage } from './webStorage';
 
 /* global window */

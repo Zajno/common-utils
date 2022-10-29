@@ -1,5 +1,5 @@
 
-import { IStorageSync } from '../../../abstractions/services/storage';
+import { IStorageSync } from '../../abstractions/services/storage';
 
 export abstract class WebStorage implements IStorageSync {
 
