@@ -8,15 +8,20 @@ The motivation to have this – just to control and organize some shared code th
 
 
 * [Math and Array extensions](./src/math/index.ts)
+
 * [Date extensions & helpers](./src/dates/index.ts)
+
 * [Logger interface & console implementation](./src/logger/index.ts) – create instance of logger, inject your own implementation or globally enable/disable logger instances by callling `setMode`
-* [Localization](./src/services/localization/LocalizationManager.ts) – attempt to have a simple runtime i18n manager
+
 * Cache, EnumHelper, Event, Lazy, Pool, Throttle, Disposer
 
 ...and other more or less noteworthy stuff.
 
 The source code is written in TypeScript, and intended to be used in TS project, so no built JS sources included.
 
+## Note on MobX dependency
+
+Prior to v2 some part of this library were depending on [MobX](https://mobx.js.org/) so it was included as peer dependency. Since v2 it has been removed along with all modules that used it, to a separate [@zajno/common-mobx](https://github.com/Zajno/common-mobx) package.
 
 ## Usage
 
