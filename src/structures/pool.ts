@@ -1,5 +1,5 @@
-import { safeCall } from 'functions';
-import type { IDisposable } from './disposer';
+import { safeCall } from '../functions/safeCall';
+import type { IDisposable } from '../functions/disposer';
 
 export class Pool<T> {
 

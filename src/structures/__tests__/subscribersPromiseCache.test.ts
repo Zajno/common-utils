@@ -1,6 +1,6 @@
 import { observable, reaction, runInAction, toJS } from 'mobx';
-import { ObservingCache } from '../observingCache';
-import { setTimeoutAsync } from '../async/timeout';
+import { SubscribersPromiseCache } from '../subscribersPromiseCache';
+import { setTimeoutAsync } from '../../async/timeout';
 
 type TestItem = {
     hello: string,
@@ -20,10 +20,10 @@ function createData() {
         },
     };
 
-    const subscribeFn = jest.fn().mockImplementation(null);
-    const unsubFn = jest.fn().mockImplementation(null);
+    const subscribeFn = jest.fn().mockImplementation();
+    const unsubFn = jest.fn().mockImplementation();
 
-    const Cache = new ObservingCache((key, cb) => {
+    const Cache = new SubscribersPromiseCache((key, cb) => {
         subscribeFn(key);
         const unsub = Repository.fetch(key, cb);
         return () => {

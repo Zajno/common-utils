@@ -1,4 +1,4 @@
-import { safeCall } from '../functions';
+import { safeCall } from '../functions/safeCall';
 import { Comparator } from '../types';
 
 export namespace Fields {

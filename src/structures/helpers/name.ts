@@ -1,11 +1,11 @@
 
-type DisplayName = { displayName: string };
-type SplittedName = {
+export type DisplayName = { displayName: string };
+export type SplittedName = {
     firstName: string,
     lastName: string,
 };
 
-type FullName = DisplayName & SplittedName;
+export type FullName = DisplayName & SplittedName;
 
 function splitDisplayName(name: Partial<DisplayName>): SplittedName {
     if (!name || !name.displayName) {
@@ -21,7 +21,7 @@ function splitDisplayName(name: Partial<DisplayName>): SplittedName {
     };
 }
 
-const NamesHelper = {
+export const NamesHelper = {
 
     split(name: Partial<DisplayName>): SplittedName { return splitDisplayName(name); },
     join(name: Partial<SplittedName>): DisplayName { return { displayName: `${name.firstName} ${name.lastName}` }; },

@@ -1,5 +1,5 @@
-import { createLogger, ILogger } from '../logger';
-import { Event } from '../event';
+import { createLogger, ILogger } from '../../logger';
+import { Event } from '../../observing/event';
 
 export type QueueItem = () => void | Promise<void>;
 

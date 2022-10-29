@@ -32,6 +32,7 @@ export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promi
 export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: false): Promise<T>;
 export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: true): Promise<T | false>;
 export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: 'throw'): Promise<T>;
+export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: boolean | 'throw'): Promise<T | false>;
 
 export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: boolean | 'throw' = false): Promise<T | false> {
     if (exclusive && model.value) {

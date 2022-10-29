@@ -1,9 +1,8 @@
-import { action } from 'mobx';
-import { Disposable } from './disposer';
-import { PromiseCache, DeferredGetter } from './cache';
-import { ObserversMap } from './observersMap';
-import { Fields } from './fields';
-import logger from './logger';
+import { Disposable } from '../functions/disposer';
+import { PromiseCache, DeferredGetter } from './promiseCache';
+import { SubscribersMap } from '../structures/subscribersMap';
+import { Fields } from '../fields';
+import logger from '../logger';
 
 export type Unsub = () => void;
 export type Fetcher<T> = (key: string, cb: (val: T) => Promise<void> | void) => Unsub | Promise<Unsub>;
@@ -14,10 +13,10 @@ export interface IObservingCache<T> {
     get(key: string): DeferredGetter<T>;
 }
 
-export class ObservingCache<T> extends Disposable implements IObservingCache<T> {
+export class SubscribersPromiseCache<T> extends Disposable implements IObservingCache<T> {
 
     private readonly _cache: PromiseCache<T>;
-    private readonly _observers: ObserversMap;
+    private readonly _observers: SubscribersMap;
 
     private _observeStrategy: ObserveStrategy = null;
     private readonly _observeStrategyOverrides: Record<string, ObserveStrategy> = { };
@@ -28,7 +27,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
         super();
 
         this._cache = new PromiseCache(this._fetch);
-        this._observers = new ObserversMap(this._subscribe);
+        this._observers = new SubscribersMap(this._subscribe);
 
         this.disposer.add(this._observers);
     }
@@ -79,7 +78,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
                 if (observingStartedPromise) {
                     observingStartedPromise(promise);
                 }
-                promise.catch(err => logger.error('[ObservingCache] Error on starting observe', key, strategy, err));
+                promise.catch((err: Error) => logger.error('[ObservingCache] Error on starting observe', key, strategy, err));
             }
         }
 
@@ -127,7 +126,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
         ]);
     };
 
-    private _updateItem = action((key: string, item: T) => {
+    private _updateItem = (key: string, item: T) => {
         if (this._updater != null && item != null) {
             const current = this._cache.getCurrent(key, false);
             if (current != null) {
@@ -139,7 +138,7 @@ export class ObservingCache<T> extends Disposable implements IObservingCache<T> 
         }
 
         this._cache.updateValueDirectly(key, item);
-    });
+    };
 }
 
 function getObserveTimeout(s: ObserveStrategy) {

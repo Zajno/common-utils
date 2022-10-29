@@ -1,4 +1,4 @@
-import type { IDisposable } from '../disposer';
+import type { IDisposable } from '../functions/disposer';
 
 export class LazyPromise<T> implements IDisposable {
 

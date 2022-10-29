@@ -1,4 +1,4 @@
-import { IDisposable } from './disposer';
+import { IDisposable } from '../functions/disposer';
 import { Event, EventHandler, IEvent } from './event';
 
 export class Timer implements IDisposable, IEvent<number> {

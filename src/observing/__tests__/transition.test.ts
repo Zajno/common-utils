@@ -1,5 +1,5 @@
 import { observable, runInAction } from 'mobx';
-import { TransitionObserver } from '../transitionObserver';
+import { TransitionObserver } from '../transition';
 
 function createStore<T>(value: T) {
     const s = observable.object({
@@ -33,7 +33,7 @@ describe('TransitionObserver', () => {
     });
 
     it('tracks only correct transition – 2 way', () => {
-        const store = createStore<boolean>(true);
+        const store = createStore<boolean | null>(true);
 
         const cb = jest.fn();
 
@@ -61,7 +61,7 @@ describe('TransitionObserver', () => {
     });
 
     it('tracks only correct transition – from', () => {
-        const store = createStore<boolean>(true);
+        const store = createStore<boolean | null>(true);
 
         const cb = jest.fn();
 
@@ -93,7 +93,7 @@ describe('TransitionObserver', () => {
     });
 
     it('tracks only correct transition – to', () => {
-        const store = createStore<boolean>(true);
+        const store = createStore<boolean | null>(true);
 
         const cb = jest.fn();
 
@@ -128,7 +128,7 @@ describe('TransitionObserver', () => {
     });
 
     it('tracks only correct transition – <any>', () => {
-        const store = createStore<boolean>(true);
+        const store = createStore<boolean | null>(true);
 
         const cb = jest.fn();
         const cbE = jest.fn();

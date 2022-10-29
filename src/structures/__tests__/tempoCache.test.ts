@@ -1,5 +1,5 @@
 import { TempoCache } from '../tempoCache';
-import { setTimeoutAsync } from '../async/timeout';
+import { setTimeoutAsync } from '../../async/timeout';
 
 describe('TempoCache', () => {
     it('just works', async () => {

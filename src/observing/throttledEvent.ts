@@ -1,5 +1,5 @@
 import { Event } from './event';
-import { ThrottleAction } from './throttle';
+import { ThrottleAction } from '../functions/throttle';
 
 export class ThrottledEvent extends Event {
 

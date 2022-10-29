@@ -1,7 +1,6 @@
-import type { Predicate } from './types';
-import './async/arrays';
-import { forEachAsync } from './async/arrays';
-import { ILogger, createLogger } from './logger';
+import type { Predicate } from '../types';
+import { forEachAsync } from '../async/arrays';
+import { ILogger, createLogger } from '../logger';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 

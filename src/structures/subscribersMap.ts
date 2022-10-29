@@ -1,11 +1,11 @@
-import { createLogger, ILogger } from './logger';
-import { combineDisposers, IDisposable } from './disposer';
-import { NumberModel } from './viewModels/NumberModel';
+import { createLogger, ILogger } from '../logger';
+import { combineDisposers, IDisposable } from '../functions/disposer';
+import { NumberModel } from '../viewModels/NumberModel';
 
 type Unsub = () => void;
 
-export class ObserversMap implements IDisposable {
-    /** Unsusbcrobers map: key => unsub fn */
+export class SubscribersMap implements IDisposable {
+    /** Unsusbcribers map: key => unsub fn */
     private readonly _map = new Map<string, () => void>();
     /** Timeouts map: key => timeout handle */
     private readonly _timeouts = new Map<string, any>();

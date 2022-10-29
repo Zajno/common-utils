@@ -1,4 +1,4 @@
-import EnumHelper from '../enumHelper';
+import EnumHelper from '../structures/helpers/enum';
 
 export enum ValidationErrors {
     None = 0,

@@ -259,3 +259,16 @@ export function arrayRepeat<T>(factory: Getter<T>, count = 1) {
     }
     return res;
 }
+
+export function chunkify<T>(array: T[], size: number): T[][] {
+    return array.reduce((res, item) => {
+        let arr = res[res.length - 1];
+        if (!arr || arr.length >= size) {
+            arr = [];
+            res.push(arr);
+        }
+
+        arr.push(item);
+        return res;
+    }, [] as T[][]);
+}

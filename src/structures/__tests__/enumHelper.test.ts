@@ -1,4 +1,4 @@
-import EnumHelper, { EnumBitwiseHelper, EnumStringHelper } from '../enumHelper';
+import EnumHelper, { EnumBitwiseHelper, EnumStringHelper } from '../helpers/enum';
 
 enum Enum {
     Val1 = 1,

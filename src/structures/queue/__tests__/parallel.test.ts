@@ -1,7 +1,7 @@
 import 'jest-extended';
 import { ParallelQueue } from '../parallel';
-import { setTimeoutAsync } from '../../async/timeout';
-import { setMode } from '../../logger';
+import { setTimeoutAsync } from '../../../async/timeout';
+import { setMode } from '../../../logger';
 
 const createLoader = () => jest.fn(() => setTimeoutAsync(100));
 

@@ -1,6 +1,6 @@
 import { observable, makeObservable, runInAction, action } from 'mobx';
-import { NumberModel } from './viewModels/NumberModel';
-import { createLogger, ILogger } from './logger';
+import { NumberModel } from '../viewModels/NumberModel';
+import { createLogger, ILogger } from '../logger';
 
 export type DeferredGetter<T> = {
     readonly current: T;
