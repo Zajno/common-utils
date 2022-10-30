@@ -1,0 +1,57 @@
+{
+  "name": "@zajno/common-web",
+  "version": "1.0.0-beta.0",
+  "description": "Zajno's re-usable utilities for JS/TS projects for Web",
+  "author": "Zajno",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zajno/common-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zajno/common-web/issues"
+  },
+  "homepage": "https://github.com/Zajno/common-web#readme",
+  "scripts": {
+    "build": "tsc -P tsconfig.build.json",
+    "build:clean": "rimraf ./lib && yarn build",
+    "build:w": "yarn build --watch",
+    "publish:local": "yalc push --replace --update",
+    "prepare": "yarn build:clean && yarn lint",
+    "postinstall": "yarn build",
+    "lint": "eslint \"src/**/*.ts?(x)\"",
+    "test": "yarn jest --clearCache && yarn jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.2.0",
+    "@types/node": "^18",
+    "@zajno/common": "^2.0.0-beta.2",
+    "@zajno/eslint-config": "^2.2.0",
+    "eslint": "^8.26.0",
+    "jest": "^29.2.2",
+    "jest-extended": "^3.1.0",
+    "mobx": "^6",
+    "rimraf": "^3",
+    "ts-jest": "^29.0.3",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "@zajno/common": "^2",
+    "mobx": "^6",
+    "tslib": "^2.4",
+    "typescript": "^4.8"
+  },
+  "files": [
+    "src/*",
+    "tsconfig.json",
+    "tsconfig.build.json",
+    "LICENSE",
+    "!.DS_Store",
+    "!**/__tests__/**/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
