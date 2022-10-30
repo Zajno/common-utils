@@ -1,17 +1,11 @@
-# Zajno's Toolbox – MobX
+# Zajno's Toolbox – Web
 
-This library is an extension for [`@zajno/common`](https://github.com/Zajno/common-utils), which adds more tools but based on [MobX](https://mobx.js.org/) library.
+This library is an extension for [`@zajno/common`](https://github.com/Zajno/common-utils), which adds more tools for Web development (mostly based on browser features).
 
 All runtime dependencies are peer.
 
 ### Contents
 
-* [Localization](./src/localization/LocalizationManager.ts) – attempt to have a simple runtime i18n manager
+* [Storage](./src/storage) – local/session storage wrappers with a common interface (see https://github.com/Zajno/common-utils/blob/v2/src/storage/abstractions.ts)
 
-* [ViewModels]('./src/viewModels/index.ts') – useful for MVVM pattern
-
-* Structures for caching & observing: [`PromiseCache`](./src/structures/promiseCache.ts), [`SubscribersMap`](./src/structures/subscribersMap.ts), [`SubscribersPromiseCache`](./src/structures/subscribersPromiseCache.ts)
-
-* [`TransitionObserver`](./src/observing/transition.ts) – neat wrapper of mobx's `reaction`
-
-* [`LazyObservable` & `LazyPromiseObservable`]('./src/lazy/observable.ts')
+* [Breakpoints](./src/breakpoints/index.ts) – configurable responsive breakpoints manager
