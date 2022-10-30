@@ -1,5 +1,5 @@
 
-export default interface IStorage {
+export interface IStorage {
     getValue(key: string): Promise<string>;
     setValue(key: string, value: string): Promise<void>;
 
@@ -14,3 +14,5 @@ export interface IStorageSync {
     removeValue(key: string): boolean;
     hasValue(key: string): boolean;
 }
+
+export default IStorage;
