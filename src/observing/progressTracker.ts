@@ -12,6 +12,8 @@ export class ProgressTracker {
     private _completed = 0;
     private _total = 0;
 
+    private _currentProgress: number = 0;
+
     private readonly _deltas: number[] = [];
 
     private readonly _changed = new Event<{ completed: number, total: number, currentProgress: number, totalElapsedMs: number, totalEstimatedMs: number }>();
@@ -19,6 +21,9 @@ export class ProgressTracker {
     constructor(readonly log: boolean | ILogger = true) { }
 
     public get changed() { return this._changed.expose(); }
+    public get total() { return this._total; }
+    public get completed() { return this._completed; }
+    public get current() { return this._currentProgress; }
 
     private get logger() {
         return this.log === true
@@ -45,6 +50,7 @@ export class ProgressTracker {
         const elapsedDelta = Date.now() - this._lastTimestamp;
         const completedDelta = completed - (this._lastCompleted || 0);
         this._lastCompleted = completed;
+        this._completed = completed;
         const timePerCompleted = completedDelta > 0 ? (elapsedDelta / completedDelta) : 0;
 
         this._deltas.push(timePerCompleted);
@@ -52,7 +58,7 @@ export class ProgressTracker {
             this._deltas.shift();
         }
 
-        const currentProgress = Math.floor(completed / (total || 100) * 100);
+        this._currentProgress = Math.floor(completed / (total || 100) * 100);
         const itemsLeft = total - completed;
         const leftProgressTime = itemsLeft * (MathHelpers.arrayAverage(this._deltas, true) || 1000);
 
@@ -64,13 +70,13 @@ export class ProgressTracker {
             const totalElapsed = msToString(totalElapsedMs);
             const totalEstimated = msToString(leftProgressTime);
 
-            this.logger.log(`Progress: ${completed}/${total} ${totalElapsed}/${totalEstimated} => ${currentProgress}%`);
+            this.logger.log(`Progress: ${completed}/${total} ${totalElapsed}/${totalEstimated} => ${this._currentProgress}%`);
         }
 
         this._changed.trigger({
             completed,
             total,
-            currentProgress,
+            currentProgress: this._currentProgress,
             totalElapsedMs,
             totalEstimatedMs: leftProgressTime,
         });
