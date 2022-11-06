@@ -11,7 +11,7 @@ export { ILogger, LoggerFunction, ConsoleLogger, batchLoggers };
 // TBD Introduce more logger types ?
 export type LoggerTypes = 'console';
 
-let Mode: LoggerTypes | false | Getter<ILogger> = process.env.COMMON_UTILS_LOGGER as LoggerTypes || false;
+let Mode: LoggerTypes | false | Getter<ILogger> = false;
 
 const proxies: ProxyLogger[] = [];
 
