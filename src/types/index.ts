@@ -15,3 +15,7 @@ export type NestedPick<T, K extends any[]> = K extends Array<never> // empty arr
     : {
         [P in K[0]]: P extends keyof T ? NestedPick<T[P], ArrayTail<K>> : never;
     };
+
+export type Mutable<T> = {
+    -readonly [P in keyof T]: T[P];
+};
