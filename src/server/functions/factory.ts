@@ -7,10 +7,12 @@ import {
     BaseFunctionContext,
     FirebaseEndpointRunnable,
 } from './interface';
-import { createHttpsFunction } from './create';
+import { createHttpsCallFunction } from './create';
 import { Middleware } from './middleware';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter';
 import { createLogger } from '@zajno/common/lib/logger';
+import { badRandomString } from '@zajno/common/lib/math/calc';
+import { META_ARG_KEY } from '../../functions/composite';
 
 export class FunctionFactory<TArg, TResult, TContext extends { } = never>
     extends Middleware<TArg, TResult, TContext>
@@ -29,7 +31,7 @@ export class FunctionFactory<TArg, TResult, TContext extends { } = never>
 
     get Endpoint() {
         if (!this._endpoint) {
-            this._endpoint = createHttpsFunction(
+            this._endpoint = createHttpsCallFunction(
                 this.createEndpointHandler(),
                 {
                     timeoutSeconds: this.Definition.Timeout,
@@ -42,13 +44,14 @@ export class FunctionFactory<TArg, TResult, TContext extends { } = never>
 
     protected createEndpointHandler(): EndpointFunction<TArg, TResult> {
         const handler: EndpointFunction<TArg, TResult> = (data: TArg, ctx: BaseFunctionContext) => {
-            const path = this.generatedPathForInput(data);
-            const id = Math.random().toString(26).slice(2, 8);
 
-            const meta = (data as any)?.__meta;
+            const meta = data && data[META_ARG_KEY];
             if (meta) {
-                delete (data as any).meta;
+                delete data[META_ARG_KEY];
             }
+
+            const path = this.generatedPathForInput(data);
+            const id = badRandomString(6);
 
             const endpointContext: EndpointContext<TContext> = {
                 ...ctx,

@@ -8,7 +8,7 @@ export async function removeDirectoryFromStorage(path: string): Promise<void> {
 
     logger.log(`Start deleting files :::: ${path}`);
     try {
-        await StorageContext.bucket.deleteFiles({ directory: path });
+        await StorageContext.bucket.deleteFiles({ prefix: path });
         logger.log(`Files successfully deleted :::: ${path}`);
     } catch (error) {
         logger.error(`Error while deleting files :::: ${path} :::: ${error}`);

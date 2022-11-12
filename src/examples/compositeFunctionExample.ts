@@ -3,6 +3,8 @@ import Firebase from '../client/firebase';
 import { ContextTo, EndpointContext, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions';
 import { Middleware } from '../server/functions/middleware';
 import AppHttpError from '../server/utils/AppHttpError';
+import { useAsyncInitLoader } from '../server/functions/loader';
+import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
 
 export namespace ExampleEndpoint {
     const api_v1 = {
@@ -138,18 +140,23 @@ export namespace Server {
 
         export const ExampleV2 = new FunctionCompositeFactory(ExampleEndpoint.v2(), null as string);
 
-        ExampleV2.handlers.useAuth();
-        ExampleV2.handlers.zero.use(m2.currentChain);
+        useAsyncInitLoader(ExampleV2, async () => {
+            await setTimeoutAsync(50);
+            return (v2) => {
+                v2.handlers.useAuth();
+                v2.handlers.zero.use(m2.currentChain);
 
-        ExampleV2.handlers.n1.skipParentMiddlewares();
-        ExampleV2.handlers.n1.h1.use(m2.currentChain);
+                v2.handlers.n1.skipParentMiddlewares();
+                v2.handlers.n1.h1.use(m2.currentChain);
 
-        const n2Filler = SpecTo.partialEndpoint(ExampleEndpoint.v2().info.n1.n2, n2 => {
-            n2.useAuth();
-            n2.h2.use(m2.currentChain);
+                const n2Filler = SpecTo.partialEndpoint(ExampleEndpoint.v2().info.n1.n2, n2 => {
+                    n2.useAuth();
+                    n2.h2.use(m2.currentChain);
+                });
+
+                n2Filler(v2.handlers.n1.n2);
+            };
         });
-
-        n2Filler(ExampleV2.handlers.n1.n2);
     }
 
     export namespace ServerRoot {

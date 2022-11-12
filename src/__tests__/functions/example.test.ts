@@ -11,7 +11,7 @@ describe('Function API', () => {
     it('just compiles LOL', () => expect(Endpoint).toBeTruthy());
     it('fails with no auth', async () => {
         await expect(
-            Endpoint({ example: null }),
+            Endpoint({ example: undefined }),
         ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated);
     });
     it('runs as root', async () => {
@@ -47,7 +47,7 @@ describe('Function API', () => {
     const ExampleDoubleNested = getNestedFunction(ExampleInner, 'double-nested');
 
     it('applies namespace middleware (use auth)', () => expect(
-        ExampleNestedFunc({ lol: 'x' }, null)
+        ExampleNestedFunc({ lol: 'x' })
     ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated));
 
     it('runs as composite – nested', async () => {
@@ -72,7 +72,7 @@ describe('Function API', () => {
     ).resolves.toEqual('lol_m0_m1_m2'));
 
     it('contains correct context', async () => {
-        const endpointDataHandler = jest.fn().mockImplementation(null);
+        const endpointDataHandler = jest.fn().mockImplementation();
 
         const endpointCopy = Example.Server.ApiRoot.ExampleV1.clone();
         endpointCopy.handlers

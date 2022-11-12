@@ -1,16 +1,28 @@
-import * as functions from 'firebase-functions';
-import { PubSub as CloudPubsSub } from '@google-cloud/pubsub';
-import { createLogger, ILogger } from '@zajno/common/lib/logger';
+import { runWith } from 'firebase-functions';
+import type { pubsub, CloudFunction } from 'firebase-functions';
+import logger, { createLogger, ILogger } from '@zajno/common/lib/logger';
 import { FunctionsMemoryOptions } from '../../functions/interface';
 import { AppConfig } from '../../config';
-import { TopicBuilder } from 'firebase-functions/lib/providers/pubsub';
 import { Event } from '@zajno/common/lib/event';
+import { LazyPromise } from '@zajno/common/lib/lazy/promise';
+import { createLazy } from '@zajno/common/lib/lazy/light';
+import type { PubSub as CloudPubSub, ClientConfig } from '@google-cloud/pubsub';
 
 export namespace PubSub {
-    export const topicCloudFunctions = {}; // values
+    const topicCloudFunctions: Record<string, CloudFunction<pubsub.Message>> = { };
     let isCloudFunctionsInitialized: boolean = false;
 
-    const Instance: CloudPubsSub = new CloudPubsSub({ projectId: AppConfig.value?.appId });
+    const Config: ClientConfig = {
+        projectId: AppConfig.value?.appId,
+    };
+
+    const InstanceLazy = createLazy<CloudPubSub>(() => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { PubSub } = require('@google-cloud/pubsub') as { PubSub: typeof CloudPubSub };
+        return new PubSub(Config);
+    });
+
+    // const Instance = new CloudPubSub({ projectId: AppConfig.value?.appId });
 
     type ErrorHandlerFn = (e: Error) => void;
     let ErrorHandler: ErrorHandlerFn | null = null;
@@ -19,49 +31,76 @@ export namespace PubSub {
         ErrorHandler = handler;
     }
 
+    let STRICT_PUBLISH_MODE = true;
+
+    export function setStrictPublishMode(strictMode: boolean) {
+        STRICT_PUBLISH_MODE = strictMode;
+    }
+
     export const getCloudFunctions = () => {
         isCloudFunctionsInitialized = true;
 
         return topicCloudFunctions;
     };
+
+    export function preloadLibrary(config?: ClientConfig) {
+        if (config) {
+            if (InstanceLazy.hasValue) {
+                logger.warn('Will not apply PubSub ClientConfig because library instance has been created already. config =', config);
+            } else {
+                Object.assign(Config, config);
+            }
+        }
+        return InstanceLazy.value;
+    }
+
     export class Topic<TData extends Object> {
         private readonly _handler = new Event<TData>();
 
         private _logger: ILogger = null;
+        private _registration: LazyPromise<void> = null;
 
         constructor (private readonly name: string, private readonly timeout: number = 60, private readonly memory: FunctionsMemoryOptions = '256MB', private readonly retry: boolean = false) {
-            this._logger = createLogger(`[Pubsub topic:${name}]`);
+            this._logger = createLogger(`[PubsubTopic:${name}]`);
 
-            this.topicInitialize();
+            this.init();
         }
 
         public get handler() { return this._handler.expose(); }
 
-        private topicInitialize = () => {
+        public addRegistration(lazyLoader: () => Promise<void>) {
+            this._registration = new LazyPromise(lazyLoader);
+            return this;
+        }
+
+        private init = () => {
             if (isCloudFunctionsInitialized) {
                 this._logger.warn(`Topics has been exported already so publishing to this one (${this.name}) will be no-op`);
                 return;
             }
 
-            const createdTopic: TopicBuilder = this.createTopic();
-
-            this.setTopicHandler(createdTopic);
+            const createdTopic: pubsub.TopicBuilder = this.createEndpoint();
+            this.registerEndpoint(createdTopic);
         };
 
-        private createTopic = () => {
-            const builder = functions.runWith({ timeoutSeconds: this.timeout, memory: this.memory, failurePolicy: this.retry });
+        private createEndpoint = () => {
+            const builder = runWith({ timeoutSeconds: this.timeout, memory: this.memory, failurePolicy: this.retry });
 
             return builder.pubsub.topic(this.name);
         };
 
-        private setTopicHandler = (builder: TopicBuilder) => {
+        private registerEndpoint = (builder: pubsub.TopicBuilder) => {
             if (!builder) {
-                this._logger.warn('Topic builder not initialized. Create topic handler canceled');
+                this._logger.warn('Topic builder not initialized. Creating topic handler canceled');
                 return null;
             }
 
             const cloudFunction = builder.onPublish(async (message, _) => {
                 const data = message.json as TData;
+
+                if (this._registration) {
+                    await this._registration.promise;
+                }
 
                 let errors: Error[] = null;
 
@@ -80,22 +119,21 @@ export namespace PubSub {
             });
 
             if (!cloudFunction) {
-                this._logger.warn('CloudFunction don\'t created. Add function to firebase canceled');
+                this._logger.warn('PubSub topic handler was not created. Adding function to firebase canceled');
                 return null;
             }
 
             topicCloudFunctions[this.name] = cloudFunction;
         };
 
-        async publish (data: TData) {
-            if (!topicCloudFunctions[this.name]) {
+        async publish(data: TData) {
+            if (STRICT_PUBLISH_MODE && !topicCloudFunctions[this.name]) {
                 throw new Error('Trigger unsettled callback. Trigger canceled');
             }
-
-            const topic = Instance.topic(this.name);
+            const topic = InstanceLazy.value.topic(this.name);
 
             try {
-                await topic.publishJSON(data);
+                await topic.publishMessage({ json: data });
             } catch (e) {
                 this._logger.error('Failed to publish error ', e);
             }

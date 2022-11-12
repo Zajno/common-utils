@@ -15,7 +15,7 @@ describe('declaration', () => {
 
     it('doesn\'t add empty', () => {
         const v1 = ENDPOINT();
-        expect(() => v1.use(null)).not.toThrow();
+        expect(() => v1.use(null as any)).not.toThrow();
     });
 
     it('adds beforeAll to empty', () => {
@@ -61,7 +61,7 @@ describe('broken api', () => {
 
         it('throws not found – arg is null', async () => {
             await expect(
-                v1(null)
+                v1(null as any)
             ).rejects.toThrowError('Expected fields: input');
         });
 
@@ -115,7 +115,7 @@ describe('broken api', () => {
     describe('v4 – fixed middleware', () => {
         const v3 = wrapEndpoint(new FunctionCompositeFactory(BrokenApi.Api())
             .use((ctx, next) => {
-                ++ctx.input.foo;
+                ctx.input.foo = (ctx.input.foo || 0) + 1;
                 return next();
             })
             .useFunctionsMap({

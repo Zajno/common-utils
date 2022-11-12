@@ -1,6 +1,8 @@
 import { FunctionDefinition } from './definition';
 import { FunctionsMemoryOptions, IFunctionDefinition } from './interface';
 
+export const META_ARG_KEY = '__meta';
+
 export type EndpointSpec<TArg, TResult> = (arg: TArg) => TResult; // can be just an empty object
 
 export function spec<TArg, TResult>(fallback: EndpointSpec<TArg, TResult> = null): EndpointSpec<TArg, TResult> { return fallback || null; }

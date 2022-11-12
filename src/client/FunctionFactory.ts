@@ -3,6 +3,7 @@ import { IFunctionDefinition } from '../functions';
 import { IFunctionDefinitionInfo } from '../functions/interface';
 import { ILogger, createLogger } from '@zajno/common/lib/logger';
 import { Event, IEvent } from '@zajno/common/lib/event';
+import { META_ARG_KEY } from '../functions/composite';
 
 const _onFactoryCreated = new Event<FunctionFactoryHook>();
 
@@ -46,10 +47,11 @@ export class FunctionFactory<TArg, TResult> {
             this.logger.log('Executing with args:', processedArgs, ...(this._meta ? ['with meta:', this._meta] : []));
 
             if (this._meta != null) {
-                if ((processedArgs as any).__meta != null) {
-                    this.logger.warn('Skipping adding metadata because field "__meta" is occupied already:', (processedArgs as any).__meta);
+                const existing = (processedArgs as any)[META_ARG_KEY];
+                if (existing != null) {
+                    this.logger.warn(`Skipping adding metadata because field "${META_ARG_KEY}" is occupied already:`, existing);
                 } else {
-                    Object.assign(processedArgs, { __meta: this._meta });
+                    Object.assign(processedArgs, { [META_ARG_KEY]: this._meta });
                 }
             }
 
