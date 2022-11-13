@@ -1,25 +1,24 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-firebase.git"
   },
   "scripts": {
-    "build": "rimraf ./lib && tsc",
+    "build": "tsc -P tsconfig.build.json",
+    "build:clean": "rimraf ./lib && yarn build",
     "build:w": "yarn build --watch",
     "publish:local": "yalc push --replace --update",
     "postinstall": "yarn build",
-    "prepare": "yarn build && yarn lint && yarn test --clearCache && yarn test --silent",
+    "prepare": "yarn build:clean && yarn lint && yarn test --clearCache && yarn test --silent",
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "jest"
   },
   "author": "Zajno",
   "license": "MIT",
-  "dependencies": {
-    "rimraf": "^3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@firebase/app-types": "^0.8.1",
     "@google-cloud/pubsub": "^3.2.1",
@@ -34,6 +33,7 @@
     "firebase-functions-test": "^2.4.0",
     "jest": "^29.3.1",
     "mobx": "^6.6.2",
+    "rimraf": "^3",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "tslib": "^2.4.1",
@@ -53,6 +53,8 @@
   "files": [
     "src/*",
     "tsconfig.json",
+    "tsconfig.build.json",
+    "LICENSE",
     "!.DS_Store",
     "!**/__tests__/**/*"
   ],
