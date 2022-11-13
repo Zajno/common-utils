@@ -3,18 +3,31 @@ import type { IMiddleware } from './middleware';
 import { LazyPromise } from '@zajno/common/lib/lazy/promise';
 import { EndpointHandler } from './interface';
 import { createHttpsRequestFunction, createScheduledFunction, RequestEndpointFunction, ScheduledFunction, SchedulerOptions } from './create';
+import { ICompositionMiddleware, MiddlewaresMap } from './composite';
+import { CompositeEndpointInfo } from '../../functions/composite';
+
+type Initializer<TArg> = (arg: TArg) => (void | Promise<void>);
+type Loader<TArg> = () => Promise<Initializer<TArg>>;
 
 export function useAsyncInitLoader<TMiddleware extends IMiddleware<TArg, TResult, TContext>, TArg, TResult, TContext extends { }>
-    (this: void, middleware: TMiddleware, initLoader: () => Promise<(middleware: TMiddleware) => void | Promise<void>>) {
+    (this: void, middleware: TMiddleware, initLoader: Loader<TMiddleware>) {
         const lazyPromise = new LazyPromise(async () => {
             const init = await initLoader();
             await init(middleware);
-            return middleware;
         });
-        return middleware.use(async (_, next) => {
+        return middleware.useBeforeAll(async (_, next) => {
             await lazyPromise.promise;
             return next();
         });
+    }
+
+export function useAsyncInitCompositionLoader<TMiddleware extends ICompositionMiddleware<T, TContext>, T extends CompositeEndpointInfo, TContext extends { }>
+    (this: void, composition: TMiddleware, initLoader: Loader<MiddlewaresMap<T, TContext>>) {
+        return useAsyncInitLoader(
+            composition,
+            () => initLoader()
+                .then(res => ((comp: TMiddleware) => res(comp.handlers))),
+        );
     }
 
 type Fn<TArgs extends any[]> = (...args: TArgs) => void | Promise<void>;

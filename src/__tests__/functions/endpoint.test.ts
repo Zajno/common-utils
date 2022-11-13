@@ -1,9 +1,11 @@
-import { FunctionCompositeFactory } from '../../server/functions';
+import { EndpointContext, FunctionCompositeFactory, SpecTo, useAsyncInitCompositionLoader } from '../../server/functions';
 import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
 import AppHttpError from '../../server/utils/AppHttpError';
 import { getNestedFunction, wrapEndpoint } from './config';
+import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { AuthValidator } from '../../server/functions/middleware';
 
-namespace BrokenApi {
+namespace TestApi {
     const api1 = {
         foo: spec<number, number>(),
     };
@@ -11,7 +13,7 @@ namespace BrokenApi {
 }
 
 describe('declaration', () => {
-    const ENDPOINT = () => new FunctionCompositeFactory(BrokenApi.Api());
+    const ENDPOINT = () => new FunctionCompositeFactory(TestApi.Api());
 
     it('doesn\'t add empty', () => {
         const v1 = ENDPOINT();
@@ -53,7 +55,7 @@ describe('broken api', () => {
 
     describe('v1 – not initialized', () => {
         const mockMiddleware = jest.fn();
-        const v1_endpoint = new FunctionCompositeFactory(BrokenApi.Api())
+        const v1_endpoint = new FunctionCompositeFactory(TestApi.Api())
             .use((_ctx, next) => { mockMiddleware(); return next(); });
 
         const v1 = wrapEndpoint(v1_endpoint);
@@ -83,7 +85,7 @@ describe('broken api', () => {
     });
 
     describe('v2 – now works with handler', () => {
-        const v2 = wrapEndpoint(new FunctionCompositeFactory(BrokenApi.Api())
+        const v2 = wrapEndpoint(new FunctionCompositeFactory(TestApi.Api())
             .useFunctionsMap({
                 foo: async (data) => data + 1,
             }));
@@ -97,7 +99,7 @@ describe('broken api', () => {
     });
 
     describe('v3 – empty middleware', () => {
-        const v3 = wrapEndpoint(new FunctionCompositeFactory(BrokenApi.Api())
+        const v3 = wrapEndpoint(new FunctionCompositeFactory(TestApi.Api())
             .use(async () => { /* */ })
             .useFunctionsMap({
                 foo: async (data) => data + 1,
@@ -113,7 +115,7 @@ describe('broken api', () => {
     });
 
     describe('v4 – fixed middleware', () => {
-        const v3 = wrapEndpoint(new FunctionCompositeFactory(BrokenApi.Api())
+        const v4 = wrapEndpoint(new FunctionCompositeFactory(TestApi.Api())
             .use((ctx, next) => {
                 ctx.input.foo = (ctx.input.foo || 0) + 1;
                 return next();
@@ -122,12 +124,74 @@ describe('broken api', () => {
                 foo: async (data) => data + 1,
             }),
         );
-        const v3_foo = getNestedFunction(v3, 'foo');
+        const v4_foo = getNestedFunction(v4, 'foo');
 
         it('detects empty middleware', async () => {
             await expect(
-                v3_foo(1)
+                v4_foo(1)
             ).resolves.toEqual(3);
+        });
+    });
+
+    describe('v5 - outer initialization works', () => {
+
+        it('validates context', async () => {
+
+            const authValidator = jest.fn(AuthValidator);
+            const contextPopulist: (ctx: EndpointContext<{ contextParam: 'TEST' }>) => Promise<void> = jest.fn(async ctx => {
+                ctx.data = {
+                    ...ctx.data,
+                    contextParam: 'TEST',
+                };
+            });
+            const contextValidator = jest.fn((ctx, next) => {
+                if (ctx.data?.contextParam !== 'TEST') {
+                    throw new Error('invalid context');
+                }
+                return next();
+            });
+
+            const fooMiddleware = jest.fn((ctx, next) => {
+                if (ctx.data?.contextParam !== 'TEST') {
+                    throw new Error('[foo] invalid context');
+                }
+                return next();
+            });
+            const fooFunction = jest.fn(async (arg: number) => arg + 1);
+
+            const populatorV5 = jest.fn(SpecTo.fullEndpoint(TestApi.Api().info, v5 => {
+
+                v5.useHandler(authValidator)
+                    .useContextPopulist(contextPopulist)
+                    .use(contextValidator);
+
+                v5.foo
+                    .use(fooMiddleware)
+                    .useFunction(fooFunction);
+
+            }, null as { contextParam: string }));
+
+            const v5_raw = new FunctionCompositeFactory(TestApi.Api());
+            v5_raw.useHandler(authValidator)
+                .useContextPopulist(contextPopulist)
+                .use(contextValidator);
+
+            useAsyncInitCompositionLoader(v5_raw, async () => {
+                await setTimeoutAsync(50);
+                return populatorV5;
+            });
+
+            const v5 = wrapEndpoint(v5_raw);
+
+            await expect(v5({ foo: 111 }, { auth: { uid: '123' } }))
+                .resolves.toMatchObject({ foo: 112 });
+
+            expect(populatorV5).toHaveBeenCalled();
+            expect(authValidator).toHaveBeenCalled();
+            expect(contextPopulist).toHaveBeenCalled();
+            expect(contextValidator).toHaveBeenCalled();
+            expect(fooMiddleware).toHaveBeenCalled();
+            expect(fooFunction).toHaveBeenCalled();
         });
     });
 });

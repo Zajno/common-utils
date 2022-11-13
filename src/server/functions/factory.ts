@@ -86,6 +86,7 @@ export class FunctionFactory<TArg, TResult, TContext extends { } = never>
         };
     }
 
+    // this overrides 'super' version because updates return type (can't use ThisType here)
     public mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): FunctionFactory<TArg, TResult, Partial<TContext & C>> {
         return this;
     }

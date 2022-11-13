@@ -18,8 +18,13 @@ type FunctionsMap<T extends CompositeEndpointInfo, TContext = any> = {
         : EndpointFunction<ArgExtract<T, P>, ResExtract<T, P>, TContext>;
 };
 
+export interface ICompositionMiddleware<T extends CompositeEndpointInfo, TContext = any> extends IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> {
+    readonly handlers: MiddlewaresMap<T, TContext>;
+}
+
 export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext extends { } = any>
-    extends FunctionFactory<EndpointArg<T>, EndpointResult<T>, TContext> {
+    extends FunctionFactory<EndpointArg<T>, EndpointResult<T>, TContext>
+    implements ICompositionMiddleware<T, TContext> {
 
     private readonly _handlers: MiddlewaresMap<T, TContext>;
     private _handlersUsed: boolean = false;

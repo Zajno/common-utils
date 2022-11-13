@@ -1,4 +1,11 @@
-import { EndpointContext, HandlerContext, EndpointHandler, EndpointHandlerVoid, EndpointFunction, NextFunction } from './interface';
+import {
+    EndpointContext,
+    HandlerContext,
+    EndpointHandler,
+    EndpointHandlerVoid,
+    EndpointFunction,
+    NextFunction,
+} from './interface';
 import AppHttpError from '../utils/AppHttpError';
 
 export interface IMiddleware<TArg, TResult, TContext extends { } = never> {
@@ -6,11 +13,14 @@ export interface IMiddleware<TArg, TResult, TContext extends { } = never> {
     readonly currentChain: EndpointHandler<TArg, TResult, TContext>;
 
     use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string): this;
+
+    // TODO These are helpers (syntax sugar) only, remove from interface ?
     useBeforeAll<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string): this;
     useHandler<H extends EndpointHandlerVoid<TArg, TResult, TContext>>(handler: H): this;
     useFunction<F extends EndpointFunction<TArg, TResult, TContext>>(func: F): this;
     useAuth(): this;
     useContextPopulist(populist: (ctx: EndpointContext<TContext>) => Promise<void>): this;
+
     mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): IMiddleware<TArg, TResult, Partial<TContext & C>>;
 }
 
@@ -22,6 +32,7 @@ export interface IMiddlewareChild<TArg, TResult, TContext extends { } = never> e
 
 export class Middleware<TArg, TResult, TContext extends { } = never> implements IMiddleware<TArg, TResult, TContext> {
     private _chain: EndpointHandler<TArg, TResult, TContext> = null;
+    private _chainLocked = false;
 
     public get isEmpty() { return this._chain == null; }
     public get currentChain() { return this._chain; }
@@ -33,42 +44,49 @@ export class Middleware<TArg, TResult, TContext extends { } = never> implements 
     public async execute(arg: TArg, endpointContext: EndpointContext<TContext>): Promise<TResult> {
         // finally compose chain w/ hooks
         let chain = this._chain;
+        this._chainLocked = true;
 
-        // add hooks
-        const beforeAll = this.onBeforeAll;
-        if (beforeAll) {
-            chain = Middleware.add(beforeAll, chain);
+        try {
+            // add hooks
+            const beforeAll = this.onBeforeAll;
+            if (beforeAll) {
+                chain = Middleware.add(beforeAll, chain);
+            }
+            const afterAll = this.onAfterAll;
+            if (afterAll) {
+                chain = Middleware.add(chain, afterAll);
+            }
+
+            if (!chain) {
+                throw new Error('No handlers/middleware were added');
+            }
+
+            // compose context
+            const ctx = endpointContext as HandlerContext<TArg, TResult, TContext>;
+            ctx.input = arg;
+            ctx.output = null;
+
+            // call compiled chain
+            await chain(ctx, () => Promise.resolve());
+
+            // assume output will be populated
+            return ctx.output;
+        } finally {
+            this._chainLocked = false;
         }
-        const afterAll = this.onAfterAll;
-        if (afterAll) {
-            chain = Middleware.add(chain, afterAll);
-        }
-
-        if (!chain) {
-            throw new Error('No handlers/middleware were added');
-        }
-
-        // compose context
-        const ctx = endpointContext as HandlerContext<TArg, TResult, TContext>;
-        ctx.input = arg;
-        ctx.output = null;
-
-        // call compiled chain
-        await chain(ctx, () => Promise.resolve());
-
-        // assume output will be populated
-        return ctx.output;
     }
 
     protected get onBeforeAll(): EndpointHandler<TArg, TResult, TContext> { return null; }
     protected get onAfterAll(): EndpointHandler<TArg, TResult, TContext> { return null; }
 
     use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string) {
+        this._checkChainLocked();
         this._chain = Middleware.add(this._chain, Middleware.safeNext(handler, name));
         return this;
     }
 
     useBeforeAll<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string) {
+        this._checkChainLocked();
         this._chain = Middleware.add(handler, Middleware.safeNext(this._chain, name));
         return this;
     }
@@ -95,6 +113,12 @@ export class Middleware<TArg, TResult, TContext extends { } = never> implements 
     mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): Middleware<TArg, TResult, Partial<TContext & C>> {
         return this;
     }
+
+    private _checkChainLocked() {
+        if (this._chainLocked) {
+            throw AppHttpError.Internal('Middleware chain is locked because is currently running. Updating the chain is not allowed during execution.');
+        }
+    }
 }
 
 export class MiddlewareChild<TArg, TResult, TContext extends { } = never> extends Middleware<TArg, TResult, TContext> implements IMiddlewareChild<TArg, TResult, TContext> {
@@ -113,7 +137,7 @@ export class MiddlewareChild<TArg, TResult, TContext extends { } = never> extend
     }
 }
 
-const AuthValidator: EndpointHandlerVoid<any, any, any> = async (ctx) => {
+export const AuthValidator: EndpointHandlerVoid<any, any, any> = async (ctx) => {
     if (!ctx?.auth?.uid) {
         throw AppHttpError.NotAuthenticated();
     }

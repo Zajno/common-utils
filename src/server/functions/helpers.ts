@@ -2,7 +2,7 @@ import type { CompositeEndpointInfo } from '../../functions/composite';
 import type { IFunctionDefinition } from '../../functions';
 import type { EndpointContext, EndpointFunction, EndpointHandler } from './interface';
 import { Middleware as MiddlewareClass } from './middleware';
-import type { FunctionCompositeFactory, MiddlewaresMap } from './composite';
+import type { MiddlewaresMap } from './composite';
 
 export namespace SpecTo {
     export function Handler<A, R, F extends EndpointHandler<A, R, C>, C = never>(_spec: IFunctionDefinition<A, R>, func: F, _context?: C) {
@@ -21,7 +21,7 @@ export namespace SpecTo {
         return filler;
     }
 
-    export function fullEndpoint<T extends CompositeEndpointInfo, TContext = any>(_info: T, filler: (endpoint: FunctionCompositeFactory<T, TContext>) => (void | Promise<void>), _marker?: TContext) {
+    export function fullEndpoint<T extends CompositeEndpointInfo, TContext = any>(_info: T, filler: (endpointHandlers: MiddlewaresMap<T, TContext>) => (void | Promise<void>), _marker?: TContext) {
         return filler;
     }
 
