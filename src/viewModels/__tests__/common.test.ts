@@ -4,13 +4,15 @@ import { LoadingModel } from '../LoadingModel';
 import { setTimeoutAsync } from '../../async/timeout';
 import { SelectString } from '../SelectModel';
 import { TextInputVM } from '../TextModel';
+import { ValueModel } from '../ValueModel';
+import { reaction } from 'mobx';
 
 describe('CommonModel', () => {
     const NotEmptyError = 'should be not empty';
 
     it('works', async () => {
 
-        let m: CommonModel<string[]>;
+        let m: CommonModel<string[]> = null;
 
         const fn = async () => {
             m = new CommonModel<string[]>(() => [], true)
@@ -103,5 +105,29 @@ describe('Others', () => {
             return new TextInputVM();
         })()).resolves.not.toThrow();
 
+        await expect((async () => {
+            return new ValueModel();
+        })()).resolves.not.toThrow();
+
+    });
+
+    describe('ValueModel', () => {
+        it('observable', () => {
+
+            const vm = new ValueModel(123);
+
+            const sub = jest.fn();
+            const unsub = reaction(() => vm.value, v => sub(v));
+
+            vm.value = 321;
+            expect(sub).toHaveBeenCalledWith(321);
+
+            sub.mockClear();
+
+            vm.reset();
+            expect(sub).toHaveBeenCalledWith(123);
+
+            unsub();
+        });
     });
 });
