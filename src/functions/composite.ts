@@ -1,5 +1,5 @@
 import { FunctionDefinition } from './definition';
-import { FunctionsMemoryOptions, IFunctionDefinition } from './interface';
+import { EndpointSettings, IFunctionDefinition } from './interface';
 
 export const META_ARG_KEY = '__meta';
 
@@ -49,10 +49,9 @@ export class FunctionComposite<T extends CompositeEndpointInfo> {
         readonly info: T,
         name: string,
         namespace: string = '',
-        timeout = 60,
-        memory: FunctionsMemoryOptions = '256MB',
+        options: EndpointSettings = null,
     ) {
-        this._endpoint = new FunctionDefinition(name, namespace, timeout, memory);
+        this._endpoint = new FunctionDefinition(name, namespace, options);
         this._specs = specsToFunctions(info, this._endpoint);
     }
 

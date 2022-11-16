@@ -1777,10 +1777,10 @@
     "@typescript-eslint/types" "5.42.1"
     eslint-visitor-keys "^3.3.0"
 
-"@zajno/common@^1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-1.6.3.tgz#4d82064edddede178b17610686c06f1e86627871"
-  integrity sha512-LCarraOkBGggn4Huz7kXz21CTjbZIZLZJcxL1wjy+kZTgLl4Tv4JmNI6YzusAZ7Cr0bay1WGUoK9st5ka61mNQ==
+"@zajno/common@^1.6.4":
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-1.6.4.tgz#84fe14189ad991b7eaaadcf04e167c264a553284"
+  integrity sha512-5xOraBSvqAopY5TEy21MhAOjJKO7EfNfOa62hJ7OqAwHjfR9SBK3mvso08FPPBTWLbPQ8tnYsmEApH0YNMaVyg==
   dependencies:
     rimraf "^3"
 

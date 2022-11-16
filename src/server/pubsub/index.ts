@@ -1,12 +1,12 @@
-import { runWith } from 'firebase-functions';
 import type { pubsub, CloudFunction } from 'firebase-functions';
 import logger, { createLogger, ILogger } from '@zajno/common/lib/logger';
-import { FunctionsMemoryOptions } from '../../functions/interface';
-import { AppConfig } from '../../config';
 import { Event } from '@zajno/common/lib/event';
 import { LazyPromise } from '@zajno/common/lib/lazy/promise';
 import { createLazy } from '@zajno/common/lib/lazy/light';
 import type { PubSub as CloudPubSub, ClientConfig } from '@google-cloud/pubsub';
+import { AppConfig } from '../../config';
+import { EndpointSettings } from '../../functions/interface';
+import { createTopicListener } from '../../server/functions';
 
 export namespace PubSub {
     const topicCloudFunctions: Record<string, CloudFunction<pubsub.Message>> = { };
@@ -60,7 +60,7 @@ export namespace PubSub {
         private _logger: ILogger = null;
         private _registration: LazyPromise<void> = null;
 
-        constructor (private readonly name: string, private readonly timeout: number = 60, private readonly memory: FunctionsMemoryOptions = '256MB', private readonly retry: boolean = false) {
+        constructor(private readonly name: string, private readonly options: EndpointSettings = null) {
             this._logger = createLogger(`[PubsubTopic:${name}]`);
 
             this.init();
@@ -79,23 +79,11 @@ export namespace PubSub {
                 return;
             }
 
-            const createdTopic: pubsub.TopicBuilder = this.createEndpoint();
-            this.registerEndpoint(createdTopic);
+            this.registerEndpoint();
         };
 
-        private createEndpoint = () => {
-            const builder = runWith({ timeoutSeconds: this.timeout, memory: this.memory, failurePolicy: this.retry });
-
-            return builder.pubsub.topic(this.name);
-        };
-
-        private registerEndpoint = (builder: pubsub.TopicBuilder) => {
-            if (!builder) {
-                this._logger.warn('Topic builder not initialized. Creating topic handler canceled');
-                return null;
-            }
-
-            const cloudFunction = builder.onPublish(async (message, _) => {
+        private registerEndpoint = () => {
+            const cloudFunction = createTopicListener(this.name, async (message, _) => {
                 const data = message.json as TData;
 
                 if (this._registration) {
@@ -116,7 +104,7 @@ export namespace PubSub {
                         ErrorHandler(error);
                     });
                 }
-            });
+            }, this.options);
 
             if (!cloudFunction) {
                 this._logger.warn('PubSub topic handler was not created. Adding function to firebase canceled');

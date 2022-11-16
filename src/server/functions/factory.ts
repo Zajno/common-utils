@@ -33,10 +33,7 @@ export class FunctionFactory<TArg, TResult, TContext extends { } = never>
         if (!this._endpoint) {
             this._endpoint = createHttpsCallFunction(
                 this.createEndpointHandler(),
-                {
-                    timeoutSeconds: this.Definition.Timeout,
-                    memory: this.Definition.Memory,
-                },
+                this.Definition.Options,
             );
         }
         return this._endpoint;

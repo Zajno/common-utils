@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
     "@google-cloud/pubsub": "^3.2.1",
     "@types/jest": "^29.2.2",
     "@types/node": "^18.11.9",
-    "@zajno/common": "^1.6.3",
+    "@zajno/common": "^1.6.4",
     "@zajno/eslint-config": "^2.2.0",
     "eslint": "^8.27.0",
     "firebase": "^8.10.1",
@@ -42,7 +42,7 @@
   },
   "peerDependencies": {
     "@google-cloud/pubsub": "^3.2",
-    "@zajno/common": "^1.6",
+    "@zajno/common": "^1.6.4",
     "firebase": "^8.10",
     "firebase-admin": "^11",
     "firebase-functions": "^3",

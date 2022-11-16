@@ -40,7 +40,7 @@ export class FunctionFactory<TArg, TResult> {
             const fn: typeof DefinitionFunction = this.firebaseFunctions.httpsCallable(
                 this.Definition.CallableName,
                 {
-                    timeout: (this.Definition.Timeout || 60) * 1000,
+                    timeout: (this.Definition.Options?.timeoutSeconds || 60) * 1000,
                 },
             );
             const processedArgs = await this.Definition.ArgProcessor(arg);

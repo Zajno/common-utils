@@ -1,7 +1,7 @@
 import {
     IFunctionDefinition,
     Converter,
-    FunctionsMemoryOptions,
+    EndpointSettings,
     FunctionType,
 } from './interface';
 
@@ -23,8 +23,7 @@ export class FunctionDefinition<TArg, TResult> implements IFunctionDefinition<TA
     constructor(
         readonly Name: string,
         readonly Namespace: string = '',
-        readonly Timeout = 60,
-        readonly Memory: FunctionsMemoryOptions = '256MB',
+        readonly Options: EndpointSettings = null,
     ) {
     }
 
@@ -36,7 +35,7 @@ export class FunctionDefinition<TArg, TResult> implements IFunctionDefinition<TA
         const currentArgProc = this._argProcessor;
         const currentResProc = this._resultProcessor;
 
-        return new FunctionDefinition<TArg2, TResult2>(this.Name, this.Namespace, this.Timeout, this.Memory)
+        return new FunctionDefinition<TArg2, TResult2>(this.Name, this.Namespace, this.Options)
             .addArgProcessor(a => currentArgProc(argConverter(a)))
             .addResultProcessor(r => resConverter(currentResProc(r)));
     }
