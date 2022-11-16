@@ -13,36 +13,16 @@ jobs:
 
       - uses: actions/setup-node@master
         with:
-            node-version: '16'
+          node-version: '16'
+          cache: 'yarn'
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - uses: actions/cache@v2
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install packages
+      - name: Install packages (and run linter, build, tests via prepare)
         run: yarn
-
-      - name: Run linter
-        run: yarn lint
-
-      - name: Run build
-        run: yarn build
-
-      - name: Run tests
-        run: yarn test
 
       - name: codecov-umbrella
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           directory: coverage
           flags: unittests
-          fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
