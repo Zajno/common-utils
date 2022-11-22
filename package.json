@@ -16,10 +16,10 @@
     "build": "tsc -P tsconfig.build.json",
     "build:clean": "rimraf ./lib && yarn build",
     "build:w": "yarn build --watch",
-    "publish:local": "yalc push --replace --update",
+    "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd lib && yalc push --replace --update",
+    "publish:from-lib": "yarn build-for-publish && yarn copy-for-publish && cd lib && yarn publish",
     "build-for-publish": "yarn build:clean && yarn lint && yarn test",
     "copy-for-publish": "cpy package.json LICENSE README.md lib/",
-    "publish-from-lib": "yarn build-for-publish && yarn copy-for-publish && cd lib && yarn publish",
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
   },
