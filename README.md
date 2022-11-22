@@ -36,12 +36,12 @@ yarn add @zajno/common
 2. In your code, use each module separately:
 
 ```typescript
-import logger, { ILogger } from '@zajno/common/lib/logger';
+import logger, { ILogger } from '@zajno/common/logger';
 ```
 
-[TODO] It doesn't look elegant to import with `/lib/` path part. The problem is that there's no general entry point in this package, and `typescript` doesn't work with `package.json`'s `exports` fields yet.
+### Note on imports in v1
 
-If you have any improvements/suggestions/questions about the flow above – feel free to raise an issue or contact us.
+Previously one had to import from like `@zajno/common/lib/logger` since compiling had been doing at `postinstall` time so Typescript with its config was a peer dependency. Currently it's not the case and this packages is provided with build artifacts (js + d.ts + source maps); so no need to include `/lib` part in imports anymore.
 
 ## Local development
 

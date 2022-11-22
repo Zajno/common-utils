@@ -44,8 +44,6 @@
     "tslib": "^2.4"
   },
   "files": [
-    "tsconfig.json",
-    "tsconfig.build.json",
     "LICENSE",
     "!.DS_Store",
     "*"
