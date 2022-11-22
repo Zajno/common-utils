@@ -1,6 +1,6 @@
 import { observable, makeObservable, action, runInAction } from 'mobx';
-import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '@zajno/common/lib/validation';
-import { someAsync } from '@zajno/common/lib/async/arrays';
+import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '@zajno/common/validation';
+import { someAsync } from '@zajno/common/async/arrays';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
 export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0 | null>>;

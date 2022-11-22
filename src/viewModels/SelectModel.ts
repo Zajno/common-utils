@@ -1,11 +1,10 @@
 import { observable, computed, makeObservable, reaction, action } from 'mobx';
-import { createLazy } from '@zajno/common/lib/lazy/light';
+import { createLazy } from '@zajno/common/lazy/light';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
-import { IValueModel } from './types';
-import { withLabel } from './wrappers';
-import { IResetableModel } from './types';
-import { Getter } from '@zajno/common/lib/types';
+import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
+import { withLabel } from '@zajno/common/models/wrappers';
+import { Getter } from '@zajno/common/types';
 
 export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel {
     // @observable

@@ -1,9 +1,8 @@
 import { observable, makeObservable, reaction, action } from 'mobx';
-import logger from '@zajno/common/lib/logger';
-import { Getter } from '@zajno/common/lib/types';
-import { IValueModel } from './types';
+import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
+import logger from '@zajno/common/logger';
+import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
-import { IResetableModel } from 'viewModels';
 
 export type TextInputConfig = {
     name?: Getter<string>;

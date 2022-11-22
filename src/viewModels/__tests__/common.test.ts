@@ -1,9 +1,11 @@
-import { ValidationErrors } from '@zajno/common/lib/validation';
-import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { ValidationErrors } from '@zajno/common/validation';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 import { CommonModel } from '../CommonModel';
 import { LoadingModel } from '../LoadingModel';
 import { SelectString } from '../SelectModel';
 import { TextInputVM } from '../TextModel';
+import { ValueModel } from '../ValueModel';
+import { reaction } from 'mobx';
 
 describe('CommonModel', () => {
     const NotEmptyError = 'should be not empty';
@@ -103,5 +105,29 @@ describe('Others', () => {
             return new TextInputVM();
         })()).resolves.not.toThrow();
 
+        await expect((async () => {
+            return new ValueModel();
+        })()).resolves.not.toThrow();
+
+    });
+
+    describe('ValueModel', () => {
+        it('observable', () => {
+
+            const vm = new ValueModel(123);
+
+            const sub = jest.fn();
+            const unsub = reaction(() => vm.value, v => sub(v));
+
+            vm.value = 321;
+            expect(sub).toHaveBeenCalledWith(321);
+
+            sub.mockClear();
+
+            vm.reset();
+            expect(sub).toHaveBeenCalledWith(123);
+
+            unsub();
+        });
     });
 });

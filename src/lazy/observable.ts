@@ -1,5 +1,5 @@
-import { Lazy } from '@zajno/common/lib/lazy/singleton';
-import { LazyPromise } from '@zajno/common/lib/lazy/promise';
+import { Lazy } from '@zajno/common/lazy/singleton';
+import { LazyPromise } from '@zajno/common/lazy/promise';
 import { observable, makeObservable, action } from 'mobx';
 
 export class LazyObservable<T> extends Lazy<T> {

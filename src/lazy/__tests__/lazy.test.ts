@@ -1,5 +1,5 @@
 import { reaction } from 'mobx';
-import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
 import { LazyObservable, LazyPromiseObservable } from '../observable';
 import { expectAnythingOrNothing } from './helpers';

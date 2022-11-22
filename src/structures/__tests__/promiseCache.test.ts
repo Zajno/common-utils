@@ -1,5 +1,5 @@
 
-import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 import { PromiseCache } from '../promiseCache';
 
 describe('PromiseCache', () => {

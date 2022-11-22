@@ -1,6 +1,6 @@
 import { observable, reaction, runInAction, toJS } from 'mobx';
 import { SubscribersPromiseCache } from '../subscribersPromiseCache';
-import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
 type TestItem = {
     hello: string,

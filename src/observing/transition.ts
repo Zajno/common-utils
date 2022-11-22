@@ -1,7 +1,7 @@
 import { reaction } from 'mobx';
-import { IEvent, Event } from '@zajno/common/lib/observing/event';
-import { ILogger, createLogger } from '@zajno/common/lib/logger';
-import { IDisposable } from '@zajno/common/lib/functions/disposer';
+import { IEvent, Event } from '@zajno/common/observing/event';
+import { ILogger, createLogger } from '@zajno/common/logger';
+import { IDisposable } from '@zajno/common/functions/disposer';
 
 export class TransitionObserver<T> implements IDisposable {
 

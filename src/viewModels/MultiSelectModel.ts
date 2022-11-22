@@ -1,11 +1,10 @@
-import { createLazy } from '@zajno/common/lib/lazy/light';
 import { action, computed, makeObservable, observable, reaction } from 'mobx';
+import { createLazy } from '@zajno/common/lazy/light';
+import type { IValueModel, ICountableModel, IResetableModel } from '@zajno/common/models/types';
+import { arraysCompareDistinct } from '@zajno/common/math';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
-import { IValueModel } from './types';
-import { withLabel } from './wrappers';
-import { ICountableModel, IResetableModel } from 'viewModels';
-import { arraysCompareDistinct } from '@zajno/common/lib/math';
+import { withLabel } from '@zajno/common/models/wrappers';
 
 export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]>, IResetableModel, ICountableModel {
 

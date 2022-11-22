@@ -14,4 +14,4 @@ All runtime dependencies are peer.
 
 * [`TransitionObserver`](./src/observing/transition.ts) – neat wrapper of mobx's `reaction`
 
-* [`LazyObservable` & `LazyPromiseObservable`]('./src/lazy/observable.ts')
+* [`LazyObservable` & `LazyPromiseObservable`](./src/lazy/observable.ts)

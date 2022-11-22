@@ -1,5 +1,5 @@
-import { createLogger, ILogger } from '@zajno/common/lib/logger';
-import { combineDisposers, IDisposable } from '@zajno/common/lib/functions/disposer';
+import { createLogger, ILogger } from '@zajno/common/logger';
+import { combineDisposers, IDisposable } from '@zajno/common/functions/disposer';
 import { NumberModel } from '../viewModels/NumberModel';
 
 type Unsub = () => void;

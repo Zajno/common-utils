@@ -1,5 +1,5 @@
 import { NumberModel } from './NumberModel';
-import { IResetableModel, IValueModel } from './types';
+import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
 
 export class LoadingModel implements IValueModel<boolean>, IResetableModel {
 

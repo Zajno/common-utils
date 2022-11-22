@@ -1,5 +1,5 @@
 import { reaction, toJS } from 'mobx';
-import { arrayRepeat } from '@zajno/common/lib/math';
+import { arrayRepeat } from '@zajno/common/math';
 import { MultiSelect, MultiSelectString } from '../MultiSelectModel';
 
 type SetType<T> = { items: T[], selected: number[], accessor: (item: T) => string };

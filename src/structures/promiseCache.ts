@@ -1,5 +1,5 @@
 import { observable, makeObservable, runInAction, action } from 'mobx';
-import { createLogger, ILogger } from '@zajno/common/lib/logger';
+import { createLogger, ILogger } from '@zajno/common/logger';
 import { NumberModel } from '../viewModels/NumberModel';
 
 export type DeferredGetter<T> = {
