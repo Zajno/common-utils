@@ -18,8 +18,8 @@
     "build:w": "yarn build --watch",
     "publish:local": "yalc push --replace --update",
     "build-for-publish": "yarn build:clean && yarn lint && yarn test",
-    "copy-for-publish": "cpy package.json LICENSE README.md tsconfig.build.json tsconfig.json lib/",
-    "publish-from-lib": "yarn build-for-publish && yarn copy-for-publish && cd lib && npm publish --dry-run",
+    "copy-for-publish": "cpy package.json LICENSE README.md lib/",
+    "publish-from-lib": "yarn build-for-publish && yarn copy-for-publish && cd lib && yarn publish",
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "yarn jest --clearCache && yarn jest"
   },
