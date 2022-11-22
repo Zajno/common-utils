@@ -16,8 +16,17 @@ jobs:
           node-version: '16'
           cache: 'yarn'
 
-      - name: Install packages (and run linter, build, tests via prepare)
+      - name: Install packages
         run: yarn
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: yarn test
 
       - name: codecov-umbrella
         uses: codecov/codecov-action@v3
