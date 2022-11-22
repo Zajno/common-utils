@@ -1,4 +1,4 @@
-import { IEvent } from '@zajno/common/lib/observing/event';
+import { IEvent } from '@zajno/common/observing/event';
 
 export type BreakpointAnimations = {
     disableInview?: boolean,

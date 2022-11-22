@@ -1,6 +1,6 @@
-import { KeyStorage, KeyStorageConverted } from '@zajno/common/lib/storage/keyStorage';
-import { StorageAsyncWrapper } from '@zajno/common/lib/storage/asyncWrapper';
-import { IStorage, IStorageSync } from '@zajno/common/lib/storage';
+import { KeyStorage, KeyStorageConverted } from '@zajno/common/storage/keyStorage';
+import { StorageAsyncWrapper } from '@zajno/common/storage/asyncWrapper';
+import { IStorage, IStorageSync } from '@zajno/common/storage';
 import { WebStorage } from './webStorage';
 
 /* global window */

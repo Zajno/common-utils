@@ -1,4 +1,4 @@
-import { FileMetadata } from '@zajno/common/lib/models/File';
+import { FileMetadata } from '@zajno/common/models/File';
 
 export enum FileTypes {
     Image,
