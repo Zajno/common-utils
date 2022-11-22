@@ -1,13 +1,13 @@
-import type { IValueModel } from '../types/models';
+import type { IValueModel } from './types';
 import { Getter } from '../types/getter';
 
 export class Model<T> implements IValueModel<T> {
     private _value: T;
 
-    private readonly _defaultValue: Getter<T> = null;
+    private readonly _defaultValue: Getter<T>;
 
     constructor(v: Getter<T> = null) {
-        this._value = Getter.getValue(v) || null;
+        this._value = Getter.getValue(v) ?? null;
         this._defaultValue = v;
     }
 
