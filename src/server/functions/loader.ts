@@ -1,6 +1,6 @@
 import type * as functions from 'firebase-functions';
 import type { IMiddleware } from './middleware';
-import { LazyPromise } from '@zajno/common/lib/lazy/promise';
+import { LazyPromise } from '@zajno/common/lazy/promise';
 import { EndpointHandler } from './interface';
 import { createHttpsRequestFunction, createScheduledFunction, RequestEndpointFunction, ScheduledFunction, SchedulerOptions } from './create';
 import { ICompositionMiddleware, MiddlewaresMap } from './composite';

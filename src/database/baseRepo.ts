@@ -1,4 +1,4 @@
-import { IdentAny } from '@zajno/common/lib/ident';
+import { IdentAny } from '@zajno/common/types/ident';
 import {
     DocumentReference,
     DocumentSnapshotCallback,

@@ -1,6 +1,6 @@
 import Firebase, { FirebaseApp } from '../firebase';
-import { createLogger } from '@zajno/common/lib/logger';
-import { createLazy } from '@zajno/common/lib/lazy/light';
+import { createLogger } from '@zajno/common/logger';
+import { createLazy } from '@zajno/common/lazy/light';
 
 const logger = createLogger('[Storage]');
 

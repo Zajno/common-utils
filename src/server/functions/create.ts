@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface';
-import logger from '@zajno/common/lib/logger';
+import logger from '@zajno/common/logger';
 import { GlobalRuntimeOptions } from './globalSettings';
 
 export type RequestEndpointFunction<TRes = any> = (req: functions.https.Request, resp: functions.Response<TRes>) => void | Promise<void>;

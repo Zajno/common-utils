@@ -10,8 +10,8 @@ import {
 import { createHttpsCallFunction } from './create';
 import { Middleware } from './middleware';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter';
-import { createLogger } from '@zajno/common/lib/logger';
-import { badRandomString } from '@zajno/common/lib/math/calc';
+import { createLogger } from '@zajno/common/logger';
+import { badRandomString } from '@zajno/common/math/calc';
 import { META_ARG_KEY } from '../../functions/composite';
 
 export class FunctionFactory<TArg, TResult, TContext extends { } = never>

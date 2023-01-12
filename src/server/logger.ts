@@ -1,4 +1,4 @@
-import { ILogger } from '@zajno/common/lib/logger';
+import { ILogger } from '@zajno/common/logger';
 import { logger } from 'firebase-functions';
 
 export const firebaseLogger: ILogger = {

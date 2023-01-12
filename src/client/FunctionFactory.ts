@@ -1,8 +1,8 @@
 import type firebase from 'firebase';
 import { IFunctionDefinition } from '../functions';
 import { IFunctionDefinitionInfo } from '../functions/interface';
-import { ILogger, createLogger } from '@zajno/common/lib/logger';
-import { Event, IEvent } from '@zajno/common/lib/event';
+import { ILogger, createLogger } from '@zajno/common/logger';
+import { Event, IEvent } from '@zajno/common/observing/event';
 import { META_ARG_KEY } from '../functions/composite';
 
 const _onFactoryCreated = new Event<FunctionFactoryHook>();

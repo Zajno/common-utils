@@ -4,7 +4,7 @@ import { ContextTo, EndpointContext, FunctionCompositeFactory, IFirebaseFunction
 import { Middleware } from '../server/functions/middleware';
 import AppHttpError from '../server/utils/AppHttpError';
 import { useAsyncInitLoader } from '../server/functions/loader';
-import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
 export namespace ExampleEndpoint {
     const api_v1 = {

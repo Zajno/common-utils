@@ -2,7 +2,7 @@ import { EndpointContext, FunctionCompositeFactory, SpecTo, useAsyncInitComposit
 import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
 import AppHttpError from '../../server/utils/AppHttpError';
 import { getNestedFunction, wrapEndpoint } from './config';
-import { setTimeoutAsync } from '@zajno/common/lib/async/timeout';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 import { AuthValidator } from '../../server/functions/middleware';
 
 namespace TestApi {

@@ -1,8 +1,8 @@
 import type { pubsub, CloudFunction } from 'firebase-functions';
-import logger, { createLogger, ILogger } from '@zajno/common/lib/logger';
-import { Event } from '@zajno/common/lib/event';
-import { LazyPromise } from '@zajno/common/lib/lazy/promise';
-import { createLazy } from '@zajno/common/lib/lazy/light';
+import logger, { createLogger, ILogger } from '@zajno/common/logger';
+import { Event } from '@zajno/common/observing/event';
+import { LazyPromise } from '@zajno/common/lazy/promise';
+import { createLazy } from '@zajno/common/lazy/light';
 import type { PubSub as CloudPubSub, ClientConfig } from '@google-cloud/pubsub';
 import { AppConfig } from '../../config';
 import { EndpointSettings } from '../../functions/interface';

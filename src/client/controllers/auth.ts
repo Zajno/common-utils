@@ -10,13 +10,13 @@ import {
 } from '../../abstractions/IAuthController';
 import { makeObservable, observable, runInAction } from 'mobx';
 import Firebase from '../../client/firebase';
-import { createLogger } from '@zajno/common/lib/logger';
-import { Event } from '@zajno/common/lib/event';
-import { transferFields } from '@zajno/common/lib/fields/transfer';
-import { prepareEmail } from '@zajno/common/lib/emails';
-import IStorage from '@zajno/common/lib/abstractions/services/storage';
-import { Disposable } from '@zajno/common/lib/disposer';
-import { FlagModel, NumberModel } from '@zajno/common/lib/viewModels';
+import { createLogger } from '@zajno/common/logger';
+import { Event } from '@zajno/common/observing/event';
+import { transferFields } from '@zajno/common/fields/transfer';
+import { prepareEmail } from '@zajno/common/validation/emails';
+import { IStorage } from '@zajno/common/storage/abstractions';
+import { Disposable } from '@zajno/common/functions/disposer';
+import { FlagModel, NumberModel } from '@zajno/common-mobx/viewModels';
 
 export { IAuthController };
 export const logger = createLogger('[Auth]');

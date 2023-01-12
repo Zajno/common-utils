@@ -1,10 +1,10 @@
 import firebase from 'firebase/app';
 import type FirebaseApp from 'firebase/app';
-import { createLazy } from '@zajno/common/lib/lazy/light';
+import { createLazy } from '@zajno/common/lazy/light';
 
 export { FirebaseApp };
 
-import { createLogger } from '@zajno/common/lib/logger';
+import { createLogger } from '@zajno/common/logger';
 
 import { ClientFirestore } from '../database/dbProvider';
 import { IFunctionDefinition } from '../functions';

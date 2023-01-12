@@ -2,8 +2,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type * as _FirebaseAdmin from 'firebase-admin';
 import type FirebaseClient from 'firebase/app';
-import { IdentAny } from '@zajno/common/lib/ident';
-import logger from '@zajno/common/lib/logger';
+import { IdentAny } from '@zajno/common/types/ident';
+import logger from '@zajno/common/logger';
 import DBProvider, {
     CollectionReference,
     DocumentData,

@@ -1,4 +1,4 @@
-import logger from '@zajno/common/lib/logger';
+import logger from '@zajno/common/logger';
 import { StorageContext } from './firebase';
 
 export async function removeDirectoryFromStorage(path: string): Promise<void> {

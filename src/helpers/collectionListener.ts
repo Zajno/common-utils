@@ -1,7 +1,7 @@
 import { makeObservable, observable, runInAction } from 'mobx';
-import { IDisposable, Disposer } from '@zajno/common/lib/disposer';
-import { Event } from '@zajno/common/lib/event';
-import { IdentAny } from '@zajno/common/lib/ident';
+import { IDisposable, Disposer } from '@zajno/common/functions/disposer';
+import { Event } from '@zajno/common/observing/event';
+import { IdentAny } from '@zajno/common/types/ident';
 import { DBProvider } from '../database';
 import { Query, QuerySnapshotCallback } from '../database/dbProvider';
 import { querySnapshot } from '../database/helpers';

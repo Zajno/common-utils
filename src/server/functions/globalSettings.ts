@@ -1,4 +1,4 @@
-import { Model } from '@zajno/common/lib/viewModels/Model';
+import { Model } from '@zajno/common/models/Model';
 import type { EndpointSettings } from '../../functions/interface';
 
 export const GlobalRuntimeOptions = new Model<EndpointSettings>({
