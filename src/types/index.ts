@@ -19,3 +19,14 @@ export type NestedPick<T, K extends any[]> = K extends Array<never> // empty arr
 export type Mutable<T> = {
     -readonly [P in keyof T]: T[P];
 };
+
+// Source: https://stackoverflow.com/a/74801694
+export type LengthArray<
+        T,
+        N extends number,
+        R extends T[] = []
+    > = number extends N
+        ? T[]
+        : R['length'] extends N
+        ? R
+        : LengthArray<T, N, [T, ...R]>;
