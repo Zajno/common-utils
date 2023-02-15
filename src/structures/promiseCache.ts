@@ -1,6 +1,8 @@
 import { observable, makeObservable, action } from 'mobx';
 import { PromiseCache } from '@zajno/common/structures/promiseCache';
 
+export { DeferredGetter } from '@zajno/common/structures/promiseCache';
+
 export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
 
     private _observeItems = false;
