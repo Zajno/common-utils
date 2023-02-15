@@ -1,8 +1,9 @@
 import { Disposable } from '@zajno/common/functions/disposer';
 import { Fields } from '@zajno/common/fields';
 import logger from '@zajno/common/logger';
-import { PromiseCache, DeferredGetter } from './promiseCache';
-import { SubscribersMap } from '../structures/subscribersMap';
+import { DeferredGetter } from '@zajno/common/structures/promiseCache';
+import { SubscribersMapObservable } from './subscribersMap';
+import { PromiseCacheObservable } from './promiseCache';
 
 export type Unsub = () => void;
 export type Fetcher<T> = (key: string, cb: (val: T) => Promise<void> | void) => Unsub | Promise<Unsub>;
@@ -15,8 +16,8 @@ export interface IObservingCache<T> {
 
 export class SubscribersPromiseCache<T> extends Disposable implements IObservingCache<T> {
 
-    private readonly _cache: PromiseCache<T>;
-    private readonly _observers: SubscribersMap;
+    private readonly _cache: PromiseCacheObservable<T>;
+    private readonly _observers: SubscribersMapObservable;
 
     private _observeStrategy: ObserveStrategy = null;
     private readonly _observeStrategyOverrides: Record<string, ObserveStrategy> = { };
@@ -26,8 +27,8 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
     constructor(readonly fetcher: Fetcher<T>) {
         super();
 
-        this._cache = new PromiseCache(this._fetch);
-        this._observers = new SubscribersMap(this._subscribe);
+        this._cache = new PromiseCacheObservable(this._fetch);
+        this._observers = new SubscribersMapObservable(this._subscribe);
 
         this.disposer.add(this._observers);
     }

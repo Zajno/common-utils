@@ -832,10 +832,10 @@
     "@typescript-eslint/types" "5.41.0"
     eslint-visitor-keys "^3.3.0"
 
-"@zajno/common@^2.0.5":
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-2.0.5.tgz#d43643c095b42ca6b4d5cf959ec87fb867603c2f"
-  integrity sha512-s4ldXLK9ybjsvGJNTt5CAj/eqhAAxhmu7tQ86/1eDYD1KoOeeXEJgYegczCMqJjhAdUCtNNFAC/eMBNGSt8aFw==
+"@zajno/common@^2.0.7":
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-2.0.7.tgz#05d17c43b2e32874fa52359c10762b9df76f4f8d"
+  integrity sha512-xwk6X0qx/2kJ3+5au9ErVR2BT9MM5A6QBi3q0pSL7VPyQ47iaR6UnXsT+DNyoPJKbMCkon3y7L+NsHZae9QRTA==
 
 "@zajno/eslint-config@^2.2.0":
   version "2.2.0"
