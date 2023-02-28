@@ -2,12 +2,12 @@
 
 ### Features
 
-* Firebase client wrapper: `src/client/firebase.ts`. Don;t forget to import required submodules, e.g.:
+* Firebase client wrapper: `src/client/firebase.ts`. Don't forget to import required submodules, e.g.:
 
 ```typescript
-import 'firebase/auth';
-import 'firebase/firestore';
-import 'firebase/functions';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/functions';
 ```
 
 * HTTP Functions definition wrapper: `src/functions/index.ts`
