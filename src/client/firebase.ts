@@ -1,5 +1,5 @@
-import firebase from 'firebase/app';
-import type FirebaseApp from 'firebase/app';
+import firebase from 'firebase/compat/app';
+import type FirebaseApp from 'firebase/compat/app';
 import { createLazy } from '@zajno/common/lazy/light';
 
 export { FirebaseApp };

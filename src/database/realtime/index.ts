@@ -1,4 +1,4 @@
-import type FirebaseClient from 'firebase/app';
+import type FirebaseClient from 'firebase/compat/app';
 import type * as FirebaseAdmin from 'firebase-admin';
 
 import { DocumentSnapshotCallback, UnsubscribeSnapshot } from '../dbProvider';

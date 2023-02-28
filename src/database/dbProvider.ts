@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type * as FirebaseAdmin from 'firebase-admin';
-import type FirebaseClient from 'firebase/app';
+import type FirebaseClient from 'firebase/compat/app';
 
 /* global FirebaseFirestore */
 

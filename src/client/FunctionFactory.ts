@@ -1,4 +1,4 @@
-import type firebase from 'firebase';
+import type firebase from 'firebase/compat';
 import { IFunctionDefinition } from '../functions';
 import { IFunctionDefinitionInfo } from '../functions/interface';
 import { ILogger, createLogger } from '@zajno/common/logger';
@@ -37,11 +37,14 @@ export class FunctionFactory<TArg, TResult> {
         const DefinitionFunction = this.Definition.Function;
         const start = Date.now();
         try {
+            const timeout = typeof this.Definition.Options?.timeoutSeconds === 'number'
+                ? this.Definition.Options.timeoutSeconds * 1000
+                : 60_000;
+
+
             const fn: typeof DefinitionFunction = this.firebaseFunctions.httpsCallable(
                 this.Definition.CallableName,
-                {
-                    timeout: (this.Definition.Options?.timeoutSeconds || 60) * 1000,
-                },
+                { timeout },
             );
             const processedArgs = await this.Definition.ArgProcessor(arg);
             this.logger.log('Executing with args:', processedArgs, ...(this._meta ? ['with meta:', this._meta] : []));
