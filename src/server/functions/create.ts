@@ -6,7 +6,7 @@ import { GlobalRuntimeOptions } from './globalSettings';
 export type RequestEndpointFunction<TRes = any> = (req: functions.https.Request, resp: functions.Response<TRes>) => void | Promise<void>;
 export type ScheduledFunction = ((context: functions.EventContext) => PromiseLike<any> | any);
 export type PubSubTopicListener = (message: functions.pubsub.Message, context: functions.EventContext) => PromiseLike<any> | any;
-export type SchedulerOptions = { timeZone?: string };
+export type SchedulerOptions = { timeZone?: string, runtime?: functions.RuntimeOptions };
 
 export function createHttpsCallFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null): FirebaseEndpointRunnable {
     return getBaseBuilder(options).https.onCall(worker);
@@ -16,8 +16,8 @@ export function createHttpsRequestFunction<TRes = any>(worker: RequestEndpointFu
     return getBaseBuilder(options).https.onRequest(worker);
 }
 
-export function createScheduledFunction(schedule: string, worker: ScheduledFunction, options?: SchedulerOptions, runtimeOptions?: functions.RuntimeOptions) {
-    let builder = getBaseBuilder(runtimeOptions).pubsub.schedule(schedule);
+export function createScheduledFunction(schedule: string, worker: ScheduledFunction, options?: SchedulerOptions) {
+    let builder = getBaseBuilder(options?.runtime).pubsub.schedule(schedule);
     if (options?.timeZone) {
         builder = builder.timeZone(options.timeZone);
     }
