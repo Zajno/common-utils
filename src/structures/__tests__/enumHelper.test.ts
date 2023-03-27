@@ -64,7 +64,7 @@ describe('EnumBitwiseHelper', () => {
         expect(helper.validateValue(6)).toBeNull();
         expect(helper.validateValue(null)).toBeNull();
 
-        expect(helper.toStrings(0)).toStrictEqual([undefined]);
+        expect(helper.toStrings(0 as EnumBitwise)).toStrictEqual([undefined]);
         expect(helper.toStrings(EnumBitwise.One)).toStrictEqual(['one']);
         expect(helper.toStrings(EnumBitwise.Three)).toStrictEqual(['one', 'two', 'three']);
 
@@ -74,11 +74,11 @@ describe('EnumBitwiseHelper', () => {
         expect(helper.contains(EnumBitwise.Three, EnumBitwise.Two)).toBe(true);
         expect(helper.contains(EnumBitwise.One, EnumBitwise.Two)).toBe(false);
         expect(helper.contains(EnumBitwise.Two, EnumBitwise.One)).toBe(false);
-        expect(helper.contains(EnumBitwise.One, 0)).toBe(true);
+        expect(helper.contains(EnumBitwise.One, 0 as EnumBitwise)).toBe(true);
 
         expect(helper.combine(EnumBitwise.One, EnumBitwise.Two)).toBe(EnumBitwise.Three);
         expect(helper.combine(EnumBitwise.One)).toBe(EnumBitwise.One);
-        expect(helper.combine(EnumBitwise.One, 0)).toBe(EnumBitwise.One);
+        expect(helper.combine(EnumBitwise.One, 0 as EnumBitwise)).toBe(EnumBitwise.One);
 
         expect(helper.remove(EnumBitwise.Three, EnumBitwise.Two)).toBe(EnumBitwise.One);
     });

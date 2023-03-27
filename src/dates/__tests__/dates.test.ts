@@ -71,13 +71,13 @@ describe('Date Helpers', () => {
             d1,
             new Date('2020-11-29T13:26:15.893Z'),
             'day', false, false)
-        ).toStrictEqual(-1);
+        ).toBe(-1);
 
         expect(DateHelpers.getDiscreteDiff(
             new Date('2020-11-30T00:00:00.001Z'),
             new Date('2020-11-29T23:59:59.999Z'),
             'day', false, false)
-        ).toStrictEqual(-1);
+        ).toBe(-1);
 
         expect(DateHelpers.getDiscreteDiff(
             d1,
@@ -413,7 +413,7 @@ describe('Date Helpers', () => {
         expect(DateHelpers.compare(
             new Date('2020-12-28T13:26:15.893Z'),
             new Date('2020-12-29T13:26:15.893Z'),
-        )).toStrictEqual(-86400000);
+        )).toBe(-86400000);
 
     });
 

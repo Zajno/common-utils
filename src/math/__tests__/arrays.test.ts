@@ -21,7 +21,7 @@ describe('math/arrays', () => {
         expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i < t)).toBe(1);
 
         expect(arrays.arrayCompare([-1, 2, -3], true, (i, t) => i > t)).toBe(3);
-        expect(arrays.arrayCompare([-1, 2, -3], true, (i, t) => i < t)).toEqual(-1);
+        expect(arrays.arrayCompare([-1, 2, -3], true, (i, t) => i < t)).toBe(-1);
     });
 
     it('arrayMax', () => {
@@ -33,14 +33,14 @@ describe('math/arrays', () => {
     it('arrayMin', () => {
         expect(arrays.arrayMin([], false)).toBeNull();
         expect(arrays.arrayMin([1, 2, 3], false)).toBe(1);
-        expect(arrays.arrayMin([-1, 2, -3], true)).toEqual(-1);
+        expect(arrays.arrayMin([-1, 2, -3], true)).toBe(-1);
     });
 
     it('arrayAverage', () => {
         expect(arrays.arrayAverage(null)).toBe(0);
         expect(arrays.arrayAverage([])).toBe(0);
         expect(arrays.arrayAverage([1, 2, 3])).toBe(2);
-        expect(arrays.arrayAverage([-2, 2, -3])).toEqual(-1);
+        expect(arrays.arrayAverage([-2, 2, -3])).toBe(-1);
         expect(arrays.arrayAverage([-1, 2, -3], true)).toBe(2);
     });
 
