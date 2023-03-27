@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "2.0.9",
+  "version": "3.0.0",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "repository": {
     "type": "git",
@@ -12,6 +12,7 @@
     "url": "https://github.com/Zajno/common-utils/issues"
   },
   "homepage": "https://github.com/Zajno/common-utils#readme",
+  "type": "module",
   "scripts": {
     "build": "tsc -P tsconfig.build.json",
     "build:clean": "rimraf ./lib && yarn build",

@@ -5,6 +5,6 @@ module.exports = {
         '**/__tests__/**/(*.)+(spec|test).+(ts|tsx)',
     ],
     collectCoverage: true,
-    globalSetup: './global-test-setup.js',
+    globalSetup: './global-test-setup.cjs',
     setupFilesAfterEnv: ["jest-extended/all"]
 };

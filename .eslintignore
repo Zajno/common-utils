@@ -1,5 +1,5 @@
 **/node_modules/**
 **/lib/**
-/.eslintrc.js
-/global-test-setup.js
-/jest.config.js
+/.eslintrc.cjs
+/global-test-setup.cjs
+/jest.config.cjs
