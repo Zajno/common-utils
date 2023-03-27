@@ -103,4 +103,31 @@ export namespace Format {
             ? `In ${weeks} weeks`
             : `${weeks} weeks ago`;
     }
+
+    export namespace Ordinal {
+
+        /** 'en' locale is used. If you need another locale – grab this as example */
+        export function createFormatter() {
+            const pr = new Intl.PluralRules('en', { type: 'ordinal' });
+            const suffixes = new Map([
+                ['one', 'st'],
+                ['two', 'nd'],
+                ['few', 'rd'],
+                ['other', 'th'],
+            ]);
+
+            return (n: number) => {
+                const rule = pr.select(n);
+                const suffix = suffixes.get(rule);
+                return `${n}${suffix}`;
+            };
+        }
+
+        let _default: ReturnType<typeof createFormatter> = null;
+        export function format(num: number) {
+            return (_default || (_default = createFormatter()))(num);
+        }
+    }
+
+
 }
