@@ -1,5 +1,5 @@
-import { observable, makeObservable, reaction, action } from 'mobx';
-import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
+import { observable, makeObservable, reaction, action, runInAction } from 'mobx';
+import type { IValueModel, IResetableModel, IValueModelReadonly } from '@zajno/common/models/types';
 import logger from '@zajno/common/logger';
 import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
@@ -26,12 +26,11 @@ function FromGetter(getter: Getter<string>, setter: (val: string) => void, autor
     );
 }
 
-export class Text {
-    @observable
+export class Text implements IValueModelReadonly<string> {
     private _value: string = null;
 
     constructor(config: { value: Getter<string>, async?: boolean, noSubscribe?: boolean }) {
-        makeObservable(this);
+        makeObservable<Text, '_value'>(this, { _value: observable });
         FromGetter(config.value, val => this._value = val, config.async ? 100 : null, config.noSubscribe);
     }
 
@@ -39,10 +38,8 @@ export class Text {
 }
 
 export class TextInputVM extends ValidatableModel<string> implements IValueModel<string>, IResetableModel {
-    // @observable
     private _value = '';
 
-    // @observable
     private _focused = false;
 
     private _name: string = null;
@@ -64,7 +61,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
 
         FromGetter(config.name, val => this._name = val, delay);
         FromGetter(config.title, val => this._title = val, delay);
-        this._valueObserving = FromGetter(config.value, val => this._value = val, delay);
+        this._valueObserving = FromGetter(config.value, v => runInAction(() => this._value = v), delay);
     }
 
     get value() { return this._value; }
@@ -75,7 +72,6 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         this.setValue(val);
     }
 
-    // @action
     public readonly setValue = (value: string) => {
         if (!this._valueObserving) {
             this._value = value;
@@ -84,7 +80,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
                 this.validate();
             }
         } else {
-            logger.warn('[TextInputViewModel] Setting value is not allowed when value is observing');
+            logger.warn('[TextInputVM] Setting value is not allowed when value is observing');
         }
     };
 
@@ -117,10 +113,10 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         this.validate();
     }
 
-    reset = () => {
+    reset = action(() => {
         this._value = '';
         this._focused = false;
         super.reset();
-    };
+    });
 
 }
