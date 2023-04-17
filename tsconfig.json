@@ -18,9 +18,6 @@
     "declaration": true,
     "declarationMap": true,
     "importHelpers": true,
-    "baseUrl": "src",
-    "paths": {
-    },
   },
   "include": [
     "./src"

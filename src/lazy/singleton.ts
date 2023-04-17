@@ -4,7 +4,12 @@ export class Lazy<T> implements IDisposable {
 
     protected _instance: T = null;
 
-    constructor(protected readonly _factory: (() => T)) { }
+    constructor(
+        protected readonly _factory: (() => T),
+        protected readonly _disposer?: (prev: T) => void,
+    ) {
+
+    }
 
     get hasValue() { return this._instance !== null; }
 
@@ -13,10 +18,17 @@ export class Lazy<T> implements IDisposable {
         return this._instance;
     }
 
+    /** Override me: additional way to make sure instance is valid */
+    protected get isValid() { return this.hasValue; }
+
     private ensureInstance() {
-        if (this._instance === null) {
-            this._instance = this._factory();
+        if (this.isValid) {
+            return;
         }
+
+        // additional reset to make sure previous instance has been disposed
+        this.reset();
+        this._instance = this._factory();
     }
 
     prewarm() {
@@ -25,6 +37,9 @@ export class Lazy<T> implements IDisposable {
     }
 
     reset() {
+        if (this.hasValue && this._disposer) {
+            this._disposer(this._instance);
+        }
         this._instance = null;
     }
 

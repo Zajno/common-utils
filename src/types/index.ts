@@ -8,6 +8,16 @@ export type TypedKeys<T extends Object, K> = {
     [P in keyof T]: T[P] extends K ? P : never
 }[keyof T];
 
+/** Type for extracting only string keys from T (skips number & symbol keys) */
+export type StringKeys<T> = {
+    [K in keyof T]: K extends string ? K : never;
+}[keyof T];
+
+/** Type for extraction only keys, values of which are functions with certain args and return result */
+export type FunctionKeys<T, TArgs extends any[] = any[], TRes = any> = {
+    [K in keyof T]: T[K] extends (...args: TArgs) => TRes ? K : never;
+}[keyof T];
+
 export type ArrayTail<T> = T extends [any, ...infer P] ? [...P] : T;
 
 export type NestedPick<T, K extends any[]> = K extends Array<never> // empty arr
