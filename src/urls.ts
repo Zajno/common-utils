@@ -34,3 +34,35 @@ export function addParamsToUrl(url: string, additionalUrlParams?: Map<string, st
 
     return urlWithParams;
 }
+
+type QueryObj = Record<string, string | true>;
+
+export function parseSearchQuery(search: string) {
+    const params = new URLSearchParams(search || '?');
+    const res: QueryObj = { };
+    params.forEach((value, key) => {
+        if (key) {
+            res[key] = value || true;
+        }
+    });
+    return res;
+}
+
+export function createSearchQuery(args: QueryObj, addQuestionMark = false) {
+    if (!args) {
+        return '';
+    }
+
+    let res: URLSearchParams = null;
+    Object.entries(args).forEach(([key, value]) => {
+        if (typeof value === 'boolean' || typeof value === 'string' || typeof value === 'number') {
+            (res = (res || new URLSearchParams())).set(key, value === true ? '' : value);
+        }
+    });
+    const str = res?.toString() || '';
+    if (!str || !addQuestionMark) {
+        return str;
+    }
+
+    return '?' + str;
+}
