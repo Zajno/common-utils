@@ -13,7 +13,7 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
         this._firstInit = useFirstInit;
     }
 
-    public get isLoading() { return this._firstInit || this.value; }
+    public get isLoading() { return this.value || this._firstInit; }
 
     public get value(): boolean { return this._number.value > 0; }
     public set value(v: boolean) {
