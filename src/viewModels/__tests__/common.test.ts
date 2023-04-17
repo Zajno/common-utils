@@ -92,6 +92,29 @@ describe('LoadingModel works', () => {
         expect(m.value).toBe(false);
         expect(m.isLoading).toBeFalsy();
     });
+
+    it('with firstInit', async () => {
+        const m = new LoadingModel(true);
+
+        expect(m.isLoading).toBeTrue();
+
+        const first = m.useLoading(worker, true);
+        expect(m.isLoading).toBeTrue();
+
+        await expect(first).resolves.toBe(100);
+
+        expect(m.isLoading).toBeFalse();
+    });
+
+    it('with firstInit after reset', async () => {
+        const m = new LoadingModel(true);
+
+        expect(m.isLoading).toBeTrue();
+
+        m.reset();
+
+        expect(m.isLoading).toBeFalse();
+    });
 });
 
 describe('Others', () => {

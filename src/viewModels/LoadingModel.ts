@@ -4,14 +4,23 @@ import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
 export class LoadingModel implements IValueModel<boolean>, IResetableModel {
 
     private readonly _number = new NumberModel(0);
+    private _firstInit: boolean;
 
-    public get isLoading() { return this._number.value > 0; }
+    /**
+     * @param useFirstInit - if true, then `isLoading` will be returning 'true' until first `useLoading` call. Defaults to false.
+     */
+    constructor(useFirstInit = false) {
+        this._firstInit = useFirstInit;
+    }
 
-    public get value(): boolean { return this.isLoading; }
+    public get isLoading() { return this._firstInit || this.value; }
+
+    public get value(): boolean { return this._number.value > 0; }
     public set value(v: boolean) {
         if (v) {
             this._number.increment();
         } else {
+            this._firstInit = false;
             this._number.decrement();
         }
     }
@@ -25,7 +34,10 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
         return withLoading(this, cb, exclusive as any);
     }
 
-    public reset = () => this._number.reset();
+    public reset = () => {
+        this._firstInit = false;
+        this._number.reset();
+    };
 }
 
 export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>)): Promise<T>;
