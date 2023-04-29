@@ -20,10 +20,6 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
         makeObservable<FlagModel, '_value'>(this, {
             _value: observable,
             setValue: action,
-            setTrue: action,
-            setFalse: action,
-            toggle: action,
-            reset: action,
         });
         this._value = initial;
     }
@@ -37,33 +33,33 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     }
 
     // @action
-    public readonly setValue = (value: boolean) => {
+    /** override me to spy */
+    public setValue(value: boolean) {
         this._value = value;
-    };
+    }
 
     get isDefault() { return this._value === false; }
 
-    // @action
+    /** @returns whether the value has changed */
     setTrue = () => {
         const v = this.value;
         this.value = true;
         return !v;
     };
 
-    // @action
+    /** @returns whether the value has changed */
     setFalse = () => {
         const v = this.value;
         this.value = false;
         return v;
     };
 
-    // @action
+    /** Possible issue: if this method is used in trackable context (e.g. autorun), it might lead to an infinite loop  */
     toggle = () => {
-        this._value = !this._value;
+        this.value = !this.value;
     };
 
-    // @action
     reset = () => {
-        this._value = false;
+        this.value = false;
     };
 }

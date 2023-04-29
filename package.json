@@ -28,7 +28,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
-    "@zajno/common": "^2.0.11",
+    "@zajno/common": "^2.0.13",
     "@zajno/eslint-config": "^2.3.0",
     "cpy-cli": "^4.2.0",
     "eslint": "^8.38.0",
@@ -41,7 +41,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@zajno/common": "^2.0.7",
+    "@zajno/common": "^2.0.13",
     "mobx": "^6",
     "tslib": "^2.4"
   },

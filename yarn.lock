@@ -934,10 +934,10 @@
     "@typescript-eslint/types" "5.58.0"
     eslint-visitor-keys "^3.3.0"
 
-"@zajno/common@^2.0.11":
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-2.0.11.tgz#4937953957ba6213db5a96728e7ff2bb9bc079ee"
-  integrity sha512-UR+LVKhVwklYzMemK5GGIxE0ZiH4GyoAQdXcp9Mog3+7GHlgy5B3v8Viflbq8O9K8kLEmBUGbuBTyjL+XFP4fw==
+"@zajno/common@^2.0.13":
+  version "2.0.13"
+  resolved "https://registry.yarnpkg.com/@zajno/common/-/common-2.0.13.tgz#3335b8c21f60ca6fa32376ca2c6cef83d553e168"
+  integrity sha512-3mvsU187Hi3DlY1WKXKFWsKZosrcpLYrA7Yybto/XvJalkI7CqEy1Xz5uBcBA82YQnYKR7+nLhvYOwmcfc18UQ==
 
 "@zajno/eslint-config@^2.3.0":
   version "2.3.0"

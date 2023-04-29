@@ -5,7 +5,9 @@ import { LoadingModel } from '../LoadingModel';
 import { SelectString } from '../SelectModel';
 import { TextInputVM } from '../TextModel';
 import { ValueModel } from '../ValueModel';
+import { FlagModel } from '../FlagModel';
 import { reaction } from 'mobx';
+import { spyModel } from '@zajno/common/models/wrappers';
 
 describe('CommonModel', () => {
     const NotEmptyError = 'should be not empty';
@@ -151,6 +153,109 @@ describe('Others', () => {
             expect(sub).toHaveBeenCalledWith(123);
 
             unsub();
+        });
+    });
+
+    describe('FlagModel', () => {
+        it('observable', () => {
+
+            const vm = new FlagModel();
+
+            const sub = jest.fn();
+            const unsub = reaction(() => vm.value, v => sub(v));
+
+            expect(vm.value).toBe(false);
+
+            vm.value = true;
+            expect(sub).toHaveBeenCalledWith(true);
+
+            sub.mockClear();
+
+            vm.reset();
+            expect(sub).toHaveBeenCalledWith(false);
+
+            vm.toggle();
+            expect(sub).toHaveBeenCalledWith(true);
+
+            vm.setFalse();
+            expect(sub).toHaveBeenCalledWith(false);
+
+            vm.setTrue();
+            expect(sub).toHaveBeenCalledWith(true);
+
+            expect(vm.isDefault).toBe(false);
+
+            unsub();
+        });
+
+        it('extendable', () => {
+            class Spy extends FlagModel {
+
+                spy = jest.fn();
+
+                public setValue(value: boolean): void {
+                    this.spy(value);
+                    super.setValue(value);
+                }
+            }
+
+            const vm = new Spy();
+
+            vm.value = true;
+            expect(vm.spy).toHaveBeenCalledWith(true);
+
+            vm.spy.mockClear();
+            vm.reset();
+            expect(vm.spy).toHaveBeenCalledWith(false);
+
+            vm.spy.mockClear();
+            vm.toggle();
+            expect(vm.spy).toHaveBeenCalledWith(true);
+
+            vm.spy.mockClear();
+            vm.setFalse();
+            expect(vm.spy).toHaveBeenCalledWith(false);
+
+            vm.spy.mockClear();
+            vm.setTrue();
+            expect(vm.spy).toHaveBeenCalledWith(true);
+        });
+
+        it('spyable', () => {
+            const spy = jest.fn();
+            const getterSpy = jest.fn();
+
+            const vm = new FlagModel();
+
+            spyModel(vm, spy, getterSpy);
+
+            vm.value = true;
+            expect(spy).toHaveBeenCalledWith(true);
+            expect(getterSpy).toHaveBeenCalledTimes(0);
+
+            spy.mockClear();
+            getterSpy.mockClear();
+            vm.reset();
+            expect(spy).toHaveBeenCalledWith(false);
+            expect(getterSpy).toHaveBeenCalledTimes(0);
+
+            spy.mockClear();
+            getterSpy.mockClear();
+            vm.toggle();
+            expect(spy).toHaveBeenCalledWith(true);
+            expect(getterSpy).toHaveBeenCalledTimes(1);
+
+            spy.mockClear();
+            getterSpy.mockClear();
+            expect(vm.setFalse()).toBe(true);
+            expect(spy).toHaveBeenCalledWith(false);
+            expect(getterSpy).toHaveBeenCalledTimes(1);
+
+            spy.mockClear();
+            getterSpy.mockClear();
+            expect(vm.setTrue()).toBe(true);
+            expect(spy).toHaveBeenCalledWith(true);
+            expect(getterSpy).toHaveBeenCalledTimes(1);
         });
     });
 });
