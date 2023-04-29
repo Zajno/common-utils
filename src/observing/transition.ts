@@ -2,25 +2,27 @@ import { reaction } from 'mobx';
 import { IEvent, Event } from '@zajno/common/observing/event';
 import { ILogger, createLogger } from '@zajno/common/logger';
 import { IDisposable } from '@zajno/common/functions/disposer';
+import { Predicate } from '@zajno/common/types';
 
 export class TransitionObserver<T> implements IDisposable {
 
-    private readonly _event = new Event<T>();
+    private _event: Event<T>;
     private _getter: () => T = null;
+    private _filter: Predicate<T> = null;
 
     private _disposer: () => void;
-    private _prev: T = undefined;
+    private _prev: T;
 
-    private _from: T = undefined;
-    private _to: T = undefined;
+    private _from: T;
+    private _to: T;
 
     private _cb: (v: T) => any;
     private _fireOnce = false;
 
-    private _promise: Promise<T> = null;
-    private _promiseReject: (err?: any) => any = null;
+    private _promise: Promise<T>;
+    private _promiseReject: (err?: any) => any;
 
-    private logger: ILogger = createLogger('', false);
+    private logger: ILogger;
 
     constructor(getter?: () => T) {
         if (getter) {
@@ -28,7 +30,13 @@ export class TransitionObserver<T> implements IDisposable {
         }
     }
 
-    public get event(): IEvent<T> { return this._event; }
+    public get event(): IEvent<T> {
+        // lazy created just to save up some memory in case it's not needed
+        if (!this._event) {
+            this._event = new Event<T>();
+        }
+        return this._event;
+    }
     public get currentValue() { return this._prev; }
 
     public get isObserving() { return this._disposer != null; }
@@ -49,6 +57,11 @@ export class TransitionObserver<T> implements IDisposable {
 
     to(to: T) {
         this._to = to;
+        return this;
+    }
+
+    filter(filter: Predicate<T>) {
+        this._filter = filter;
         return this;
     }
 
@@ -103,7 +116,7 @@ export class TransitionObserver<T> implements IDisposable {
                 });
                 this.forceCheck();
             });
-            this.logger.log('started a new promise...');
+            this.logger?.log('started a new promise...');
         }
         return this._promise;
     }
@@ -114,13 +127,16 @@ export class TransitionObserver<T> implements IDisposable {
             .to(this._from);
     }
 
-    enableLogging(name: string) {
-        this.logger = createLogger(name, name ? undefined : false);
+    enableLogging(name: string | ILogger) {
+        this.logger = typeof name === 'string'
+            ? createLogger(name, name ? undefined : false)
+            : name;
+
         return this;
     }
 
     dispose = () => {
-        this.logger.log(' disposing... ');
+        this.logger?.log(' disposing... ');
         if (this._disposer) {
             this._disposer();
             this._disposer = null;
@@ -133,7 +149,9 @@ export class TransitionObserver<T> implements IDisposable {
     private _checkValue = (v: T) => {
         let trigger = false;
 
-        if (this._from !== undefined && this._to !== undefined) {
+        if (this._filter && !this._filter(v)) {
+            trigger = false;
+        } else if (this._from !== undefined && this._to !== undefined) {
             // both 'from' and 'two' should be matched
             trigger = this._prev === this._from && v === this._to;
         } else if (this._from !== undefined || this._to !== undefined) {
@@ -146,12 +164,13 @@ export class TransitionObserver<T> implements IDisposable {
             trigger = true;
         }
 
-        this.logger.log('Checked value:', v, ' ==> will trigger:', trigger);
+        this.logger?.log('Checked value:', v, ' ==> will trigger:', trigger);
 
         this._prev = v;
 
         if (trigger) {
-            this._event.trigger(v);
+            // will actually trigger only if someone subscribed to the event
+            this._event?.trigger(v);
 
             if (this._cb) {
                 this._cb(v);

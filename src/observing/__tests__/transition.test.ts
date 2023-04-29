@@ -211,9 +211,47 @@ describe('TransitionObserver', () => {
 
         const p = to.getPromise();
 
+        expect(() => to.cb(() => { /* no-op */ })).toThrow();
+
         to.dispose();
 
         await expect(p).rejects.toThrow(/Aborted/);
         expect(cb).not.toHaveBeenCalled();
+    });
+
+    it('filtering', () => {
+        const store = createStore<number>(0);
+        const cb = jest.fn();
+
+        const to = new TransitionObserver(() => store.value)
+            .cb(cb);
+
+        store.setValue(1);
+
+        expect(cb).toHaveBeenCalledWith(1);
+        cb.mockReset();
+
+        to.filter((v) => v > 10);
+
+        store.setValue(2);
+
+        expect(cb).not.toHaveBeenCalled();
+        cb.mockReset();
+
+        store.setValue(20);
+
+        expect(cb).toHaveBeenCalledTimes(1);
+        expect(cb).toHaveBeenCalledWith(20);
+        cb.mockReset();
+
+        to.filter(() => true);
+
+        store.setValue(2);
+
+        expect(cb).toHaveBeenCalledWith(2);
+        expect(cb).toHaveBeenCalledTimes(1);
+        cb.mockReset();
+
+        to.dispose();
     });
 });
