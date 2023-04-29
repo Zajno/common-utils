@@ -20,9 +20,6 @@
     "declarationMap": true,
     "importHelpers": true,
     "removeComments": true,
-    "baseUrl": "src",
-    "paths": {
-    },
   },
   "include": [
     "./src"
