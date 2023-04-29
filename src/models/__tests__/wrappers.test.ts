@@ -1,5 +1,6 @@
-import { inject, withLabel, mixinLabel } from '../wrappers';
+import { inject, withLabel, mixinLabel, spyModel } from '../wrappers';
 import { Model } from '../Model';
+import { IValueModel, IValueModelReadonly } from '../types';
 
 describe('labeled', () => {
     test('consistency', () => {
@@ -57,6 +58,102 @@ describe('inject', () => {
 
         flag.value = true;
         expect(flag.value).toBe(true);
+    });
+});
+
+describe('spyModel', () => {
+    it('spies on Model', () => {
+        const vm = new Model<number>();
+
+        const spySetter = jest.fn();
+        const spyGetter = jest.fn();
+
+        spyModel(vm, spySetter, spyGetter);
+
+        vm.value = 123;
+        expect(spySetter).toHaveBeenCalledTimes(1);
+        expect(spySetter).toHaveBeenCalledWith(123);
+
+        expect(vm.value).toBe(123);
+        expect(spyGetter).toHaveBeenCalledTimes(1);
+        expect(spyGetter).toHaveBeenCalledWith(123);
+    });
+
+    it('spies on spied Model', () => {
+        const vm = new Model<number>();
+
+        const prevSpySetter = jest.fn();
+        const prevSpyGetter = jest.fn();
+
+        // dummy spy
+        spyModel(vm, prevSpySetter, prevSpyGetter);
+
+        const spySetter = jest.fn();
+        const spyGetter = jest.fn();
+
+        spyModel(vm, spySetter, spyGetter);
+
+        vm.value = 123;
+        expect(prevSpySetter).toHaveBeenCalledTimes(1);
+        expect(prevSpySetter).toHaveBeenCalledWith(123);
+        expect(spySetter).toHaveBeenCalledTimes(1);
+        expect(spySetter).toHaveBeenCalledWith(123);
+
+        expect(vm.value).toBe(123);
+        expect(prevSpyGetter).toHaveBeenCalledTimes(1);
+        expect(prevSpyGetter).toHaveBeenCalledWith(123);
+        expect(spyGetter).toHaveBeenCalledTimes(1);
+        expect(spyGetter).toHaveBeenCalledWith(123);
+    });
+
+    it('spies on IValueModel', () => {
+        const vm: IValueModel<number> = { value: 0 };
+
+        const spySetter = jest.fn();
+        const spyGetter = jest.fn();
+        spyModel(vm, spySetter, spyGetter);
+
+        vm.value = 123;
+        expect(spySetter).toHaveBeenCalledTimes(1);
+        expect(spySetter).toHaveBeenCalledWith(123);
+
+        expect(vm.value).toBe(123);
+        expect(spyGetter).toHaveBeenCalledTimes(1);
+        expect(spyGetter).toHaveBeenCalledWith(123);
+    });
+
+    it('spies on IValueModel (get/set)', () => {
+        let _value = 0;
+        const vm: IValueModel<number> = { get value() { return _value; }, set value(v) { _value = v; } };
+
+        const spySetter = jest.fn();
+        const spyGetter = jest.fn();
+        spyModel(vm, spySetter, spyGetter);
+
+        vm.value = 123;
+        expect(spySetter).toHaveBeenCalledTimes(1);
+        expect(spySetter).toHaveBeenCalledWith(123);
+
+        expect(vm.value).toBe(123);
+        expect(spyGetter).toHaveBeenCalledTimes(1);
+        expect(spyGetter).toHaveBeenCalledWith(123);
+
+        expect(_value).toBe(123);
+    });
+
+    it('spies on IValueModelReadonly (get only)', () => {
+        const _value = 123;
+        const vm: IValueModelReadonly<number> = { get value() { return _value; } };
+
+        const spySetter = jest.fn();
+        const spyGetter = jest.fn();
+        spyModel(vm, spySetter, spyGetter);
+
+        expect(vm.value).toBe(123);
+        expect(spyGetter).toHaveBeenCalledTimes(1);
+        expect(spyGetter).toHaveBeenCalledWith(123);
+
+        expect(_value).toBe(123);
     });
 });
 
