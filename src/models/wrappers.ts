@@ -23,6 +23,42 @@ export function inject<T, TModel extends IValueModel<T>>(model: TModel, source: 
     return model;
 }
 
+/**
+ * Adds callbacks to setter and getter of the 'value' property of a model. DOES NOT override previous spies (all spies are in charge).
+ *
+ * Useful mostly for debugging.
+ * */
+export function spyModel<T, TModel extends (IValueModel<T> & Object)>(model: TModel, spySetter: (v: T) => void, spyGetter?: (v: T) => void) {
+    const descriptor = Object.getOwnPropertyDescriptor(model, 'value');
+
+    const valueSetter = descriptor?.set;
+    const valueGetter = descriptor?.get;
+
+    let _overrideValue: T = descriptor ? descriptor.value : model.value;
+
+    Object.defineProperty(model, 'value', {
+        configurable: true,
+        set(v) {
+            spySetter(v);
+            if (valueSetter) {
+                valueSetter.call(model, v);
+            } else {
+                _overrideValue = v;
+            }
+        },
+        get() {
+            let res: T = null;
+            if (valueGetter) {
+                res = valueGetter.call(model);
+            } else {
+                res = _overrideValue;
+            }
+            spyGetter?.(res);
+            return res;
+        },
+    });
+}
+
 export function wrap<T, TModel extends IValueModel<T>, TRes>(model: TModel, getter: (m: TModel) => TRes, setter: (v: TRes, model: TModel) => void): IValueModel<TRes> {
     return {
         get value() { return getter(model); },
