@@ -2,7 +2,7 @@ import { reaction } from 'mobx';
 import { IEvent, Event } from '@zajno/common/observing/event';
 import { ILogger, createLogger } from '@zajno/common/logger';
 import { IDisposable } from '@zajno/common/functions/disposer';
-import { Predicate } from '@zajno/common/types';
+import { Getter, Predicate } from '@zajno/common/types';
 
 export class TransitionObserver<T> implements IDisposable {
 
@@ -13,8 +13,8 @@ export class TransitionObserver<T> implements IDisposable {
     private _disposer: () => void;
     private _prev: T;
 
-    private _from: T;
-    private _to: T;
+    private _from: Getter<T>;
+    private _to: Getter<T>;
 
     private _cb: (v: T) => any;
     private _fireOnce = false;
@@ -33,7 +33,7 @@ export class TransitionObserver<T> implements IDisposable {
     public get event(): IEvent<T> {
         // lazy created just to save up some memory in case it's not needed
         if (!this._event) {
-            this._event = new Event<T>();
+            this._event = new Event<T>(this.logger);
         }
         return this._event;
     }
@@ -50,12 +50,12 @@ export class TransitionObserver<T> implements IDisposable {
         return this;
     }
 
-    from(from: T) {
+    from(from: Getter<T>) {
         this._from = from;
         return this;
     }
 
-    to(to: T) {
+    to(to: Getter<T>) {
         this._to = to;
         return this;
     }
@@ -149,15 +149,18 @@ export class TransitionObserver<T> implements IDisposable {
     private _checkValue = (v: T) => {
         let trigger = false;
 
+        const from = Getter.getValue(this._from);
+        const to = Getter.getValue(this._to);
+
         if (this._filter && !this._filter(v)) {
             trigger = false;
-        } else if (this._from !== undefined && this._to !== undefined) {
+        } else if (from !== undefined && to !== undefined) {
             // both 'from' and 'two' should be matched
-            trigger = this._prev === this._from && v === this._to;
-        } else if (this._from !== undefined || this._to !== undefined) {
+            trigger = this._prev === from && v === to;
+        } else if (from !== undefined || to !== undefined) {
             // at least one match – 'from' or 'to'
-            trigger = (this._from !== undefined && this._from === this._prev)
-                || (this._to !== undefined && this._to === v);
+            trigger = (from !== undefined && from === this._prev)
+                || (to !== undefined && to === v);
         } else {
             // if both 'from' and 'to' are undefined – trigger for any change
             // this._from === undefined && this._to === undefined;
@@ -170,7 +173,8 @@ export class TransitionObserver<T> implements IDisposable {
 
         if (trigger) {
             // will actually trigger only if someone subscribed to the event
-            this._event?.trigger(v);
+            // Use triggerAsync to catch and log all errors
+            this._event?.triggerAsync(v);
 
             if (this._cb) {
                 this._cb(v);

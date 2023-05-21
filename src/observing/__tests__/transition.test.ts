@@ -254,4 +254,40 @@ describe('TransitionObserver', () => {
 
         to.dispose();
     });
+
+    it('from/to via getters', () => {
+        const store = createStore<boolean | null>(true);
+        const cb = jest.fn();
+
+        let _from = true;
+        let _to = false;
+
+        const observer = new TransitionObserver(() => store.value)
+            .from(() => _from)
+            .to(() => _to)
+            .cb(cb);
+
+        store.setValue(null);
+
+        expect(cb).not.toHaveBeenCalled();
+
+        store.setValue(true);
+
+        expect(cb).not.toHaveBeenCalled();
+
+        store.setValue(false);
+
+        expect(cb).toHaveBeenCalledWith(false);
+        cb.mockReset();
+
+        _from = false;
+        _to = true;
+
+        store.setValue(true);
+
+        expect(cb).toHaveBeenCalledWith(true);
+        cb.mockReset();
+
+        observer.dispose();
+    });
 });
