@@ -2,13 +2,13 @@ import { reaction } from 'mobx';
 import { IEvent, Event } from '@zajno/common/observing/event';
 import { ILogger, createLogger } from '@zajno/common/logger';
 import { IDisposable } from '@zajno/common/functions/disposer';
-import { Getter, Predicate } from '@zajno/common/types';
+import { Getter } from '@zajno/common/types';
 
 export class TransitionObserver<T> implements IDisposable {
 
     private _event: Event<T>;
     private _getter: () => T = null;
-    private _filter: Predicate<T> = null;
+    private _filter: (next: T, prev: T) => boolean = null;
 
     private _disposer: () => void;
     private _prev: T;
@@ -60,7 +60,7 @@ export class TransitionObserver<T> implements IDisposable {
         return this;
     }
 
-    filter(filter: Predicate<T>) {
+    filter(filter: (next: T, prev: T) => boolean) {
         this._filter = filter;
         return this;
     }
@@ -152,7 +152,7 @@ export class TransitionObserver<T> implements IDisposable {
         const from = Getter.getValue(this._from);
         const to = Getter.getValue(this._to);
 
-        if (this._filter && !this._filter(v)) {
+        if (this._filter && !this._filter(v, this._prev)) {
             trigger = false;
         } else if (from !== undefined && to !== undefined) {
             // both 'from' and 'two' should be matched
