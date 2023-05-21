@@ -1,5 +1,5 @@
-import { setTimeoutAsync } from "@zajno/common/async/timeout";
-import { OptimisticModel } from "../OptimisticModel";
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
+import { OptimisticModel } from '../OptimisticModel';
 
 describe('OptimisticModel', () => {
 
@@ -13,7 +13,7 @@ describe('OptimisticModel', () => {
             }
             _storedValue = v;
             return true;
-        })
+        });
 
         const model = new OptimisticModel(() => _storedValue, _valueSetter);
         model.value = 2;
