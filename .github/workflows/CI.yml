@@ -2,18 +2,20 @@ name: CI
 
 on:
   pull_request:
+    types: [ready_for_review, opened, synchronize, reopened]
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
   lint-build-test:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
       - uses: actions/setup-node@master
         with:
-          node-version: '16'
+          node-version: '18'
           cache: 'yarn'
 
       - name: Install packages
@@ -27,11 +29,3 @@ jobs:
 
       - name: Test
         run: yarn test
-
-      - name: codecov-umbrella
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: coverage
-          flags: unittests
-          verbose: true # optional (default = false)
