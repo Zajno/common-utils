@@ -1,3 +1,4 @@
+import { ManualPromise, createManualPromise } from '../async/misc';
 import logger from '../logger';
 
 export class ThrottleAction<T = any> {
@@ -6,7 +7,7 @@ export class ThrottleAction<T = any> {
     private _postponedCb: () => (T | Promise<T>) = null;
     private _locked = false;
 
-    private _resolvers: (() => void)[] = [];
+    private _resolvers: ((result: T) => void)[] = [];
 
     constructor(public timeout = 1000) {}
 
@@ -34,16 +35,18 @@ export class ThrottleAction<T = any> {
         if (this._locked) {
             logger.warn('THROTTLE LOCKED');
         } else if (cb) {
+            let result: T = undefined;
             try {
                 this._locked = true;
-                return await cb();
+                result = await cb();
+                return result;
             } finally {
                 this._locked = false;
 
                 const resolvers = this._resolvers.slice();
                 this._resolvers.length = 0;
                 // logger.log('getPromise: resolving', resolvers.length);
-                resolvers.forEach(r => r());
+                resolvers.forEach(r => r(result));
             }
         }
     };
@@ -54,19 +57,21 @@ export class ThrottleAction<T = any> {
             return Promise.resolve();
         }
 
-        return new Promise<void>(resolve => {
+        return new Promise<T>(resolve => {
             // logger.log('getPromise: adding resolver');
             this._resolvers.push(resolve);
         });
     }
 }
 
-export class ThrottleProcessor<TSubject> {
+export class ThrottleProcessor<TSubject, TResult = any> {
 
     private readonly _queue: TSubject[] = [];
     private readonly _action: ThrottleAction = null;
 
-    constructor(readonly process: (objs: TSubject[]) => Promise<any>, timeout = 1000) {
+    private _promise: ManualPromise<TResult> = null;
+
+    constructor(readonly process: (objs: TSubject[]) => Promise<TResult>, timeout = 1000) {
         if (!process) {
             throw new Error('Arg0 expected: process');
         }
@@ -74,10 +79,16 @@ export class ThrottleProcessor<TSubject> {
         this._action = new ThrottleAction(timeout);
     }
 
-    push(data: TSubject) {
+    push(data: TSubject): Promise<TResult> {
         this._queue.push(data);
 
+        if (!this._promise) {
+            this._promise = createManualPromise<TResult>();
+        }
+
         this._action.tryRun(this._process, true);
+
+        return this._promise.promise;
     }
 
     private _process = async () => {
@@ -87,10 +98,20 @@ export class ThrottleProcessor<TSubject> {
 
         const objs = this._queue.slice();
         this._queue.length = 0;
-        await this.process(objs);
+
+        try {
+            const res = await this.process(objs);
+            this._promise.resolve(res);
+        } catch (err) {
+            this._promise.reject(err);
+        } finally {
+            this._promise = null;
+        }
     };
 
     clear() {
         this._action.clear();
+        this._promise?.resolve(undefined);
+        this._promise = null;
     }
 }
