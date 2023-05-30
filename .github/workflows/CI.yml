@@ -2,11 +2,13 @@ name: CI
 
 on:
   pull_request:
+    types: [ready_for_review, opened, synchronize, reopened]
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
   lint-build-test:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
