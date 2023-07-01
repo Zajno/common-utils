@@ -1,16 +1,16 @@
 
 type Primitive = number | string | Symbol | boolean | null | undefined | bigint;
 
-export type DeepReadonly<T extends Object> = {
+export type DeepReadonly<T extends Object> = Object & {
     readonly [P in keyof T]: T[P] extends (Function | Primitive)
         ? T[P]
         : (T[P] extends Object
-            ? DeepPartial<T[P]>
+            ? DeepReadonly<T[P]>
             : T[P]
         );
 };
 
-export type DeepPartial<T extends Object> = {
+export type DeepPartial<T extends Object> = Object & {
     [P in keyof T]?: T[P] extends (Function | Primitive)
         ? T[P]
         : (T[P] extends Object
@@ -19,7 +19,7 @@ export type DeepPartial<T extends Object> = {
         );
 };
 
-export type DeepRequired<T extends Object> = {
+export type DeepRequired<T extends Object> = Object & {
     [P in keyof T]-?: T[P] extends (Function | Primitive)
         ? T[P]
         : (T[P] extends Object
@@ -28,11 +28,20 @@ export type DeepRequired<T extends Object> = {
         );
 };
 
-export type DeepMutable<T extends Object> = {
+export type DeepMutable<T extends Object> = Object & {
     -readonly [P in keyof T]: T[P] extends (Function | Primitive)
         ? T[P]
         : (T[P] extends Object
             ? DeepMutable<T[P]>
+            : T[P]
+        );
+};
+
+export type DeepReadonlyPartial<T extends Object> = Object & {
+    readonly [P in keyof T]?: T[P] extends (Function | Primitive)
+        ? T[P]
+        : (T[P] extends Object
+            ? DeepReadonlyPartial<T[P]>
             : T[P]
         );
 };
