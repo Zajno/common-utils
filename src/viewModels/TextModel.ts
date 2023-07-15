@@ -49,12 +49,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
 
     constructor(config?: TextInputConfig) {
         super();
-        makeObservable<TextInputVM, '_value' | '_focused'>(this, {
-            _value: observable,
-            _focused: observable,
-            setValue: action,
-            setFocused: action,
-        });
+
         config = config || {};
 
         const delay = config.async ? 100 : null;
@@ -62,6 +57,13 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         FromGetter(config.name, val => this._name = val, delay);
         FromGetter(config.title, val => this._title = val, delay);
         this._valueObserving = FromGetter(config.value, v => runInAction(() => this._value = v), delay);
+
+        makeObservable<TextInputVM, '_value' | '_focused'>(this, {
+            _value: observable,
+            _focused: observable,
+            setValue: action,
+            setFocused: action,
+        });
     }
 
     get value() { return this._value; }

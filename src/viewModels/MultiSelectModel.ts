@@ -23,6 +23,9 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
         ...selected: number[]
     ) {
         super();
+        this._initial = selected;
+        this.setInitialIndexes();
+
         makeObservable<MultiSelect<T>, '_indexes'>(this, {
             '_indexes': observable,
             selectedIndexes: computed,
@@ -34,8 +37,6 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
             selectValues: action,
             setIndexSelected: action,
         });
-        this._initial = selected;
-        this.setInitialIndexes();
     }
 
     // @computed

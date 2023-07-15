@@ -9,22 +9,23 @@ export type BaseModalAction = {
 export class ModalActionModel<T extends BaseModalAction = BaseModalAction> {
     public readonly isActive = new FlagModel();
 
-    @observable.ref
     private _currentAction: T = null;
 
     constructor() {
-        makeObservable(this);
+        makeObservable<ModalActionModel, '_currentAction'>(this, {
+            _currentAction: observable.ref,
+            openModal: action,
+            closeModal: action,
+        });
     }
 
     get currentAction() { return this._currentAction; }
 
-    @action
     public openModal = (action: T) => {
         this._currentAction = action;
         this.isActive.value = true;
     };
 
-    @action
     public closeModal = () => {
         this.isActive.value = false;
         this._currentAction = null;

@@ -17,11 +17,11 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     private _value: boolean = false;
 
     constructor(initial = false) {
+        this._value = initial;
         makeObservable<FlagModel, '_value'>(this, {
             _value: observable,
             setValue: action,
         });
-        this._value = initial;
     }
 
     get value() {

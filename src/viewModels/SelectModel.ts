@@ -7,7 +7,6 @@ import { withLabel } from '@zajno/common/models/wrappers';
 import { Getter } from '@zajno/common/types';
 
 export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel {
-    // @observable
     private _index: number = undefined;
 
     private readonly _items: Getter<readonly T[]>;
@@ -27,17 +26,16 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         super();
 
         this._items = items;
+        this._initialIndex = initialIndex;
+        this._index = initialIndex;
 
         makeObservable<Select<T>, '_index' | '_items'>(this, {
-            '_index': observable,
-            '_items': observable.ref,
+            _index: observable,
+            _items: observable.ref,
             values: computed,
             items: computed,
             setIndex: action,
         });
-
-        this._initialIndex = initialIndex;
-        this._index = initialIndex;
     }
 
     protected get valueToValidate() { return this.selectedItem; }

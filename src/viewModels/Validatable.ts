@@ -25,7 +25,7 @@ export abstract class ValidatableModel<T = string> {
 
     constructor() {
         makeObservable<ValidatableModel<T>, '_error'>(this, {
-            '_error': observable,
+            _error: observable,
             reset: action,
         });
     }

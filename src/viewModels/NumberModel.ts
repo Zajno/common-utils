@@ -7,12 +7,14 @@ export interface INumberModel extends IResetableModel {
 
 export class NumberModel implements INumberModel, IValueModel<number> {
 
-    // @observable
-    private _value: number = 0;
+    private _value: number;
 
-    private _initial: number = 0;
+    private _initial: number;
 
     constructor(initial: number = 0) {
+        this._initial = initial;
+        this._value = this._initial;
+
         makeObservable<NumberModel, '_value'>(this, {
             _value: observable,
             setValue: action,
@@ -20,8 +22,6 @@ export class NumberModel implements INumberModel, IValueModel<number> {
             increment: action,
             decrement: action,
         });
-        this._initial = initial;
-        this._value = this._initial;
     }
 
     get value() { return this._value; }
