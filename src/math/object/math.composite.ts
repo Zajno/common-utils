@@ -1,7 +1,7 @@
-import { DeepReadonly } from "../../types/deep";
-import { _getInnerValue, doOps } from "./helpers";
-import { CompositeObjectOps } from "./ops.composite";
-import { AbsOptions, IObjectMath, MathPair, MathPairsMap, RoundOptions } from "./types";
+import { DeepReadonly } from '../../types/deep';
+import { _getInnerValue, doOps } from './helpers';
+import { CompositeObjectOps } from './ops.composite';
+import { AbsOptions, IObjectMath, MathPair, MathPairsMap, RoundOptions } from './types';
 
 
 export class CompositeObjectMath<T extends Object> extends CompositeObjectOps<T> implements IObjectMath<T> {

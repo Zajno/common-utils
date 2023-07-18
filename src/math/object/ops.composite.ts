@@ -1,6 +1,6 @@
-import { DeepReadonly } from "../../types/deep";
-import { _getInnerValue, doOps } from "./helpers";
-import { IObjectOps, OpsPair, OpsPairsMap } from "./types";
+import { DeepReadonly } from '../../types/deep';
+import { _getInnerValue, doOps } from './helpers';
+import { IObjectOps, OpsPair, OpsPairsMap } from './types';
 
 export class CompositeObjectOps<T extends Object> implements IObjectOps<T> {
     readonly Empty: Readonly<T>;

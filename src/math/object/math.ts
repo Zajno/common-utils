@@ -1,8 +1,8 @@
-import { TypedKeys } from "../../types";
-import { DeepReadonly, DeepReadonlyPartial } from "../../types/deep";
-import { _getValue } from "./helpers";
-import { ObjectOps } from "./ops";
-import { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from "./types";
+import { TypedKeys } from '../../types';
+import { DeepReadonly, DeepReadonlyPartial } from '../../types/deep';
+import { _getValue } from './helpers';
+import { ObjectOps } from './ops';
+import { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from './types';
 
 type NumVal<T extends Object> = T[NumKey<T>];
 

@@ -1,4 +1,4 @@
-import { DeepReadonly, TypedKeys } from "../../types";
+import { DeepReadonly, TypedKeys } from '../../types';
 
 export type NumKey<T> = TypedKeys<T, number>;
 

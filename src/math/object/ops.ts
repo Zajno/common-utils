@@ -1,7 +1,7 @@
-import { SkipCondition, SkipOptions } from "../../fields/skip";
-import { DeepPartial, DeepReadonly, Predicate } from "../../types";
-import { _getValue } from "./helpers";
-import { IObjectOps, NumKey } from "./types";
+import { SkipCondition, SkipOptions } from '../../fields/skip';
+import { DeepPartial, DeepReadonly, Predicate } from '../../types';
+import { _getValue } from './helpers';
+import { IObjectOps, NumKey } from './types';
 
 type Keys<T extends Object> = NumKey<T>[];
 

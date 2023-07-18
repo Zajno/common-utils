@@ -1,5 +1,5 @@
-import { DeepReadonly, DeepReadonlyPartial } from "../../types/deep";
-import { BasePair, IObjectOps, NumKey } from "./types";
+import { DeepReadonly, DeepReadonlyPartial } from '../../types/deep';
+import { BasePair, IObjectOps, NumKey } from './types';
 
 export function _getValue<T extends Object, TKey extends NumKey<T> = NumKey<T>>(o: DeepReadonlyPartial<T>, key: TKey): T[TKey] {
     return (!o || !key) ? null : (o as T)[key];
