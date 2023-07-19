@@ -65,5 +65,13 @@ export function random(min: number = 0, max: number = 1, trunc = true) {
 }
 
 export function badRandomString(length = 12) {
-    return Math.random().toString(26).slice(2, clamp(length, 0, 12));
+    const limitedLength = clamp(length, 0, 12);
+    const result = Math.random().toString(26).slice(2, 2 + limitedLength);
+
+    // this happens when random number is rounded so no last char
+    if (result.length < limitedLength) {
+        return result + new Array(limitedLength - result.length).fill('0').join('');
+    }
+
+    return result;
 }
