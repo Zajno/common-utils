@@ -29,10 +29,11 @@ export class ObjectOps<T extends Object> implements IObjectOps<T> {
     }
 
     clone(o: DeepReadonly<T>): T {
-        return {
-            ...this.getEmpty(),
-            ...o,
-        };
+        const result = this.getEmpty();
+        this.keys.forEach(key => {
+            result[key] = o[key] as any;
+        });
+        return result;
     }
 
     isEmpty(o: DeepReadonly<T>) {
