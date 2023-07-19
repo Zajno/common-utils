@@ -64,4 +64,14 @@ describe('math/calc', () => {
         testRandom(1, 100, true);
         testRandom(1, 100, false);
     });
+
+    it('badRandomString', () => {
+
+        for (let i = 0; i <= 12; ++i) {
+            expect(calc.badRandomString(i)).toHaveLength(i);
+        }
+
+        expect(calc.badRandomString(-1)).toHaveLength(0);
+        expect(calc.badRandomString(13)).toHaveLength(12);
+    });
 });

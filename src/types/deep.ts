@@ -46,8 +46,11 @@ export type DeepMutable<T extends Object> = Object & {
 export type DeepReadonlyPartial<T extends Object> = Object & {
     readonly [P in keyof T]?: T[P] extends (Function | Primitive)
         ? T[P]
-        : (T[P] extends Object
-            ? DeepReadonlyPartial<T[P]>
-            : T[P]
+        : (T[P] extends Array<infer U>
+            ? ReadonlyArray<DeepReadonlyPartial<U>>
+            : (T[P] extends Object
+                ? DeepReadonlyPartial<T[P]>
+                : T[P]
+            )
         );
 };
