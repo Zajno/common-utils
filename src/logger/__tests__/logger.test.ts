@@ -2,29 +2,30 @@ import { faker } from '@faker-js/faker';
 import logger, { batchLoggers, createLogger, getMode, ILogger, setMode } from '..';
 import fc from 'fast-check';
 import { toArbitrary } from '../../__tests__/helpers/main';
-import { Getter } from '../../types';
 
 const CONSOLE = console;
 
 describe('#logger-tests', () => {
 
-  const customLogger = {
+  const createCustomLogger = () => ({
     log: jest.fn().mockImplementation(),
     warn: jest.fn().mockImplementation(),
     error: jest.fn().mockImplementation(),
-  };
-  const customLoggerGetter = () => customLogger;
+  });
 
-  const consoleMocks: Record<keyof ILogger, jest.SpyInstance> = {
+  const createConsoleMocks = (): Record<keyof ILogger, jest.SpyInstance> => ({
     log: jest.spyOn(CONSOLE, 'log').mockImplementation(),
     warn: jest.spyOn(CONSOLE, 'warn').mockImplementation(),
     error: jest.spyOn(CONSOLE, 'error').mockImplementation(),
-  } as const;
-  const loggerMethods = Object.keys(consoleMocks) as (keyof ILogger)[];
+  });
+  const loggerMethods = Object.keys(createCustomLogger()) as (keyof ILogger)[];
+  const clearMocks = (mocks: ReturnType<typeof createConsoleMocks>) => loggerMethods.forEach(m => mocks[m].mockClear());
 
   it('use logger without mode (default logger)', () => {
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.internet.url());
     let iteration = 0;
+
+    const consoleMocks = createConsoleMocks();
 
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
@@ -38,19 +39,30 @@ describe('#logger-tests', () => {
       }), {
         numRuns: loggerMethods.length,
       });
+
+    clearMocks(consoleMocks);
   });
 
   it('use logger with runtime mode disabling', () => {
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
+    const consoleMocks = createConsoleMocks();
 
     let iteration = 0;
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
         // set mode before or after creating a new logger
 
-        if (iteration % 2 === 0) { setMode('console'); setMode(customLoggerGetter); setMode(false); }
+        if (iteration % 2 === 0) {
+          setMode('console');
+          setMode(() => createCustomLogger());
+          setMode(false);
+        }
         const logger = createLogger(faker.random.word());
-        if (iteration % 2 === 1) { setMode('console'); setMode(customLoggerGetter); setMode(false); }
+        if (iteration % 2 === 1) {
+          setMode('console');
+          setMode(() => createCustomLogger());
+          setMode(false);
+        }
 
         const methodName = loggerMethods[iteration % 3];
         logger[methodName](textToLog);
@@ -61,6 +73,8 @@ describe('#logger-tests', () => {
     }), {
       numRuns: loggerMethods.length * 2,
     });
+
+    clearMocks(consoleMocks);
   });
 
   it('use logger with \'null\' mode', () => {
@@ -89,6 +103,7 @@ describe('#logger-tests', () => {
   it('use logger with \'console\' mode', () => {
     const loggerName = `[${faker.random.word()}]`;
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
+    const consoleMocks = createConsoleMocks();
 
     let iteration = 0;
     fc.assert(
@@ -108,18 +123,27 @@ describe('#logger-tests', () => {
       }), {
         numRuns: loggerMethods.length * 2,
       });
+
+    clearMocks(consoleMocks);
   });
 
   it('use logger with custom mode', () => {
     const loggerName = `[${faker.random.word()}]`;
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
 
+    const customLogger = createCustomLogger();
+    const customLoggerGetter = () => customLogger;
+
     let iteration = 0;
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
-        if (iteration % 2 === 0) setMode(customLoggerGetter);
+        if (iteration % 2 === 0) {
+          setMode(customLoggerGetter);
+        }
         const logger = createLogger(loggerName);
-        if (iteration % 2 === 1) setMode(customLoggerGetter);
+        if (iteration % 2 === 1) {
+          setMode(customLoggerGetter);
+        }
 
         const methodName = loggerMethods[iteration % 3];
         logger[methodName](textToLog);
@@ -139,8 +163,10 @@ describe('#logger-tests', () => {
 
     const loggerName = `[${faker.random.word()}]`;
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
+    const consoleMocks = createConsoleMocks();
 
-    expect(Getter.getValue(customLoggerGetter as Getter<ILogger>)).toBe(customLogger);
+    const customLogger = createCustomLogger();
+    const customLoggerGetter = () => customLogger;
 
     setMode('console');
 
@@ -168,6 +194,7 @@ describe('#logger-tests', () => {
       });
 
     expect(getMode()).toBe('console');
+    clearMocks(consoleMocks);
 
   });
 
@@ -175,6 +202,9 @@ describe('#logger-tests', () => {
 
     const loggerName = `[${faker.random.word()}]`;
     const _textToLog: fc.Arbitrary<string> = toArbitrary(() => faker.random.word());
+    const consoleMocks = createConsoleMocks();
+    const customLogger = createCustomLogger();
+    const customLoggerGetter = () => customLogger;
 
     setMode(false);
 
@@ -200,7 +230,22 @@ describe('#logger-tests', () => {
       });
 
     expect(getMode()).toBe(false);
+    clearMocks(consoleMocks);
 
+  });
+
+  it('correctly initializes if created with empty name after mode is set #after', () => {
+
+    const customLogger = createCustomLogger();
+    const customLoggerGetter = () => customLogger;
+
+    setMode(customLoggerGetter);
+
+    const logger = createLogger('');
+    logger.log('test');
+
+    expect(customLogger.log).toHaveBeenCalledWith('test');
+    clearMocks(customLogger);
   });
 
 });

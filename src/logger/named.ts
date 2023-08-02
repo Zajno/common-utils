@@ -13,14 +13,9 @@ export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
 
     protected abstract get implementation(): ILogger;
 
-    constructor(name?: string, enabled = true) {
+    constructor(name?: string) {
         this._name = name;
-
-        if (enabled) {
-            this.enable();
-        } else {
-            this.disable();
-        }
+        this.disable();
     }
 
     enable(overrideName = null) {
@@ -37,11 +32,15 @@ export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
         this.error = this._name
             ? (...args) => this.implementation.error(this._name, ...args)
             : this.implementation.error;
+
+        return this;
     }
 
     disable() {
         this.log = EMPTY_FUNCTION;
         this.warn = EMPTY_FUNCTION;
         this.error = EMPTY_FUNCTION;
+
+        return this;
     }
 }
