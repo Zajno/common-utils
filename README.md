@@ -1,5 +1,7 @@
 # Zajno's Toolbox
 
+[![Coverage Status](https://coveralls.io/repos/github/Zajno/common-utils/badge.svg?branch=main)](https://coveralls.io/github/Zajno/common-utils?branch=main)
+
 This is a library with a useful utils/helpers to share across our projects.
 
 Doesn't pretend to be useful in outer world because probably everything is invented, tested and released to NPM already.
