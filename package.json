@@ -42,7 +42,8 @@
   },
   "files": [
     "*.js",
-    "!.DS_Store"
+    "!.DS_Store",
+    "!tests"
   ],
   "publishConfig": {
     "access": "public"
