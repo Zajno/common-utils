@@ -1,9 +1,10 @@
 import 'jest-extended';
 import { ParallelQueue } from '../parallel';
-import { setTimeoutAsync } from '../../../async/timeout';
+import { setTimeoutAsync, timeoutPromise } from '../../../async/timeout';
 import { setMode } from '../../../logger';
+import { oneTimeSubscription } from '../../../observing/event';
 
-const createLoader = () => jest.fn(() => setTimeoutAsync(100));
+const createLoader = (amount = 100) => jest.fn(() => setTimeoutAsync(amount));
 
 setMode('console');
 
@@ -11,7 +12,8 @@ describe('ParallelQueue', () => {
     it('runs', async () => {
 
         const q = new ParallelQueue()
-            .withLogger('test');
+            // .withLogger('test 1')
+        ;
 
         expect(q.inProgress).toBeFalsy();
 
@@ -54,5 +56,68 @@ describe('ParallelQueue', () => {
         await setTimeoutAsync(100);
 
         expect(f5).toHaveBeenCalledAfter(f4);
+    });
+
+    it('correctly fires events with scattered priorities', async () => {
+        const q = new ParallelQueue()
+            .withLogger('test 2')
+        ;
+
+        const dummyFn = createLoader(0);
+        const workerFn = createLoader();
+        const skippedFn1 = createLoader(0);
+        const skippedFn2 = createLoader(0);
+
+        const beforeCb = jest.fn(r => r);
+        const afterCb = jest.fn(r => r);
+
+        const BasePriority = 5;
+
+        const cancel1 = q.enqueue(skippedFn1, 0);
+
+        expect(cancel1()).toBe(true);
+        // does not success on the second call
+        expect(cancel1()).toBe(false);
+
+        const finishPromise = q.start();
+
+        const cancel2 = q.enqueue(skippedFn2, BasePriority + 1);
+
+        q.enqueue(dummyFn, BasePriority);
+        q.enqueue(workerFn, BasePriority + 1);
+
+        oneTimeSubscription(q.beforePriorityRun, p => p >= BasePriority)
+            .then(beforeCb);
+
+        const waitPromise = timeoutPromise(
+            oneTimeSubscription(q.afterPriorityRun, p => p >= BasePriority)
+                .then(afterCb)
+            ,
+            200,
+        );
+
+        await expect(waitPromise).resolves.toBeDefined();
+        const res = await waitPromise;
+
+        expect(skippedFn1).not.toHaveBeenCalled();
+        expect(skippedFn2).not.toHaveBeenCalled();
+
+        expect(cancel2()).toBe(false);
+
+        expect(res.resolved).toBe(BasePriority);
+        expect(res.timedOut).toBe(false);
+
+        await expect(finishPromise).resolves.toBe(true);
+
+        expect(skippedFn2).toHaveBeenCalled();
+
+        await expect(q.start()).resolves.toBeUndefined();
+
+        await expect(oneTimeSubscription(q.finished)).resolves.not.toThrow();
+
+        expect(beforeCb).toHaveBeenCalled();
+        expect(afterCb).toHaveBeenCalled();
+        expect(beforeCb).toHaveBeenCalledBefore(afterCb);
+
     });
 });

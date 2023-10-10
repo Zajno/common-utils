@@ -1,5 +1,6 @@
 import { createLogger, ILogger } from '../../logger';
 import { Event } from '../../observing/event';
+import { OneTimeLateEvent } from '../../observing/event.late';
 
 export type QueueItem = () => void | Promise<void>;
 
@@ -17,7 +18,7 @@ export class ParallelQueue {
 
     private readonly _beforePriorityRun = new Event<number>();
     private readonly _afterPriorityRun = new Event<number>();
-    private readonly _finished = new Event();
+    private readonly _finished = new OneTimeLateEvent();
 
     public get currentPriority() { return this._currentIndex; }
     public get inProgress() { return this._inProgress; }
@@ -68,7 +69,7 @@ export class ParallelQueue {
     }
 
     public async start() {
-        if (this._inProgress) {
+        if (this._inProgress != null) {
             return undefined;
         }
 
@@ -96,11 +97,15 @@ export class ParallelQueue {
     private async tryStartQueue() {
         let current: QueueItem[] = null;
         let iterations = 0;
+        let totalItems = 0;
 
         await this._beforePriorityRun.triggerAsync(this._currentIndex);
 
+        const MAX_ATTEMPTS = 5;
+
         while ((current = this._queues[this._currentIndex])?.length) {
-            if (iterations++ > 5) {
+            if (iterations++ > MAX_ATTEMPTS) {
+                this._logger?.warn('Tried to purge queue for priority =', this._currentIndex, 'for too many times of', MAX_ATTEMPTS, '; totalItems =', totalItems, '; skipping.');
                 break;
             }
 
@@ -108,6 +113,7 @@ export class ParallelQueue {
 
             const items = current.slice();
             current.length = 0;
+            totalItems += items.length;
 
             await Promise.all(items.map((loader, index) => this._executeLoader(loader, this._currentIndex, index)));
         }
