@@ -10,7 +10,7 @@ export namespace Timezones {
     // it's recommended to wrap with try/catch and don't rely it will always work
     export const getOffset = (timeZone: string) => {
         const timeZoneName = Intl.DateTimeFormat('ia', {
-            timeZoneName: 'short',
+            timeZoneName: 'longOffset',
             timeZone,
         })
             .formatToParts()
@@ -23,16 +23,16 @@ export namespace Timezones {
 
         const matchData = offset.match(/([+-])(\d+)(?::(\d+))?/);
         if (!matchData) {
-            throw `cannot parse timezone name: ${timeZoneName}`;
+            throw new Error(`cannot parse timezone name: ${timeZoneName} given from ${timeZone}`);
         }
 
         const [, sign, hour, minute] = matchData;
         let result = parseInt(hour, 10) * 60;
-        if (sign === '+') {
-            result *= -1;
-        }
         if (minute) {
             result += parseInt(minute, 10);
+        }
+        if (sign === '+') {
+            result *= -1;
         }
 
         return result;
