@@ -19,6 +19,6 @@
       },
     },
     "exclude": [
-        ".eslintrc.js"
+        ".eslintrc.cjs"
     ]
 }

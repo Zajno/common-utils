@@ -3,15 +3,13 @@ module.exports = {
         "es6": true,
         "node": true,
     },
-    "parser": "@typescript-eslint/parser",
     "plugins": [
-        "@typescript-eslint/eslint-plugin",
-        "@typescript-eslint/eslint-plugin-tslint",
-        "jsdoc",
-        "proposal",
+        "@typescript-eslint",
     ],
+    "parser": "@typescript-eslint/parser",
     "extends": [
         'eslint:recommended',
+        'plugin:@typescript-eslint/recommended-type-checked'
     ],
     "rules": {
         "@typescript-eslint/dot-notation": "error",
@@ -47,6 +45,21 @@ module.exports = {
             "always"
         ],
         "@typescript-eslint/type-annotation-spacing": "error",
+        // the following are from stricter mode so consider enabling them
+        '@typescript-eslint/no-floating-promises': 0,
+        '@typescript-eslint/no-unsafe-return': 0,
+        '@typescript-eslint/no-unsafe-argument': 0, // may be useful but it gets too noisy
+        '@typescript-eslint/no-unsafe-assignment': 0,
+        '@typescript-eslint/no-unsafe-member-access': 0,
+        '@typescript-eslint/no-unsafe-call': 0,
+        '@typescript-eslint/no-namespace': 0,
+        '@typescript-eslint/unbound-method': [0, { ignoreStatic: true }],
+        'prefer-spread': 0,
+        "@typescript-eslint/func-call-spacing": 1,
+
+        '@typescript-eslint/require-await': 0,
+
+
         "block-spacing": 1,
         "brace-style": [
             "error",
@@ -61,7 +74,6 @@ module.exports = {
         "default-case": "error",
         "eol-last": 1,
         "func-call-spacing": 0,
-        "@typescript-eslint/func-call-spacing": 1,
         "guard-for-in": "error",
         "id-blacklist": [
             "error",
@@ -73,9 +85,6 @@ module.exports = {
             "boolean",
         ],
         "id-match": "error",
-        "jsdoc/check-alignment": "error",
-        "jsdoc/check-indentation": "error",
-        "jsdoc/newline-after-description": "error",
         "max-len": "off",
         "no-bitwise": "off",
         "no-caller": "error",
@@ -99,7 +108,6 @@ module.exports = {
         "no-unused-vars": 0,
         "no-undef": 0,
         "no-var": "error",
-        "proposal/class-property-no-initialized": 1, // must-have for observable class properties when using mobx makeObservable
         "prefer-const": [
             "error",
             {
@@ -117,21 +125,6 @@ module.exports = {
             }
         ],
         "space-in-parens": 1,
-        "@typescript-eslint/tslint/config": [
-            "error",
-            {
-                "rules": {
-                    "whitespace": [
-                        true,
-                        "check-branch",
-                        "check-decl",
-                        "check-operator",
-                        "check-separator",
-                        "check-type"
-                    ]
-                },
-            }
-        ],
         "object-curly-spacing": ["warn", "always"],
     },
 };

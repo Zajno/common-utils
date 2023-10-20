@@ -1,11 +1,14 @@
 {
   "name": "@zajno/eslint-config",
-  "version": "2.4.0",
+  "version": "3.0.0",
   "description": "",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/eslint-config.git"
+  },
+  "engines": {
+    "node": "^16.0.0 || >=18.0.0"
   },
   "keywords": [
     "zajno",
@@ -19,26 +22,21 @@
   },
   "homepage": "https://github.com/Zajno/eslint-config#readme",
   "scripts": {
-    "push:local": "yalc push --private --replace --update",
+    "publish:local": "yalc push --private --replace --update",
     "test": "cd tests && yarn && yarn test"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/eslint-plugin-tslint": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "eslint-plugin-jest": "^27.4.2",
-    "eslint-plugin-jsdoc": "^40.3.0",
-    "eslint-plugin-no-null": "^1.0.2",
-    "eslint-plugin-proposal": "^2.3.3",
-    "tslint": "^6.1.3"
+    "@typescript-eslint/eslint-plugin": "^6.8.0",
+    "@typescript-eslint/parser": "^6.8.0",
+    "eslint-plugin-jest": "^27.4.2"
   },
   "devDependencies": {
-    "eslint": "^8.36.0",
+    "eslint": "^8.51.0",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
     "eslint": ">=8",
-    "typescript": ">= 4"
+    "typescript": ">= 5"
   },
   "files": [
     "*.js",
