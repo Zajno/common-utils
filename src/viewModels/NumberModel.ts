@@ -28,22 +28,22 @@ export class NumberModel implements INumberModel, IValueModel<number> {
     set value(v: number) { this.setValue(v); }
 
     // @action
-    public readonly setValue = (v: number) => {
+    public setValue(v: number) {
         this._value = v;
-    };
+    }
 
     get isDefault() { return this._value === this._initial; }
 
     // @action
     reset = () => {
-        this._value = this._initial;
+        this.setValue(this._initial);
     };
 
     // @action
-    increment = (d = 1) => this.value += d;
+    increment = (d = 1) => this.setValue(this._value + d);
 
     // @action
-    decrement = (d = 1) => this.value -= d;
+    decrement = (d = 1) => this.setValue(this._value - d);
 }
 
 export default NumberModel;

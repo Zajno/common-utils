@@ -12,11 +12,14 @@ function createData() {
     });
 
     const Repository = {
-        fetch: (key: string, cb: (value: TestItem) => void) => {
-            return reaction(() => Database[key], async item => {
-                await setTimeoutAsync(100);
-                cb(item);
-            }, { fireImmediately: true, delay: 100 });
+        fetch: (key: string, cb: (value: TestItem) => Promise<void> | void) => {
+            return reaction(
+                () => Database[key],
+                item => {
+                    setTimeoutAsync(100).then(() => cb(item));
+                },
+                { fireImmediately: true, delay: 100 },
+            );
         },
     };
 

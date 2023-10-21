@@ -1,6 +1,6 @@
 import { ValidationErrorsStrings } from './abstractions';
 import { StringsShape } from './defaultShape';
-import { LocalaziedValidationErrors } from './LocalizedValidationErrors';
+import { LocalizedValidationErrors } from './LocalizedValidationErrors';
 import { ValidationErrors } from '@zajno/common/validation/ValidationErrors';
 
 function locationFactory(strings: StringsShape): ValidationErrorsStrings<ValidationErrors> {
@@ -24,4 +24,4 @@ function locationFactory(strings: StringsShape): ValidationErrorsStrings<Validat
     };
 }
 
-export const ValidationErrorsLocalized = new LocalaziedValidationErrors<StringsShape, ValidationErrors>(locationFactory);
+export const ValidationErrorsLocalized = new LocalizedValidationErrors<StringsShape, ValidationErrors>(locationFactory);

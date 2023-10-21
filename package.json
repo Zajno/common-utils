@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-mobx",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "description": "Zajno's re-usable utilities for JS/TS projects using MobX",
   "main": "index.js",
   "author": "Zajno <hello@zajno.com> (https://zajno.com)",
@@ -26,24 +26,24 @@
     "test": "yarn jest --clearCache && yarn jest"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.11",
-    "@zajno/common": "^2.0.13",
-    "@zajno/eslint-config": "^2.3.0",
-    "cpy-cli": "^4.2.0",
-    "eslint": "^8.38.0",
-    "jest": "^29.5.0",
-    "jest-extended": "^3.2.4",
-    "mobx": "^6.9.0",
-    "rimraf": "^3",
-    "ts-jest": "^29.1.0",
-    "tslib": "^2.5.0",
-    "typescript": "^5.0.4"
+    "@types/jest": "^29.5.6",
+    "@types/node": "^18.18.6",
+    "@zajno/common": "^2.1.0",
+    "@zajno/eslint-config": "^3.0.0",
+    "cpy-cli": "^5.0.0",
+    "eslint": "^8.52.0",
+    "jest": "^29.7.0",
+    "jest-extended": "^4.0.2",
+    "mobx": "^6.10.2",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
   },
   "peerDependencies": {
-    "@zajno/common": "^2.0.13",
-    "mobx": "^6",
-    "tslib": "^2.4"
+    "@zajno/common": "^2.1.0",
+    "mobx": "^6.10",
+    "tslib": "^2.6"
   },
   "files": [
     "*",

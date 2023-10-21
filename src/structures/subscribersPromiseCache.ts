@@ -4,6 +4,7 @@ import logger from '@zajno/common/logger';
 import { DeferredGetter } from '@zajno/common/structures/promiseCache';
 import { SubscribersMapObservable } from './subscribersMap';
 import { PromiseCacheObservable } from './promiseCache';
+import { catchPromise } from '@zajno/common/functions/safe';
 
 export type Unsub = () => void;
 export type Fetcher<T> = (key: string, cb: (val: T) => Promise<void> | void) => Unsub | Promise<Unsub>;
@@ -43,7 +44,7 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
         } else {
             const currentKeys = this._cache.keys();
             const timeout = getObserveTimeout(this._observeStrategy);
-            currentKeys.forEach(key => this._observers.enable(key, true, timeout));
+            currentKeys.forEach(key => catchPromise(this._observers.enable(key, true, timeout)));
         }
 
         return this;

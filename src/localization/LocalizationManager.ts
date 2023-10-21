@@ -1,7 +1,8 @@
 import { observable, makeObservable, action } from 'mobx';
 import { ILocalization, ILocalizationDependency } from './abstractions';
+import { AnyObject } from '@zajno/common/types';
 
-export class LocalizationManager<TLocaleType extends string, TStrings extends { }> implements ILocalization<TStrings> {
+export class LocalizationManager<TLocaleType extends string, TStrings extends AnyObject> implements ILocalization<TStrings> {
     @observable
     private _currentLocale: TLocaleType = null;
 
@@ -9,7 +10,7 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends { 
     private _currentStrings: TStrings = null;
 
     private readonly _defaultStrings: TStrings = null;
-    private readonly _dependants: ILocalizationDependency<TStrings, TLocaleType>[] = [];
+    private readonly _dependents: ILocalizationDependency<TStrings, TLocaleType>[] = [];
 
     constructor(
         private readonly _dataSource: { [locale: string]: TStrings },
@@ -33,18 +34,18 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends { 
     }
 
     public useDependency(dep: ILocalizationDependency<TStrings, TLocaleType>, remove = false) {
-        const i = this._dependants.indexOf(dep);
+        const i = this._dependents.indexOf(dep);
         if (i < 0 && !remove) {
-            this._dependants.push(dep);
+            this._dependents.push(dep);
             this.updateDependencies();
         } else if (i >= 0 && remove) {
-            this._dependants.splice(i, 1);
+            this._dependents.splice(i, 1);
         }
         return this;
     }
 
     private updateDependencies() {
-        this._dependants.forEach(d => d.updateLocale(this._currentStrings, this._currentLocale));
+        this._dependents.forEach(d => d.updateLocale(this._currentStrings, this._currentLocale));
     }
 
     private getStrings(locale: string): TStrings {

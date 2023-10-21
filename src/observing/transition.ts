@@ -33,7 +33,7 @@ export class TransitionObserver<T> implements IDisposable {
     public get event(): IEvent<T> {
         // lazy created just to save up some memory in case it's not needed
         if (!this._event) {
-            this._event = new Event<T>(this.logger);
+            this._event = new Event<T>(false).withLogger(this.logger);
         }
         return this._event;
     }
@@ -95,7 +95,7 @@ export class TransitionObserver<T> implements IDisposable {
     }
 
     getPromise(timeout: number = null) {
-        if (!this._promise) {
+        if (this._promise == null) {
             if (!this.isObserving) {
                 return Promise.reject(new Error('Cannot get promise for disposed TransitionObserver'));
             }

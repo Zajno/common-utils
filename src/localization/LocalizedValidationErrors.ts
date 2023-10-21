@@ -1,7 +1,8 @@
 import { action, observable } from 'mobx';
 import { IErrorsLocalization, ILocalizationDependency, ValidationErrorsFactory, ValidationErrorsStrings } from './abstractions';
+import { AnyObject } from '@zajno/common/types';
 
-export class LocalaziedValidationErrors<TStrings extends { }, TErrors extends string | number>
+export class LocalizedValidationErrors<TStrings extends AnyObject, TErrors extends string | number>
     implements IErrorsLocalization<TErrors>, ILocalizationDependency<TStrings> {
 
     @observable.ref

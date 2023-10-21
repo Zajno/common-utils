@@ -11,7 +11,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "target": "ES2019",
+    "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
     "jsx": "react",
