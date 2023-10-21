@@ -24,7 +24,10 @@ export namespace DateX {
     export function set(d: Date, g: 'millisecond', local: boolean, ms: number): number;
 
     export function set(d: Date, g: Granularity, local: boolean, ...v: number[]) {
-        const fn: (...n: number[]) => number = (() => {
+        function _dateFn(this: Date, ..._numbers: number[]): number { return 0; }
+
+        /* eslint-disable @typescript-eslint/unbound-method -- it's clearly defined as a function with `this: Date`  */
+        const fn: typeof _dateFn = (() => {
             switch (g) {
                 case 'year': return local ? d.setFullYear : d.setUTCFullYear;
                 case 'month': return local ? d.setMonth : d.setUTCMonth;
@@ -37,6 +40,9 @@ export namespace DateX {
                 default: return null;
             }
         })();
+        /* eslint-enable @typescript-eslint/unbound-method */
+
         return fn ? fn.call(d, ...v) : d.getTime();
     }
+
 }

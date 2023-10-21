@@ -1,4 +1,3 @@
-import { safeCall } from '../functions/safeCall';
 import type { IDisposable } from '../functions/disposer';
 
 export class Pool<T> {
@@ -32,7 +31,7 @@ export class PoolDisposable<T extends IDisposable> extends Pool<T> {
 
     public get(): T {
         const res = super.get();
-        safeCall(this.initializer, res);
+        this.initializer?.(res);
         return res;
     }
 

@@ -18,7 +18,7 @@ export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
         this.disable();
     }
 
-    enable(overrideName = null) {
+    enable(overrideName: string = null) {
         this._name = overrideName || this._name;
 
         this.log = this._name

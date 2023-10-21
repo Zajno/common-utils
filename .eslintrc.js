@@ -3,7 +3,7 @@ module.exports = {
         "@zajno/eslint-config/with-jest"
     ],
     "parserOptions": {
-        "project": "tsconfig.json",
+        "project": true,
         "sourceType": "module"
     },
 };

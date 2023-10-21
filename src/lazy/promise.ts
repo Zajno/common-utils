@@ -30,23 +30,23 @@ export class LazyPromise<T> implements IDisposable {
     protected ensureInstanceLoading() {
         if (this._busy === null) {
             this._busy = true;
-            this._promise = this._factory();
-            this._promise.then(this.setInstance);
+            this._promise = this._factory().then(this.setInstance);
         }
     }
 
     private setInstance = (res: T) => {
         this._busy = false;
         this._instance = res || null;
-
         // keep this._promise to allow to re-use it outside
+
+        return res;
     };
 
-    reset() {
+    reset = () => {
         this._busy = null;
         this._instance = this.initial;
         this._promise = null;
-    }
+    };
 
     dispose = () => this.reset();
 }

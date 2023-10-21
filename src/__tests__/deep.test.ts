@@ -1,3 +1,4 @@
+import { AnyObject } from '../types';
 import * as Deep from '../types/deep';
 
 describe('Deep Types', () => {
@@ -11,14 +12,22 @@ describe('Deep Types', () => {
             const a: SomeTypeDeepReadonly = { arr: [{ n: 1 }, { n: 2 }, { n: 3 }], str: '123', fn: () => { /* no-op */ } };
 
             // below code is expected to throw a TS errors
-            // Expecting ts-jest compiles TS to catch type erorrs
+            // Expecting ts-jest compiles TS to catch type errors
 
-            // @ts-expect-error
+            // @ts-expect-error -- no mutation methods should be allowed
             a.arr.sort();
-            // @ts-expect-error
+            // @ts-expect-error -- no direct mutation should be allowed
             a.arr[0].n = 2;
 
-            const clone = <T>(obj: T): Deep.DeepMutable<T> => JSON.parse(JSON.stringify(obj));
+            // example of how to deal with keys of Deep
+            const keyFn = <T extends AnyObject, TKey extends string & keyof T>(obj: Deep.DeepReadonly<T>, key: TKey): Deep.DeepReadonly<T[TKey]> => obj[key];
+
+            const typeConsistency = <T>(_v1: T, _v2: T) => { /* no-op */ };
+
+            typeConsistency<typeof a.arr>(a.arr, keyFn(a, 'arr'));
+            typeConsistency<typeof a.str>(a.str, keyFn(a, 'str'));
+
+            const clone = <T>(obj: T) => JSON.parse(JSON.stringify(obj)) as Deep.DeepMutable<T>;
 
             const b = clone(a);
 
@@ -29,8 +38,15 @@ describe('Deep Types', () => {
             // here explicitly expecting that DeepMutable<DeepReadonly<T>> === T
             const c: SomeType = b;
             c.str = '321';
+
+            // DeepReadonly<T>' should be assignable to 'DeepReadonlyPartial<T>'.
+            (<T>(_obj: Deep.DeepReadonly<T>): Deep.DeepReadonlyPartial<T> => _obj)(a);
+
+            // T' should be assignable to 'DeepReadonlyPartial<T>'. (here works only via cast)
+            (<T>(_obj: T): Deep.DeepReadonlyPartial<T> => _obj as Deep.DeepReadonlyPartial<T>)(a);
+
         } catch (err) {
-            // supress JS runtime errors if any
+            // suppress JS runtime errors if any
         }
 
         // dummy test to check that TS types usage above are correct
@@ -46,7 +62,7 @@ describe('Deep Types', () => {
             fn(a);
 
         } catch (err) {
-            // supress JS runtime errors if any
+            // suppress JS runtime errors if any
         }
 
         // dummy test to check that TS types usage above are correct

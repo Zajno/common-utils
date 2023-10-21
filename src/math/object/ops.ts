@@ -1,11 +1,11 @@
 import { SkipCondition, SkipOptions } from '../../fields/skip';
-import { DeepPartial, DeepReadonly, Predicate } from '../../types';
+import { AnyObject, DeepPartial, DeepReadonly, Predicate } from '../../types';
 import { _getValue } from './helpers';
 import { IObjectOps, NumKey } from './types';
 
-type Keys<T extends Object> = NumKey<T>[];
+type Keys<T extends AnyObject> = NumKey<T>[];
 
-export class ObjectOps<T extends Object> implements IObjectOps<T> {
+export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
 
     public readonly Empty: Readonly<T>;
 
@@ -23,7 +23,7 @@ export class ObjectOps<T extends Object> implements IObjectOps<T> {
     getEmpty(): T {
         const result = {} as T;
         this.keys.forEach(key => {
-            result[key as keyof T] = 0 as any;
+            result[key] = 0 as T[NumKey<T>];
         });
         return result;
     }
@@ -32,7 +32,7 @@ export class ObjectOps<T extends Object> implements IObjectOps<T> {
         const result = this.getEmpty();
         if (o != null) {
             this.keys.forEach(key => {
-                result[key] = o[key] as any;
+                result[key] = o[key] as T[NumKey<T>];
             });
         }
         return result;
@@ -64,7 +64,7 @@ export class ObjectOps<T extends Object> implements IObjectOps<T> {
                 return;
             }
 
-            res[key as keyof DeepPartial<T>] = val as any;
+            res[key] = val as DeepPartial<T>[NumKey<T>];
         });
         return res;
     }
@@ -93,7 +93,7 @@ export class ObjectOps<T extends Object> implements IObjectOps<T> {
         this.keys.forEach(key => {
             const val = _getValue(other, key);
             if (val !== undefined) {
-                to[key as keyof T] = val as any;
+                to[key] = val;
             }
         });
     }

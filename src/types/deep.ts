@@ -1,56 +1,47 @@
+import { AnyFunction, Primitive } from './misc';
 
-type Primitive = number | string | Symbol | boolean | null | undefined | bigint;
 
-export type DeepReadonly<T extends Object> = Object & {
-    readonly [P in keyof T]: T[P] extends (Function | Primitive)
-        ? T[P]
-        : (T[P] extends Array<infer U>
-            ? ReadonlyArray<DeepReadonly<U>>
-            : (T[P] extends Object
-                ? DeepReadonly<T[P]>
-                : T[P]
-            )
-        );
-};
+export type DeepReadonly<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends Array<infer U>
+        ? ReadonlyArray<DeepReadonly<U>>
+        : {
+            readonly [P in keyof T]: DeepReadonly<T[P]>;
+        }
+    );
 
-export type DeepPartial<T extends Object> = Object & {
-    [P in keyof T]?: T[P] extends (Function | Primitive)
-        ? T[P]
-        : (T[P] extends Object
-            ? DeepPartial<T[P]>
-            : T[P]
-        );
-};
+export type DeepReadonlyPartial<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends Array<infer U>
+        ? ReadonlyArray<DeepReadonlyPartial<U>>
+        : {
+            readonly [P in keyof T]?: DeepReadonlyPartial<T[P]>;
+        }
+    );
 
-export type DeepRequired<T extends Object> = Object & {
-    [P in keyof T]-?: T[P] extends (Function | Primitive)
-        ? T[P]
-        : (T[P] extends Object
-            ? DeepRequired<T[P]>
-            : T[P]
-        );
-};
+export type DeepPartial<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends Array<infer U>
+        ? Array<DeepPartial<U>>
+        : {
+            [P in keyof T]?: DeepPartial<T[P]>;
+        }
+    );
 
-export type DeepMutable<T extends Object> = Object & {
-    -readonly [P in keyof T]: T[P] extends (Function | Primitive)
-        ? T[P]
-        : (T[P] extends ReadonlyArray<infer U>
-            ? Array<DeepMutable<U>>
-            : (T[P] extends Object
-                ? DeepMutable<T[P]>
-                : T[P]
-            )
-        );
-};
+export type DeepRequired<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends Array<infer U>
+        ? Array<DeepRequired<U>>
+        : {
+            [P in keyof T]-?: DeepRequired<T[P]>;
+        }
+    );
 
-export type DeepReadonlyPartial<T extends Object> = Object & {
-    readonly [P in keyof T]?: T[P] extends (Function | Primitive)
-        ? T[P]
-        : (T[P] extends Array<infer U>
-            ? ReadonlyArray<DeepReadonlyPartial<U>>
-            : (T[P] extends Object
-                ? DeepReadonlyPartial<T[P]>
-                : T[P]
-            )
-        );
-};
+export type DeepMutable<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends ReadonlyArray<infer U>
+        ? Array<DeepMutable<U>>
+        : {
+            -readonly [P in keyof T]: DeepMutable<T[P]>;
+        }
+    );

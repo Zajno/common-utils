@@ -28,13 +28,15 @@ export function inject<T, TModel extends IValueModel<T>>(model: TModel, source: 
  *
  * Useful mostly for debugging.
  * */
-export function spyModel<T, TModel extends (IValueModel<T> & Object)>(model: TModel, spySetter: (v: T) => void, spyGetter?: (v: T) => void) {
+export function spyModel<T, TModel extends (IValueModel<T> & object)>(model: TModel, spySetter: (v: T) => void, spyGetter?: (v: T) => void) {
     const descriptor = Object.getOwnPropertyDescriptor(model, 'value');
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- bound later
     const valueSetter = descriptor?.set;
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- bound later
     const valueGetter = descriptor?.get;
 
-    let _overrideValue: T = descriptor ? descriptor.value : model.value;
+    let _overrideValue: T = descriptor ? descriptor.value as T : model.value;
 
     Object.defineProperty(model, 'value', {
         configurable: true,
@@ -43,13 +45,13 @@ export function spyModel<T, TModel extends (IValueModel<T> & Object)>(model: TMo
             if (valueSetter) {
                 valueSetter.call(model, v);
             } else {
-                _overrideValue = v;
+                _overrideValue = v as T;
             }
         },
         get() {
             let res: T = null;
             if (valueGetter) {
-                res = valueGetter.call(model);
+                res = valueGetter.call(model) as T;
             } else {
                 res = _overrideValue;
             }
@@ -73,7 +75,7 @@ interface LabeledModelCtor<T, TModel extends IValueModel<T>, TLabel = string> {
 }
 
 export function mixinLabel<T, TModel extends IValueModel<T>, TLabel = string>(Superclass: new (initial?: T) => TModel): LabeledModelCtor<T, TModel, TLabel> {
-    // @ts-ignore
+    // @ts-expect-error -- hard to deal with this error here
     class Sub extends Superclass {
         constructor(label: Getter<TLabel>, initial?: T) {
             super(initial);
@@ -81,5 +83,5 @@ export function mixinLabel<T, TModel extends IValueModel<T>, TLabel = string>(Su
         }
     }
 
-    return Sub as any;
+    return Sub as LabeledModelCtor<T, TModel, TLabel>;
 }

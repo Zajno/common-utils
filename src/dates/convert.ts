@@ -11,7 +11,7 @@ export function ensureDates<T>(obj: T, ...fields: DateFields<T>[]) {
     if (obj) {
         fields.forEach(f => {
             if (obj[f]) {
-                obj[f] = getDate(obj[f] as any) as any;
+                obj[f] = getDate(obj[f] as Date | string | number) as T[DateFields<T>];
             }
         });
     }

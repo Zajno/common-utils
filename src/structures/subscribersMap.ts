@@ -1,10 +1,11 @@
 import { createLogger, ILogger } from '../logger';
 import { combineDisposers, IDisposable } from '../functions/disposer';
+import { catchPromise } from '../functions/safe';
 
 type Unsub = () => void;
 
 export class SubscribersMap implements IDisposable {
-    /** Unsusbcribers map: key => unsub fn */
+    /** Unsubscribers map: key => unsub fn */
     private readonly _map = new Map<string, () => void>();
     /** Timeouts map: key => timeout handle */
     private readonly _timeouts = new Map<string, any>();
@@ -78,7 +79,10 @@ export class SubscribersMap implements IDisposable {
         }
 
         if (enable && timeout) {
-            const t = setTimeout(() => this.enable(key, false), timeout);
+            const t = setTimeout(
+                () => catchPromise(this.enable(key, false), err => this._logger?.error('Unexpected error:', err)),
+                timeout,
+            );
             this._timeouts.set(key, t);
         }
     }

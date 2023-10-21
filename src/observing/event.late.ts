@@ -1,3 +1,4 @@
+import { catchPromise } from '../functions/safe';
 import { Event, EventHandler } from './event';
 
 export class OneTimeLateEvent<T = any> extends Event<T> {
@@ -18,7 +19,7 @@ export class OneTimeLateEvent<T = any> extends Event<T> {
 
     triggerAsync(data?: T): Promise<Error[]> {
         if (this._triggeredWith) {
-            return Promise.resolve([]);
+            return Promise.resolve([] as Error[]);
         }
 
         this._triggeredWith = data;
@@ -29,7 +30,9 @@ export class OneTimeLateEvent<T = any> extends Event<T> {
 
     on(handler: EventHandler<T>): () => void {
         if (this._triggered) {
-            handler(this._triggeredWith);
+            catchPromise(
+                handler(this._triggeredWith),
+            );
             return () => { /* no-op */ };
         }
 

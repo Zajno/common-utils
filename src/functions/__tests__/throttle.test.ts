@@ -1,4 +1,5 @@
 import { setTimeoutAsync } from '../../async/timeout';
+import { catchPromise } from '../safe';
 import { ThrottleAction, ThrottleProcessor } from '../throttle';
 
 describe('throttle', () => {
@@ -47,7 +48,7 @@ describe('throttle', () => {
 
         await setTimeoutAsync(10);
 
-        throttle.forceRun();
+        catchPromise(throttle.forceRun());
 
         await setTimeoutAsync(150);
 
@@ -58,11 +59,12 @@ describe('throttle', () => {
 
     it('ThrottleProcessor throttles and returns a result value', async () => {
         let result: number = null;
-        const cb = jest.fn((values: number[]) => setTimeoutAsync(50).then(() => {
+        const cb = jest.fn(async (values: number[]): Promise<number> => {
+            await setTimeoutAsync(50);
             result = values.reduce((a, b) => a + b, 0);
             return result;
-        }));
-        const processor = new ThrottleProcessor<number>(cb, 100);
+        });
+        const processor = new ThrottleProcessor<number, number>(cb, 100);
 
         const initial = 1;
         let final = initial;

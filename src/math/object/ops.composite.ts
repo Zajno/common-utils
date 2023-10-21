@@ -1,15 +1,24 @@
+import { AnyObject, StringKeys } from '../../types';
 import { DeepReadonly } from '../../types/deep';
 import { _getInnerValue, doOps } from './helpers';
 import { IObjectOps, OpsPair, OpsPairsMap } from './types';
 
-export class CompositeObjectOps<T extends Object> implements IObjectOps<T> {
+export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
     readonly Empty: Readonly<T>;
 
     private readonly _ops: OpsPair<T>[];
 
     constructor(innerOps: OpsPairsMap<T>) {
+        type TKey = StringKeys<T>;
         this._ops = Object.entries(innerOps)
-            .map(pair => ({ key: pair[0] as keyof T, ops: pair[1] }));
+            .map(pair => {
+                const result: OpsPair<T> = {
+                    key: pair[0] as TKey,
+                    ops: pair[1] as IObjectOps<T[TKey]>,
+                };
+                return result;
+            });
+
         this.Empty = this.getEmpty();
     }
 
@@ -46,7 +55,7 @@ export class CompositeObjectOps<T extends Object> implements IObjectOps<T> {
         this._ops.forEach(pair => {
             const val = _getInnerValue(other, pair.key);
             if (val !== undefined) {
-                to[pair.key as keyof T] = val as any;
+                to[pair.key] = val;
             }
         });
     }
