@@ -4,11 +4,11 @@ import { _getValue } from './helpers';
 import { ObjectOps } from './ops';
 import { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from './types';
 
-type NumVal<T extends Object> = T[NumKey<T>];
+type NumVal<T extends object> = T[NumKey<T>];
 
 const DELETE: DELETE_TYPE = 'delete';
 
-export class ObjectMath<T extends Object> extends ObjectOps<T> implements IObjectMath<T> {
+export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjectMath<T> {
 
     getTotal(o: DeepReadonlyPartial<T>) {
         let sum = 0;
@@ -50,12 +50,12 @@ export class ObjectMath<T extends Object> extends ObjectOps<T> implements IObjec
 
         let min: number = null;
         Object.keys(o2).forEach(key => {
-            const v: number = o2[key];
+            const v = o2[key] as number;
             if (!v) {
                 return;
             }
 
-            const b = o1[key] || 0;
+            const b = o1[key] as number || 0;
             const c = Math.round(b / v);
             if (min == null || c < min) {
                 min = c;

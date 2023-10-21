@@ -1,4 +1,3 @@
-import { safeCall } from '../functions/safeCall';
 import { Comparator } from '../types';
 
 export namespace Fields {
@@ -37,7 +36,7 @@ export function updateFieldExtended<T>(
 }
 
 const DefaultComparator: Comparator<any> = (v1, v2) => v1 === v2;
-const DefaultUpdater: Fields.Updater<any> = (v1, v2) => Object.assign(v1, v2);
+const DefaultUpdater: Fields.Updater<any> = <T>(v1: T, v2: T) => Object.assign(v1, v2);
 
 export type UpdateArrayOptions<T> = {
     additive?: boolean,
@@ -70,7 +69,7 @@ export function updateArray<T>(
         : [];
 
     const comparator = options?.comparator || DefaultComparator;
-    const updater = options?.updater || DefaultUpdater;
+    const updater = options?.updater || DefaultUpdater as Fields.Updater<T>;
     const onDeleted = options?.hooks?.onDeleted;
     const onUpdate = options?.hooks?.onUpdated;
     const onAdded = options?.hooks?.onAdded;
@@ -81,7 +80,7 @@ export function updateArray<T>(
             if (source.find(item => comparator(item, result[i])) == null) {
                 // DELETE
                 const removed = result.splice(i, 1);
-                safeCall(onDeleted, removed[0], i);
+                onDeleted?.(removed[0], i);
 
                 ++changed;
                 --i;
@@ -101,13 +100,13 @@ export function updateArray<T>(
             } else {
                 result.push(item);
             }
-            safeCall(onAdded, item, unshift ? 0 : result.length - 1);
+            onAdded?.(item, unshift ? 0 : result.length - 1);
             ++changed;
         } else if (typeof existingItem === 'object') {
             const before = onUpdate != null ? { ...existingItem } : undefined;
             result[existingIndex] = updater(existingItem, item);
             if (onUpdate != null) {
-                onUpdate(before!, result[existingIndex], existingIndex);
+                onUpdate(before, result[existingIndex], existingIndex);
             }
         }
     });

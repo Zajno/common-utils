@@ -22,12 +22,12 @@ export type CollectorsMap<T> = {
     [P in keyof T]?: SimpleCollector<T[P]>;
 };
 
-export class ModelCollector<T extends Object> {
+export class ModelCollector<T extends object> {
 
     private readonly _collectors: SimpleCollectorsMap<T> = { };
 
     public addModels(models: ModelCollectorsMap<T>) {
-        Object.entries(models).forEach(pair => this.addModel(pair[0] as keyof T, pair[1]));
+        Object.entries(models).forEach(pair => this.addModel(pair[0] as keyof T, pair[1] as IValueModel<T[keyof T]>));
         return this;
     }
 

@@ -58,6 +58,7 @@ export class PromiseCache<T, K = string> {
     }
 
     getDeferred(key: K): DeferredGetter<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
             get current() { return self.getCurrent(key); },
@@ -90,7 +91,7 @@ export class PromiseCache<T, K = string> {
         }
 
         let promise = this._fetchCache[key];
-        if (promise) {
+        if (promise != null) {
             this._logger?.log(key, 'item resolved to <promise>');
             return promise;
         }
@@ -108,7 +109,7 @@ export class PromiseCache<T, K = string> {
         try {
             this.onBeforeFetch(key);
             let res = await this.fetcher(id);
-            if (this._fetchCache[key]) {
+            if (this._fetchCache[key] != null) {
                 this._logger?.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
                 this.storeResult(key, res);

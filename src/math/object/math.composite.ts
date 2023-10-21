@@ -4,13 +4,16 @@ import { CompositeObjectOps } from './ops.composite';
 import { AbsOptions, IObjectMath, MathPair, MathPairsMap, RoundOptions } from './types';
 
 
-export class CompositeObjectMath<T extends Object> extends CompositeObjectOps<T> implements IObjectMath<T> {
+export class CompositeObjectMath<T extends object> extends CompositeObjectOps<T> implements IObjectMath<T> {
     private readonly _math: MathPair<T>[];
 
     constructor(innerMath: MathPairsMap<T>) {
         super(innerMath);
         this._math = Object.entries(innerMath)
-            .map(pair => ({ key: pair[0] as keyof T, ops: pair[1] }));
+            .map(pair => ({
+                key: pair[0] as string & keyof T,
+                ops: pair[1] as IObjectMath<T[string & keyof T]>,
+            }));
     }
 
     contains(base: DeepReadonly<T>, target: DeepReadonly<T>): boolean {

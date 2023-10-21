@@ -6,7 +6,7 @@ import { toArbitrary } from '../../__tests__/helpers/main';
 
 describe('validation websites', () => {
     it('test', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => faker.internet.url());
+        const _url = toArbitrary(() => faker.internet.url());
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -16,7 +16,7 @@ describe('validation websites', () => {
     });
 
     it('test domain name', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => faker.internet.domainName());
+        const _url = toArbitrary(() => faker.internet.domainName());
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -26,7 +26,7 @@ describe('validation websites', () => {
     });
 
     it('test hard domain name', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => `${ faker.internet.domainWord() }.${ faker.internet.domainName() }`);
+        const _url = toArbitrary(() => `${ faker.internet.domainWord() }.${ faker.internet.domainName() }`);
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -36,7 +36,7 @@ describe('validation websites', () => {
     });
 
     it('test domainWord', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => faker.internet.domainWord());
+        const _url = toArbitrary(() => faker.internet.domainWord());
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -46,7 +46,7 @@ describe('validation websites', () => {
     });
 
     it('test domainWord with dot', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => `${ faker.internet.domainWord() }.`);
+        const _url = toArbitrary(() => `${ faker.internet.domainWord() }.`);
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -56,7 +56,7 @@ describe('validation websites', () => {
     });
 
     it('test email', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => faker.internet.email());
+        const _url = toArbitrary(() => faker.internet.email());
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -66,7 +66,7 @@ describe('validation websites', () => {
     });
 
     it('test ip', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => faker.internet.ip());
+        const _url = toArbitrary(() => faker.internet.ip());
 
         fc.assert(
             fc.property(_url, (url) => {
@@ -76,7 +76,7 @@ describe('validation websites', () => {
     });
 
     it('test website with directory path', () => {
-        const _url: fc.Arbitrary<string> = toArbitrary(() => faker.image.imageUrl());
+        const _url = toArbitrary(() => faker.image.url());
 
         fc.assert(
             fc.property(_url, (url) => {

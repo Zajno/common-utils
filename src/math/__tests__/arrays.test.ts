@@ -68,7 +68,7 @@ describe('math/arrays', () => {
         expect(arrays.arraysCompare(null, null)).toBeNull();
         expect(arrays.arraysCompare([], null)).toBeNull();
 
-        const result = (missing, extra, diff) => ({ missing, extra, diff });
+        const result = <T>(missing: T[], extra: T[], diff: T) => ({ missing, extra, diff });
 
         expect(arrays.arraysCompare([], [])).toStrictEqual(result([], [], 0));
         expect(arrays.arraysCompare([1], [])).toStrictEqual(result([1], [], 1));
@@ -82,7 +82,7 @@ describe('math/arrays', () => {
         expect(arrays.arraysCompareDistinct(null, null)).toBeNull();
         expect(arrays.arraysCompareDistinct([], null)).toBeNull();
 
-        const result = (missing, extra, diff) => ({ missing, extra, diff });
+        const result = <T>(missing: T[], extra: T[], diff: T) => ({ missing, extra, diff });
 
         expect(arrays.arraysCompareDistinct([], [])).toStrictEqual(result([], [], 0));
         expect(arrays.arraysCompareDistinct([1], [])).toStrictEqual(result([1], [], 1));

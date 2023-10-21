@@ -1,8 +1,13 @@
 import { Comparator, Getter, Predicate } from '../types';
 import { random } from './calc';
 
+/** type-safe `Array.isArray` wrapper  */
+export function isArray<T>(value: any): value is T[] {
+    return Array.isArray(value);
+}
+
 export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previous: T) => boolean): T {
-    if (!Array.isArray(arr) || arr.length <= 0) {
+    if (!isArray<T>(arr) || arr.length <= 0) {
         return null;
     }
 
@@ -239,6 +244,7 @@ export function findIndexLeast(num: number, arr: number[], sort = false) {
     return arr.findIndex(i => i > num);
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types -- anything for which `typeof` will be 'function'
 type NonFunction<T> = T extends Function ? never : T;
 
 export function removeItem<T>(array: T[], item: NonFunction<T> | Predicate<T>): T {

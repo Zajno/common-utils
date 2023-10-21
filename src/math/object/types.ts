@@ -1,13 +1,13 @@
-import { DeepReadonly, TypedKeys } from '../../types';
+import { AnyObject, DeepReadonly, TypedKeys } from '../../types';
 
-export type NumKey<T> = TypedKeys<T, number>;
+export type NumKey<T extends AnyObject> = TypedKeys<T, number>;
 
 export type AbsOptions = false | 'remove' | 'zero';
 export type RoundOptions = 'floor' | 'ceil' | 'round';
 
 export type DELETE_TYPE = 'delete';
 
-export interface IObjectOps<T extends Object> {
+export interface IObjectOps<T extends AnyObject> {
     readonly Empty: Readonly<T>;
 
     isEmpty(o: DeepReadonly<T>): boolean;
@@ -18,7 +18,7 @@ export interface IObjectOps<T extends Object> {
     assign(to: T, other: DeepReadonly<T>): void;
 }
 
-export interface IObjectMath<T extends Object> extends IObjectOps<T> {
+export interface IObjectMath<T extends AnyObject> extends IObjectOps<T> {
     contains(base: DeepReadonly<T>, target: DeepReadonly<T>): boolean;
     inverse(o: DeepReadonly<T>): T;
 
@@ -31,16 +31,15 @@ export interface IObjectMath<T extends Object> extends IObjectOps<T> {
     div(o1: DeepReadonly<T>, o2: DeepReadonly<T> | number): number;
 }
 
+export type BasePair<T extends AnyObject, TKey extends string & keyof T = string & keyof T, TOps extends IObjectOps<T[TKey]> = IObjectOps<T[TKey]>> = { key: TKey, ops: TOps };
+export type OpsPair<T extends AnyObject, TKey extends string & keyof T = string & keyof T> = BasePair<T, TKey, IObjectOps<T[TKey]>>;
+export type MathPair<T extends AnyObject, TKey extends string & keyof T = string & keyof T> = BasePair<T, TKey, IObjectMath<T[TKey]>>;
 
-export type BasePair<T extends Object, TKey extends keyof T = keyof T, TOps extends IObjectOps<T[TKey]> = IObjectOps<T[TKey]>> = { key: TKey, ops: TOps };
-export type OpsPair<T extends Object, TKey extends keyof T = keyof T> = BasePair<T, TKey, IObjectOps<T[TKey]>>;
-export type MathPair<T extends Object, TKey extends keyof T = keyof T> = BasePair<T, TKey, IObjectMath<T[TKey]>>;
 
-
-export type OpsPairsMap<T extends Object> = {
+export type OpsPairsMap<T extends AnyObject> = {
     [K in keyof T]?: IObjectOps<T[K]>;
 };
 
-export type MathPairsMap<T extends Object> = {
+export type MathPairsMap<T extends AnyObject> = {
     [K in keyof T]?: IObjectMath<T[K]>;
 };

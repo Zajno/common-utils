@@ -1,6 +1,7 @@
 import { Event, oneTimeSubscription } from '../observing/event';
 import { OneTimeLateEvent } from '../observing/event.late';
 import { setTimeoutAsync } from '../async/timeout';
+import { catchPromise } from '../functions/safe';
 
 describe('Event', () => {
 
@@ -31,7 +32,7 @@ describe('Event', () => {
         const handler3 = jest.fn();
 
         e.trigger();
-        e.triggerAsync();
+        e.triggerAsync().catch((_err) => { /* suppress */ });
 
         expect(e.expose()).toBe(e);
 
@@ -74,7 +75,7 @@ describe('Event', () => {
     it('oneTimeSubscription', async () => {
         const e = new Event<number>();
 
-        const handler1 = jest.fn(r => r);
+        const handler1 = jest.fn(<T>(r: T) => r);
         const promise1 = oneTimeSubscription(e).then(handler1);
 
         e.trigger(1);
@@ -83,7 +84,7 @@ describe('Event', () => {
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler1).toHaveBeenCalledWith(1);
 
-        const handler2 = jest.fn(r => r);
+        const handler2 = jest.fn(<T>(r: T) => r);
         const promise2 = oneTimeSubscription(e, x => x > 1).then(handler2);
 
         handler1.mockReset();
@@ -118,8 +119,8 @@ describe('OneTimeLateEvent', () => {
         const e = new OneTimeLateEvent<number>();
         const handler = jest.fn();
         e.on(handler);
-        e.triggerAsync(1);
-        e.triggerAsync(2);
+        catchPromise(e.triggerAsync(1));
+        catchPromise(e.triggerAsync(2));
         await setTimeoutAsync(100);
         expect(handler).toHaveBeenCalledTimes(1);
         expect(handler).toHaveBeenCalledWith(1);

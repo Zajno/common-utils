@@ -1,6 +1,7 @@
+import { AnyFunction } from './misc';
 
 export type PropertiesOf<T> = Exclude<{
-    [K in keyof T]: T[K] extends Function ? never : K
+    [K in keyof T]: T[K] extends AnyFunction ? never : K
 }[keyof T], undefined>;
 
 export type RemoveFunctionFields<T> = {

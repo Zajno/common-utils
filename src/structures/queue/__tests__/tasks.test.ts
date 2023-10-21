@@ -1,6 +1,5 @@
 import { TasksQueue } from '../tasks';
 import { setTimeoutAsync } from '../../../async/timeout';
-import { safeCall } from '../../../functions/safeCall';
 import 'jest-extended';
 
 describe('TasksQueue', () => {
@@ -8,7 +7,7 @@ describe('TasksQueue', () => {
     const createFactory = <T>(res: T, cb?: () => void) => {
         return async () => {
             await setTimeoutAsync(50);
-            safeCall(cb);
+            cb?.();
             return res;
         };
     };

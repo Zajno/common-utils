@@ -21,13 +21,12 @@ export class FileLoggerNode implements ILogger {
 
     setLogName(name: string) {
         const n = name ? `-${name}` : '';
-        this._logFilePath = Path.resolve(__dirname, `../run${n}.${new Date().toISOString()}.log`);
+        this._logFilePath = Path.resolve(process.cwd(), `run${n}.${new Date().toISOString()}.log`);
         return this;
     }
 
     private append(..._args: any[]) {
-        // @ts-ignore
-        const str = Util.format.apply(null, arguments) + '\n';
+        const str = Util.format.apply(null, _args) + '\n';
         this._buffer.push(str);
 
         if (this.instantFlush) {

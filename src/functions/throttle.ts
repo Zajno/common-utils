@@ -1,9 +1,10 @@
 import { ManualPromise, createManualPromise } from '../async/misc';
 import logger from '../logger';
+import { catchPromise } from './safe';
 
 export class ThrottleAction<T = any> {
 
-    private _timeoutRef: any = null;
+    private _timeoutRef: ReturnType<typeof setTimeout> = null;
     private _postponedCb: () => (T | Promise<T>) = null;
     private _locked = false;
 
@@ -20,7 +21,7 @@ export class ThrottleAction<T = any> {
     tryRun(cb: () => T | Promise<T>, restartTimeout = false) {
         if (!this._timeoutRef) {
             this._postponedCb = cb;
-            this._timeoutRef = setTimeout(this.forceRun, this.timeout);
+            this._timeoutRef = setTimeout(() => catchPromise(this.forceRun()), this.timeout);
             // logger.log('THROTTLE setTimeout', this.timeout);
         } else if (restartTimeout) {
             this.clear();
@@ -103,7 +104,7 @@ export class ThrottleProcessor<TSubject, TResult = any> {
             const res = await this.process(objs);
             this._promise.resolve(res);
         } catch (err) {
-            this._promise.reject(err);
+            this._promise.reject(err as Error);
         } finally {
             this._promise = null;
         }

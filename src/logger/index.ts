@@ -65,7 +65,7 @@ function _createImplementation(overrideMode: typeof Mode = undefined): ILogger {
         }
 
         default: {
-            return Getter.getValue(mode as Getter<ILogger>);
+            return Getter.getValue(mode);
         }
     }
 }

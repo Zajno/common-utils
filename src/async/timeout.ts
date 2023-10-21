@@ -2,7 +2,7 @@
 export function setTimeoutAsync(ms: number, useCancel: (cb: () => void) => void = null) {
     let canceled = false;
     let _reject: () => void;
-    let token: any;
+    let token: ReturnType<typeof setTimeout>;
     const res = new Promise<void>((resolve, reject) => {
         _reject = reject;
         token = setTimeout(() => {

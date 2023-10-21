@@ -1,6 +1,7 @@
 import type { Predicate } from '../types';
 import { forEachAsync } from '../async/arrays';
 import { ILogger, createLogger } from '../logger';
+import { catchPromise } from '../functions/safe';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 type Unsubscribe = () => void;
@@ -16,7 +17,7 @@ export class Event<T = any> implements IEvent<T> {
 
     constructor(withDefaultLogger = true) {
         if (withDefaultLogger) {
-            this.withLogger();
+            this.withLogger('');
         }
     }
 
@@ -24,7 +25,12 @@ export class Event<T = any> implements IEvent<T> {
     public withLogger(name?: string): this;
 
     public withLogger(loggerOrName: ILogger | string) {
-        this._logger = (!loggerOrName || typeof loggerOrName === 'string')
+        if (loggerOrName == null) {
+            this._logger = null;
+            return this;
+        }
+
+        this._logger = typeof loggerOrName === 'string'
             ? createLogger(`[Event:${loggerOrName || '?'}]`)
             : loggerOrName;
         return this;
@@ -49,7 +55,7 @@ export class Event<T = any> implements IEvent<T> {
         const hh = this._handlers.slice(0);
         hh.forEach(cb => {
             try {
-                cb(data);
+                catchPromise(cb(data), err => this.logError(data, cb, err));
             } catch (err) {
                 this.logError(data, cb, err);
             }

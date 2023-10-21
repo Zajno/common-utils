@@ -5,8 +5,8 @@ const PromiseGetter = '__promise' as const;
 
 type AllowedFnKeys<T> = FunctionKeys<T, any[], void>;
 
-type PromiseProxy<T, TKeys extends StringKeys<T> = StringKeys<T>, TFnKeys = never, TWrap extends Object = { }> = {
-    [K in TKeys]: T[K] extends Function
+type PromiseProxy<T, TKeys extends StringKeys<T> = StringKeys<T>, TFnKeys = never, TWrap extends object = object> = {
+    [K in TKeys]: T[K] extends (...args: any) => any
         ? (K extends TFnKeys ? T[K] : never)
         : T[K];
 } & {
@@ -33,7 +33,7 @@ type Options<T, TFnKeys, TWrap, TLazy> = {
  * @param wrap an object that will be used as a wrapper for the proxied object. can contain any fields that will be copied to the resolved object
  * @returns a proxy object that will be resolved to the object returned by the loader function
  */
-export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends AllowedFnKeys<T> = never, TWrap extends Object = { }>(
+export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends AllowedFnKeys<T> = never, TWrap extends object = object>(
     options: Options<T, TFnKeys, TWrap, typeof LazyPromise>,
 ): PromiseProxy<T, StringKeys<T>, TFnKeys, TWrap> {
     const { loader, fnKeys, wrap, lazy: TLazy = LazyPromise } = options;

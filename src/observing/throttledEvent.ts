@@ -14,7 +14,7 @@ export class ThrottledEvent extends Event {
         this._throttle.tryRun(() => super.trigger());
     }
 
-    public async triggerAsync(): Promise<Error[]> {
+    public triggerAsync(): Promise<Error[]> {
         throw new Error('ThrottledEvent does not support triggerAsync');
     }
 }

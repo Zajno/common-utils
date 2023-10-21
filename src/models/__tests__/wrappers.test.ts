@@ -162,7 +162,9 @@ describe('labelize', () => {
 
         const Mixin = mixinLabel(Model<boolean>);
 
-        await expect((async () => new Mixin())()).resolves.not.toThrow();
+        const factory = () => Promise.resolve(new Mixin());
+
+        await expect(factory()).resolves.not.toThrow();
 
         let label = '123';
         const vm = new Mixin(() => label, false);
