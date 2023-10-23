@@ -2,8 +2,14 @@ import EnumHelper from '../structures/helpers/enum';
 
 export enum ValidationErrors {
     None = 0,
+
+    // generic
     ShouldBeNonEmpty,
     ShouldBeEqualTo,
+    InvalidFormat,
+    Inconsistent,
+
+    // specific to fields & data
     InvalidNameFormat,
     InvalidEmailFormat,
     InvalidPasswordFormat,
@@ -14,6 +20,7 @@ export enum ValidationErrors {
     InvalidCreditCardCvvFormat,
     OnlyDigit,
 
+    // business logic
     EmailIsInUse,
     FirstName,
     LastName,

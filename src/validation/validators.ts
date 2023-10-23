@@ -52,4 +52,6 @@ export const Validators = {
         (ValidatorsRegExps.cvv.test(val) && val.length >= 3 && val.length <= 4) ? ValidationErrors.None : ValidationErrors.InvalidCreditCardCvvFormat,
     website: (val: string) => ValidatorsRegExps.website.test(val) ? ValidationErrors.None : ValidationErrors.Website,
     linkedin: (val: string) => ValidatorsRegExps.linkedin.test(val) ? ValidationErrors.None : ValidationErrors.Linkedin,
+
+    regex: (regex: RegExp) => ((val: string) => regex.test(val) ? ValidationErrors.None : ValidationErrors.InvalidFormat),
 };

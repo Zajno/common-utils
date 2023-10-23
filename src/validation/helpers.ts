@@ -4,6 +4,7 @@ import {
     ValidationError,
     ValidationResults,
     ValidatorFunction,
+    ValidatorFunctionAsync,
 } from './types';
 
 export function createShouldBeEqualTo<T = string>(getter: () => T): ValidatorFunction<T> {
@@ -44,4 +45,30 @@ export function validateObject<T, TErrors = ValidationErrors>(
     });
 
     return res;
+}
+
+export function combineValidators<T = string, TErrors = ValidationErrors, TContext = any>(...validators: ValidatorFunction<T, TErrors, TContext>[]) {
+    return (val: T, ctx?: TContext) => {
+        for (const validator of validators) {
+            const err = validator(val, ctx);
+            if (err) {
+                return err;
+            }
+        }
+
+        return ValidationErrors.None;
+    };
+}
+
+export async function combineValidatorsAsync<T = string, TErrors = ValidationErrors, TContext = any>(...validators: ValidatorFunctionAsync<T, TErrors, TContext>[]) {
+    return async (val: T, ctx?: TContext) => {
+        for (const validator of validators) {
+            const err = await validator(val, ctx);
+            if (err) {
+                return err;
+            }
+        }
+
+        return ValidationErrors.None;
+    };
 }
