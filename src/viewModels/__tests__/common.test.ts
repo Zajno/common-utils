@@ -48,7 +48,9 @@ describe('CommonModel', () => {
         m.validateOnChange(true);
         m.value = [];
 
-        // skip one frame
+        // skip few frames, auto-validation can take up to 2 frames
+        await Promise.resolve();
+        await Promise.resolve();
         await Promise.resolve();
 
         expect(m.error).toEqual(NotEmptyError);

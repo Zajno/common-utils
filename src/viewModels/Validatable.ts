@@ -1,6 +1,6 @@
 import { observable, makeObservable, action, runInAction } from 'mobx';
 import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '@zajno/common/validation';
-import { someAsync } from '@zajno/common/async/arrays';
+import type { ValidationThrower } from '@zajno/common/validation/throwers';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
 export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0 | null>>;
@@ -9,6 +9,7 @@ export type ValidationConfig<T, TErrors extends string | number = ValidationErro
     validator: ValueValidator<Readonly<T>, TErrors>,
     errors: ValidationErrorsStrings<TErrors>,
 };
+
 
 const EmptyValidator = () => 0;
 
@@ -20,7 +21,6 @@ export abstract class ValidatableModel<T = string> {
     // @observable
     private _error: string = null;
 
-    private _validationError: ValidationError = null;
     protected _validateOnChange = false;
 
     constructor() {
@@ -36,9 +36,18 @@ export abstract class ValidatableModel<T = string> {
 
     get error() { return this._error; }
 
-    public setValidationConfig<TErrors extends string | number = ValidationErrors>(config?: ValidationConfig<T, TErrors>) {
-        this._validator = config?.validator || EmptyValidator;
-        this._strings = config?.errors;
+    public setValidationConfig<TErrors extends string | number = ValidationErrors>(config?: ValidationConfig<T, TErrors> | ValidationThrower<T>) {
+        if (config) {
+            if (typeof config === 'function') {
+                this._validator = config;
+            } else {
+                this._validator = config.validator || EmptyValidator;
+                this._strings = config.errors;
+            }
+        } else {
+            this._validator = EmptyValidator;
+            this._strings = null;
+        }
         return this;
     }
 
@@ -47,10 +56,19 @@ export abstract class ValidatableModel<T = string> {
         return this;
     }
 
-    public async testValidate(value: T) {
+    /** should return true-thy error code if NOT OK; otherwise if OK it will return null or zero code */
+    public async validateValue(value: T): Promise<ValidationError | string | number | null> {
         if (this._validator) {
-            const res = await this._validator(value);
-            return res;
+            try {
+                const res = await this._validator(value);
+                return res ?? null;
+            } catch (err) {
+                if (err instanceof ValidationError) {
+                    return err;
+                }
+                // added yup compatibility
+                return err.errors?.[0] || err.message || 'Unspecified error';
+            }
         }
         return null;
     }
@@ -60,24 +78,25 @@ export abstract class ValidatableModel<T = string> {
             return true;
         }
 
-        try {
-            const validationResult = await this._validator(this.valueToValidate);
-            this._validationError = !validationResult
-                ? null
-                : new ValidationError('Unknown error', validationResult);
-        } catch (err) {
-            this._validationError = err as ValidationError;
+        let errorCode: ValidationErrors = null;
+        let errorStr: string = null;
+        const validationResult = await this.validateValue(this.valueToValidate);
+        if (validationResult != null) {
+            if (validationResult instanceof ValidationError) {
+                errorCode = validationResult.code;
+                errorStr = validationResult.message;
+            } else if (typeof validationResult === 'string') {
+                errorStr = validationResult;
+            } else {
+                errorCode = validationResult;
+            }
         }
 
         runInAction(() => {
-            if (!this._validationError) {
-                this._error = null;
-            } else {
-                const code = this._validationError.code;
-                this._error = this._strings && this._strings[code];
-            }
+            this._error = errorStr || this._strings?.[errorCode] || null;
         });
-        return this._validationError == null;
+
+        return this._error == null;
     }
 
     async getIsInvalid() {
@@ -87,16 +106,6 @@ export abstract class ValidatableModel<T = string> {
 
     // @action
     reset() {
-        this._validationError = null;
         this._error = null;
-    }
-
-    static async IsSomeInvalid(validatables: ReadonlyArray<ValidatableModel<any>>, stopOnFail = true) {
-        if (stopOnFail) {
-            return someAsync(validatables, async v => !(await v.validate()));
-        }
-
-        const results = await Promise.all(validatables.map(v => v.validate()));
-        return results.some(r => !r);
     }
 }
