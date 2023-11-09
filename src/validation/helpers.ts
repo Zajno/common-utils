@@ -1,8 +1,10 @@
+import { someAsync } from '../async/arrays';
 import { ValidationErrors } from './ValidationErrors';
 import {
     ValidationConfig,
     ValidationError,
     ValidationResults,
+    ValidationVoid,
     ValidatorFunction,
     ValidatorFunctionAsync,
 } from './types';
@@ -71,4 +73,22 @@ export async function combineValidatorsAsync<T = string, TErrors = ValidationErr
 
         return ValidationErrors.None;
     };
+}
+
+export async function IsSomeInvalid(validatables: ReadonlyArray<ValidationVoid>, stopOnFail = true) {
+    if (stopOnFail) {
+        return someAsync(validatables, async v => !(await v.validate()));
+    }
+
+    const results = await Promise.all(validatables.map(v => v.validate()));
+    return results.some(r => !r);
+}
+
+export async function getFirstValidationError(...validatables: ValidationVoid[]) {
+    for (const v of validatables) {
+        if (!(await v.validate())) {
+            return v.error;
+        }
+    }
+    return null;
 }
