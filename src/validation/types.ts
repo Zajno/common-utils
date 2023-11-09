@@ -16,3 +16,8 @@ export class ValidationError<TErrors = ValidationErrors> extends Error {
         this.code = code;
     }
 }
+
+export interface ValidationVoid {
+    readonly error?: string;
+    validate(): Promise<boolean>;
+}
