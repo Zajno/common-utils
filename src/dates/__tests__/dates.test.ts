@@ -1215,4 +1215,18 @@ describe('Date Helpers', () => {
         DateHelpers.ensureDates(undefined, 'start', 'end', 'date');
         expect(empty).toBeUndefined();
     });
+
+    test('setDayOfWeek', () => {
+        const baseDate = () => new Date('2023-11-09'); // day == 4
+        // const convert = (d: number, future: boolean | null = null) => DateHelpers.setDayOfWeek(baseDate(), d, future).getDay();
+
+        expect(DateHelpers.setDayOfWeek(baseDate(), 0)).toStrictEqual(new Date('2023-11-05'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), 1)).toStrictEqual(new Date('2023-11-06'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), 2)).toStrictEqual(new Date('2023-11-07'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), 6)).toStrictEqual(new Date('2023-11-11'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), 13)).toStrictEqual(new Date('2023-11-18'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), 2, true)).toStrictEqual(new Date('2023-11-14'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), 9, true)).toStrictEqual(new Date('2023-11-14'));
+        expect(DateHelpers.setDayOfWeek(baseDate(), -1, false)).toStrictEqual(new Date('2023-11-04'));
+    });
 });
