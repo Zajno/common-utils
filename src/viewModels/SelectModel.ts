@@ -1,13 +1,15 @@
-import { observable, computed, makeObservable, reaction, action } from 'mobx';
+import { observable, computed, makeObservable, reaction, action, runInAction } from 'mobx';
 import { createLazy } from '@zajno/common/lazy/light';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
 import { withLabel } from '@zajno/common/models/wrappers';
 import { Getter } from '@zajno/common/types';
+import { Disposer, IDisposable } from '@zajno/common/functions/disposer';
+import NumberModel from './NumberModel';
 
-export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel {
-    private _index: number = undefined;
+export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel, IDisposable {
+    private _index: IValueModel<number> = new NumberModel();
 
     private readonly _items: Getter<readonly T[]>;
 
@@ -18,6 +20,8 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
     public readonly opened = new FlagModel();
 
+    private readonly _flagsDisposer = new Disposer();
+
     constructor(
         items: Getter<readonly T[]>,
         private readonly _accessor: (item: T) => string,
@@ -27,10 +31,9 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
         this._items = items;
         this._initialIndex = initialIndex;
-        this._index = initialIndex;
+        this._index.value = initialIndex;
 
-        makeObservable<Select<T>, '_index' | '_items'>(this, {
-            _index: observable,
+        makeObservable<Select<T>, '_items'>(this, {
             _items: observable.ref,
             values: computed,
             items: computed,
@@ -57,7 +60,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
     get value() { return this.selectedValue; }
     get selectedValue() {
         const vs = this.values;
-        return vs.length ? vs[this._index] : null;
+        return vs.length ? vs[this._index.value] : null;
     }
 
     set value(v: string) { this.selectedValue = v; }
@@ -70,7 +73,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
     get selectedItem(): T {
         const items = this.items;
-        return items.length ? items[this._index] : null;
+        return items.length ? items[this._index.value] : null;
     }
 
     set selectedItem(item: T) {
@@ -80,14 +83,23 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         }
     }
 
-    get isDefault() { return this._index === this._initialIndex; }
+    get isDefault() { return this._index.value === this._initialIndex; }
 
-    get index() {
-        return this._index;
+    get index(): number {
+        return this._index.value;
     }
 
     set index(val: number) {
        this.setIndex(val);
+    }
+
+    public withIndexModel(index: IValueModel<number>) {
+        const v = this._index.value;
+        this._index = index;
+        runInAction(() => {
+            this._index.value = v;
+        });
+        return this;
     }
 
     // @action
@@ -96,7 +108,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
             return;
         }
 
-        this._index = val;
+        this._index.value = val;
 
         if (this._validateOnChange) {
             this.validate();
@@ -107,7 +119,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
             this._indexLocked = true;
 
             if (this._flags.hasValue) {
-                this._flags.value.forEach((f, i) => f.value = (i === this._index));
+                this._flags.value.forEach((f, i) => f.value = (i === this._index.value));
             }
         } finally {
             this._indexLocked = false;
@@ -120,6 +132,8 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
     };
 
     private createFlags() {
+        this._flagsDisposer.dispose();
+
         const flags: ReadonlyArray<ILabeledFlagModel> = this.items
             .map((item, index) => {
                 const flag: ILabeledFlagModel = withLabel(
@@ -128,16 +142,22 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
                 );
 
                 // react on every flag is changed directly
-                reaction(() => flag.value, isSelected => {
-                    if (isSelected) {
-                        this.index = index;
-                    }
-                });
+                this._flagsDisposer.add(
+                        reaction(() => flag.value, isSelected => {
+                        if (isSelected) {
+                            this.index = index;
+                        }
+                    }),
+                );
 
                 return flag;
             });
 
         return flags;
+    }
+
+    public dispose(): void {
+        this._flagsDisposer.dispose();
     }
 }
 
