@@ -61,7 +61,7 @@ export function spyModel<T, TModel extends (IValueModel<T> & object)>(model: TMo
     });
 }
 
-export function wrap<T, TModel extends IValueModel<T>, TRes>(model: TModel, getter: (m: TModel) => TRes, setter: (v: TRes, model: TModel) => void): IValueModel<TRes> {
+export function wrap<TSource, TRes>(model: TSource, getter: (m: TSource) => TRes, setter: (v: TRes, model: TSource) => void): IValueModel<TRes> {
     return {
         get value() { return getter(model); },
         set value(v: TRes) { setter(v, model); },

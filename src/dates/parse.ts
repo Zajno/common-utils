@@ -3,7 +3,7 @@ export function getTime(d: Date | number): number {
     return d instanceof Date ? d.getTime() : d;
 }
 
-export function getDate(d: Date | number | string): Date {
+export function getDate(d: Date | number | string | undefined): Date {
     if (!d) {
         return null;
     }

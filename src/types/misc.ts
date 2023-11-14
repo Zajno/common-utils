@@ -47,3 +47,7 @@ export type ToPlainObject<T> = T extends (AnyFunction | Primitive)
         ? T
         : never
     );
+
+export type PickNullable<T, K extends keyof T> = {
+    [P in K]?: T[P] | null | undefined;
+};
