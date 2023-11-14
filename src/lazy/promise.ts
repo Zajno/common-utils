@@ -1,6 +1,12 @@
 import type { IDisposable } from '../functions/disposer';
+import type { ILazy, LazyLight } from './light';
 
-export class LazyPromise<T> implements IDisposable {
+export type ILazyPromise<T> = ILazy<T> & {
+    readonly busy: boolean;
+    readonly promise: Promise<T>;
+};
+
+export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T> {
 
     private _instance: T = undefined;
     private _busy: boolean = null;

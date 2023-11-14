@@ -16,6 +16,14 @@ export interface IResetableModel {
     readonly isDefault?: boolean;
 }
 
+export interface IFocusableModel {
+    focused: boolean;
+}
+
+export interface IErrorModel {
+    readonly error: string;
+}
+
 export interface ICountableModel {
     readonly count: number;
     readonly selectedCount?: number;

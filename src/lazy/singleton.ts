@@ -1,6 +1,7 @@
 import type { IDisposable } from '../functions/disposer';
+import type { LazyLight } from './light';
 
-export class Lazy<T> implements IDisposable {
+export class Lazy<T> implements IDisposable, LazyLight<T> {
 
     protected _instance: T = null;
 

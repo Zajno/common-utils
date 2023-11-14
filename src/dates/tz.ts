@@ -46,4 +46,9 @@ export namespace Timezones {
         expect(Timezones.getOffset('Asia/Kolkata')).toBe(-270);
     */
 
+    export function shiftToTimeZone(date: Date, tz: string | number): Date {
+        const offset = typeof tz === 'number' ? tz : getOffset(tz);
+        const shifted = new Date(date.getTime() + offset * 60 * 1000);
+        return shifted;
+    }
 }

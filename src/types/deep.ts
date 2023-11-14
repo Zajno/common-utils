@@ -24,7 +24,7 @@ export type DeepPartial<T> = T extends (AnyFunction | Primitive)
     : (T extends Array<infer U>
         ? Array<DeepPartial<U>>
         : {
-            [P in keyof T]?: DeepPartial<T[P]>;
+            [P in keyof T]?: DeepPartial<T[P]> | undefined;
         }
     );
 
@@ -43,5 +43,27 @@ export type DeepMutable<T> = T extends (AnyFunction | Primitive)
         ? Array<DeepMutable<U>>
         : {
             -readonly [P in keyof T]: DeepMutable<T[P]>;
+        }
+    );
+
+export type DeepPickNullable<T, K extends keyof T> = {
+    [P in K]?: null | undefined | DeepPartialNullable<T[P]>;
+};
+
+export type DeepNullable<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends Array<infer U>
+        ? Array<DeepNullable<U>>
+        : {
+            [P in keyof T]: null | DeepNullable<T[P]>;
+        }
+    );
+
+export type DeepPartialNullable<T> = T extends (AnyFunction | Primitive)
+    ? T
+    : (T extends Array<infer U>
+        ? Array<DeepPartialNullable<U>>
+        : {
+            [P in keyof T]?: null | undefined | DeepPartialNullable<T[P]>;
         }
     );
