@@ -7,12 +7,15 @@
       "../common-tests"
     ],
     "noEmit": false,
-    "composite": true,
   },
   "include": [
-    "./src/",
+    "src"
   ],
   "exclude": [
     "node_modules",
+  ],
+  "references": [
+    { "path": "../common/tsconfig.build.json" },
+    { "path": "../common-mobx/tsconfig.build.json" },
   ]
 }

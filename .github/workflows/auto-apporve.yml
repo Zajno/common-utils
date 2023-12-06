@@ -5,6 +5,7 @@ on:
     workflows:
       - CI-common
       - CI-common-mobx
+      - CI-common-firebase
       - CI-common-web
 
     types:

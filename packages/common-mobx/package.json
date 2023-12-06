@@ -14,14 +14,24 @@
     "url": "https://github.com/Zajno/common-mobx/issues"
   },
   "homepage": "https://github.com/Zajno/common-mobx#readme",
+  "exports": {
+    "./*": "./dist/*"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  },
   "scripts": {
-    "build": "tsc -P tsconfig.build.json",
+    "build": "tsc -b tsconfig.build.json",
     "build:clean": "rimraf ./dist tsconfig.build.tsbuildinfo && yarn build",
     "build:w": "yarn build --watch",
     "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd dist && yalc push --replace --update",
     "publish:from-dist": "yarn build-for-publish && yarn copy-for-publish && cd dist && yarn publish",
     "build-for-publish": "yarn build:clean && yarn lint && yarn test",
-    "copy-for-publish": "cpy package.json LICENSE README.md dist/",
+    "copy-for-publish": "cpy --flat ../../LICENSE package.json README.md dist/",
     "lint": "eslint \"src/**/*.ts?(x)\"",
     "test": "vitest run --config ../../vitest.config.mts"
   },
