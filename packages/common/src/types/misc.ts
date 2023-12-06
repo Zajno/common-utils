@@ -40,6 +40,7 @@ export type LengthArray<
 export type AnyObject = Record<string, any>;
 export type AnyFunction = (...args: any[]) => any;
 export type Primitive = number | string | symbol | boolean | null | undefined | bigint;
+export type ObjectOrPrimitive = AnyObject | Primitive;
 
 export type ToPlainObject<T> = T extends (AnyFunction | Primitive)
     ? never

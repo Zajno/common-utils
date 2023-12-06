@@ -13,9 +13,9 @@ import { tryConvertToHttpError } from '../utils/LogicErrorAdapter';
 import { createLogger } from '@zajno/common/logger/index';
 import { badRandomString } from '@zajno/common/math/calc';
 import { META_ARG_KEY } from '../../functions/composite';
-import { AnyObject } from '@zajno/common/types/misc';
+import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 
-export class FunctionFactory<TArg, TResult, TContext extends AnyObject = never>
+export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive = never>
     extends Middleware<TArg, TResult, TContext>
     implements IFirebaseFunction {
 
@@ -85,7 +85,7 @@ export class FunctionFactory<TArg, TResult, TContext extends AnyObject = never>
     }
 
     // this overrides 'super' version because updates return type (can't use ThisType here)
-    public mergeContext<C extends (TContext extends never ? never : AnyObject)>(
+    public mergeContext<C extends ([TContext] extends [never] ? never : ObjectOrPrimitive)>(
         _marker?: C
     ): FunctionFactory<TArg, TResult, Partial<TContext & C>> {
         return this as FunctionFactory<TArg, TResult, Partial<TContext & C>>;

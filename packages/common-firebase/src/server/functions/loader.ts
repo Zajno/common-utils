@@ -11,12 +11,12 @@ import {
 } from './create';
 import { ICompositionMiddleware, MiddlewaresMap } from './composite';
 import { CompositeEndpointInfo } from '../../functions/composite';
-import { AnyObject } from '@zajno/common/types/misc';
+import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 
 type Initializer<TArg> = (arg: TArg) => (void | Promise<void>);
 type Loader<TArg> = () => Promise<Initializer<TArg>>;
 
-export function useAsyncInitLoader<TMiddleware extends IMiddleware<TArg, TResult, TContext>, TArg, TResult, TContext extends AnyObject>
+export function useAsyncInitLoader<TMiddleware extends IMiddleware<TArg, TResult, TContext>, TArg, TResult, TContext extends ObjectOrPrimitive>
     (this: void, middleware: TMiddleware, initLoader: Loader<TMiddleware>) {
         const lazyPromise = new LazyPromise(async () => {
             const init = await initLoader();
@@ -28,7 +28,7 @@ export function useAsyncInitLoader<TMiddleware extends IMiddleware<TArg, TResult
         });
     }
 
-export function useAsyncInitCompositionLoader<TMiddleware extends ICompositionMiddleware<T, TContext>, T extends CompositeEndpointInfo, TContext extends AnyObject>
+export function useAsyncInitCompositionLoader<TMiddleware extends ICompositionMiddleware<T, TContext>, T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive>
     (this: void, composition: TMiddleware, initLoader: Loader<MiddlewaresMap<T, TContext>>) {
         return useAsyncInitLoader(
             composition,
@@ -48,7 +48,7 @@ export function wrapLoaderFunction<TFn extends Fn<TArgs>, TArgs extends any[]>(w
 }
 
 
-export function useAsync<TMiddleware extends IMiddleware<TArg, TResult, TContext>, TArg, TResult, TContext extends AnyObject>
+export function useAsync<TMiddleware extends IMiddleware<TArg, TResult, TContext>, TArg, TResult, TContext extends ObjectOrPrimitive>
     (this: void, middleware: TMiddleware, handlerLoader: () => Promise<EndpointHandler<TArg, TResult, TContext>>) {
         return middleware.use(wrapLoaderFunction(handlerLoader));
     }
