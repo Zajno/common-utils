@@ -1,54 +1,17 @@
 {
-  "name": "@zajno/common",
-  "version": "2.1.3",
-  "description": "Zajno's re-usable utilities for JS/TS projects",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Zajno/common-utils.git"
-  },
-  "author": "Zajno <hello@zajno.com> (https://zajno.com)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Zajno/common-utils/issues"
-  },
-  "homepage": "https://github.com/Zajno/common-utils#readme",
-  "scripts": {
-    "build": "tsc -P tsconfig.build.json",
-    "build:clean": "rimraf ./lib && yarn build",
-    "build:w": "yarn build --watch",
-    "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd lib && yalc push --replace --update",
-    "publish:from-lib": "yarn build-for-publish && yarn copy-for-publish && cd lib && yarn publish",
-    "build-for-publish": "yarn build:clean && yarn lint && yarn test",
-    "copy-for-publish": "cpy package.json LICENSE README.md lib/",
-    "lint": "eslint \"src/**/*.ts?(x)\"",
-    "test": "yarn jest --clearCache && yarn jest"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@faker-js/faker": "^8.2.0",
-    "@types/jest": "^29.5.6",
-    "@types/node": "^18.18.6",
-    "@zajno/eslint-config": "^3.0.0",
-    "cpy-cli": "^5.0.0",
-    "eslint": "^8.51.0",
-    "fast-check": "^3.13.1",
-    "jest": "^29.7.0",
-    "jest-extended": "^4.0.2",
-    "rimraf": "^5.0.5",
-    "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1",
-    "tslib": "^2.6.2",
-    "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "tslib": "^2.6"
-  },
-  "files": [
-    "LICENSE",
-    "!.DS_Store",
-    "*"
-  ],
-  "publishConfig": {
-    "access": "public"
-  }
+    "name": "@zajno/common-monorepo",
+    "description": "Monorepo package for ruling all of them",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "lerna run build:clean",
+        "lint": "lerna run lint",
+        "test": "lerna run test"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "lerna": "^8.0.0"
+    }
 }

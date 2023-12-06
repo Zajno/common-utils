@@ -1,6 +1,7 @@
 .idea/
 node_modules/
 lib/
+dist/
 tmp/
 temp/
 public/
@@ -11,3 +12,5 @@ yarn-error.log
 
 yalc.lock
 .yalc/
+
+tsconfig.build.tsbuildinfo

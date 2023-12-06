@@ -1,29 +1,26 @@
 {
-  "compilerOptions": {
-    "strict": false,
-    "noUnusedLocals": true,
-    "strictBindCallApply": true,
-    "outDir": "./lib",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "jsx": "react",
-    "allowJs": true,
-    "declaration": true,
-    "declarationMap": true,
-    "importHelpers": true,
-  },
-  "include": [
-    "./src"
-  ],
-  "exclude": [
-    "node_modules",
-  ],
-  "references": []
+    "compilerOptions": {
+        "strict": false,
+        "noUnusedLocals": true,
+        "strictBindCallApply": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "target": "ES2022",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "jsx": "react",
+        "allowJs": true,
+        "declaration": true,
+        "declarationMap": true,
+        "importHelpers": true,
+        "noEmit": true,
+        "types": [
+            "vitest/globals"
+        ],
+    },
 }

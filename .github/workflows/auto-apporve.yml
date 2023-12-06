@@ -2,7 +2,9 @@ name: Auto approve PR from owner
 
 on:
   workflow_run:
-    workflows: [CI]
+    workflows:
+      - CI-common
+      - CI-common-mobx
     types:
       - completed
     branches-ignore:

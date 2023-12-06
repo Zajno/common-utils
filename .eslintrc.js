@@ -1,6 +1,6 @@
 module.exports = {
     "extends": [
-        "@zajno/eslint-config/with-jest"
+        "@zajno/eslint-config"
     ],
     "parserOptions": {
         "project": true,

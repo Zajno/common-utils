@@ -1,0 +1,42 @@
+name: CI-common
+
+on:
+  pull_request:
+    types: [ready_for_review, opened, synchronize, reopened]
+    branches: [ main ]
+    paths:
+      - packages/common
+  workflow_dispatch:
+
+jobs:
+  lint-build-test:
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/common
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install packages
+        run: yarn
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: yarn test
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
