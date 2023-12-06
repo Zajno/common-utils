@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+      "outDir": "./lib",
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "allowSyntheticDefaultImports": true,
+      "skipLibCheck": true,
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "target": "ES2019",
+      "moduleResolution": "node",
+      "jsx": "react",
+      "allowJs": true,
+      "declaration": true,
+      "declarationMap": true,
+      "importHelpers": true,
+      "baseUrl": "src",
+      "paths": {
+      },
+    },
+    "exclude": [
+        ".eslintrc.cjs"
+    ]
+}
