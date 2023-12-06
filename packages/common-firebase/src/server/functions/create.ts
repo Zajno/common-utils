@@ -3,9 +3,11 @@ import { EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './i
 import logger from '@zajno/common/logger/index';
 import { GlobalRuntimeOptions } from './globalSettings';
 
+type PromiseOrT<T> = PromiseLike<T> | T;
+
 export type RequestEndpointFunction<TRes = any> = (req: functions.https.Request, resp: functions.Response<TRes>) => void | Promise<void>;
-export type ScheduledFunction = ((context: functions.EventContext) => PromiseLike<any> | any);
-export type PubSubTopicListener = (message: functions.pubsub.Message, context: functions.EventContext) => PromiseLike<any> | any;
+export type ScheduledFunction = ((context: functions.EventContext) => PromiseOrT<any>);
+export type PubSubTopicListener = (message: functions.pubsub.Message, context: functions.EventContext) => PromiseOrT<any>;
 export type SchedulerOptions = { timeZone?: string, runtime?: functions.RuntimeOptions };
 
 export function createHttpsCallFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null): FirebaseEndpointRunnable {

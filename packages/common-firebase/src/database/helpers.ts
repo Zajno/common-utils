@@ -75,6 +75,7 @@ export async function querySnapshot<T extends IdentAny>(
         const firstFetchPromise: Promise<UnsubscribeSnapshot> = new Promise((resolveP, rejectP) => {
             let resolve = resolveP;
             const unsubscribe = query
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 .onSnapshot(async (snapshot: QuerySnapshot<T>) => {
                     try {
                         logQueryCount(query, snapshot, true, debugName);
@@ -88,7 +89,6 @@ export async function querySnapshot<T extends IdentAny>(
                             r(unsubscribe);
                         }
                     }
-
                 }, (err: Error) => {
                     console.warn('querySnapshot fail:', getQueryPath(query));
                     console.error(err);
@@ -147,6 +147,7 @@ export async function documentSnapshot<T extends IdentAny>(
 
         const firstFetchPromise: Promise<UnsubscribeSnapshot> = new Promise((resolveP, rejectP) => {
             let resolve = resolveP;
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             const unsubscribe = doc.onSnapshot(async (snapshot: DocumentSnapshot<T>) => {
                 try {
                     const item = convertSnapshot(snapshot);

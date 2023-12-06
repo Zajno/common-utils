@@ -51,7 +51,7 @@ export class BaseRepo<T extends IdentAny> {
     };
 
     public convertDocumentSnapshot: DocumentSnapshotConverterCallback<T> = item => {
-        let d = item.data() as T;
+        let d = item.data();
         d.id = item.id;
         if (this._readConverter) {
             d = this._readConverter(d);

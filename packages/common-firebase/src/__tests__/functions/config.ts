@@ -1,13 +1,14 @@
 import FFT from 'firebase-functions-test';
 import type { ContextOptions } from 'firebase-functions-test/lib/main';
 import type { FunctionFactory } from '../../server/functions';
+import { AnyObject } from '@zajno/common/types/misc';
 
 const FFTest = FFT({ });
 
 export type EndpointTestContext = ContextOptions;
 export type EndpointTestFunction<T, TOut> = (data: Partial<T>, context?: EndpointTestContext) => Promise<TOut>;
 
-export function wrapEndpoint<A extends {}, R extends {}, C extends {}>(fn: FunctionFactory<A, R, C>) {
+export function wrapEndpoint<A extends AnyObject, R extends AnyObject, C extends AnyObject>(fn: FunctionFactory<A, R, C>) {
     return FFTest.wrap(fn.Endpoint) as EndpointTestFunction<A, R>;
 }
 

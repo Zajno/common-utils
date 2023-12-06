@@ -1,3 +1,4 @@
 **/node_modules/**
 **/lib/**
 /.eslintrc.js
+vitest.config.mts

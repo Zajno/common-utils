@@ -7,8 +7,9 @@ import {
     NextFunction,
 } from './interface';
 import AppHttpError from '../utils/AppHttpError';
+import { AnyObject } from '@zajno/common/types/misc';
 
-export interface IMiddleware<TArg, TResult, TContext extends { } = never> {
+export interface IMiddleware<TArg, TResult, TContext extends AnyObject = never> {
     readonly isEmpty: boolean;
     readonly currentChain: EndpointHandler<TArg, TResult, TContext>;
 
@@ -21,16 +22,16 @@ export interface IMiddleware<TArg, TResult, TContext extends { } = never> {
     useAuth(): this;
     useContextPopulist(populist: (ctx: EndpointContext<TContext>) => Promise<void>): this;
 
-    mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): IMiddleware<TArg, TResult, Partial<TContext & C>>;
+    mergeContext<C extends (TContext extends never ? never : AnyObject)>(_marker?: C): IMiddleware<TArg, TResult, Partial<TContext & C>>;
 }
 
-export interface IMiddlewareChild<TArg, TResult, TContext extends { } = never> extends IMiddleware<TArg, TResult, TContext> {
+export interface IMiddlewareChild<TArg, TResult, TContext extends AnyObject = never> extends IMiddleware<TArg, TResult, TContext> {
     readonly isSkipParents: boolean;
 
     skipParentMiddlewares(): this;
 }
 
-export class Middleware<TArg, TResult, TContext extends { } = never> implements IMiddleware<TArg, TResult, TContext> {
+export class Middleware<TArg, TResult, TContext extends AnyObject = never> implements IMiddleware<TArg, TResult, TContext> {
     private _chain: EndpointHandler<TArg, TResult, TContext> = null;
     private _chainLocked = false;
 
@@ -110,8 +111,8 @@ export class Middleware<TArg, TResult, TContext extends { } = never> implements 
         });
     }
 
-    mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): Middleware<TArg, TResult, Partial<TContext & C>> {
-        return this;
+    mergeContext<C extends (TContext extends never ? never : AnyObject)>(_marker?: C) {
+        return this as Middleware<TArg, TResult, Partial<TContext & C>>;
     }
 
     private _checkChainLocked() {
@@ -121,7 +122,7 @@ export class Middleware<TArg, TResult, TContext extends { } = never> implements 
     }
 }
 
-export class MiddlewareChild<TArg, TResult, TContext extends { } = never> extends Middleware<TArg, TResult, TContext> implements IMiddlewareChild<TArg, TResult, TContext> {
+export class MiddlewareChild<TArg, TResult, TContext extends AnyObject = never> extends Middleware<TArg, TResult, TContext> implements IMiddlewareChild<TArg, TResult, TContext> {
     private _skipParents = false;
 
     public get isSkipParents(): boolean { return this._skipParents; }
@@ -221,12 +222,12 @@ export namespace Middleware {
         };
     }
 
-    export function aggregate<TContext extends { } = never>(...middlewares: IMiddleware<any, any, TContext>[]): IMiddleware<any, any, TContext> {
+    export function aggregate<TContext extends AnyObject = never>(...middlewares: IMiddleware<any, any, TContext>[]): IMiddleware<any, any, TContext> {
         return new MiddlewareAggregator(middlewares);
     }
 }
 
-class MiddlewareAggregator<TContext extends { } = never> implements IMiddleware<any, any, TContext> {
+class MiddlewareAggregator<TContext extends AnyObject = never> implements IMiddleware<any, any, TContext> {
 
     private _chain: EndpointHandler<any, any, TContext> = undefined;
 
@@ -269,7 +270,7 @@ class MiddlewareAggregator<TContext extends { } = never> implements IMiddleware<
         });
     }
 
-    mergeContext<C extends TContext extends never ? never : {}>(_marker?: C): IMiddleware<any, any, Partial<TContext & C>> {
-        return this;
+    mergeContext<C extends TContext extends never ? never : AnyObject>(_marker?: C) {
+        return this as IMiddleware<any, any, Partial<TContext & C>>;
     }
 }

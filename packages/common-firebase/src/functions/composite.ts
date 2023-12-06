@@ -40,10 +40,8 @@ export type EndpointSpecFunctions<T extends CompositeEndpointInfo> = {
 
 export class FunctionComposite<T extends CompositeEndpointInfo> {
 
-    /* eslint-disable proposal/class-property-no-initialized */
     private readonly _endpoint: FunctionDefinition<EndpointArg<T>, EndpointResult<T>>;
     private readonly _specs: EndpointSpecFunctions<T>;
-    /* eslint-enable proposal/class-property-no-initialized */
 
     constructor(
         readonly info: T,

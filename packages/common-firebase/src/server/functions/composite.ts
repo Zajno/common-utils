@@ -3,6 +3,7 @@ import { ArgExtract, CompositeEndpointInfo, EndpointArg, EndpointResult, Functio
 import { FunctionFactory } from './factory';
 import { IMiddleware, IMiddlewareChild, Middleware, MiddlewareChild } from './middleware';
 import { EndpointFunction, EndpointHandler, HandlerContext } from './interface';
+import { AnyObject } from '@zajno/common/types/misc';
 
 type MiddlewareMapInner<T extends CompositeEndpointInfo, TContext = any> = MiddlewaresMap<T, TContext> & IMiddlewareChild<EndpointArg<T>, EndpointResult<T>, TContext>;
 
@@ -22,7 +23,7 @@ export interface ICompositionMiddleware<T extends CompositeEndpointInfo, TContex
     readonly handlers: MiddlewaresMap<T, TContext>;
 }
 
-export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext extends { } = any>
+export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext extends AnyObject = any>
     extends FunctionFactory<EndpointArg<T>, EndpointResult<T>, TContext>
     implements ICompositionMiddleware<T, TContext> {
 
@@ -66,12 +67,12 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
 
         const p = info[key];
         if (p && typeof p === 'object') {
-            return this.getHandlersMap(p as CompositeEndpointInfo) as any;
+            return this.getHandlersMap(p) as any;
         }
         return new MiddlewareChild<ArgExtract<HT, K>, ResExtract<HT, K>, TContext>() as any;
     }
 
-    private static cloneHandlers<T extends CompositeEndpointInfo, TContext extends { }>(handlers: MiddlewaresMap<T, TContext>): MiddlewaresMap<T, TContext> {
+    private static cloneHandlers<T extends CompositeEndpointInfo, TContext extends AnyObject>(handlers: MiddlewaresMap<T, TContext>): MiddlewaresMap<T, TContext> {
         if (!handlers) {
             return null;
         }
@@ -154,8 +155,8 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         return argumentObjectToPath(data);
     }
 
-    public mergeContext<C extends (TContext extends never ? never : { })>(_marker?: C): FunctionCompositeFactory<T, Partial<TContext & C>> {
-        return this;
+    public mergeContext<C extends (TContext extends never ? never : AnyObject)>(_marker?: C): FunctionCompositeFactory<T, Partial<TContext & C>> {
+        return this as FunctionCompositeFactory<T, Partial<TContext & C>>;
     }
 
     public useFunctionsMap(map: FunctionsMap<T, TContext>) {
