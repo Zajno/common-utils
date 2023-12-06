@@ -1,7 +1,7 @@
 import { action, computed, makeObservable, observable, reaction } from 'mobx';
 import { createLazy } from '@zajno/common/lazy/light';
 import type { IValueModel, ICountableModel, IResetableModel } from '@zajno/common/models/types';
-import { arraysCompareDistinct } from '@zajno/common/math';
+import { arraysCompareDistinct } from '@zajno/common/math/arrays';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import { withLabel } from '@zajno/common/models/wrappers';

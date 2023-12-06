@@ -1,5 +1,5 @@
 import { action, makeObservable } from 'mobx';
-import { Getter } from '@zajno/common/types';
+import { Getter } from '@zajno/common/types/getter';
 import { Model } from '@zajno/common/models/Model';
 import { ObservableTypes } from '../observing/types';
 

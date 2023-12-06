@@ -4,7 +4,7 @@ import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
 import { withLabel } from '@zajno/common/models/wrappers';
-import { Getter } from '@zajno/common/types';
+import { Getter } from '@zajno/common/types/getter';
 import { Disposer, IDisposable } from '@zajno/common/functions/disposer';
 import NumberModel from './NumberModel';
 

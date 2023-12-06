@@ -1,4 +1,4 @@
-import { ValidationErrors } from '@zajno/common/validation';
+import { ValidationErrors } from '@zajno/common/validation/index';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
 import { CommonModel } from '../CommonModel';
 import { LoadingModel } from '../LoadingModel';
@@ -100,24 +100,24 @@ describe('LoadingModel works', () => {
     it('with firstInit', async () => {
         const m = new LoadingModel(true);
 
-        expect(m.isLoading).toBeTrue();
+        expect(m.isLoading).toBeTruthy();
 
         const first = m.useLoading(worker, true);
-        expect(m.isLoading).toBeTrue();
+        expect(m.isLoading).toBeTruthy();
 
         await expect(first).resolves.toBe(100);
 
-        expect(m.isLoading).toBeFalse();
+        expect(m.isLoading).toBeFalsy();
     });
 
     it('with firstInit after reset', async () => {
         const m = new LoadingModel(true);
 
-        expect(m.isLoading).toBeTrue();
+        expect(m.isLoading).toBeTruthy();
 
         m.reset();
 
-        expect(m.isLoading).toBeFalse();
+        expect(m.isLoading).toBeFalsy();
     });
 });
 
@@ -143,7 +143,7 @@ describe('Others', () => {
 
             const vm = new ValueModel(123);
 
-            const sub = jest.fn();
+            const sub = vi.fn();
             const unsub = reaction(() => vm.value, v => sub(v));
 
             vm.value = 321;
@@ -163,7 +163,7 @@ describe('Others', () => {
 
             const vm = new FlagModel();
 
-            const sub = jest.fn();
+            const sub = vi.fn();
             const unsub = reaction(() => vm.value, v => sub(v));
 
             expect(vm.value).toBe(false);
@@ -193,7 +193,7 @@ describe('Others', () => {
         it('extendable', () => {
             class Spy extends FlagModel {
 
-                spy = jest.fn();
+                spy = vi.fn();
 
                 public setValue(value: boolean): void {
                     this.spy(value);
@@ -224,8 +224,8 @@ describe('Others', () => {
         });
 
         it('spyable', () => {
-            const spy = jest.fn();
-            const getterSpy = jest.fn();
+            const spy = vi.fn();
+            const getterSpy = vi.fn();
 
             const vm = new FlagModel();
 

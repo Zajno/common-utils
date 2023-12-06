@@ -6,7 +6,7 @@ describe('OptimisticModel', () => {
     it('stores new value until it is confirmed', async () => {
         let _storedValue: number = 1;
         let _shouldFail = false;
-        const _valueSetter = jest.fn(async (v: number) => {
+        const _valueSetter = vi.fn(async (v: number) => {
             await setTimeoutAsync(100);
             if (_shouldFail) {
                 return false;

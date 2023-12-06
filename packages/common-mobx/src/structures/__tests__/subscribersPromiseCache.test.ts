@@ -23,8 +23,8 @@ function createData() {
         },
     };
 
-    const subscribeFn = jest.fn().mockImplementation();
-    const unsubFn = jest.fn().mockImplementation();
+    const subscribeFn = vi.fn().mockImplementation();
+    const unsubFn = vi.fn().mockImplementation();
 
     const Cache = new SubscribersPromiseCache((key, cb) => {
         subscribeFn(key);

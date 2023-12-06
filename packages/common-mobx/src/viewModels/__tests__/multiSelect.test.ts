@@ -1,5 +1,5 @@
 import { reaction, toJS } from 'mobx';
-import { arrayRepeat } from '@zajno/common/math';
+import { arrayRepeat } from '@zajno/common/math/arrays';
 import { MultiSelect, MultiSelectString } from '../MultiSelectModel';
 
 type SetType<T> = { items: T[], selected: number[], accessor: (item: T) => string };
@@ -53,7 +53,7 @@ describe('MultiSelectModel', () => {
         expect(vm.selectedCount).toBe(0);
         expect(vm.selectedIndexes).toHaveLength(0);
 
-        const mocks = arrayRepeat(() => jest.fn().mockImplementation(null), 5);
+        const mocks = arrayRepeat(() => vi.fn().mockImplementation(null), 5);
         const [
             onSelectedIndexes,
             onSelectedItems,

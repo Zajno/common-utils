@@ -1,4 +1,4 @@
-import { AnyObject } from '@zajno/common/types';
+import type { AnyObject } from '@zajno/common/types/index';
 
 export interface ILocalization<TStrings extends AnyObject> {
     readonly Current: Readonly<TStrings>;

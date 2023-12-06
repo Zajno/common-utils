@@ -35,7 +35,7 @@ describe('TransitionObserver', () => {
     it('tracks only correct transition – 2 way', () => {
         const store = createStore<boolean | null>(true);
 
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         new TransitionObserver(() => store.value)
             .from(true)
@@ -63,7 +63,7 @@ describe('TransitionObserver', () => {
     it('tracks only correct transition – from', () => {
         const store = createStore<boolean | null>(true);
 
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         const to = new TransitionObserver(() => store.value)
             .from(true)
@@ -95,7 +95,7 @@ describe('TransitionObserver', () => {
     it('tracks only correct transition – to', () => {
         const store = createStore<boolean | null>(true);
 
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         const to = new TransitionObserver(() => store.value)
             .to(false)
@@ -130,8 +130,8 @@ describe('TransitionObserver', () => {
     it('tracks only correct transition – <any>', () => {
         const store = createStore<boolean | null>(true);
 
-        const cb = jest.fn();
-        const cbE = jest.fn();
+        const cb = vi.fn();
+        const cbE = vi.fn();
 
         const to = new TransitionObserver(() => store.value)
             .cb(cb);
@@ -181,7 +181,7 @@ describe('TransitionObserver', () => {
     it('promises 2 times', async () => {
 
         const store = createStore<boolean>(true);
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         const to = new TransitionObserver(() => store.value)
             .to(false)
@@ -203,7 +203,7 @@ describe('TransitionObserver', () => {
     it('promising – aborting', async () => {
 
         const store = createStore<boolean>(true);
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         const to = new TransitionObserver(() => store.value)
             .to(false)
@@ -221,7 +221,7 @@ describe('TransitionObserver', () => {
 
     it('filtering', () => {
         const store = createStore<number>(0);
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         const to = new TransitionObserver(() => store.value)
             .cb(cb);
@@ -257,7 +257,7 @@ describe('TransitionObserver', () => {
 
     it('from/to via getters', () => {
         const store = createStore<boolean | null>(true);
-        const cb = jest.fn();
+        const cb = vi.fn();
 
         let _from = true;
         let _to = false;

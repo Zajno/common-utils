@@ -1,6 +1,6 @@
 import { observable, makeObservable, action } from 'mobx';
-import { ILocalization, ILocalizationDependency } from './abstractions';
-import { AnyObject } from '@zajno/common/types';
+import type { ILocalization, ILocalizationDependency } from './abstractions';
+import type { AnyObject } from '@zajno/common/types/index';
 
 export class LocalizationManager<TLocaleType extends string, TStrings extends AnyObject> implements ILocalization<TStrings> {
     @observable

@@ -1,6 +1,6 @@
 import { observable, makeObservable, reaction, action, runInAction } from 'mobx';
 import type { IValueModel, IResetableModel, IValueModelReadonly } from '@zajno/common/models/types';
-import logger from '@zajno/common/logger';
+import logger from '@zajno/common/logger/index';
 import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
 

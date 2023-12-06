@@ -1,5 +1,5 @@
 import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
-import { Getter } from '@zajno/common/types';
+import { Getter } from '@zajno/common/types/getter';
 import { ValueModel } from './ValueModel';
 
 /**

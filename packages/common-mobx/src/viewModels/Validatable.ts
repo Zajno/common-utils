@@ -1,5 +1,5 @@
 import { observable, makeObservable, action, runInAction } from 'mobx';
-import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '@zajno/common/validation';
+import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '@zajno/common/validation/index';
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;

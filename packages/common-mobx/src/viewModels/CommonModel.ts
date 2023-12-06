@@ -1,5 +1,5 @@
 import { action, makeObservable, observable } from 'mobx';
-import { Getter } from '@zajno/common/types';
+import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
 
 export class CommonModel<T = any> extends ValidatableModel<T> {

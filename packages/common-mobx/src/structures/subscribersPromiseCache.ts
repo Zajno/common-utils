@@ -1,6 +1,6 @@
 import { Disposable } from '@zajno/common/functions/disposer';
-import { Fields } from '@zajno/common/fields';
-import logger from '@zajno/common/logger';
+import { Fields } from '@zajno/common/fields/index';
+import logger from '@zajno/common/logger/index';
 import { DeferredGetter } from '@zajno/common/structures/promiseCache';
 import { SubscribersMapObservable } from './subscribersMap';
 import { PromiseCacheObservable } from './promiseCache';
