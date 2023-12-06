@@ -1,0 +1,50 @@
+{
+  "name": "@zajno/common-web",
+  "version": "1.0.1",
+  "description": "Zajno's re-usable utilities for JS/TS projects for Web",
+  "author": "Zajno",
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zajno/common-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zajno/common-web/issues"
+  },
+  "homepage": "https://github.com/Zajno/common-web#readme",
+  "scripts": {
+    "build": "tsc -P tsconfig.build.json",
+    "build:clean": "rimraf ./lib && yarn build",
+    "build:w": "yarn build --watch",
+    "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd lib && yalc push --replace --update",
+    "publish:from-lib": "yarn build-for-publish && yarn copy-for-publish && cd lib && yarn publish",
+    "build-for-publish": "yarn build:clean && yarn lint && yarn test",
+    "copy-for-publish": "cpy package.json LICENSE README.md lib/",
+    "lint": "eslint \"src/**/*.ts?(x)\"",
+    "test": "echo \"No tests yet...\"; exit 0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.2",
+    "@zajno/common": "^2.1.3",
+    "@zajno/eslint-config": "^3.0.0",
+    "cpy-cli": "^5.0.0",
+    "eslint": "^8.55.0",
+    "rimraf": "^5.0.5",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.1"
+  },
+  "peerDependencies": {
+    "@zajno/common": "^2.1.2",
+    "tslib": "^2.6"
+  },
+  "files": [
+    "*",
+    "LICENSE",
+    "!.DS_Store"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
