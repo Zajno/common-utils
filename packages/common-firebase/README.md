@@ -1,5 +1,7 @@
 # Zajno's Toolbox for Firebase projects
 
+Moved from [Zajno/common-firebase](https://github.com/Zajno/common-firebase).
+
 ### Features
 
 * Firebase client wrapper: `src/client/firebase.ts`. Don't forget to import required submodules, e.g.:

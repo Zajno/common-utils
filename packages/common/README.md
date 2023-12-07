@@ -43,7 +43,7 @@ import logger, { ILogger } from '@zajno/common/logger';
 
 Previously one had to import from like `@zajno/common/lib/logger` since compiling had been doing at `postinstall` time so Typescript with its config was a peer dependency. Currently it's not the case and this packages is provided with build artifacts (js + d.ts + source maps); so no need to include `/lib` part in imports anymore.
 
-Although install time has been decreased, the main downside is that sources are built being targeted on [ES2019 & CommonJS](./tsconfig.json#L13-L14) (for now!). This might be not always suitable and/or optimal for all build setups.
+Although install time has been decreased, the main downside is that sources are built being targeted on [CommonJS & ES2019+](./tsconfig.json#L13-L14) (for now!). This might be not always suitable and/or optimal for all build setups.
 
 ## Local development
 
@@ -61,8 +61,3 @@ The flow will look like the following. [1] – operations made on this project, 
 8. `[2]` to cleanup, run `yalc remove @zajno/common` or just `yalc remove --all`
 9. `[1]` push your changes after making sure it's OK, we'd say thank you for a PR!
 9. `[2]` re-add the package into your project or specify tag/commit (e.g. `yarn upgrade @zajno/common`)
-
-## Challenges & TODOs
-
-1. This library should be and will be updated frequently. When and how to integrate these changes? For small projects that would not be required, but for long-running ones the strategy would be essential.
-2. It needs (more) tests.
