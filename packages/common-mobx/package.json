@@ -25,15 +25,18 @@
     }
   },
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
-    "build:clean": "rimraf ./dist tsconfig.build.tsbuildinfo && yarn build",
-    "build:w": "yarn build --watch",
-    "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd dist && yalc push --replace --update",
-    "publish:from-dist": "yarn build-for-publish && yarn copy-for-publish && cd dist && yarn publish",
-    "build-for-publish": "yarn build:clean && yarn lint && yarn test",
-    "copy-for-publish": "cpy --flat ../../LICENSE package.json README.md dist/",
-    "lint": "eslint \"src/**/*.ts?(x)\"",
-    "test": "vitest run"
+    "clean": "rss",
+    "dev": "rss",
+    "build": "rss",
+    "build:clean": "rss",
+    "build:copy": "rss",
+    "build:w": "rss",
+    "publish:local": "rss",
+    "publish:from-dist": "rss",
+    "build-for-publish": "rss",
+    "copy-for-publish": "rss",
+    "lint": "rss",
+    "test": "rss"
   },
   "devDependencies": {
     "@types/node": "^18.19.2",
