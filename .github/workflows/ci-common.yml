@@ -5,7 +5,7 @@ on:
     types: [ready_for_review, opened, synchronize, reopened]
     branches: [ main ]
     paths:
-      - packages/common
+      - 'packages/common/**'
   workflow_dispatch:
 
 jobs:
