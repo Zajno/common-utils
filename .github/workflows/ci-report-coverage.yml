@@ -1,20 +1,14 @@
-name: CI-common
+name: CI-report-coverage
 
 on:
-  pull_request:
-    types: [ready_for_review, opened, synchronize, reopened]
-    branches: [ main ]
-    paths:
-      - 'packages/common/**'
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   lint-build-test:
-    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./packages/common
 
     steps:
       - uses: actions/checkout@v4
@@ -27,17 +21,17 @@ jobs:
       - name: Install packages
         run: yarn
 
-      - name: Lint
-        run: yarn lint
-
-      - name: Build
-        run: yarn build
-
       - name: Test
         run: yarn test
 
-      - name: Coveralls
+      - name: Coveralls (common)
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
           base-path: packages/common
+
+      - name: Coveralls (common-mobx)
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          base-path: packages/common-mobx

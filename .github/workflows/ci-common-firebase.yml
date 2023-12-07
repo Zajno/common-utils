@@ -5,7 +5,7 @@ on:
     types: [ready_for_review, opened, synchronize, reopened]
     branches: [ main ]
     paths:
-      - packages/common-firebase
+      - 'packages/common-firebase/**'
   workflow_dispatch:
 
 jobs:
