@@ -6,5 +6,7 @@
         "Pluggable"
     ],
     "typescript.preferences.quoteStyle": "single",
-    "javascript.preferences.quoteStyle": "single"
+    "javascript.preferences.quoteStyle": "single",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true
 }

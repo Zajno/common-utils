@@ -2,8 +2,6 @@ import { Lazy } from '../singleton';
 import { LazyPromise } from '../promise';
 import { setTimeoutAsync } from '../../async/timeout';
 
-import '../../../../common-tests/expect';
-
 describe('Lazy', () => {
     it('simple', () => {
         const VAL = 'abc';

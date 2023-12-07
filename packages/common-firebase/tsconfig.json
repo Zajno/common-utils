@@ -2,11 +2,6 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDirs": [
-      "src",
-      "../common-tests"
-    ],
-    "noEmit": false,
   },
   "include": [
     "src"
@@ -15,7 +10,11 @@
     "node_modules",
   ],
   "references": [
-    { "path": "../common/tsconfig.build.json" },
-    { "path": "../common-mobx/tsconfig.build.json" },
+    {
+      "path": "../common/tsconfig.build.json"
+    },
+    {
+      "path": "../common-mobx/tsconfig.build.json"
+    },
   ]
 }

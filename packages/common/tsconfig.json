@@ -2,17 +2,16 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDirs": [
-      "src",
-      "../common-tests"
-    ],
-    "noEmit": false,
     "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "utils/*": [
+        "./utils/*"
+      ]
+    },
   },
   "include": [
-    "./src/",
+    "src",
+    "utils"
   ],
-  "exclude": [
-    "node_modules",
-  ]
 }

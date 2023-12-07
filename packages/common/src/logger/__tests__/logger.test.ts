@@ -1,8 +1,8 @@
+import logger, { batchLoggers, createLogger, getMode, ILogger, setMode } from '../index';
 import { faker } from '@faker-js/faker';
-import logger, { batchLoggers, createLogger, getMode, ILogger, setMode } from '..';
 import fc from 'fast-check';
-import { toArbitrary } from '../../../../common-tests/main';
 import { MockInstance } from 'vitest';
+import { toArbitrary } from 'utils/tests/main';
 
 const CONSOLE = console;
 

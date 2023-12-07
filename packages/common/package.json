@@ -23,8 +23,10 @@
     }
   },
   "scripts": {
+    "dev": "yarn clean && tsc --watch --noEmit",
     "build": "tsc -P tsconfig.build.json",
-    "build:clean": "rimraf ./dist tsconfig.build.tsbuildinfo && yarn build",
+    "clean": "rimraf ./dist tsconfig.build.tsbuildinfo",
+    "build:clean": "yarn clean && yarn build",
     "build:copy": "yarn build:clean && yarn copy-for-publish",
     "build:w": "yarn build --watch",
     "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd dist && yalc push --replace --update",
