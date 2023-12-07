@@ -20,7 +20,7 @@
         "vitest": "^1.0.1"
     },
     "rss": {
-        "clean": "rimraf ./dist tsconfig.build.tsbuildinfo",
+        "clean": "rimraf ./dist *.tsbuildinfo",
         "dev": "yarn clean && tsc --watch --noEmit",
         "build": "tsc -b tsconfig.build.json",
         "build:clean": "yarn clean && yarn build",

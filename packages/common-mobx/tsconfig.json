@@ -2,14 +2,16 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "composite": true,
+    "paths": {
+      "@zajno/common/*": ["../common/src/*"]
+    }
   },
   "include": [
     "src"
   ],
   "references": [
     {
-      "path": "../common/tsconfig.build.json"
+      "path": "../common/tsconfig.ref.json"
     }
   ]
 }

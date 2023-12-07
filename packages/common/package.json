@@ -12,16 +12,6 @@
     "url": "https://github.com/Zajno/common-utils/issues"
   },
   "homepage": "https://github.com/Zajno/common-utils#readme",
-  "exports": {
-    "./*": "./dist/*"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "dist/*"
-      ]
-    }
-  },
   "scripts": {
     "clean": "rss",
     "dev": "rss",

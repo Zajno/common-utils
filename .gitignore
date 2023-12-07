@@ -13,4 +13,4 @@ yarn-error.log
 yalc.lock
 .yalc/
 
-tsconfig.build.tsbuildinfo
+*.tsbuildinfo

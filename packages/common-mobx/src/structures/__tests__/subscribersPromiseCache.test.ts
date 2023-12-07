@@ -23,8 +23,8 @@ function createData() {
         },
     };
 
-    const subscribeFn = vi.fn().mockImplementation();
-    const unsubFn = vi.fn().mockImplementation();
+    const subscribeFn = vi.fn().mockImplementation(null);
+    const unsubFn = vi.fn().mockImplementation(null);
 
     const Cache = new SubscribersPromiseCache((key, cb) => {
         subscribeFn(key);

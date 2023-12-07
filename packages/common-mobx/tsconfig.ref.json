@@ -1,9 +1,13 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "noEmit": false,
     "rootDir": "src"
   },
+  "include": [
+    "src"
+  ],
   "exclude": [
     "node_modules",
     "**/__tests__/**"
@@ -12,5 +16,5 @@
     {
       "path": "../common/tsconfig.ref.json"
     }
-  ]
+  ],
 }

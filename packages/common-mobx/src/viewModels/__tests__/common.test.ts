@@ -1,4 +1,4 @@
-import { ValidationErrors } from '@zajno/common/validation/index';
+import { ValidationErrors } from '@zajno/common/validation';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
 import { CommonModel } from '../CommonModel';
 import { LoadingModel } from '../LoadingModel';
