@@ -8,7 +8,10 @@ const globalSetupPath = new URL('./vitest.global.mts', import.meta.url).toString
 export default defineConfig({
   test: {
     globals: true,
-    coverage: { provider: 'istanbul' },
+    coverage: {
+      provider: 'istanbul',
+      enabled: true,
+    },
     setupFiles: setupPath,
     globalSetup: globalSetupPath,
   },

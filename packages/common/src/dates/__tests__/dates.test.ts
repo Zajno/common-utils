@@ -735,13 +735,20 @@ describe('Date Helpers', () => {
     });
 
     test('getTime', () => {
-
         expect(DateHelpers.getTime(new Date('2020-11-29T13:26:15.893Z'))).toBe(1606656375893);
         expect(DateHelpers.getTime(new Date('2020-09-19T00:00:00.893Z'))).toBe(1600473600893);
         expect(DateHelpers.getTime(new Date('2020-06-09T23:59:59.893Z'))).toBe(1591747199893);
+
+        expect(DateHelpers.getTime(null)).toBe(null);
+        expect(DateHelpers.getTime('1591747199893')).toBe(1591747199893);
+        expect(DateHelpers.getTime('2020-06-09T23:59:59.893Z')).toBe(1591747199893);
+        expect(DateHelpers.getTime(1591747199893)).toBe(1591747199893);
     });
 
     test('getDate', () => {
+
+        expect(DateHelpers.getDate(1591747199893)).toStrictEqual(new Date('2020-06-09T23:59:59.893Z'));
+        expect(DateHelpers.getDate('1591747199893')).toStrictEqual(new Date('2020-06-09T23:59:59.893Z'));
 
         expect(DateHelpers.getDate(new Date('2020-11-29T13:26:15.893Z'))).toStrictEqual(new Date('2020-11-29T13:26:15.893Z'));
         expect(DateHelpers.getDate(1600473600893)).toStrictEqual(new Date('2020-09-19T00:00:00.893Z'));

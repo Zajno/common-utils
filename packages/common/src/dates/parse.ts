@@ -1,11 +1,37 @@
 
-export function getTime(d: Date | number): number {
-    return d instanceof Date ? d.getTime() : d;
+export function getTime(d: Date | number | string): number {
+    if (d == null) {
+        return null;
+    }
+
+    if (d instanceof Date) {
+        return d.getTime();
+    }
+
+    if (typeof d === 'number') {
+        return d;
+    }
+
+    if (typeof d === 'string') {
+        const num = +d;
+        if (!isNaN(num)) {
+            return num;
+        }
+    }
+
+    return getDate(d).getTime();
 }
 
 export function getDate(d: Date | number | string | undefined): Date {
     if (!d) {
         return null;
+    }
+
+    if (typeof d === 'string') {
+        const num = +d;
+        if (!isNaN(num)) {
+            return new Date(num);
+        }
     }
 
     return new Date(d);
