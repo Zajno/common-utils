@@ -24,7 +24,7 @@ export function intersects(start1: Date | number, end1: Date | number, start2: D
         || (e >= ss && e <= ee);
 }
 
-export function countDays(start: Date, end: Date, condition: (d: Date) => boolean) {
+export function countDays(start: Date, end: Date, condition?: (d: Date) => boolean) {
     let count = 0;
 
     const current = new Date(start.getTime());
@@ -42,7 +42,7 @@ export function countDays(start: Date, end: Date, condition: (d: Date) => boolea
 export function compare(d1: Date | number, d2: Date | number, g: Granularity, local?: boolean): number;
 export function compare(d1: Date | number, d2: Date | number): number;
 
-export function compare(d1: Date | number, d2: Date | number, g: Granularity = null, local = false) {
+export function compare(d1: Date | number, d2: Date | number, g: Granularity | null = null, local = false) {
     const s1 = g ? startOf(d1, g, local) : d1;
     const s2 = g ? startOf(d2, g, local) : d2;
     return getTime(s1) - getTime(s2);

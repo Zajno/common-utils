@@ -3,13 +3,13 @@ import { IPluggableController } from '../abstractions/controllers/IPluggableCont
 export type { IPluggableController };
 
 export abstract class PluggableController<T = any> implements IPluggableController {
-    private _enabled: boolean = undefined;
-    private _config: T = null;
+    private _enabled: boolean | undefined = undefined;
+    private _config: T | null = null;
 
-    get enabled() { return this._enabled; }
+    get enabled() { return this._enabled || false; }
     get config() { return this._config; }
 
-    async setEnabledAsync(enabled: boolean, config: T = undefined) {
+    async setEnabledAsync(enabled: boolean, config: T | undefined = undefined) {
         if (config !== undefined) {
             this.setConfig(config);
         }

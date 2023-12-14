@@ -1,10 +1,11 @@
+import { AnyObject } from '../../types';
 import { DeepReadonly } from '../../types/deep';
 import { _getInnerValue, doOps } from './helpers';
 import { CompositeObjectOps } from './ops.composite';
 import { AbsOptions, IObjectMath, MathPair, MathPairsMap, RoundOptions } from './types';
 
 
-export class CompositeObjectMath<T extends object> extends CompositeObjectOps<T> implements IObjectMath<T> {
+export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps<T> implements IObjectMath<T> {
     private readonly _math: MathPair<T>[];
 
     constructor(innerMath: MathPairsMap<T>) {
@@ -32,7 +33,7 @@ export class CompositeObjectMath<T extends object> extends CompositeObjectOps<T>
         return doOps(this._math, o, (ops, val) => ops.inverse(val));
     }
 
-    abs(o: DeepReadonly<T>, options?: AbsOptions): T {
+    abs(o: DeepReadonly<T>, options?: AbsOptions): T | null {
         return doOps(this._math, o, (ops, val) => ops.abs(val, options));
     }
 

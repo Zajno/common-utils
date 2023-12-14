@@ -3,7 +3,7 @@ import { forEachAsync } from '../async/arrays';
 import { ILogger, createLogger } from '../logger';
 import { catchPromise } from '../functions/safe';
 
-export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
+export type EventHandler<T = any> = (data?: T | undefined) => void | Promise<void>;
 type Unsubscribe = () => void;
 
 export interface IEvent<T = any> {
@@ -13,7 +13,7 @@ export interface IEvent<T = any> {
 
 export class Event<T = any> implements IEvent<T> {
     private _handlers: EventHandler<T>[] = [];
-    private _logger: ILogger = null;
+    private _logger: ILogger | null = null;
 
     constructor(withDefaultLogger = true) {
         if (withDefaultLogger) {
@@ -21,10 +21,10 @@ export class Event<T = any> implements IEvent<T> {
         }
     }
 
-    public withLogger(logger?: ILogger): this;
-    public withLogger(name?: string): this;
+    public withLogger(logger?: ILogger | null): this;
+    public withLogger(name?: string | null): this;
 
-    public withLogger(loggerOrName: ILogger | string) {
+    public withLogger(loggerOrName: ILogger | string | null | undefined) {
         if (loggerOrName == null) {
             this._logger = null;
             return this;
@@ -87,14 +87,14 @@ export class Event<T = any> implements IEvent<T> {
         return this;
     }
 
-    private logError(data: T, cb: EventHandler<T>, err: Error) {
+    private logError(data: T | null | undefined, cb: EventHandler<T>, err: Error) {
         this._logger?.error(`[Event.${typeof data}] Handler ${cb.name} thrown an exception: `, err);
     }
 }
 
-export function oneTimeSubscription<T>(e: IEvent<T>, filter?: Predicate<T>): Promise<T> {
-    return new Promise<T>((resolve) => {
-        let unsubscribe: Unsubscribe = null;
+export function oneTimeSubscription<T>(e: IEvent<T>, filter?: Predicate<T | undefined>): Promise<T | undefined> {
+    return new Promise<T | undefined>((resolve) => {
+        let unsubscribe: Unsubscribe | null = null;
         unsubscribe = e.on(v => {
             if (!filter || filter(v)) {
                 // the callback can be called during subscription, so unsubscribe may not be initialized yet.

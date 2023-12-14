@@ -9,7 +9,7 @@ export type ValidationResults<T, TErrors> = { [P in keyof T]?: TErrors };
 export type WrapperFunction = (val: ValidatorFunction) => ValidatorFunction;
 
 export class ValidationError<TErrors = ValidationErrors> extends Error {
-    readonly code: TErrors = null;
+    readonly code: TErrors;
 
     constructor(message: string, code: TErrors) {
         super(message);

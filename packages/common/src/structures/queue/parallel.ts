@@ -10,18 +10,18 @@ export class ParallelQueue {
 
     private readonly _queues: Record<number, Queue> = { };
 
-    private _inProgress: boolean = null;
+    private _inProgress: boolean | null = null;
     private _currentIndex = 0;
     private _maxIndex = 0;
 
-    private _logger: ILogger = null;
+    private _logger: ILogger | null = null;
 
     private readonly _beforePriorityRun = new Event<number>();
     private readonly _afterPriorityRun = new Event<number>();
     private readonly _finished = new OneTimeLateEvent();
 
     public get currentPriority() { return this._currentIndex; }
-    public get inProgress() { return this._inProgress; }
+    public get inProgress() { return this._inProgress || false; }
 
     public get beforePriorityRun() { return this._beforePriorityRun.expose(); }
     public get afterPriorityRun() { return this._afterPriorityRun.expose(); }
@@ -95,7 +95,7 @@ export class ParallelQueue {
     }
 
     private async tryStartQueue() {
-        let current: QueueItem[] = null;
+        let current: QueueItem[] | null = null;
         let iterations = 0;
         let totalItems = 0;
 

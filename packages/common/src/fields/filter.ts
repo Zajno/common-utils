@@ -1,5 +1,5 @@
 
-export type FieldFilter<T> = (value: T[keyof T]) => boolean;
+export type FieldFilter<T> = (value: T[keyof T] | undefined) => boolean;
 
 export function filterFields<T>(source: Partial<T>, ...fields: ((keyof T) | { key: keyof T, filter: FieldFilter<T>})[]): Partial<T> {
     const res: Partial<T> = { };

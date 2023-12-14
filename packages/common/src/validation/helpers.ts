@@ -1,4 +1,5 @@
 import { someAsync } from '../async/arrays';
+import { AnyObject } from '../types';
 import { ValidationErrors } from './ValidationErrors';
 import {
     ValidationConfig,
@@ -19,10 +20,10 @@ export function throwNotOk(result: ValidationErrors, message = 'Validation error
     }
 }
 
-export function validateObject<T, TErrors = ValidationErrors>(
+export function validateObject<T extends AnyObject, TErrors = ValidationErrors>(
     obj: T,
     validators: ValidationConfig<T, TErrors>,
-    onlyTruethy = false,
+    onlyTruthy = false,
     context?: T,
 ): ValidationResults<T, TErrors> {
 
@@ -30,13 +31,13 @@ export function validateObject<T, TErrors = ValidationErrors>(
 
     Object.keys(obj).forEach(k => {
         const kk = k as keyof T;
-        const validator: ValidatorFunction<T[typeof kk], TErrors, T> = validators[kk];
+        const validator: undefined | ValidatorFunction<T[typeof kk], TErrors, T> = validators[kk];
         if (!validator) {
             return;
         }
 
         const v = obj[k as keyof T];
-        if (onlyTruethy && !v) {
+        if (onlyTruthy && !v) {
             return;
         }
 

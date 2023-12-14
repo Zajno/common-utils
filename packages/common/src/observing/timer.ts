@@ -5,7 +5,7 @@ export class Timer implements IDisposable, IEvent<number> {
     private readonly _event = new Event<number>();
 
     private _now: number = Date.now();
-    private _handle = null;
+    private _handle: null | ReturnType<typeof setInterval> = null;
 
     constructor(readonly interval = 3600 * 1000) {
         this.restart();
@@ -34,7 +34,9 @@ export class Timer implements IDisposable, IEvent<number> {
     }
 
     public dispose(): void {
-        clearInterval(this._handle);
+        if (this._handle) {
+            clearInterval(this._handle);
+        }
         this._handle = null;
     }
 }

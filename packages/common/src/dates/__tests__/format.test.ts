@@ -10,7 +10,7 @@ describe('Date Helpers - Format', () => {
         const from = new Date('2020-11-09T15:22:08.959Z');
 
         expect(DateHelpers.Format.toDistance(from, undefined)).toMatch(/weeks ago/);
-        expect(DateHelpers.Format.toDistance(from, null)).toMatch(/weeks ago/);
+        expect(DateHelpers.Format.toDistance(from, null as any)).toMatch(/weeks ago/);
 
         expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 5, 'hour'), from)).toBe('Today');
         expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 16, 'hour'), from)).toBe('Tomorrow');
@@ -38,7 +38,7 @@ describe('Date Helpers - Format', () => {
         expect(DateHelpers.Format.toDatePicker(new Date('2022-12-30T13:26:15.893Z'))).toBe('2022-12-30');
 
         expect(DateHelpers.Format.toDatePicker(new Date('2019-08-19T00:00:00.000Z'))).toBe('2019-08-19');
-        expect(DateHelpers.Format.toDatePicker(undefined)).toBeNull();
+        expect(DateHelpers.Format.toDatePicker(undefined as any)).toBeNull();
     });
 
     test('yearDate', () => {
@@ -60,14 +60,14 @@ describe('Date Helpers - Format', () => {
         expect(DateHelpers.Format.yearDate({ month: null, day: null })).toBe('January 1');
         expect(DateHelpers.Format.yearDate({ month: null, day: null }, true)).toBe('Jan 1');
 
-        expect(DateHelpers.Format.yearDate(undefined)).toBe('January 1');
-        expect(DateHelpers.Format.yearDate(undefined, true)).toBe('Jan 1');
+        expect(DateHelpers.Format.yearDate(undefined as any)).toBe('January 1');
+        expect(DateHelpers.Format.yearDate(undefined as any, true)).toBe('Jan 1');
     });
 
     test('toLocalDate', () => {
         expect(DateHelpers.Format.toLocalDate(new Date('2020-07-29T13:26:15.893Z'))).toBe('7/29/2020');
         expect(DateHelpers.Format.toLocalDate(1608729767257)).toBe('12/23/2020');
-        expect(DateHelpers.Format.toLocalDate(undefined)).toBeNull();
+        expect(DateHelpers.Format.toLocalDate(undefined as any)).toBeNull();
     });
 
     test('Presets.use', () => {
@@ -95,7 +95,7 @@ describe('Date Helpers - Format', () => {
         )).toBe('12.08.2020 10.26.15');
 
         expect(DateHelpers.Format.Presets.use(
-            undefined,
+            undefined as any,
             new Date('2020-08-12T10:26:15.893Z')
         )).toBeUndefined();
     });

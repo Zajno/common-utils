@@ -1,10 +1,10 @@
 export class EnumStringHelper<T extends string> {
-    public readonly Keys: string[] = null;
-    public readonly Values: T[] = null;
+    public readonly Keys: string[];
+    public readonly Values: T[];
 
     constructor(
         protected readonly _obj: any,
-        private readonly _valuesToStrings: { [val: string]: string } = null,
+        private readonly _valuesToStrings: { [val: string]: string } | null = null,
     ) {
         this.Keys = Object.keys(this._obj)
             .filter(k => typeof this._obj[k as any] === 'string');
@@ -19,7 +19,7 @@ export class EnumStringHelper<T extends string> {
     }
 
     valueToString(v: T): string {
-        const custom = this._valuesToStrings && this._valuesToStrings[v];
+        const custom = this._valuesToStrings?.[v];
         return custom || v;
     }
 
@@ -37,12 +37,12 @@ export class EnumStringHelper<T extends string> {
 type ValueToStringMap = { [val: number]: string };
 
 export default class EnumHelper<T extends number> {
-    public readonly Keys: string[] = null;
-    public readonly Values: T[] = null;
+    public readonly Keys: string[];
+    public readonly Values: T[];
 
     constructor(
         protected readonly _obj: any,
-        private readonly _valuesToStrings: ValueToStringMap = null,
+        private readonly _valuesToStrings: ValueToStringMap | null = null,
     ) {
         this.Keys = Object.keys(this._obj)
             .filter(k => typeof this._obj[k as any] === 'number');
@@ -50,19 +50,19 @@ export default class EnumHelper<T extends number> {
         this.Values = this.Keys.map(k => this._obj[k]);
     }
 
-    keyToString(key: string, overrideMap: ValueToStringMap = null): string {
+    keyToString(key: string, overrideMap: ValueToStringMap | null = null): string {
         const map = overrideMap || this._valuesToStrings;
         return map
             ? map[this._obj[key]]
             : key;
     }
 
-    keyToValue(key: string): T {
+    keyToValue(key: string): T | null {
         const v = this._obj[key];
         return v == null ? null : v as T;
     }
 
-    valueToString(v: T, overrideMap: ValueToStringMap = null): string {
+    valueToString(v: T, overrideMap: ValueToStringMap | null = null): string {
         const map = overrideMap || this._valuesToStrings;
         const custom = map && map[v];
         return custom || this._obj[v];
@@ -80,7 +80,7 @@ export default class EnumHelper<T extends number> {
 }
 
 export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
-    toStrings(value: T, overrideMap: ValueToStringMap = null): string[] {
+    toStrings(value: T, overrideMap: ValueToStringMap | null = null): string[] {
         if (value == 0) {
             return [this.valueToString(value, overrideMap)];
         }
@@ -90,7 +90,7 @@ export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
             .map(k => this.keyToString(k, overrideMap));
     }
 
-    toString(value: T, separator = ', ', overrideMap: ValueToStringMap = null): string {
+    toString(value: T, separator = ', ', overrideMap: ValueToStringMap | null = null): string {
         const strs = this.toStrings(value, overrideMap);
         return strs.length === 0
             ? this._obj[0]

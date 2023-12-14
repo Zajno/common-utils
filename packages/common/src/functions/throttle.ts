@@ -2,18 +2,22 @@ import { ManualPromise, createManualPromise } from '../async/misc';
 import logger from '../logger';
 import { catchPromise } from './safe';
 
+type Callback<T> = () => (T | Promise<T>);
+
 export class ThrottleAction<T = any> {
 
-    private _timeoutRef: ReturnType<typeof setTimeout> = null;
-    private _postponedCb: () => (T | Promise<T>) = null;
+    private _timeoutRef: ReturnType<typeof setTimeout> | null = null;
+    private _postponedCb: Callback<T> | null = null;
     private _locked = false;
 
-    private _resolvers: ((result: T) => void)[] = [];
+    private _resolvers: ((result: T | undefined) => void)[] = [];
 
     constructor(public timeout = 1000) {}
 
     clear() {
-        clearTimeout(this._timeoutRef);
+        if (this._timeoutRef) {
+            clearTimeout(this._timeoutRef);
+        }
         this._timeoutRef = null;
         this._postponedCb = null;
     }
@@ -36,7 +40,7 @@ export class ThrottleAction<T = any> {
         if (this._locked) {
             logger.warn('THROTTLE LOCKED');
         } else if (cb) {
-            let result: T = undefined;
+            let result: T | undefined = undefined;
             try {
                 this._locked = true;
                 result = await cb();
@@ -58,7 +62,7 @@ export class ThrottleAction<T = any> {
             return Promise.resolve();
         }
 
-        return new Promise<T>(resolve => {
+        return new Promise<T | undefined>(resolve => {
             // logger.log('getPromise: adding resolver');
             this._resolvers.push(resolve);
         });
@@ -68,9 +72,9 @@ export class ThrottleAction<T = any> {
 export class ThrottleProcessor<TSubject, TResult = any> {
 
     private readonly _queue: TSubject[] = [];
-    private readonly _action: ThrottleAction = null;
+    private readonly _action: ThrottleAction;
 
-    private _promise: ManualPromise<TResult> = null;
+    private _promise: ManualPromise<TResult | undefined> | null = null;
 
     constructor(readonly process: (objs: TSubject[]) => Promise<TResult>, timeout = 1000) {
         if (!process) {
@@ -80,7 +84,7 @@ export class ThrottleProcessor<TSubject, TResult = any> {
         this._action = new ThrottleAction(timeout);
     }
 
-    push(data: TSubject): Promise<TResult> {
+    push(data: TSubject): Promise<TResult | undefined> {
         this._queue.push(data);
 
         if (!this._promise) {
@@ -102,9 +106,9 @@ export class ThrottleProcessor<TSubject, TResult = any> {
 
         try {
             const res = await this.process(objs);
-            this._promise.resolve(res);
+            this._promise?.resolve(res);
         } catch (err) {
-            this._promise.reject(err as Error);
+            this._promise?.reject(err as Error);
         } finally {
             this._promise = null;
         }

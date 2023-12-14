@@ -49,7 +49,7 @@ export function spyModel<T, TModel extends (IValueModel<T> & object)>(model: TMo
             }
         },
         get() {
-            let res: T = null;
+            let res: T | null = null;
             if (valueGetter) {
                 res = valueGetter.call(model) as T;
             } else {

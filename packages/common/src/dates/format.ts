@@ -23,7 +23,7 @@ export namespace Format {
                 case Presets.FullDay_ShortDate: {
                     const pts = fullDayShortDate.formatToParts(d);
                     const weekday = pts.find(t => t.type === 'weekday');
-                    return `${weekday.value} ${MathX.format(dec.day, 2)}.${MathX.format(dec.month, 2)}.${MathX.format(dec.year)}`;
+                    return `${weekday?.value || 'X'} ${MathX.format(dec.day, 2)}.${MathX.format(dec.month, 2)}.${MathX.format(dec.year)}`;
                 }
                 case Presets.ShortDate_FullTime: {
                     return `${MathX.format(dec.day, 2)}.${MathX.format(dec.month, 2)}.${dec.year} ${MathX.format(dec.hour, 2)}.${MathX.format(dec.minute, 2)}.${MathX.format(dec.second, 2)}`;
@@ -55,14 +55,14 @@ export namespace Format {
     }
 
     /** `YYYY-MM-DD` */
-    export function toDatePicker(date: Date | number, local = false): string {
+    export function toDatePicker(date: Date | number, local = false): string | null {
         if (!date) return null;
         const d = getDate(date);
         const dd = decomposeDate(d, local, 'day', 'month', 'year');
         return `${dd.year}-${MathX.format(dd.month, 2)}-${MathX.format(dd.day, 2)}`;
     }
 
-    export function toLocalDate(date: Date | number): string {
+    export function toLocalDate(date: Date | number): string | null {
         if (!date) return null;
         return getDate(date).toLocaleDateString(DefaultLocale);
     }
@@ -123,7 +123,7 @@ export namespace Format {
             };
         }
 
-        let _default: ReturnType<typeof createFormatter> = null;
+        let _default: ReturnType<typeof createFormatter> | null = null;
         export function format(num: number) {
             return (_default || (_default = createFormatter()))(num);
         }

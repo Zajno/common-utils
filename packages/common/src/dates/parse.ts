@@ -1,5 +1,8 @@
 
-export function getTime(d: Date | number | string): number {
+export function getTime(d: null | undefined): null;
+export function getTime(d: Date | number | string): number;
+
+export function getTime(d: Date | number | string | null | undefined) {
     if (d == null) {
         return null;
     }
@@ -22,7 +25,10 @@ export function getTime(d: Date | number | string): number {
     return getDate(d).getTime();
 }
 
-export function getDate(d: Date | number | string | undefined): Date {
+export function getDate(d: null | undefined): null;
+export function getDate(d: Date | number | string): Date;
+
+export function getDate(d: Date | number | string | null | undefined): Date | null {
     if (!d) {
         return null;
     }

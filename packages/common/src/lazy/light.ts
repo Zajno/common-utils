@@ -10,7 +10,7 @@ export type LazyLight<T> = ILazy<T> & IDisposable & IResetableModel;
 
 export function createLazy<T>(factory: () => T) {
     const _factory = factory;
-    let _instance: T = undefined;
+    let _instance: T | undefined = undefined;
 
     const res: LazyLight<T> = {
         get value() {

@@ -1,7 +1,7 @@
 import { getDate } from './parse';
 
 /** Useful for recurring dates like birthday */
-export type YearDate = { day: number, month: number };
+export type YearDate = { day: number | null, month: number | null };
 
 export namespace YearDate {
     export function isValid(yd: YearDate): yd is YearDate {

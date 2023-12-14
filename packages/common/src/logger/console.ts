@@ -8,7 +8,7 @@ export class ConsoleLogger extends NamedLogger {
 }
 
 export class BufferedConsoleLogger implements ILogger {
-    private readonly _name: string = null;
+    private readonly _name: string;
     private readonly _logs: string[] = [];
     private _level = 1;
 

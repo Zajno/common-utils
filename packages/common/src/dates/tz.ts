@@ -14,9 +14,10 @@ export namespace Timezones {
             timeZone,
         })
             .formatToParts()
-            .find((i) => i.type === 'timeZoneName').value;
+            .find((i) => i.type === 'timeZoneName')
+            ?.value;
 
-        const offset = timeZoneName.slice(3);
+        const offset = timeZoneName?.slice(3);
         if (!offset) {
             return 0;
         }

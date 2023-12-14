@@ -16,7 +16,7 @@ let Mode: LoggerTypes | false | Getter<ILogger> = false;
 
 const proxies: ProxyLogger[] = [];
 
-export function createLogger(name: string, mode: typeof Mode = undefined): ILogger {
+export function createLogger(name: string | undefined, mode: undefined | typeof Mode = undefined): ILogger {
     const result = _createImplementation(mode);
     const proxy = new ProxyLogger(result, name);
     proxies.push(proxy);
@@ -34,12 +34,12 @@ export function detachLogger(instance: ILogger, terminate = false) {
     return false;
 }
 
-export function setMode(mode: typeof Mode) {
+export function setMode(mode: typeof Mode | null | undefined) {
     if (Mode === mode) {
         return;
     }
 
-    Mode = mode;
+    Mode = mode || false;
 
     if (!Mode) {
         proxies.forEach(l => l.disable());
@@ -50,11 +50,11 @@ export function setMode(mode: typeof Mode) {
 
 export function getMode() { return Mode; }
 
-const logger: ILogger = createLogger(null, false);
+const logger: ILogger = createLogger(undefined, false);
 
 export default logger;
 
-function _createImplementation(overrideMode: typeof Mode = undefined): ILogger {
+function _createImplementation(overrideMode: undefined | typeof Mode = undefined): ILogger | null {
     const mode = overrideMode !== undefined ? overrideMode : Mode;
     switch (mode) {
         case 'console': {

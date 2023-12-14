@@ -9,7 +9,7 @@ export type SkipKeysMapOf<T> = {
 };
 
 export namespace SkipOptions {
-    export function shouldSkip<T = any>(v: T, skip: SkipOptions): boolean {
+    export function shouldSkip<T = any>(v: T | null, skip: SkipOptions): boolean {
         if (v == null && skip === 'null') {
             return true;
         }
@@ -21,10 +21,10 @@ export namespace SkipOptions {
     }
 }
 
-export type SkipCondition<T, TKey extends keyof T = keyof T> = SkipOptions | ((key: TKey, val: T[TKey]) => boolean);
+export type SkipCondition<T, TKey extends keyof T = keyof T> = SkipOptions | ((key: TKey, val: T[TKey] | null) => boolean);
 
 export namespace SkipCondition {
-    export function shouldSkip<T, TKey extends keyof T = keyof T>(condition: SkipCondition<T, TKey>, key: TKey, val: T[TKey]): boolean {
+    export function shouldSkip<T, TKey extends keyof T = keyof T>(condition: SkipCondition<T, TKey>, key: TKey, val: T[TKey] | null): boolean {
         if (typeof condition === 'function') {
             if (condition(key, val)) {
                 return true;

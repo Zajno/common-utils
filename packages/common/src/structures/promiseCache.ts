@@ -1,29 +1,29 @@
 import { createLogger, ILogger } from '../logger';
 
 export type DeferredGetter<T> = {
-    readonly current: T;
-    readonly promise: Promise<T>;
+    readonly current: T | null | undefined;
+    readonly promise: Promise<T | null>;
     readonly busy: boolean;
 };
 
 export namespace DeferredGetter {
-    const _resolvedPromise = Promise.resolve<undefined>(undefined);
+    const _resolvedPromise = Promise.resolve<null>(null);
     export const Empty = {
-        get current(): undefined { return undefined; },
-        get promise(): Promise<undefined> { return _resolvedPromise; },
-        get busy() { return undefined; },
+        get current(): null { return null; },
+        get promise(): Promise<null> { return _resolvedPromise; },
+        get busy() { return false; },
         isEmpty: true,
     } as DeferredGetter<null>;
 }
 
 export class PromiseCache<T, K = string> {
 
-    protected readonly _itemsCache: Record<string, T> = { };
+    protected readonly _itemsCache: Record<string, T | null | undefined> = { };
     protected readonly _itemsStatus: Record<string, boolean> = { };
 
-    private readonly _fetchCache: Record<string, Promise<T>> = { };
+    private readonly _fetchCache: Record<string, Promise<T | null>> = { };
 
-    private _logger: ILogger = null;
+    private _logger: ILogger | null = null;
     protected _busyCount = 0;
 
     constructor(
@@ -72,7 +72,7 @@ export class PromiseCache<T, K = string> {
         return this._itemsStatus[key];
     }
 
-    getCurrent(id: K, initiateFetch = true): T {
+    getCurrent(id: K, initiateFetch = true): T | null | undefined {
         const key = this._pk(id);
         const item = this._itemsCache[key];
         if (initiateFetch) {
@@ -82,7 +82,7 @@ export class PromiseCache<T, K = string> {
         return item;
     }
 
-    get(id: K): Promise<T> {
+    get(id: K): Promise<T | null> {
         const key = this._pk(id);
         const item = this._itemsCache[key];
         if (item !== undefined) {
@@ -108,7 +108,7 @@ export class PromiseCache<T, K = string> {
     protected _doFetchAsync = async (id: K, key: string) => {
         try {
             this.onBeforeFetch(key);
-            let res = await this.fetcher(id);
+            let res: T | null = await this.fetcher(id);
             if (this._fetchCache[key] != null) {
                 this._logger?.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
@@ -125,7 +125,7 @@ export class PromiseCache<T, K = string> {
         this._set(key, undefined, undefined, undefined);
     }
 
-    updateValueDirectly(id: K, value: T) {
+    updateValueDirectly(id: K, value: T | null) {
         const key = this._pk(id);
         this._set(key, value, undefined, undefined);
     }
@@ -147,7 +147,7 @@ export class PromiseCache<T, K = string> {
         return this.keys().map(this.keyParser);
     }
 
-    protected _set(key: string, item: T, promise: Promise<T>, busy: boolean) {
+    protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, busy: boolean | undefined) {
         _setX(key, this._fetchCache, promise);
         _setX(key, this._itemsStatus, busy);
         _setX(key, this._itemsCache, item);
@@ -159,7 +159,7 @@ export class PromiseCache<T, K = string> {
     }
 
     /** @override */
-    protected setPromise(key: string, promise: Promise<T>) {
+    protected setPromise(key: string, promise: Promise<T | null>) {
         this._fetchCache[key] = promise;
     }
 
@@ -169,12 +169,12 @@ export class PromiseCache<T, K = string> {
     }
 
     /** @override */
-    protected prepareResult(res: Awaited<T>) {
+    protected prepareResult(res: T | null) {
         return res || null;
     }
 
     /** @override */
-    protected storeResult(key: string, res: Awaited<T>) {
+    protected storeResult(key: string, res: T | null) {
         this._itemsCache[key] = res;
     }
 

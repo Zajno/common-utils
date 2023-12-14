@@ -93,7 +93,7 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         this.keys.forEach(key => {
             const val = _getValue(other, key);
             if (val !== undefined) {
-                to[key] = val;
+                to[key] = val as any;
             }
         });
     }

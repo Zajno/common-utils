@@ -3,7 +3,7 @@ import { Event, EventHandler } from './event';
 
 export class OneTimeLateEvent<T = any> extends Event<T> {
 
-    private _triggeredWith: T = undefined;
+    private _triggeredWith: T | undefined = undefined;
     private _triggered = false;
 
     trigger(data?: T): void {

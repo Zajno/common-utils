@@ -27,7 +27,7 @@ export namespace DateX {
         function _dateFn(this: Date, ..._numbers: number[]): number { return 0; }
 
         /* eslint-disable @typescript-eslint/unbound-method -- it's clearly defined as a function with `this: Date`  */
-        const fn: typeof _dateFn = (() => {
+        const fn: null | typeof _dateFn = (() => {
             switch (g) {
                 case 'year': return local ? d.setFullYear : d.setUTCFullYear;
                 case 'month': return local ? d.setMonth : d.setUTCMonth;
