@@ -10,7 +10,7 @@ export class SubscribersMap implements IDisposable {
     /** Timeouts map: key => timeout handle */
     private readonly _timeouts = new Map<string, any>();
 
-    private readonly _logger: ILogger = null;
+    private readonly _logger: ILogger;
     protected _count = 0;
 
     constructor(readonly subscribe: null | ((key: string) => Promise<Unsub[]>), readonly name?: string) {
@@ -27,7 +27,7 @@ export class SubscribersMap implements IDisposable {
         return this.getIsObserving(key) && this._timeouts.has(key);
     }
 
-    public async enable(key: string, enable: boolean, clearAfter: number = null, existingUnsubs: Unsub[] = null) {
+    public async enable(key: string, enable: boolean, clearAfter: number | null = null, existingUnsubs: Unsub[] | null= null) {
         if (enable === this.getIsObserving(key)) {
             this.refreshTimeout(key, enable, clearAfter, true);
             return;
@@ -37,8 +37,8 @@ export class SubscribersMap implements IDisposable {
             this._logger.log('Adding observer for key =', key, clearAfter ? `, clearAfter = ${clearAfter}` : '');
 
             // this marker will help to determine whether unsubscribe was requested while we were in process of subscribing
-            let disabed = false;
-            const marker = () => { disabed = true; };
+            let disabled = false;
+            const marker = () => { disabled = true; };
 
             this._map.set(key, marker);
 
@@ -46,10 +46,10 @@ export class SubscribersMap implements IDisposable {
                 throw new Error('Neither subscribe function nor existingUnsubs has been configured');
             }
 
-            const unsubs = existingUnsubs || await this.subscribe(key);
+            const unsubs = existingUnsubs || await this.subscribe?.(key) || [];
             const result = combineDisposers(...unsubs);
 
-            if (disabed) { // unsubscribe was requested
+            if (disabled) { // unsubscribe was requested
                 result();
             } else {
                 this._map.set(key, result);
@@ -61,12 +61,12 @@ export class SubscribersMap implements IDisposable {
             this.refreshTimeout(key, false);
             const unsub = this._map.get(key);
             this._map.delete(key);
-            unsub();
+            unsub?.();
             this.setCount(this._count - 1);
         }
     }
 
-    private refreshTimeout(key: string, enable: boolean, timeout?: number, refresh = false) {
+    private refreshTimeout(key: string, enable: boolean, timeout?: number | null, refresh = false) {
         const current = this._timeouts.get(key);
         if (current) {
             clearTimeout(current);
@@ -74,7 +74,7 @@ export class SubscribersMap implements IDisposable {
         }
 
         if (enable && refresh && current == null) {
-            // DO NOT setup new timeout because it's not intended to clear subscribtion if it was previously enabled for long term
+            // DO NOT setup new timeout because it's not intended to clear subscription if it was previously enabled for long term
             return;
         }
 

@@ -13,9 +13,9 @@ export class Disposer {
     private readonly _disposers: DisposeFunction[] = [];
     private readonly _map = new Map<string, DisposeFunction>();
 
-    private _loggerName: string = null;
+    private _loggerName: string | null = null;
 
-    constructor(loggerName: string = null) {
+    constructor(loggerName: string | null = null) {
         this._loggerName = loggerName;
     }
 
@@ -86,7 +86,7 @@ export class Disposable implements IDisposable {
     protected readonly disposer: Disposer;
     protected _isDisposed = false;
 
-    constructor(loggerName: string = null) {
+    constructor(loggerName: string | null = null) {
         this.disposer = new Disposer(loggerName);
     }
 

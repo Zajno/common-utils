@@ -35,7 +35,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
 
     div(o1: DeepReadonly<T>, o2: number): T;
     div(o1: DeepReadonly<T>, o2: DeepReadonly<T>): number;
-    div(o1: DeepReadonly<T>, o2: DeepReadonly<T> | number): T | number {
+    div(o1: DeepReadonly<T>, o2: DeepReadonly<T> | number): T | number | null {
         if (!o1 || !o2) {
             return 0;
         }
@@ -48,7 +48,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
             return res;
         }
 
-        let min: number = null;
+        let min: number | null = null;
         Object.keys(o2).forEach(key => {
             const v = o2[key] as number;
             if (!v) {
@@ -64,7 +64,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return min;
     }
 
-    process(o: DeepReadonly<T>, processor: (val: number, key: NumKey<T>) => number | DELETE_TYPE): T {
+    process(o: DeepReadonly<T>, processor: (val: number, key: NumKey<T>) => number | DELETE_TYPE): T | null {
         if (!o) {
             return null;
         }
@@ -83,7 +83,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return res;
     }
 
-    abs(c: DeepReadonly<T>, stripNegatives: AbsOptions = false): T {
+    abs(c: DeepReadonly<T>, stripNegatives: AbsOptions = false): T | null {
         return this.process(c, (val) => {
             if (val >= 0) {
                 return val;

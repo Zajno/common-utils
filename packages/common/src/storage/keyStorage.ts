@@ -16,13 +16,13 @@ export class KeyStorage {
 }
 
 export class KeyStorageConverted<T> {
-    private readonly _storage: KeyStorage = null;
+    private readonly _storage: KeyStorage;
 
     constructor(
         storage: IStorageSync,
         key: string,
         readonly input: (v: T) => string = (v => JSON.stringify(v)),
-        readonly output: (s: string) => T = (s => JSON.parse(s || null) as T),
+        readonly output: (s: string) => T = (s => JSON.parse(s || 'null') as T),
     ) {
         this._storage = new KeyStorage(storage, key);
     }

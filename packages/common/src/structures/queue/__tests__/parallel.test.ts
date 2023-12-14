@@ -86,11 +86,11 @@ describe('ParallelQueue', () => {
         q.enqueue(dummyFn, BasePriority);
         q.enqueue(workerFn, BasePriority + 1);
 
-        oneTimeSubscription(q.beforePriorityRun, p => p >= BasePriority)
+        oneTimeSubscription(q.beforePriorityRun, p => p != null && p >= BasePriority)
             .then(beforeCb);
 
         const waitPromise = timeoutPromise(
-            oneTimeSubscription(q.afterPriorityRun, p => p >= BasePriority)
+            oneTimeSubscription(q.afterPriorityRun, p => p != null && p >= BasePriority)
                 .then(afterCb)
             ,
             200,

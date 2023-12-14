@@ -2,7 +2,7 @@
 
 export type Distribution<T extends keyof any> = {
     total: number,
-    byType: Partial<Record<T, number>>,
+    byType: Partial<Record<T, number>> | null,
 };
 
 export function extendDistribution<T extends keyof any>(count: number, type: T, current?: Distribution<T>): Distribution<T> {

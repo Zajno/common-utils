@@ -1,8 +1,8 @@
 import { Comparator } from '../types';
 
 export namespace Fields {
-    export type Getter<T> = (obj: Partial<T>) => T[keyof T];
-    export type Setter<T> = (obj: Partial<T>, val: T[keyof T]) => void;
+    export type Getter<T> = (obj: Partial<T>) => (T[keyof T] | undefined);
+    export type Setter<T> = (obj: Partial<T>, val: T[keyof T] | undefined) => void;
     export type Comparer<T> = (source: Partial<T>, target: Partial<T>) => boolean;
     export type Updater<T> = (target: T, source: T) => T;
 }
@@ -36,7 +36,7 @@ export function updateFieldExtended<T>(
 }
 
 const DefaultComparator: Comparator<any> = (v1, v2) => v1 === v2;
-const DefaultUpdater: Fields.Updater<any> = <T>(v1: T, v2: T) => Object.assign(v1, v2);
+const DefaultUpdater: Fields.Updater<any> = <T extends object>(v1: T, v2: T) => Object.assign(v1, v2);
 
 export type UpdateArrayOptions<T> = {
     additive?: boolean,
@@ -51,14 +51,14 @@ export type UpdateArrayOptions<T> = {
 export type UpdateArrayHooks<T> = {
     onAdded?: (item: T, index?: number) => void,
     onDeleted?: (item: T, index?: number) => void,
-    onUpdated?: (previous: T, next: T, index?: number) => void,
+    onUpdated?: (previous: T | null | undefined, next: T, index?: number) => void,
 };
 
 export function updateArray<T>(
     target: T[] | null,
     source: T[] | null,
     options?: UpdateArrayOptions<T>,
-): { changed: number, result: T[] } {
+): { changed: number, result: T[] | null } {
     if (!source) {
         return { changed: 0, result: target };
     }

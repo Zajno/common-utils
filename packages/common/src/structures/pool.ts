@@ -8,7 +8,7 @@ export class Pool<T> {
 
     public get(): T {
         if (this._container.length > 0) {
-            return this._container.pop();
+            return this._container.pop()!;
         } else {
             return this.factory();
         }
@@ -23,9 +23,11 @@ export class Pool<T> {
     }
 }
 
+type Initializer<T> = (item: T) => void;
+
 export class PoolDisposable<T extends IDisposable> extends Pool<T> {
 
-    constructor(factory: () => T, readonly initializer: (item: T) => void = null) {
+    constructor(factory: () => T, readonly initializer: null | Initializer<T> = null) {
         super(factory);
     }
 

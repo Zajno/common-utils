@@ -3,7 +3,7 @@ import type { LazyLight } from './light';
 
 export class Lazy<T> implements IDisposable, LazyLight<T> {
 
-    protected _instance: T = null;
+    protected _instance: T | null = null;
 
     constructor(
         protected readonly _factory: (() => T),
@@ -16,7 +16,7 @@ export class Lazy<T> implements IDisposable, LazyLight<T> {
 
     get value() {
         this.ensureInstance();
-        return this._instance;
+        return this._instance!;
     }
 
     /** Override me: additional way to make sure instance is valid */
@@ -38,7 +38,7 @@ export class Lazy<T> implements IDisposable, LazyLight<T> {
     }
 
     reset() {
-        if (this.hasValue && this._disposer) {
+        if (this.hasValue && this._instance && this._disposer) {
             this._disposer(this._instance);
         }
         this._instance = null;

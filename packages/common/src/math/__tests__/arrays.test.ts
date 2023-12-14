@@ -2,8 +2,8 @@ import * as arrays from '../arrays';
 
 describe('math/arrays', () => {
     it('arrayCompareG', () => {
-        expect(arrays.arrayCompareG<any>(null, null)).toBeNull();
-        expect(arrays.arrayCompareG<any>([], null)).toBeNull();
+        expect(arrays.arrayCompareG<any>(null, null as any)).toBeNull();
+        expect(arrays.arrayCompareG<any>([], null as any)).toBeNull();
 
         type T = { a: number };
         const tArr: T[] = [ { a: 1 }, { a: 2 }, { a: 3 } ];
@@ -12,10 +12,10 @@ describe('math/arrays', () => {
     });
 
     it('arrayCompare', () => {
-        expect(arrays.arrayCompare(null, false, null)).toBeNull();
-        expect(arrays.arrayCompare([], false, null)).toBeNull();
+        expect(arrays.arrayCompare(null, false, null as any)).toBeNull();
+        expect(arrays.arrayCompare([], false, null as any)).toBeNull();
 
-        expect(() => arrays.arrayCompare([1, 2, 3], false, null)).toThrow();
+        expect(() => arrays.arrayCompare([1, 2, 3], false, null as any)).toThrow();
 
         expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i > t)).toBe(3);
         expect(arrays.arrayCompare([1, 2, 3], false, (i, t) => i < t)).toBe(1);
@@ -45,10 +45,10 @@ describe('math/arrays', () => {
     });
 
     it('arrayCount', () => {
-        expect(arrays.arrayCount(null, null)).toBe(0);
-        expect(arrays.arrayCount([], null)).toBe(0);
+        expect(arrays.arrayCount(null, null as any)).toBe(0);
+        expect(arrays.arrayCount([], null as any)).toBe(0);
 
-        expect(() => arrays.arrayCount([1, 2, 3], null)).toThrow();
+        expect(() => arrays.arrayCount([1, 2, 3], null as any)).toThrow();
         expect(arrays.arrayCount([1, 2, 3], i => i >= 2)).toBe(2);
 
         type T = { a: number };
@@ -57,16 +57,16 @@ describe('math/arrays', () => {
     });
 
     it('arrayFirstResult', () => {
-        expect(arrays.arrayFirstResult(null, null)).toBeFalsy();
-        expect(arrays.arrayFirstResult([], null)).toBeFalsy();
+        expect(arrays.arrayFirstResult(null, null as any)).toBeFalsy();
+        expect(arrays.arrayFirstResult([], null as any)).toBeFalsy();
 
-        expect(() => arrays.arrayFirstResult([1, 2, 3], null)).toThrow();
+        expect(() => arrays.arrayFirstResult([1, 2, 3], null as any)).toThrow();
         expect(arrays.arrayFirstResult([1, 2, 3], i => i == 2 ? 'pass' : false)).toBe('pass');
     });
 
     it('arraysCompare', () => {
-        expect(arrays.arraysCompare(null, null)).toBeNull();
-        expect(arrays.arraysCompare([], null)).toBeNull();
+        expect(arrays.arraysCompare(null, null as any)).toBeNull();
+        expect(arrays.arraysCompare([], null as any)).toBeNull();
 
         const result = <T>(missing: T[], extra: T[], diff: T) => ({ missing, extra, diff });
 
@@ -111,7 +111,7 @@ describe('math/arrays', () => {
     });
 
     it('randomArrayItem', () => {
-        expect(() => arrays.randomArrayItem(null)).toThrow();
+        expect(() => arrays.randomArrayItem(null as any)).toThrow();
         expect(arrays.randomArrayItem([])).toBeNull();
 
         expect(arrays.randomArrayItem([1])).toBe(1);
@@ -137,7 +137,7 @@ describe('math/arrays', () => {
     });
 
     it('groupBy', () => {
-        expect(() => arrays.groupBy(null, null)).toThrow();
+        expect(() => arrays.groupBy(null as any, null as any)).toThrow();
 
         type T = { a: number };
         const tArr: T[] = [ { a: 1 }, { a: 2 }, { a: 2 }, { a: 3 } ];
@@ -145,17 +145,17 @@ describe('math/arrays', () => {
         expect(result).toBeTruthy();
 
         expect(result[1]).toHaveLength(1);
-        expect(result[1][0]).toEqual({ a: 1 });
+        expect(result[1]?.[0]).toEqual({ a: 1 });
 
         expect(result[2]).toHaveLength(2);
-        expect(result[2][0]).toEqual({ a: 2 });
+        expect(result[2]?.[0]).toEqual({ a: 2 });
 
         expect(result[3]).toHaveLength(1);
-        expect(result[3][0]).toEqual({ a: 3 });
+        expect(result[3]?.[0]).toEqual({ a: 3 });
     });
 
     it('groupOneBy', () => {
-        expect(() => arrays.groupOneBy(null, null)).toThrow();
+        expect(() => arrays.groupOneBy(null as any, null as any)).toThrow();
 
         const result = arrays.groupOneBy([ { a: 1 }, { a: 2 }, { a: 2 }, { a: 3 } ], i => i.a);
         expect(result).toBeTruthy();
@@ -166,7 +166,7 @@ describe('math/arrays', () => {
     });
 
     it('arraySplit', () => {
-        expect(() => arrays.arraySplit(null, null)).toThrow();
+        expect(() => arrays.arraySplit(null as any, null as any)).toThrow();
 
         const result = arrays.arraySplit([ { a: 1 }, { a: 2 }, { a: 2 }, { a: 3 } ], i => i.a >= 2);
         expect(result).toBeTruthy();
@@ -176,7 +176,7 @@ describe('math/arrays', () => {
     });
 
     it('findIndexLeast', () => {
-        expect(() => arrays.findIndexLeast(0, null)).toThrow();
+        expect(() => arrays.findIndexLeast(0, null as any)).toThrow();
 
         expect(arrays.findIndexLeast(2, [3, 2, 1])).toBe(0);
         expect(arrays.findIndexLeast(2, [3, 2, 1], true)).toBe(2);

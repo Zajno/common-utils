@@ -85,7 +85,7 @@ describe('Event', () => {
         expect(handler1).toHaveBeenCalledWith(1);
 
         const handler2 = vi.fn(<T>(r: T) => r);
-        const promise2 = oneTimeSubscription(e, x => x > 1).then(handler2);
+        const promise2 = oneTimeSubscription(e, x => (x != null && x > 1)).then(handler2);
 
         handler1.mockReset();
 

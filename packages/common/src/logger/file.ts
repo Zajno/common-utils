@@ -8,7 +8,7 @@ import { ILogger } from './abstractions';
 
 export class FileLoggerNode implements ILogger {
     private readonly _buffer: string[] = [];
-    private _logFilePath: string = null;
+    private _logFilePath: string | null = null;
 
     constructor(readonly extraLogger: ILogger = console, readonly instantFlush = false) {
         this.setLogName('');
@@ -55,7 +55,9 @@ export class FileLoggerNode implements ILogger {
         }
 
         try {
-            FS.appendFileSync(this._logFilePath, this._buffer.join(''));
+            if (this._logFilePath) {
+                FS.appendFileSync(this._logFilePath, this._buffer.join(''));
+            }
         } catch (err) {
             console.warn('Failed to flush file, error', err);
         } finally {

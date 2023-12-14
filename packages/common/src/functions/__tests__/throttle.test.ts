@@ -58,7 +58,7 @@ describe('throttle', () => {
     });
 
     it('ThrottleProcessor throttles and returns a result value', async () => {
-        let result: number = null;
+        let result: number | null = null;
         const cb = vi.fn(async (values: number[]): Promise<number> => {
             await setTimeoutAsync(50);
             result = values.reduce((a, b) => a + b, 0);
@@ -69,7 +69,7 @@ describe('throttle', () => {
         const initial = 1;
         let final = initial;
         const repeats = 5;
-        let promise: Promise<number> = null;
+        let promise: Promise<number | undefined> | null = null;
 
         for (let i = 0; i < repeats; i++) {
             promise = processor.push(final++);

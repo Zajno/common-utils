@@ -3,6 +3,7 @@
         "strict": false,
         "noUnusedLocals": true,
         "strictBindCallApply": true,
+        "strictNullChecks": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "allowSyntheticDefaultImports": true,

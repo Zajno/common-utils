@@ -14,10 +14,12 @@ describe('#logger-tests', () => {
     error: vi.fn(),
   });
 
+  const EmptyImpl = () => null;
+
   const createConsoleMocks = (): Record<keyof ILogger, MockInstance> => ({
-    log: vi.spyOn(CONSOLE, 'log').mockImplementation(null),
-    warn: vi.spyOn(CONSOLE, 'warn').mockImplementation(null),
-    error: vi.spyOn(CONSOLE, 'error').mockImplementation(null),
+    log: vi.spyOn(CONSOLE, 'log').mockImplementation(EmptyImpl),
+    warn: vi.spyOn(CONSOLE, 'warn').mockImplementation(EmptyImpl),
+    error: vi.spyOn(CONSOLE, 'error').mockImplementation(EmptyImpl),
   });
   const loggerMethods = Object.keys(createCustomLogger()) as (keyof ILogger)[];
   const clearMocks = (mocks: ReturnType<typeof createConsoleMocks>) => loggerMethods.forEach(m => mocks[m].mockClear());
@@ -84,7 +86,7 @@ describe('#logger-tests', () => {
     let iteration = 0;
     fc.assert(
       fc.property(_textToLog, (textToLog) => {
-        if (iteration % 2 === 0) setMode(null);
+        if (iteration % 2 === 0) setMode(undefined);
         const logger = createLogger(faker.lorem.word());
         if (iteration % 2 === 1) setMode(null);
 
@@ -93,7 +95,7 @@ describe('#logger-tests', () => {
 
         const spyLogger = vi.spyOn(CONSOLE, methodName);
 
-        expect(getMode()).toBeNull();
+        expect(getMode()).toBeFalsy();
         expect(spyLogger).not.toHaveBeenCalled();
         ++iteration;
       }), {

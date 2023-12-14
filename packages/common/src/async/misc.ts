@@ -11,22 +11,24 @@ export async function chainPromises(...promises: (() => Promise<void>)[]) {
 }
 
 export type ManualPromise<T> = {
-    promise: Promise<T>;
-    resolve: (res: T) => void;
-    reject: (err: Error) => void;
+    readonly promise: Promise<T>;
+    readonly resolve: (res: T) => void;
+    readonly reject: (err: Error) => void;
 };
 
 export function createManualPromise<T = void>(): ManualPromise<T> {
-    let resolve: (res: T) => void = null;
-    let reject: (err: Error) => void = null;
+
+    let resolve: (res: T) => void;
+    let reject: (err: Error) => void;
+
     const promise = new Promise<T>((_resolve, _reject) => {
         resolve = _resolve;
         reject = _reject;
     });
 
     return {
-        promise,
-        resolve,
-        reject,
+        get promise() { return promise; },
+        get resolve() { return resolve; },
+        get reject() { return reject; },
     };
 }

@@ -1,7 +1,7 @@
 
-export function setTimeoutAsync(ms: number, useCancel: (cb: () => void) => void = null) {
+export function setTimeoutAsync(ms: number, useCancel: null | ((cb: () => void) => void)= null) {
     let canceled = false;
-    let _reject: () => void;
+    let _reject: null | (() => void);
     let token: ReturnType<typeof setTimeout>;
     const res = new Promise<void>((resolve, reject) => {
         _reject = reject;
@@ -49,12 +49,12 @@ export function setTimeoutFramesAsync(frames: number) {
     });
 }
 
-export function timeoutPromise<T>(p: Promise<T>, timeoutMs: number, waitForMinElapsed?: number): Promise<{ resolved: T, timedOut?: boolean, elapsed: number }> {
+export function timeoutPromise<T>(p: Promise<T>, timeoutMs: number, waitForMinElapsed?: number): Promise<{ resolved: T | undefined, timedOut?: boolean, elapsed: number }> {
     const started = Date.now();
 
     return new Promise((resolve, reject) => {
         let finished = false;
-        const finish = (res: T, timedOut: boolean) => {
+        const finish = (res: T | undefined, timedOut: boolean) => {
             if (finished) {
                 return;
             }

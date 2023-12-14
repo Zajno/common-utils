@@ -40,8 +40,8 @@ export const NamesHelper = {
 
         return {
             ...NamesHelper.join(name),
-            firstName: name.firstName,
-            lastName: name.lastName,
+            firstName: name.firstName || '',
+            lastName: name.lastName || '',
         };
     },
 

@@ -10,8 +10,9 @@ type DateFields<T> = {
 export function ensureDates<T>(obj: T, ...fields: DateFields<T>[]) {
     if (obj) {
         fields.forEach(f => {
-            if (obj[f]) {
-                obj[f] = getDate(obj[f] as Date | string | number) as T[DateFields<T>];
+            const v = obj[f] as Date | string | number;
+            if (v) {
+                obj[f] = getDate(v) as NonNullable<T>[DateFields<T>];
             }
         });
     }
@@ -49,13 +50,13 @@ export function decompose(date: number | Date, local: boolean, ...grans: Granula
 export function decomposeMs<K extends Granularity>(ms: number, ...grans: K[]): Record<K, number> {
     const res: Partial<Record<Granularity, number>> = {};
 
-    // absolute vals
+    // absolute values
     let secs = Math.round(ms / 1000);
     let mins = Math.trunc(secs / 60);
     let hrs = Math.trunc(mins / 60);
     const days = Math.trunc(hrs / 24);
 
-    // apply only selected granularities
+    // apply only selected granularity
     if (grans.includes('day' as K)) {
         hrs = hrs % 24;
         res.day = days;
@@ -75,7 +76,7 @@ export function decomposeMs<K extends Granularity>(ms: number, ...grans: K[]): R
         res.second = secs;
     }
 
-    return res;
+    return res as Record<K, number>;
 }
 
 export function decomposeDate<K extends Granularity>(d: Date, local: boolean, ...grans: K[]): Record<K, number> {
@@ -86,7 +87,7 @@ export function decomposeDate<K extends Granularity>(d: Date, local: boolean, ..
             res[g] = DateX.get(d, g, local) + diff;
         }
     });
-    return res;
+    return res as Record<K, number>;
 }
 
 

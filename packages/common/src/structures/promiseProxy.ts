@@ -1,11 +1,11 @@
 import { LazyPromise } from '../lazy/promise';
-import { FunctionKeys, StringKeys } from '../types';
+import { AnyObject, FunctionKeys, StringKeys } from '../types';
 
 const PromiseGetter = '__promise' as const;
 
-type AllowedFnKeys<T> = FunctionKeys<T, any[], void>;
+type AllowedFnKeys<T extends AnyObject> = FunctionKeys<T, any[], void>;
 
-type PromiseProxy<T, TKeys extends StringKeys<T> = StringKeys<T>, TFnKeys = never, TWrap extends object = object> = {
+type PromiseProxy<T extends AnyObject, TKeys extends StringKeys<T> = StringKeys<T>, TFnKeys = never, TWrap extends object = object> = {
     [K in TKeys]: T[K] extends (...args: any) => any
         ? (K extends TFnKeys ? T[K] : never)
         : T[K];
@@ -42,7 +42,7 @@ export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends
     const wrapper = wrap || { } as Partial<PromiseProxy<T>>;
     const functionCalls = new Map<TFnKeys, any[]>();
 
-    let _resolved: T = null;
+    let _resolved: T | null = null;
 
     let lazy = new TLazy(async () => {
         // do the loading
@@ -62,7 +62,7 @@ export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends
         _resolved = result;
         if (_resolved) {
             // free up memory, we don't need the wrapper anymore
-            lazy = null;
+            lazy = null as any;
         }
         return result;
     });

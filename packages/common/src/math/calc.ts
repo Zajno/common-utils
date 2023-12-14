@@ -1,5 +1,5 @@
 
-export function clamp(val: number, min: number = undefined, max: number = undefined, cycle = false) {
+export function clamp(val: number, min: number | undefined | null = undefined, max: number | undefined | null = undefined, cycle = false) {
     if (min != null && val < min) {
         return (max != null && cycle) ? max : min;
     }

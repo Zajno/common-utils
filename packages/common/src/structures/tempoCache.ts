@@ -2,7 +2,7 @@
 export class TempoCache<T> {
 
     private _expiringAt: number = 0; // already expired
-    private _current: T = undefined;
+    private _current: T | undefined = undefined;
 
     constructor(readonly factory: () => T, readonly lifetimeMs: number) { }
 

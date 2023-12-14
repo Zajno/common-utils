@@ -1,5 +1,5 @@
 
-export type Getter<T> = (() => T) | T | null;
+export type Getter<T> = (() => T) | T;
 
 export namespace Getter {
     export function getValue<T>(getter: Getter<T>): T {

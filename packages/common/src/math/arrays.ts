@@ -6,12 +6,12 @@ export function isArray<T>(value: any): value is T[] {
     return Array.isArray(value);
 }
 
-export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previous: T) => boolean): T {
+export function arrayCompareG<T>(arr: ReadonlyArray<T> | null | undefined, cond: (current: T, previous: T | null) => boolean): T | null {
     if (!isArray<T>(arr) || arr.length <= 0) {
         return null;
     }
 
-    let result: T = null;
+    let result: T | null = null;
     for (let i = 0; i < arr.length; i++) {
         const current: T = arr[i];
         if (cond(current, result)) {
@@ -22,7 +22,7 @@ export function arrayCompareG<T>(arr: ReadonlyArray<T>, cond: (current: T, previ
     return result;
 }
 
-export function arrayCompare(arr: number[], absolute: boolean, cond: (i: number, t: number) => boolean) {
+export function arrayCompare(arr: ReadonlyArray<number> | null | undefined, absolute: boolean, cond: (i: number, t: number) => boolean) {
     if (!Array.isArray(arr) || arr.length <= 0) {
         return null;
     }
@@ -38,15 +38,15 @@ export function arrayCompare(arr: number[], absolute: boolean, cond: (i: number,
     return max;
 }
 
-export function arrayMax(arr: number[], absolute = false) {
+export function arrayMax(arr: ReadonlyArray<number>, absolute = false) {
     return arrayCompare(arr, absolute, (e, max) => e > max);
 }
 
-export function arrayMin(arr: number[], absolute = false) {
+export function arrayMin(arr: ReadonlyArray<number>, absolute = false) {
     return arrayCompare(arr, absolute, (e, min) => e < min);
 }
 
-export function arrayAverage(arr: number[], absolute = false) {
+export function arrayAverage(arr: ReadonlyArray<number> | null | undefined, absolute = false) {
     if (!Array.isArray(arr) || arr.length <= 0) {
         return 0;
     }
@@ -60,7 +60,7 @@ export function arrayAverage(arr: number[], absolute = false) {
     return sum / arr.length;
 }
 
-export function arrayCount<T>(arr: ReadonlyArray<T>, condition: (o: T) => boolean): number {
+export function arrayCount<T>(arr: ReadonlyArray<T> | null | undefined, condition: (o: T) => boolean): number {
     if (!arr || !arr.length) {
         return 0;
     }
@@ -74,7 +74,35 @@ export function arrayCount<T>(arr: ReadonlyArray<T>, condition: (o: T) => boolea
     return count;
 }
 
-export function arrayFirstResult<T, V>(arr: ReadonlyArray<T>, mapper: (o: T) => V | null | false): V | null | false {
+
+type KeyOf<T> = {
+    [K in keyof T]: T[K] extends string | number ? K : never;
+}[(string & keyof T)];
+
+/** @returns count of items in array per key, filtered off by predicate */
+export function arrayCountByKey<T, TKey extends KeyOf<T>>(arr: ReadonlyArray<T>, key: TKey, predicate?: Predicate<T>): Record<string | number, number> {
+    const result: Record<number, number> = {};
+    for (let i = 0; i < arr.length; i += 1) {
+        const item = arr[i];
+        if (predicate && !predicate(item)) {
+            continue;
+        }
+
+        const keyValue = item[key] as string | number;
+        let count = result[keyValue];
+        if (count == null) {
+            count = 1;
+        } else {
+            count += 1;
+        }
+
+        result[keyValue] = count;
+    }
+
+    return result;
+}
+
+export function arrayFirstResult<T, V>(arr: ReadonlyArray<T> | null | undefined, mapper: (o: T) => V | null | false): V | null | false {
     if (arr?.length) {
         for (let i = 0; i < arr.length; ++i) {
             const r = mapper(arr[i]);
@@ -87,7 +115,7 @@ export function arrayFirstResult<T, V>(arr: ReadonlyArray<T>, mapper: (o: T) => 
     return false;
 }
 
-export function arraysCompare<T>(base: readonly T[], target: readonly T[], comparator?: Comparator<T>) {
+export function arraysCompare<T>(base: ReadonlyArray<T> | null | undefined, target: readonly T[], comparator?: Comparator<T>) {
     if (!base || !target) {
         return null;
     }
@@ -117,7 +145,7 @@ export function arraysCompare<T>(base: readonly T[], target: readonly T[], compa
     return result;
 }
 
-export function arraysCompareDistinct<T>(base: readonly T[], target: readonly T[]) {
+export function arraysCompareDistinct<T>(base: ReadonlyArray<T> | null | undefined, target: ReadonlyArray<T> | null | undefined) {
     if (!base || !target) {
         return null;
     }
@@ -148,7 +176,7 @@ export function arraysCompareDistinct<T>(base: readonly T[], target: readonly T[
     return result;
 }
 
-export function arrayDistinct<T>(arr: readonly T[]) {
+export function arrayDistinct<T>(arr: ReadonlyArray<T> | null | undefined): T[] {
     return Array.from(new Set(arr || []));
 }
 
@@ -159,6 +187,10 @@ export function normalize(arr: number[]): number[] {
 
     const min = arrayMin(arr);
     const max = arrayMax(arr);
+    if (min == null || max == null) {
+        return arr;
+    }
+
     const dist = max - min;
     if (Math.abs(dist) < 0.000001) { // almost zero
         return arr.map(() => 1);
@@ -167,7 +199,7 @@ export function normalize(arr: number[]): number[] {
     return arr.map(x => (x - min) / dist);
 }
 
-export function randomArrayItem<T>(arr: T[]): T {
+export function randomArrayItem<T>(arr: ReadonlyArray<T>): T | null {
     if (!arr.length) {
         return null;
     }
@@ -182,11 +214,12 @@ export function arraySwap<T>(arr: T[], i1: number, i2: number) {
     arr[i2] = x;
 }
 
+export function shuffle<T>(arr: null | undefined, slice: any): T[];
 export function shuffle<T>(arr: T[], slice: false): T[];
-export function shuffle<T>(arr: ReadonlyArray<T>): T[];
-export function shuffle<T>(arr: ReadonlyArray<T>, slice: true): T[];
+export function shuffle<T>(arr: ReadonlyArray<T> | null | undefined): T[];
+export function shuffle<T>(arr: ReadonlyArray<T> | null | undefined, slice: true): T[];
 
-export function shuffle<T>(arr: T[], slice = true): T[] {
+export function shuffle<T>(arr: T[] | null | undefined, slice = true): T[] {
     const res = (slice ? arr?.slice() : arr) || [];
 
     for (let i = 0; i < res.length - 1; ++i) {
@@ -247,7 +280,7 @@ export function findIndexLeast(num: number, arr: number[], sort = false) {
 // eslint-disable-next-line @typescript-eslint/ban-types -- anything for which `typeof` will be 'function'
 type NonFunction<T> = T extends Function ? never : T;
 
-export function removeItem<T>(array: T[], item: NonFunction<T> | Predicate<T>): T {
+export function removeItem<T>(array: T[], item: NonFunction<T> | Predicate<T>): T | null {
     const index = typeof item === 'function'
         ? array.findIndex(item as Predicate<T>)
         : array.indexOf(item);

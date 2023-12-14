@@ -22,8 +22,8 @@ export interface IObjectMath<T extends AnyObject> extends IObjectOps<T> {
     contains(base: DeepReadonly<T>, target: DeepReadonly<T>): boolean;
     inverse(o: DeepReadonly<T>): T;
 
-    abs(o: DeepReadonly<T>, options?: AbsOptions): T;
-    round(o: DeepReadonly<T>, options?: RoundOptions): T;
+    abs(o: DeepReadonly<T>, options?: AbsOptions): T | null;
+    round(o: DeepReadonly<T>, options?: RoundOptions): T | null;
 
     add(o1: DeepReadonly<T>, o2: DeepReadonly<T>): T;
     subtract(base: DeepReadonly<T>, amount: DeepReadonly<T> | number): T;

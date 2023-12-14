@@ -3,22 +3,22 @@ import { ILogger, ILoggerSwitchable, LoggerFunction } from './abstractions';
 export const EMPTY_FUNCTION = () => { /* no-op */ };
 
 export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
-    public log: LoggerFunction = null;
-    public warn: LoggerFunction = null;
-    public error: LoggerFunction = null;
+    public log: LoggerFunction;
+    public warn: LoggerFunction;
+    public error: LoggerFunction;
 
-    private _name: string = null;
+    private _name: string | null = null;
 
     get name() { return this._name; }
 
     protected abstract get implementation(): ILogger;
 
-    constructor(name?: string) {
-        this._name = name;
+    constructor(name?: string | undefined) {
+        this._name = name || null;
         this.disable();
     }
 
-    enable(overrideName: string = null) {
+    enable(overrideName: string | null = null) {
         this._name = overrideName || this._name;
 
         this.log = this._name

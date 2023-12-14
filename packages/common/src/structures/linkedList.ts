@@ -33,13 +33,13 @@ interface LinkedListItem<T> extends ILinkedListItem<T> {
 
 export class LinkedList<T> implements ILinkedList<T> {
 
-    private _root: LinkedListItem<T> = null;
-    private _last: LinkedListItem<T> = null;
+    private _root: LinkedListItem<T> | undefined = undefined;
+    private _last: LinkedListItem<T> | undefined = undefined;
 
     private _length = 0;
 
-    get root(): ILinkedListItem<T> { return this._root; }
-    get last(): ILinkedListItem<T> { return this._last; }
+    get root(): ILinkedListItem<T> | undefined { return this._root; }
+    get last(): ILinkedListItem<T> | undefined { return this._last; }
     get length() { return this._length; }
 
     *[Symbol.iterator]() {
@@ -54,7 +54,7 @@ export class LinkedList<T> implements ILinkedList<T> {
         const next: LinkedListItem<T> = {
             value: value,
             list: this,
-            position: null,
+            position: 0,
         };
 
         this._length++;
@@ -64,15 +64,17 @@ export class LinkedList<T> implements ILinkedList<T> {
             this._root = this._last = next;
         } else {
             next.prev = this._last;
-            this._last.next = next;
+            if (this._last) {
+                this._last.next = next;
+            }
             this._last = next;
             next.position = this._length - 1;
         }
 
-        return this.last;
+        return this.last!;
     }
 
-    remove(item: ILinkedListItem<T>) {
+    remove(item: ILinkedListItem<T> | null | undefined) {
         if (!item || item.list !== this) {
             return;
         }
@@ -101,8 +103,8 @@ export class LinkedList<T> implements ILinkedList<T> {
             removed = true;
         }
 
-        itemInternal.prev = itemInternal.next = null;
-        itemInternal.list = undefined;
+        itemInternal.prev = itemInternal.next = undefined;
+        itemInternal.list = undefined as any;
 
         if (removed) {
             this._length--;
@@ -120,10 +122,10 @@ export class LinkedList<T> implements ILinkedList<T> {
     clear(): void {
         for (const item of this) {
             item.next = item.prev = undefined;
-            item.list = undefined;
+            item.list = undefined as any;
         }
 
-        this._root = this._last = null;
+        this._root = this._last = undefined;
         this._length = 0;
     }
 }

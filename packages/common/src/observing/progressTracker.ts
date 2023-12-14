@@ -6,8 +6,8 @@ import { Event } from './event';
 export class ProgressTracker {
 
     private readonly _firstTimestamp = Date.now();
-    private _lastTimestamp: number = null;
-    private _lastCompleted: number = null;
+    private _lastTimestamp: number | null = null;
+    private _lastCompleted: number | null = null;
 
     private _completed = 0;
     private _total = 0;
@@ -70,7 +70,7 @@ export class ProgressTracker {
             const totalElapsed = msToString(totalElapsedMs);
             const totalEstimated = msToString(leftProgressTime);
 
-            this.logger.log(`Progress: ${completed}/${total} ${totalElapsed}/${totalEstimated} => ${this._currentProgress}%`);
+            this.logger!.log(`Progress: ${completed}/${total} ${totalElapsed}/${totalEstimated} => ${this._currentProgress}%`);
         }
 
         this._changed.trigger({

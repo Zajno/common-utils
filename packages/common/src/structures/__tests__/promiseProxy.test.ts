@@ -16,7 +16,7 @@ describe('createPromiseProxy', () => {
     });
 
     it('should store a field in proxy and then set it in the resolved object', async () => {
-        const obj = { foo: null as string, bar: vi.fn() };
+        const obj = { foo: null as string | null, bar: vi.fn() };
         const proxy = createPromiseProxy({ loader: () => setTimeoutAsync(10).then(() => obj) });
         proxy.foo = 'bar';
 
@@ -32,7 +32,7 @@ describe('createPromiseProxy', () => {
         const obj = {
             // this key should be forbidden - uncomment to see TS error
             // __promise: null as Promise<any>,
-            foo: null as string,
+            foo: null as string | null,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             bar(v: string) { this.foo = v; },
             faz: vi.fn() as () => void,
@@ -68,7 +68,7 @@ describe('createPromiseProxy', () => {
 
     it('should accept a wrapper with additional fields or functions that will NOT be copied to the resolved object but still exist in proxy', async () => {
         const obj = {
-            foo: null as string,
+            foo: null as string | null,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             bar(v: string) { this.foo = v; },
         };
