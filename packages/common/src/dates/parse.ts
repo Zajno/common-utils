@@ -1,8 +1,9 @@
 
 export function getTime(d: null | undefined): null;
 export function getTime(d: Date | number | string): number;
+export function getTime(d: Date | number | string | null | undefined): number | null;
 
-export function getTime(d: Date | number | string | null | undefined) {
+export function getTime(d: Date | number | string | null | undefined): number | null {
     if (d == null) {
         return null;
     }
@@ -27,6 +28,7 @@ export function getTime(d: Date | number | string | null | undefined) {
 
 export function getDate(d: null | undefined): null;
 export function getDate(d: Date | number | string): Date;
+export function getDate(d: Date | number | string | null | undefined): Date | null;
 
 export function getDate(d: Date | number | string | null | undefined): Date | null {
     if (!d) {

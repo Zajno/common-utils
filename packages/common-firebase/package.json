@@ -1,11 +1,18 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
+  "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zajno/common-firebase.git"
+    "url": "git+https://github.com/Zajno/common-utils.git"
   },
+  "author": "Zajno <hello@zajno.com> (https://zajno.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Zajno/common-utils/issues"
+  },
+  "homepage": "https://github.com/Zajno/common-utils/tree/main/packages/common-firebase#readme",
   "scripts": {
     "clean": "rss",
     "dev": "rss",
@@ -20,8 +27,6 @@
     "lint": "rss",
     "test": "rss"
   },
-  "author": "Zajno",
-  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "@firebase/app-types": "^0.9.0",
