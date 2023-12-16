@@ -2,17 +2,17 @@
   "name": "@zajno/common-web",
   "version": "1.0.1",
   "description": "Zajno's re-usable utilities for JS/TS projects for Web",
-  "author": "Zajno",
-  "license": "MIT",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zajno/common-web.git"
+    "url": "git+https://github.com/Zajno/common-utils.git"
   },
+  "author": "Zajno <hello@zajno.com> (https://zajno.com)",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Zajno/common-web/issues"
+    "url": "https://github.com/Zajno/common-utils/issues"
   },
-  "homepage": "https://github.com/Zajno/common-web#readme",
+  "homepage": "https://github.com/Zajno/common-utils/tree/main/packages/common-web#readme",
   "scripts": {
     "clean": "rss",
     "dev": "rss",

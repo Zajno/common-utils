@@ -2,6 +2,7 @@
   "name": "@zajno/common",
   "version": "2.2.3",
   "description": "Zajno's re-usable utilities for JS/TS projects",
+  "private": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-utils.git"
@@ -11,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/Zajno/common-utils/issues"
   },
-  "homepage": "https://github.com/Zajno/common-utils#readme",
+  "homepage": "https://github.com/Zajno/common-utils/tree/main/packages/common#readme",
   "scripts": {
     "clean": "rss",
     "dev": "rss",
