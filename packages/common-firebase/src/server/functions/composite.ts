@@ -227,12 +227,6 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
     }
 }
 
-export namespace FunctionCompositeFactory {
-    export type ToMiddleware<T> = T extends FunctionCompositeFactory<infer TInfo, infer TContext>
-        ? IMiddleware<EndpointArg<TInfo>, EndpointResult<TInfo>, TContext>
-        : never;
-}
-
 function argumentObjectToPath(obj: any): string {
     if (!obj || typeof obj !== 'object') {
         return '';

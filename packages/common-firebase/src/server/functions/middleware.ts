@@ -229,14 +229,14 @@ export namespace Middleware {
 
 class MiddlewareAggregator<TContext extends ObjectOrPrimitive = never> implements IMiddleware<any, any, TContext> {
 
-    private _chain: EndpointHandler<any, any, TContext> | null = null;
+    private _chain: EndpointHandler<any, any, TContext> | undefined = undefined;
 
     constructor(private readonly _middlewares: IMiddleware<any, any, TContext>[]) { }
 
     get isEmpty(): boolean { return this.currentChain != null; }
-    get currentChain(): EndpointHandler<any, any, TContext> | null {
+    get currentChain(): EndpointHandler<any, any, TContext> {
         if (this._chain === undefined) {
-            this._chain = Middleware.combine(...this._middlewares.map(m => m.currentChain));
+            this._chain = Middleware.combine(...this._middlewares.map(m => m.currentChain))!;
         }
         return this._chain;
     }
