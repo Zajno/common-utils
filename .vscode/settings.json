@@ -5,7 +5,8 @@
         "chunkify",
         "datex",
         "Firestore",
-        "Pluggable"
+        "Pluggable",
+        "scripty",
     ],
     "typescript.preferences.quoteStyle": "single",
     "javascript.preferences.quoteStyle": "single",

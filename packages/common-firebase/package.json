@@ -14,18 +14,22 @@
   },
   "homepage": "https://github.com/Zajno/common-utils/tree/main/packages/common-firebase#readme",
   "scripts": {
-    "clean": "rss",
-    "dev": "rss",
-    "build": "rss",
-    "build:clean": "rss",
-    "build:copy": "rss",
-    "build:w": "rss",
-    "publish:local": "rss",
-    "publish:from-dist": "rss",
-    "build-for-publish": "rss",
-    "copy-for-publish": "rss",
-    "lint": "rss",
-    "test": "rss"
+    "clean": "scripty",
+    "dev": "scripty",
+    "build": "scripty",
+    "build:clean": "scripty",
+    "build:w": "scripty",
+    "publish:local": "scripty",
+    "publish:from-dist": "scripty",
+    "build:full": "scripty",
+    "bundle": "scripty",
+    "lint": "scripty",
+    "test": "scripty"
+  },
+  "config": {
+    "scripty": {
+      "path": "../scripts"
+    }
   },
   "dependencies": {},
   "devDependencies": {
