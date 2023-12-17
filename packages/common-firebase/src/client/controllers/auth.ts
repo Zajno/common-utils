@@ -193,8 +193,8 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected async sendMagicLinkRequest(email: string, reason: MagicLinkRequestReasons, displayName?: string) {
-        email = prepareEmail(email);
+    protected async sendMagicLinkRequest(emailInput: string, reason: MagicLinkRequestReasons, displayName?: string) {
+        const email = prepareEmail(emailInput);
         logger.log('sendMagicLinkRequest', email, reason);
 
         // don't use Promise.all here – it crashes Expo
@@ -245,7 +245,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
             logger.error('Failed to perform a sign in for user:', email, '; Error:', err);
             return {
                 error: err,
-                email,
+                email: email || undefined,
             };
         }
     }
