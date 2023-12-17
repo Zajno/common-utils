@@ -14,10 +14,10 @@ describe('CommonModel', () => {
 
     it('works', async () => {
 
-        let m: CommonModel<string[]> = null;
+        let mm: CommonModel<string[]> | null = null;
 
         const fn = async () => {
-            m = new CommonModel<string[]>(() => [], true)
+            mm = new CommonModel<string[]>(() => [], true)
                 .setValidationConfig({
                     validator: (v: readonly any[]) => v.length > 0 ? ValidationErrors.None : ValidationErrors.ShouldBeNonEmpty,
                     errors: {
@@ -27,8 +27,9 @@ describe('CommonModel', () => {
         };
 
         await expect(fn()).resolves.not.toThrow();
-        expect(m).toBeDefined();
 
+        expect(mm).not.toBeNull();
+        const m = mm!;
         m.value = ['1'];
 
         expect(m.value).toStrictEqual(['1']);

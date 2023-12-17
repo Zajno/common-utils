@@ -3,29 +3,29 @@ import type { ILocalization, ILocalizationDependency } from './abstractions';
 import type { AnyObject } from '@zajno/common/types/index';
 
 export class LocalizationManager<TLocaleType extends string, TStrings extends AnyObject> implements ILocalization<TStrings> {
-    @observable
-    private _currentLocale: TLocaleType = null;
+    private _currentLocale: TLocaleType | null = null;
+    private _currentStrings: TStrings | null = null;
 
-    @observable.ref
-    private _currentStrings: TStrings = null;
-
-    private readonly _defaultStrings: TStrings = null;
+    private readonly _defaultStrings: TStrings;
     private readonly _dependents: ILocalizationDependency<TStrings, TLocaleType>[] = [];
 
     constructor(
         private readonly _dataSource: { [locale: string]: TStrings },
         initialLocale: TLocaleType,
-        defaultLocale: TLocaleType = null,
+        defaultLocale: TLocaleType | null = null,
     ) {
-        makeObservable(this);
+        makeObservable<LocalizationManager<string, AnyObject>, '_currentLocale' | '_currentStrings'>(this, {
+            _currentLocale: observable,
+            _currentStrings: observable.ref,
+            useLocale: action,
+        });
         this._defaultStrings = this.getStrings(defaultLocale || initialLocale);
         this.useLocale(initialLocale);
     }
 
     public get Locale() { return this._currentLocale; }
-    public get Current() { return this._currentStrings; }
+    public get Current() { return this._currentStrings!; }
 
-    @action
     public useLocale(locale: TLocaleType) {
         this._currentLocale = locale;
         this._currentStrings = this.getStrings(this._currentLocale) || this._defaultStrings;
@@ -45,7 +45,11 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends An
     }
 
     private updateDependencies() {
-        this._dependents.forEach(d => d.updateLocale(this._currentStrings, this._currentLocale));
+        if (this._currentStrings || !this._currentLocale) {
+            return;
+        }
+
+        this._dependents.forEach(d => d.updateLocale(this._currentStrings!, this._currentLocale!));
     }
 
     private getStrings(locale: string): TStrings {

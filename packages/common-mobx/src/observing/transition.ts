@@ -1,26 +1,26 @@
 import { reaction } from 'mobx';
 import { IEvent, Event } from '@zajno/common/observing/event';
 import { ILogger, createLogger } from '@zajno/common/logger/index';
-import { IDisposable } from '@zajno/common/functions/disposer';
+import { DisposeFunction, IDisposable } from '@zajno/common/functions/disposer';
 import { Getter } from '@zajno/common/types/getter';
 
 export class TransitionObserver<T> implements IDisposable {
 
     private _event: Event<T>;
-    private _getter: () => T = null;
-    private _filter: (next: T, prev: T) => boolean = null;
+    private _getter: null | (() => T) = null;
+    private _filter: null | ((next: T, prev: T) => boolean) = null;
 
-    private _disposer: () => void;
+    private _disposer: undefined | DisposeFunction;
     private _prev: T;
 
     private _from: Getter<T>;
     private _to: Getter<T>;
 
-    private _cb: (v: T) => any;
+    private _cb: null | ((v: T) => any);
     private _fireOnce = false;
 
-    private _promise: Promise<T>;
-    private _promiseReject: (err?: any) => any;
+    private _promise: null | Promise<T>;
+    private _promiseReject: null | ((err?: any) => any);
 
     private logger: ILogger;
 
@@ -86,6 +86,10 @@ export class TransitionObserver<T> implements IDisposable {
     }
 
     forceCheck() {
+        if (!this._getter) {
+            return false;
+        }
+
         return this._checkValue(this._getter());
     }
 
@@ -94,7 +98,7 @@ export class TransitionObserver<T> implements IDisposable {
         return this;
     }
 
-    getPromise(timeout: number = null) {
+    getPromise(timeout: number | null = null) {
         if (this._promise == null) {
             if (!this.isObserving) {
                 return Promise.reject(new Error('Cannot get promise for disposed TransitionObserver'));
@@ -122,6 +126,10 @@ export class TransitionObserver<T> implements IDisposable {
     }
 
     reverse() {
+        if (!this._getter) {
+            throw new Error('Cannot reverse TransitionObserver without getter being set');
+        }
+
         return new TransitionObserver<T>(this._getter)
             .from(this._to)
             .to(this._from);
@@ -139,7 +147,7 @@ export class TransitionObserver<T> implements IDisposable {
         this.logger?.log(' disposing... ');
         if (this._disposer) {
             this._disposer();
-            this._disposer = null;
+            this._disposer = undefined;
         }
         if (this.isPromising) {
             this._finishPromise(this._promiseReject, new Error('TransitionObserver Aborted'));
@@ -188,7 +196,7 @@ export class TransitionObserver<T> implements IDisposable {
         return trigger;
     };
 
-    private _finishPromise<T>(cb: (a?: T) => any, arg?: T) {
+    private _finishPromise<T>(cb: null | ((a?: T) => any), arg?: T) {
         this._promise = null;
         this._promiseReject = null;
         this._cb = null;

@@ -14,7 +14,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
     private readonly _items: Getter<readonly T[]>;
 
     private _indexLocked = false;
-    private _initialIndex: number = null;
+    private _initialIndex: number;
 
     private readonly _flags = createLazy(() => this.createFlags());
 
@@ -60,7 +60,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
     get value() { return this.selectedValue; }
     get selectedValue() {
         const vs = this.values;
-        return vs.length ? vs[this._index.value] : null;
+        return vs.length ? vs[this._index.value] : '';
     }
 
     set value(v: string) { this.selectedValue = v; }
@@ -71,7 +71,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         }
     }
 
-    get selectedItem(): T {
+    get selectedItem(): T | null {
         const items = this.items;
         return items.length ? items[this._index.value] : null;
     }

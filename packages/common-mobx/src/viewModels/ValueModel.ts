@@ -4,7 +4,7 @@ import { Model } from '@zajno/common/models/Model';
 import { ObservableTypes } from '../observing/types';
 
 export class ValueModel<T> extends Model<T> {
-    constructor(v: Getter<T> = null, useRefObservable = true) {
+    constructor(v: Getter<T | null> = null, useRefObservable = true) {
         super(v);
 
         makeObservable<ValueModel<T>, '_value'>(this, {

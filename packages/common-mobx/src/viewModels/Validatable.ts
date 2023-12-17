@@ -3,7 +3,7 @@ import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, Validation
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
-export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0 | null>>;
+export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0>>;
 
 export type ValidationConfig<T, TErrors extends string | number = ValidationErrors> = {
     validator: ValueValidator<Readonly<T>, TErrors>,
@@ -15,11 +15,11 @@ const EmptyValidator = () => 0;
 
 export abstract class ValidatableModel<T = string> {
 
-    private _validator: ValueValidator<T | Readonly<T>, any> = null;
-    private _strings: ValidationErrorsStrings<any> = null;
+    private _validator: null | ValueValidator<T | Readonly<T> | null, any> = null;
+    private _strings: null | ValidationErrorsStrings<any> = null;
 
     // @observable
-    private _error: string = null;
+    private _error: string | null = null;
 
     protected _validateOnChange = false;
 
@@ -30,7 +30,7 @@ export abstract class ValidatableModel<T = string> {
         });
     }
 
-    protected abstract get valueToValidate(): T | Readonly<T>;
+    protected abstract get valueToValidate(): T | Readonly<T> | null;
 
     get isValid() { return !this._error; }
 
@@ -57,7 +57,7 @@ export abstract class ValidatableModel<T = string> {
     }
 
     /** should return true-thy error code if NOT OK; otherwise if OK it will return null or zero code */
-    public async validateValue(value: T): Promise<ValidationError | string | number | null> {
+    public async validateValue(value: T | null): Promise<ValidationError | string | number | null> {
         if (this._validator) {
             try {
                 const res = await this._validator(value);
@@ -78,8 +78,8 @@ export abstract class ValidatableModel<T = string> {
             return true;
         }
 
-        let errorCode: ValidationErrors = null;
-        let errorStr: string = null;
+        let errorCode: ValidationErrors | null = null;
+        let errorStr: string | null = null;
         const validationResult = await this.validateValue(this.valueToValidate);
         if (validationResult != null) {
             if (validationResult instanceof ValidationError) {
@@ -93,7 +93,7 @@ export abstract class ValidatableModel<T = string> {
         }
 
         runInAction(() => {
-            this._error = errorStr || this._strings?.[errorCode] || null;
+            this._error = errorStr || (errorCode && this._strings?.[errorCode]) || null;
         });
 
         return this._error == null;
