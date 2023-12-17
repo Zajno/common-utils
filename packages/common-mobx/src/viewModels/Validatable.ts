@@ -1,5 +1,16 @@
-import { observable, makeObservable, action, runInAction } from 'mobx';
-import { ValidatorFunction, ValidatorFunctionAsync, ValidationErrors, ValidationError } from '@zajno/common/validation/index';
+import {
+    observable,
+    makeObservable,
+    action,
+    runInAction,
+} from 'mobx';
+import {
+    ValidatorFunction,
+    ValidatorFunctionAsync,
+    ValidationErrors,
+    ValidationError,
+    ValidationVoid,
+} from '@zajno/common/validation/index';
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
@@ -13,7 +24,7 @@ export type ValidationConfig<T, TErrors extends string | number = ValidationErro
 
 const EmptyValidator = () => 0;
 
-export abstract class ValidatableModel<T = string> {
+export abstract class ValidatableModel<T = string> implements ValidationVoid {
 
     private _validator: null | ValueValidator<T | Readonly<T> | null, any> = null;
     private _strings: null | ValidationErrorsStrings<any> = null;
