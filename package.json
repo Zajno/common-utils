@@ -13,12 +13,12 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@types/node": "^18.19.2",
-        "@vitest/coverage-istanbul": "^1.0.2",
-        "lerna": "^8.0.0",
+        "@types/node": "^18.19.3",
+        "@vitest/coverage-istanbul": "^1.0.4",
+        "lerna": "^8.0.1",
         "rimraf": "^5.0.5",
         "scripty": "^2.1.1",
-        "vitest": "^1.0.1"
+        "vitest": "^1.0.4"
     },
     "rss": {
         "clean": "rimraf ./dist *.tsbuildinfo",
