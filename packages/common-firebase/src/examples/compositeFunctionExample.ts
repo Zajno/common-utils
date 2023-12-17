@@ -57,7 +57,7 @@ export namespace Server {
         // custom context
         export type CurrentUserContext = { currentUser?: { id: string, name: string }};
         export namespace CurrentUserContext {
-            export const Default: CurrentUserContext = null;
+            export const Default: CurrentUserContext = null as any;
 
             // middleware for populating custom context
             export const Middleware = ContextTo.Populist(Default, async (ctx) => {
@@ -77,8 +77,10 @@ export namespace Server {
 
         // define custom context for this middleware
         type Context = CommonMiddlewares.CurrentUserContext;
+        const DefaultContext: Context = null as any;
 
         type CustomContext = { a: number };
+        const DefaultCustomContext: CustomContext = null as any;
 
         // implementation
         const exampleFunction = SpecTo.Function(ExampleEndpoint.v1.example, async (data, ctx) => {
@@ -90,15 +92,15 @@ export namespace Server {
             }
 
             return { ok: data.id === ctx.data.currentUser.id };
-        }, null as Context);
+        }, DefaultContext);
 
-        export const exampleHandler = SpecTo.Middleware(ExampleEndpoint.v1.example, null as Context)
-            .mergeContext(null as CustomContext)
+        export const exampleHandler = SpecTo.Middleware(ExampleEndpoint.v1.example, DefaultContext)
+            .mergeContext(DefaultCustomContext)
             .useFunction(exampleFunction);
 
         export const nestedFunction = SpecTo.Function(ExampleEndpoint.v1.namespace.nested, async (data, ctx) => {
-            return { kek: ('kek' + (data.lol === ctx.data.currentUser.name ? data.lol : 'lol')).length };
-        }, null as Context);
+            return { kek: ('kek' + (data.lol === ctx.data?.currentUser?.name ? data.lol : 'lol')).length };
+        }, DefaultContext);
     }
 
     export namespace ApiRoot {
@@ -135,12 +137,12 @@ export namespace Server {
         const m2 = new Middleware<string, string, string>().useFunction(async (data, ctx: EndpointContext<string>) => { return (ctx.data || data) + '_m2'; });
 
         ExampleV1.handlers.middlewaresCheck
-            .mergeContext(null as string)
+            .mergeContext(null as any as string)
             .use(Middleware.aggregate(m0, m1, m2).currentChain);
 
-        export const ExampleV2 = new FunctionCompositeFactory(ExampleEndpoint.v2(), null as string);
+        export const ExampleV2 = new FunctionCompositeFactory(ExampleEndpoint.v2(), null as any as string);
 
-        useAsyncInitLoader(ExampleV2, async () => {
+        useAsyncInitLoader(ExampleV2.asMiddleware, async () => {
             await setTimeoutAsync(50);
             return (v2) => {
                 v2.handlers.useAuth();

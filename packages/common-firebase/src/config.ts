@@ -10,7 +10,7 @@ export type FirebaseConfig = {
     measurementId?: string,
 };
 
-let appConfig: FirebaseConfig = null;
+let appConfig: FirebaseConfig | null = null;
 
 export function setAppConfig(config: FirebaseConfig) {
     appConfig = config;

@@ -10,11 +10,11 @@ export type ScheduledFunction = ((context: functions.EventContext) => PromiseOrT
 export type PubSubTopicListener = (message: functions.pubsub.Message, context: functions.EventContext) => PromiseOrT<any>;
 export type SchedulerOptions = { timeZone?: string, runtime?: functions.RuntimeOptions };
 
-export function createHttpsCallFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions = null): FirebaseEndpointRunnable {
+export function createHttpsCallFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions | null = null): FirebaseEndpointRunnable {
     return getBaseBuilder(options).https.onCall(worker);
 }
 
-export function createHttpsRequestFunction<TRes = any>(worker: RequestEndpointFunction<TRes>, options: functions.RuntimeOptions = null): functions.HttpsFunction {
+export function createHttpsRequestFunction<TRes = any>(worker: RequestEndpointFunction<TRes>, options: functions.RuntimeOptions | null = null): functions.HttpsFunction {
     return getBaseBuilder(options).https.onRequest(worker);
 }
 
@@ -27,7 +27,7 @@ export function createScheduledFunction(schedule: string, worker: ScheduledFunct
     return builder.onRun(worker);
 }
 
-export function createTopicListener(topicName: string, listener: PubSubTopicListener, options: functions.RuntimeOptions = null) {
+export function createTopicListener(topicName: string, listener: PubSubTopicListener, options: functions.RuntimeOptions | null = null) {
     return getBaseBuilder(options).pubsub.topic(topicName).onPublish(listener);
 }
 

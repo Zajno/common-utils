@@ -18,7 +18,7 @@ export type ProgressListener = (progress: number) => void;
 const NoOp = () => { /* no-op */ };
 
 export interface IStorageController {
-    getFileDownloadUlr(refPath: string): Promise<string>;
+    getFileDownloadUlr(refPath: string): Promise<string | null>;
 
     uploadFileFromLocalUri(uri: string, storagePath: string, progress?: ProgressListener): Promise<FileUploadResult>;
     uploadFileFromBlob(blob: Blob, storagePath: string, progress?: ProgressListener): Promise<FileUploadResult>;
@@ -47,7 +47,7 @@ export class StorageController implements IStorageController {
     public static get Instance() { return StorageController._instance.value; }
 
     // TODO Add cache
-    async getFileDownloadUlr(refPath: string): Promise<string> {
+    async getFileDownloadUlr(refPath: string): Promise<string | null> {
         try {
             const ref = Firebase.Instance.storage.ref(refPath);
             const url = await ref.getDownloadURL();
@@ -91,7 +91,7 @@ export class StorageController implements IStorageController {
         return res;
     }
 
-    async uploadFileFromLocalUri(uri: string, storagePath: string, progress: ProgressListener = null) {
+    async uploadFileFromLocalUri(uri: string, storagePath: string, progress: ProgressListener | null = null) {
         const pp = progress || NoOp;
         pp(0);
 
@@ -102,7 +102,7 @@ export class StorageController implements IStorageController {
         return res;
     }
 
-    async uploadFileFromBlob(blob: Blob, storagePath: string, progress: ProgressListener = null) {
+    async uploadFileFromBlob(blob: Blob, storagePath: string, progress: ProgressListener | null = null) {
         const pp = progress || NoOp;
 
         const fileRef = Firebase.Instance.storage.ref(storagePath);

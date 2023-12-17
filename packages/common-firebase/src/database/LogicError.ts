@@ -4,9 +4,9 @@ export class LogicError extends Error {
         super(message);
     }
 
-    static InvalidArg(argname: string, info: { expected: any, got: any } = null) {
+    static InvalidArg(argName: string, info: null | { expected: any, got: any } = null) {
         const infoStr = info ? `Expected '${info.expected}', but got '${info.got}'` : '';
-        return new LogicError(LogicError.Types.InvalidArgs, `Invalid '${argname}' argument. ${infoStr}`);
+        return new LogicError(LogicError.Types.InvalidArgs, `Invalid '${argName}' argument. ${infoStr}`);
     }
 
     static AlreadyExists(message: string) {

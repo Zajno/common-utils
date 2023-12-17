@@ -16,7 +16,7 @@ export type FunctionFactoryHook = {
 
 export class FunctionFactory<TArg, TResult> {
 
-    private readonly logger: ILogger = null;
+    private readonly logger: ILogger;
     private _meta: any = null;
 
     constructor(readonly Definition: IFunctionDefinition<TArg, TResult>, private readonly firebaseFunctions: firebase.functions.Functions) {

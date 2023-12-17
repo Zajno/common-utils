@@ -57,7 +57,7 @@ export function wrapRequestFunction(loader: () => Promise<RequestEndpointFunctio
     return wrapLoaderFunction(loader);
 }
 
-export function createAsyncHttpsRequestFunction<TRes = any>(workerLoader: () => Promise<RequestEndpointFunction<TRes>>, options: functions.RuntimeOptions = null): functions.HttpsFunction {
+export function createAsyncHttpsRequestFunction<TRes = any>(workerLoader: () => Promise<RequestEndpointFunction<TRes>>, options: functions.RuntimeOptions | null = null): functions.HttpsFunction {
     return createHttpsRequestFunction(
         wrapRequestFunction(workerLoader),
         options,

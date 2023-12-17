@@ -1,3 +1,4 @@
+import { truthy } from '@zajno/common/types/arrays';
 import { https } from 'firebase-functions';
 
 namespace AppHttpError {
@@ -19,7 +20,7 @@ namespace AppHttpError {
         Unknown = 'unknown'
     }
 
-    export const DefaultStrings: Partial<Record<https.FunctionsErrorCode, string>> = {
+    export const DefaultStrings = {
         [ErrorCodes.InvalidArguments]: 'Invalid arguments',
         [ErrorCodes.Unauthenticated]: 'This action requires authentication',
         [ErrorCodes.NotFound]: 'Not found',
@@ -28,7 +29,7 @@ namespace AppHttpError {
         [ErrorCodes.Internal]: 'Internal error',
         [ErrorCodes.NoPermission]: 'Incorrect permissions',
         [ErrorCodes.Unknown]: 'Unknown error',
-    };
+    } satisfies Partial<Record<https.FunctionsErrorCode, string>>;
 
     export function Construct(code: ErrorCodes | https.FunctionsErrorCode, message: string, details: unknown = undefined) {
         return new https.HttpsError(code, message || DefaultStrings[code], details);
@@ -44,7 +45,7 @@ namespace AppHttpError {
                 arg.expected ? `expected: ${arg.expected}` : null,
                 arg.got ? `got: ${arg.got}` : null,
                 arg.error ? `error: ${arg.error}` : null,
-            ].filter(d => d);
+            ].filter(truthy);
             const detailsStr = details.length > 0
                 ? ` (${details.join(', ')})`
                 : '';

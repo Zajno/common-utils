@@ -17,6 +17,8 @@ import { prepareEmail } from '@zajno/common/validation/emails';
 import { IStorage } from '@zajno/common/storage/abstractions';
 import { Disposable } from '@zajno/common/functions/disposer';
 import { FlagModel, NumberModel } from '@zajno/common-mobx/viewModels/index';
+import { assert } from '@zajno/common/functions/assert';
+import { truthy } from '@zajno/common/types/arrays';
 
 export type { IAuthController };
 export const logger = createLogger('[Auth]');
@@ -27,12 +29,11 @@ const MagicLinkReasonKey = 'auth:signin:reason';
 const PasswordResetRequestedKey = 'auth:passwordreset';
 
 export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> extends Disposable implements IAuthController {
-    @observable
-    private _authUser: AuthUserWithProviders<TUser> = null;
+    private _authUser: AuthUserWithProviders<TUser> | null = null;
 
     protected readonly _initializing = new NumberModel(0);
 
-    private _nextProvider: AuthProviders = null;
+    private _nextProvider: AuthProviders | null = null;
     private readonly _magicLinkSucceeded = new Event<MagicLinkRequestReasons>();
 
     private readonly _setPasswordMode = new FlagModel(false);
@@ -44,7 +45,9 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
     constructor(forceInitialize = false) {
         super();
-        makeObservable(this);
+        makeObservable<AuthControllerBase, '_authUser'>(this, {
+            _authUser: observable,
+        });
 
         const initialize = () => this.doInitialization(this.processAuthUser.bind(this), true);
         this.disposer.add(
@@ -56,7 +59,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         }
     }
 
-    get authUser(): Readonly<AuthUserWithProviders<TUser>> { return this._authUser; }
+    get authUser(): Readonly<AuthUserWithProviders<TUser>> | null { return this._authUser; }
     get initializing() { return this._firstInit.value || !this._initializing.isDefault; }
     get magicLinkSucceeded() { return this._magicLinkSucceeded.expose(); }
 
@@ -87,7 +90,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
         const methods = authUser?.email && await this.getEmailAuthMethod(authUser.email);
 
-        let provider: AuthProviders;
+        let provider: AuthProviders | null;
         if (!authUser) {
             provider = null;
         } else if (this._nextProvider) {
@@ -125,7 +128,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
     protected createAuthUser(): TUser {
         const authUser = Firebase.Instance.auth.currentUser;
 
-        const result: AuthUser = authUser ? {
+        const result: AuthUser | null = authUser ? {
             uid: authUser.uid,
             displayName: authUser.displayName,
             email: authUser.email,
@@ -151,7 +154,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         this._nextProvider = p;
     }
 
-    async getEmailAuthMethod(email: string): Promise<AuthProviders[]> {
+    async getEmailAuthMethod(email: string | null): Promise<AuthProviders[]> {
         const methods = email && typeof email === 'string' && await Firebase.Instance.auth.fetchSignInMethodsForEmail(email);
         const results = (methods || []).map(m => {
             switch (m) {
@@ -171,7 +174,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
                     return null;
                 }
             }
-        }).filter(m => m);
+        }).filter(truthy);
 
         if (results.length === 0) {
             logger.log('No auth methods for email', email, '; existing are:', methods);
@@ -281,6 +284,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         try {
             await authUser.updatePassword(password);
             logger.log('password updated successfully!!');
+            assert(!!this._authUser, 'authUser is null');
             this._authUser.providers = await this.getEmailAuthMethod(authUser.email);
             this._setPasswordMode.setFalse();
             await this.Storage.remove(PasswordResetRequestedKey);
@@ -290,9 +294,11 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
             logger.log('failed to update password:', err.code);
             if (err.code === 'auth/requires-recent-login') {
                 if (oldPassword) {
-                    const cred = Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.credential(this.authUser.email, oldPassword);
+                    const email = this.authUser?.email;
+                    assert(!!email, 'email is null');
+                    const cred = Firebase.Instance.types.FirebaseAuth.EmailAuthProvider.credential(email, oldPassword);
                     try {
-                        logger.log('re-authenticating with email/password for', this.authUser.email);
+                        logger.log('re-authenticating with email/password for', email);
                         await authUser.reauthenticateWithCredential(cred);
                     } catch (err2) {
                         logger.log('failed to re-authenticate, ERROR:', err2);
@@ -335,7 +341,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
                 return false;
             }
 
-            logger.log('Google: Successfully signed in with user', result.user.email);
+            logger.log('Google: Successfully signed in with user', result.user?.email);
 
             // not necessary to init because onAuthStateChanged should be triggered
             // await this.init();
@@ -366,7 +372,9 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
                 // Link the credential to the current user.
                 try {
-                    await Firebase.Instance.auth.currentUser.linkWithCredential(emailCredential);
+                    const currentUser = Firebase.Instance.auth.currentUser;
+                    assert(!!currentUser, 'currentUser is null');
+                    await currentUser.linkWithCredential(emailCredential);
                     // The provider is now successfully linked.
                     // The phone user can now sign in with their phone number or email.
                     return false;
@@ -413,18 +421,22 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
     }
 
     async updateProfile(data: AuthUserUpdate): Promise<void> {
+        const currentAuthUser = this._authUser;
+        assert(!!currentAuthUser, 'currentAuthUser is null');
+
         const diff: typeof data = { };
-        if (!transferFields.changed(data, this._authUser, diff, 'displayName', 'photoURL')) {
+        if (!transferFields.changed(data, currentAuthUser, diff, 'displayName', 'photoURL')) {
             return;
         }
 
-        await Firebase.Instance.auth.currentUser.updateProfile(diff);
+        const currentUser = Firebase.Instance.auth.currentUser;
+        assert(!!currentUser, 'FB currentUser is null');
+        await currentUser.updateProfile(diff);
 
         runInAction(() => {
-            const user = Firebase.Instance.auth.currentUser;
-
-            this._authUser.photoURL = user.photoURL;
-            this._authUser.displayName = user.displayName;
+            assert(!!this._authUser, '_authUser is null');
+            this._authUser.photoURL = currentUser.photoURL;
+            this._authUser.displayName = currentUser.displayName;
         });
         logger.log('AuthUser profile updated:', this._authUser);
     }

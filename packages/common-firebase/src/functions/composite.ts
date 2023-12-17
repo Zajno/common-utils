@@ -5,7 +5,7 @@ export const META_ARG_KEY = '__meta';
 
 export type EndpointSpec<TArg, TResult> = (arg: TArg) => TResult; // can be just an empty object
 
-export function spec<TArg, TResult>(fallback: EndpointSpec<TArg, TResult> = null): EndpointSpec<TArg, TResult> { return fallback || null; }
+export function spec<TArg, TResult>(fallback: EndpointSpec<TArg, TResult> | null = null): EndpointSpec<TArg, TResult> { return fallback || null as any; }
 
 export type CompositeEndpointInfo = {
     [key: string]: EndpointSpec<any, any> | CompositeEndpointInfo;
@@ -47,7 +47,7 @@ export class FunctionComposite<T extends CompositeEndpointInfo> {
         readonly info: T,
         name: string,
         namespace: string = '',
-        options: EndpointSettings = null,
+        options: EndpointSettings = { },
     ) {
         this._endpoint = new FunctionDefinition(name, namespace, options);
         this._specs = specsToFunctions(info, this._endpoint);

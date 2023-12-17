@@ -1,9 +1,9 @@
 import { createLazy } from '@zajno/common/lazy/light';
+import { assert } from '@zajno/common/functions/assert';
 import { IDatabaseContext, ServerRealtimeDB } from '../database/realtime';
 import { IFirestoreContext, ServerFirestore } from '../database';
 import Admin, { AdminLib } from './admin';
 import { AppConfig } from '../config';
-
 const FirestoreDb = createLazy(() => {
     const firestoreDb: ServerFirestore = Admin.firestore() as ServerFirestore;
     firestoreDb.isClient = false;
@@ -11,7 +11,9 @@ const FirestoreDb = createLazy(() => {
 });
 
 const RealtimeDb = createLazy(() => {
-    return Admin.database(AppConfig.value.databaseURL);
+    const cfg = AppConfig.value;
+    assert(!!cfg, 'Firebase config should be present');
+    return Admin.database(cfg.databaseURL);
 });
 
 const storage = Admin.storage();

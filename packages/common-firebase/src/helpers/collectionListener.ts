@@ -28,7 +28,7 @@ export class CollectionListener<T extends IdentAny> implements IDisposable {
 
     get all(): ReadonlyArray<Readonly<T>> { return this._items; }
 
-    getByKey(key: string): ReadonlyArray<Readonly<T>> { return this._byKey[key]; }
+    getByKey(key: string): ReadonlyArray<Readonly<T>> | undefined { return this._byKey[key]; }
 
     async addCollection(key: string, query: Query<T>, cb?: QuerySnapshotCallback<T>): Promise<void> {
         this._disposer.execute(key);
@@ -40,8 +40,8 @@ export class CollectionListener<T extends IdentAny> implements IDisposable {
 
                     // dedupe
                     const all = new Map<string, T>();
-                    Object.values<T[]>(this._byKey).forEach(items => {
-                        items.forEach(i => all.set(i.id, i));
+                    Object.values(this._byKey).forEach(items => {
+                        items?.forEach(i => all.set(i.id, i));
                     });
 
                     this._items.length = 0;

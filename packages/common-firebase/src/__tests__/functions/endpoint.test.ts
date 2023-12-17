@@ -169,7 +169,7 @@ describe('broken api', () => {
                     .use(fooMiddleware)
                     .useFunction(fooFunction);
 
-            }, null as { contextParam: string }));
+            }, null as any as { contextParam: string }));
 
             const v5_raw = new FunctionCompositeFactory(TestApi.Api());
             v5_raw.useHandler(authValidator)

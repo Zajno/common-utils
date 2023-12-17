@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import type FirebaseApp from 'firebase/compat/app';
 import { createLazy } from '@zajno/common/lazy/light';
+import { assert } from '@zajno/common/functions/assert';
 
 export { FirebaseApp };
 
@@ -13,18 +14,21 @@ import { FirebaseConfig } from '../config';
 import { IFirestoreContext } from '../database';
 import { ClientRealtimeDB, IDatabaseContext } from '../database/realtime';
 
-let instance: firebase.app.App = null;
-let firebaseConfig: FirebaseConfig = null;
+let instance: firebase.app.App | null = null;
+let firebaseConfig: FirebaseConfig | null = null;
 
-const Settings = {
-    functionsEmulator: null as { url: string },
-    firestore: null as Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
-    realtimeDatabaseEmulator: null as { url: string },
-    authEmulator: null as { url: string },
-    storageEmulator: null as { url: string },
+
+type SettingsArgs = {
+    functionsEmulator?: { url: string },
+    firestore?: Pick<firebase.firestore.Settings, 'host' | 'ignoreUndefinedProperties'>,
+    realtimeDatabaseEmulator?: { url: string },
+    authEmulator?: { url: string },
+    storageEmulator?: { url: string },
 };
 
-export type FirebaseSettings = Partial<typeof Settings> & {
+const DefaultSettings: SettingsArgs = { };
+
+export type FirebaseSettings = Partial<typeof DefaultSettings> & {
     config: FirebaseConfig;
 };
 
@@ -42,7 +46,7 @@ export function initializeFirebase(settings: FirebaseSettings) {
         ...settings.config,
     };
 
-    Object.assign(Settings, settings);
+    Object.assign(DefaultSettings, settings);
 
     createApp();
 }
@@ -53,8 +57,10 @@ function createApp() {
         return;
     }
 
+    assert(!!firebaseConfig, 'Firebase config should be present');
+
     logger.log('Loading... API KEY =', firebaseConfig.apiKey);
-    logger.log('Settings:', Settings);
+    logger.log('Settings:', DefaultSettings);
 
     // Initialize Firebase
     instance = firebase.initializeApp(firebaseConfig);
@@ -63,20 +69,22 @@ function createApp() {
 }
 
 const auth = createLazy(() => {
+    assert(!!instance, 'Firebase instance is not initialized');
     const auth = instance.auth();
-    if (Settings.authEmulator?.url) {
-        logger.log('Firebase Auth will use emulator:', Settings.authEmulator.url);
-        auth.useEmulator(Settings.authEmulator.url);
+    if (DefaultSettings.authEmulator?.url) {
+        logger.log('Firebase Auth will use emulator:', DefaultSettings.authEmulator.url);
+        auth.useEmulator(DefaultSettings.authEmulator.url);
     }
     return auth;
 });
 
 const functions = createLazy(() => {
+    assert(!!instance, 'Firebase instance is not initialized');
     const fns = instance.functions() as ReturnType<typeof firebase.functions> & {
         create<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>): FunctionFactory<TArg, TResult>;
     };
 
-    const { functionsEmulator } = Settings;
+    const { functionsEmulator } = DefaultSettings;
     if (functionsEmulator?.url) {
         const { hostname, port } = new URL(functionsEmulator.url);
         logger.log('Firebase functions will use emulator:', functionsEmulator.url, '=>', hostname, port);
@@ -91,10 +99,11 @@ const functions = createLazy(() => {
 });
 
 const database = createLazy<ClientFirestore>(() => {
+    assert(!!instance, 'Firebase instance is not initialized');
     const db = instance.firestore() as ClientFirestore;
 
-    if (Settings.firestore) {
-        const settings: firebase.firestore.Settings = { ...Settings.firestore };
+    if (DefaultSettings.firestore) {
+        const settings: firebase.firestore.Settings = { ...DefaultSettings.firestore };
         if (settings.host) {
             logger.log('Firestore will use emulator: ', settings.host);
             settings.ssl = false;
@@ -107,9 +116,10 @@ const database = createLazy<ClientFirestore>(() => {
 
 const realtimeDatabase = createLazy(() => {
 
+    assert(!!instance, 'Firebase instance is not initialized');
     const rdb = instance.database();
 
-    const emulator = Settings.realtimeDatabaseEmulator;
+    const emulator = DefaultSettings.realtimeDatabaseEmulator;
     if (emulator?.url) {
         const { hostname, port } = new URL(emulator.url);
         logger.log('Firebase Realtime Database will use emulator:', emulator.url, '=>', hostname, port);
@@ -120,9 +130,10 @@ const realtimeDatabase = createLazy(() => {
 });
 
 const storage = createLazy(() => {
+    assert(!!instance, 'Firebase instance is not initialized');
     const storageInstance = instance.storage();
 
-    const emulator = Settings.storageEmulator;
+    const emulator = DefaultSettings.storageEmulator;
     if (emulator?.url) {
         const { hostname, port } = new URL(emulator.url);
         logger.log('Firebase Storage will use emulator:', emulator.url, '=>', hostname, port);
@@ -133,7 +144,7 @@ const storage = createLazy(() => {
 });
 
 const wrapper = {
-    get config(): Readonly<FirebaseConfig> { return firebaseConfig; },
+    get config(): Readonly<FirebaseConfig> | null { return firebaseConfig; },
 
     get auth() { return auth.value; },
     get functions() { return functions.value; },
