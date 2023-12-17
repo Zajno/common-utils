@@ -1,10 +1,12 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
     "cSpell.words": [
+        "Autorun",
         "chunkify",
         "datex",
         "Firestore",
-        "Pluggable"
+        "Pluggable",
+        "scripty",
     ],
     "typescript.preferences.quoteStyle": "single",
     "javascript.preferences.quoteStyle": "single",

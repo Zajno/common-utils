@@ -1,5 +1,6 @@
 import { IdentAny } from '@zajno/common/types/ident';
 import { FirestoreDataConverter, QueryDocumentSnapshot, TimestampClass } from './dbProvider';
+import type { DocumentData } from 'firebase-admin/firestore';
 
 
 export interface FirestoreObjectConverter<T> {
@@ -11,7 +12,8 @@ export namespace FirestoreObjectConverter {
     export function IdentConverter<T extends IdentAny>(): FirestoreObjectConverter<T> {
         return {
             toFirestore(m: T) {
-                delete m.id;
+                const res = m as Omit<T, 'id'> & Partial<IdentAny>;
+                delete res.id;
                 return m;
             },
             fromFirestore(m: T, snapshot: QueryDocumentSnapshot, options?: any) {
@@ -49,7 +51,7 @@ export namespace FirestoreObjectConverter {
 
 export function objectToDataConverter<T>(converter: FirestoreObjectConverter<T>): FirestoreDataConverter<T> {
     return {
-        toFirestore(model: T) { return converter.toFirestore(model); },
+        toFirestore(model: T) { return converter.toFirestore(model) as DocumentData; },
         fromFirestore(snapshot: QueryDocumentSnapshot, options?: any) {
             return converter.fromFirestore(undefined, snapshot, options);
         },

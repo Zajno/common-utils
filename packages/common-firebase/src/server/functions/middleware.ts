@@ -8,12 +8,14 @@ import {
 } from './interface';
 import AppHttpError from '../utils/AppHttpError';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
+import { truthy } from '@zajno/common/types/arrays';
+import { assert } from '@zajno/common/functions/assert';
 
 export interface IMiddleware<TArg, TResult, TContext extends ObjectOrPrimitive = never> {
     readonly isEmpty: boolean;
-    readonly currentChain: EndpointHandler<TArg, TResult, TContext>;
+    readonly currentChain: EndpointHandler<TArg, TResult, TContext> | null;
 
-    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string): this;
+    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H | null, name?: string): this;
 
     // TODO These are helpers (syntax sugar) only, remove from interface ?
     useBeforeAll<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string): this;
@@ -32,7 +34,7 @@ export interface IMiddlewareChild<TArg, TResult, TContext extends ObjectOrPrimit
 }
 
 export class Middleware<TArg, TResult, TContext extends ObjectOrPrimitive = never> implements IMiddleware<TArg, TResult, TContext> {
-    private _chain: EndpointHandler<TArg, TResult, TContext> = null;
+    private _chain: EndpointHandler<TArg, TResult, TContext> | null = null;
     private _chainLocked = false;
 
     public get isEmpty() { return this._chain == null; }
@@ -42,7 +44,7 @@ export class Middleware<TArg, TResult, TContext extends ObjectOrPrimitive = neve
         this._chain = other ? other.currentChain : null;
     }
 
-    public async execute(arg: TArg, endpointContext: EndpointContext<TContext>): Promise<TResult> {
+    public async execute(arg: TArg, endpointContext: EndpointContext<TContext>): Promise<TResult | null> {
         // finally compose chain w/ hooks
         let chain = this._chain;
         this._chainLocked = true;
@@ -58,9 +60,7 @@ export class Middleware<TArg, TResult, TContext extends ObjectOrPrimitive = neve
                 chain = Middleware.add(chain, afterAll);
             }
 
-            if (!chain) {
-                throw new Error('No handlers/middleware were added');
-            }
+            assert(!!chain, 'No handlers/middleware were added');
 
             // compose context
             const ctx = endpointContext as HandlerContext<TArg, TResult, TContext>;
@@ -77,10 +77,10 @@ export class Middleware<TArg, TResult, TContext extends ObjectOrPrimitive = neve
         }
     }
 
-    protected get onBeforeAll(): EndpointHandler<TArg, TResult, TContext> { return null; }
-    protected get onAfterAll(): EndpointHandler<TArg, TResult, TContext> { return null; }
+    protected get onBeforeAll(): EndpointHandler<TArg, TResult, TContext> | null { return null; }
+    protected get onAfterAll(): EndpointHandler<TArg, TResult, TContext> | null { return null; }
 
-    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H, name?: string) {
+    use<H extends EndpointHandler<TArg, TResult, TContext>>(handler: H | null, name?: string) {
         this._checkChainLocked();
         this._chain = Middleware.add(this._chain, Middleware.safeNext(handler, name));
         return this;
@@ -148,7 +148,7 @@ export namespace Middleware {
 
     const EnableSafeMiddlewareNext = true;
 
-    export function add<A, R, C = never>(h1: EndpointHandler<A, R, C>, h2: EndpointHandler<A, R, C>): EndpointHandler<A, R, C> {
+    export function add<A, R, C extends ObjectOrPrimitive = never>(h1: EndpointHandler<A, R, C> | null, h2: EndpointHandler<A, R, C> | null): EndpointHandler<A, R, C> | null {
         if (!h1 || !h2) {
             return combine(h1, h2);
         }
@@ -156,8 +156,8 @@ export namespace Middleware {
         return (ctx, next) => h1(ctx, () => h2(ctx, next));
     }
 
-    export function combine<A, R, C = never>(...handlers: EndpointHandler<A, R, C>[]): EndpointHandler<A, R, C> {
-        const hh = handlers.filter(h => !!h);
+    export function combine<A, R, C extends ObjectOrPrimitive = never>(...handlers: (EndpointHandler<A, R, C> | null)[]): EndpointHandler<A, R, C> | null {
+        const hh = handlers.filter(truthy);
         if (!hh.length) {
             return null;
         }
@@ -177,7 +177,7 @@ export namespace Middleware {
         return (ctx, next) => moveNext(ctx, next, 0);
     }
 
-    export function wrapHandler<A, R, C = never>(handler: EndpointHandlerVoid<A, R, C>): EndpointHandler<A, R, C> {
+    export function wrapHandler<A, R, C extends ObjectOrPrimitive = never>(handler: EndpointHandlerVoid<A, R, C>): EndpointHandler<A, R, C> {
         const res = async (ctx, next) => {
             await handler(ctx);
             if (next) {
@@ -188,7 +188,7 @@ export namespace Middleware {
         return res;
     }
 
-    export function wrapFunction<A, R, C = never>(func: EndpointFunction<A, R, C>): EndpointHandler<A, R, C> {
+    export function wrapFunction<A, R, C extends ObjectOrPrimitive = never>(func: EndpointFunction<A, R, C>): EndpointHandler<A, R, C> {
         const res = async (ctx, next) => {
             const output = await func(ctx.input, ctx);
             ctx.output = ctx.output ? Object.assign(ctx.output, output) : output;
@@ -200,7 +200,7 @@ export namespace Middleware {
         return res;
     }
 
-    export function safeNext<A, R, C = never>(h: EndpointHandler<A, R, C>, name?: string): EndpointHandler<A, R, C> {
+    export function safeNext<A, R, C extends ObjectOrPrimitive = never>(h: EndpointHandler<A, R, C> | null, name?: string): EndpointHandler<A, R, C> | null {
         if (!h) {
             return null;
         }
@@ -229,19 +229,19 @@ export namespace Middleware {
 
 class MiddlewareAggregator<TContext extends ObjectOrPrimitive = never> implements IMiddleware<any, any, TContext> {
 
-    private _chain: EndpointHandler<any, any, TContext> = undefined;
+    private _chain: EndpointHandler<any, any, TContext> | undefined = undefined;
 
     constructor(private readonly _middlewares: IMiddleware<any, any, TContext>[]) { }
 
     get isEmpty(): boolean { return this.currentChain != null; }
     get currentChain(): EndpointHandler<any, any, TContext> {
         if (this._chain === undefined) {
-            this._chain = Middleware.combine(...this._middlewares.map(m => m.currentChain));
+            this._chain = Middleware.combine(...this._middlewares.map(m => m.currentChain))!;
         }
         return this._chain;
     }
 
-    use<H extends EndpointHandler<any, any, TContext>>(handler: H, name?: string): this {
+    use<H extends EndpointHandler<any, any, TContext>>(handler: H | null, name?: string): this {
         this._middlewares.forEach(m => m.use(handler, name));
         return this;
     }

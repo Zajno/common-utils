@@ -5,21 +5,21 @@ import { IMiddleware, IMiddlewareChild, Middleware, MiddlewareChild } from './mi
 import { EndpointFunction, EndpointHandler, HandlerContext } from './interface';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 
-type MiddlewareMapInner<T extends CompositeEndpointInfo, TContext = any> = MiddlewaresMap<T, TContext> & IMiddlewareChild<EndpointArg<T>, EndpointResult<T>, TContext>;
+type MiddlewareMapInner<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive = any> = MiddlewaresMap<T, TContext> & IMiddlewareChild<EndpointArg<T>, EndpointResult<T>, TContext>;
 
-export type MiddlewaresMap<T extends CompositeEndpointInfo, TContext = any> = IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> & {
+export type MiddlewaresMap<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive = any> = IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> & {
     readonly [P in keyof T]: T[P] extends CompositeEndpointInfo
         ? MiddlewareMapInner<T[P], TContext>
         : IMiddlewareChild<ArgExtract<T, P>, ResExtract<T, P>, TContext>;
 };
 
-type FunctionsMap<T extends CompositeEndpointInfo, TContext = any> = {
+type FunctionsMap<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive = any> = {
     [P in keyof T]?: T[P] extends CompositeEndpointInfo
         ? FunctionsMap<T[P], TContext>
         : EndpointFunction<ArgExtract<T, P>, ResExtract<T, P>, TContext>;
 };
 
-export interface ICompositionMiddleware<T extends CompositeEndpointInfo, TContext = any> extends IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> {
+export interface ICompositionMiddleware<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive = any> extends IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> {
     readonly handlers: MiddlewaresMap<T, TContext>;
 }
 
@@ -38,6 +38,9 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
     }
 
     public get handlers(): MiddlewaresMap<T, TContext> { return this._handlers; }
+
+    /** use this when TS struggles to pick up correct template type arguments when inferring as IMiddleware */
+    public get asMiddleware(): ICompositionMiddleware<T, TContext> & IMiddleware<EndpointArg<T>, EndpointResult<T>, TContext> { return this; }
 
     public useHandlers() {
         if (this._handlersUsed) {
@@ -72,7 +75,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
         return new MiddlewareChild<ArgExtract<HT, K>, ResExtract<HT, K>, TContext>() as any;
     }
 
-    private static cloneHandlers<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive>(handlers: MiddlewaresMap<T, TContext>): MiddlewaresMap<T, TContext> {
+    private static cloneHandlers<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive>(handlers: MiddlewaresMap<T, TContext> | null | undefined): MiddlewaresMap<T, TContext> | null {
         if (!handlers) {
             return null;
         }
@@ -129,7 +132,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
                 const innerCtx: HandlerContext<EndpointArg<typeof innerInfo>, EndpointResult<typeof innerInfo>, TContext> = {
                     ...ctx,
                     input: innerInput,
-                    output: undefined,
+                    output: null,
                 };
 
                 const innerResult = await this.executeMap(innerInfo, innerMap, innerCtx, currents);

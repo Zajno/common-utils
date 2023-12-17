@@ -6,8 +6,8 @@ type SetType<T> = { items: T[], selected: number[], accessor: (item: T) => strin
 
 describe('MultiSelectModel', () => {
     it('creates', () => {
-        expect(() => new MultiSelect(null, null).values).toThrow();
-        expect(() => new MultiSelect([1], null).values).toThrow();
+        expect(() => new MultiSelect(null as any, null as any).values).toThrow();
+        expect(() => new MultiSelect([1], null as any).values).toThrow();
     });
 
     const sets: SetType<any>[] = [
@@ -53,7 +53,7 @@ describe('MultiSelectModel', () => {
         expect(vm.selectedCount).toBe(0);
         expect(vm.selectedIndexes).toHaveLength(0);
 
-        const mocks = arrayRepeat(() => vi.fn().mockImplementation(null), 5);
+        const mocks = arrayRepeat(() => vi.fn().mockImplementation(() => { /* no-op */ }), 5);
         const [
             onSelectedIndexes,
             onSelectedItems,

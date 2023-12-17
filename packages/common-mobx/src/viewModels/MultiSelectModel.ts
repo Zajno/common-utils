@@ -12,7 +12,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     private readonly _indexes = new Set<number>();
 
     public readonly opened = new FlagModel();
-    private readonly _initial: number[] = null;
+    private readonly _initial: number[];
 
     private readonly _flags = createLazy(() => this.createFlags());
     private _indexesLocked = false;

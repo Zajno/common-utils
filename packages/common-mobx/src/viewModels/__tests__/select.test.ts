@@ -5,10 +5,10 @@ configure({ enforceActions: 'never' });
 
 describe('SelectViewModel', () => {
     it('consistent', async () => {
-        expect(() => new Select(null, null).values).toThrow();
-        expect(() => new Select([1], null).values).toThrow();
+        expect(() => new Select(null as any, null as any).values).toThrow();
+        expect(() => new Select([1], null as any).values).toThrow();
 
-        const emptyVm = new Select([], null);
+        const emptyVm = new Select([], null as any);
         expect(emptyVm.selectedValue).toBeNull();
 
         const items = [0, 1, 2];

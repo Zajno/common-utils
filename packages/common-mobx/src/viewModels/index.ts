@@ -12,4 +12,4 @@ export * from './NumberModel';
 export * from './SelectModel';
 export * from './MultiSelectModel';
 
-export * from './PromptModal';
+export * from './ModalModel';

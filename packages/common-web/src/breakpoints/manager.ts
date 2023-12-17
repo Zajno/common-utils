@@ -1,6 +1,7 @@
 import { BreakpointData, ICurrentBreakpointInfo } from './types';
 import { Event } from '@zajno/common/observing/event';
-import { createLogger } from '@zajno/common/logger/index';
+import { createLogger } from '@zajno/common/logger';
+import { assert } from '@zajno/common/functions/assert';
 import { calcRem } from './rem';
 
 const logger = createLogger('[Breakpoints]');
@@ -15,7 +16,7 @@ export class BreakpointsManager<TType extends string = string, TMeta = any> impl
     private readonly _state = {
         width: 0,
         height: 0,
-        currentBreakpoint: null as BreakpointData<TType, TMeta>,
+        currentBreakpoint: null as BreakpointData<TType, TMeta> | null,
         currentRem: 0.0,
     };
 
@@ -29,7 +30,10 @@ export class BreakpointsManager<TType extends string = string, TMeta = any> impl
         }
     }
 
-    get breakpoint() { return this._state.currentBreakpoint; }
+    get breakpoint() {
+        assert(!!this._state.currentBreakpoint, 'No breakpoint has been set, please run "resize" first.');
+        return this._state.currentBreakpoint;
+    }
 
     get rem() { return this._state.currentRem; }
 
@@ -44,6 +48,8 @@ export class BreakpointsManager<TType extends string = string, TMeta = any> impl
         if (!bp) {
             bp = this._list[0];
         }
+
+        assert(!!bp, 'No breakpoint found!');
 
         this._state.width = width;
         this._state.height = height;

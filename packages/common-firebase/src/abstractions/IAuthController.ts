@@ -4,20 +4,20 @@ import type firebase from 'firebase/compat/app';
 export type FirebaseUser = firebase.User;
 
 export type AuthUser = {
-    uid: string,
-    displayName: string,
+    uid: string;
+    displayName: string | null;
 
-    email: string,
-    emailVerified: boolean,
+    email: string | null;
+    emailVerified: boolean;
 
-    phoneNumber: string,
+    phoneNumber: string | null;
 
-    photoURL: string,
+    photoURL: string | null;
 };
 
 export type AuthUserWithProviders<T> = T & {
     providers: ReadonlyArray<AuthProviders>,
-    currentProvider: AuthProviders,
+    currentProvider: AuthProviders | null,
 };
 
 export enum AuthProviders {
@@ -38,7 +38,7 @@ export enum MagicLinkRequestReasons {
 }
 
 export interface IAuthController {
-    readonly authUser: Readonly<AuthUser>;
+    readonly authUser: Readonly<AuthUser> | null;
     readonly initializing: boolean;
 
     readonly needsCreatePassword: boolean | null;
@@ -74,7 +74,7 @@ export type AuthUserUpdate = Partial<Pick<AuthUser, 'displayName' | 'photoURL'>>
 
 export type FirebaseError = Error & { code: string };
 
-export type AuthResult = { result: true } | { result: false, error: AuthErrors, original: FirebaseError };
+export type AuthResult = { result: true } | { result: false, error: AuthErrors, original: FirebaseError | null };
 
 export enum AuthErrors {
     Unknown = 0,

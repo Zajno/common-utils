@@ -1,12 +1,11 @@
-import { BreakpointData } from './types';
 
-export function calcRem(width: number, height: number, breakpoint: BreakpointData) {
+export function calcRem(width: number, height: number, breakpoint: { width?: number, height?: number }) {
     if (!breakpoint.width && !breakpoint.height) {
         return 1;
     }
 
     if (!breakpoint.height) {
-        return width / breakpoint.width;
+        return width / breakpoint.width!;
     }
 
     if (!breakpoint.width) {

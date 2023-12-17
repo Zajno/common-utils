@@ -13,24 +13,23 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@types/node": "^18.19.2",
-        "@vitest/coverage-istanbul": "^1.0.2",
-        "lerna": "^8.0.0",
+        "@types/node": "^18.19.3",
+        "@vitest/coverage-istanbul": "^1.0.4",
+        "lerna": "^8.0.1",
         "rimraf": "^5.0.5",
-        "run-shared-scripts": "^1.1.5",
-        "vitest": "^1.0.1"
+        "scripty": "^2.1.1",
+        "vitest": "^1.0.4"
     },
     "rss": {
         "clean": "rimraf ./dist *.tsbuildinfo",
         "dev": "yarn clean && tsc --watch --noEmit",
         "build": "tsc -b tsconfig.build.json",
         "build:clean": "yarn clean && yarn build",
-        "build:copy": "yarn build:clean && yarn copy-for-publish",
         "build:w": "yarn build --watch",
-        "publish:local": "yarn build-for-publish && yarn copy-for-publish && cd dist && yalc push --replace --update",
-        "publish:from-dist": "yarn build-for-publish && yarn copy-for-publish && cd dist && yarn publish",
-        "build-for-publish": "yarn build:clean && yarn lint && yarn test",
-        "copy-for-publish": "cpy --flat ../../LICENSE package.json README.md dist/",
+        "publish:local": "yarn build:full && yarn bundle && cd dist && yalc push --replace --update",
+        "publish:from-dist": "yarn build:full && yarn bundle && cd dist && yarn publish",
+        "build:full": "yarn build:clean && yarn lint && yarn test",
+        "bundle": "cpy --flat ../../LICENSE package.json README.md dist/",
         "lint": "eslint \"src/**/*.ts?(x)\"",
         "test": "vitest run"
     }

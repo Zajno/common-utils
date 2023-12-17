@@ -20,10 +20,10 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
     private readonly _cache: PromiseCacheObservable<T>;
     private readonly _observers: SubscribersMapObservable;
 
-    private _observeStrategy: ObserveStrategy = null;
+    private _observeStrategy: ObserveStrategy | null = null;
     private readonly _observeStrategyOverrides: Record<string, ObserveStrategy> = { };
 
-    private _updater: Fields.Updater<T> = null;
+    private _updater: Fields.Updater<T> | null= null;
 
     constructor(readonly fetcher: Fetcher<T>) {
         super();

@@ -15,7 +15,7 @@ import { documentSnapshot, querySnapshot } from './helpers';
 type DataProcessor<T> = (data: T) => T;
 
 export class BaseRepo<T extends IdentAny> {
-    private _readConverter: DataProcessor<T> = null;
+    private _readConverter: DataProcessor<T> | null = null;
     private _timestampKeys: (keyof T)[] = [];
 
     constructor(protected readonly firestore: IFirestoreContext) { }
@@ -35,14 +35,14 @@ export class BaseRepo<T extends IdentAny> {
     public query(query: Query<T>): Promise<T[]>;
     public query(query: Query<T>, cb: QuerySnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
 
-    query(query: Query<T>, cb?: QuerySnapshotCallback<T>): Promise<T[] | UnsubscribeSnapshot> {
-        return querySnapshot(this.db, query, cb, this.queryConverter);
+    query(query: Query<T>, cb: QuerySnapshotCallback<T | null> | null = null): Promise<T[] | UnsubscribeSnapshot> {
+        return querySnapshot<T>(this.db, query, cb, this.queryConverter);
     }
 
     document(doc: DocumentReference<T>): Promise<T>;
     document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
 
-    document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T> = null): Promise<T | UnsubscribeSnapshot> {
+    document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T | null> | null = null): Promise<T | UnsubscribeSnapshot> {
         return documentSnapshot(this.db, doc, cb, this.convertDocumentSnapshot);
     }
 
@@ -51,7 +51,7 @@ export class BaseRepo<T extends IdentAny> {
     };
 
     public convertDocumentSnapshot: DocumentSnapshotConverterCallback<T> = item => {
-        let d = item.data();
+        let d = item.data()!;
         d.id = item.id;
         if (this._readConverter) {
             d = this._readConverter(d);

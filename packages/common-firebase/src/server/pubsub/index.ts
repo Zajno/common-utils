@@ -58,10 +58,10 @@ export namespace PubSub {
     export class Topic<TData extends AnyObject> {
         private readonly _handler = new Event<TData>();
 
-        private _logger: ILogger = null;
-        private _registration: LazyPromise<void> = null;
+        private readonly _logger: ILogger;
+        private _registration: LazyPromise<void> | null = null;
 
-        constructor(private readonly name: string, private readonly options: EndpointSettings = null) {
+        constructor(private readonly name: string, private readonly options: EndpointSettings | null = null) {
             this._logger = createLogger(`[PubsubTopic:${name}]`);
 
             this.init();
@@ -91,7 +91,7 @@ export namespace PubSub {
                     await this._registration.promise;
                 }
 
-                let errors: Error[] = null;
+                let errors: Error[];
 
                 try {
                     errors = await this._handler.triggerAsync(data) as any[];
@@ -100,12 +100,12 @@ export namespace PubSub {
                     errors = [e];
                 }
 
-                if (errors?.length && ErrorHandler) {
+                if (errors?.length && ErrorHandler != null) {
                     errors.forEach((error) => {
-                        ErrorHandler(error);
+                        ErrorHandler?.(error);
                     });
                 }
-            }, this.options);
+            }, this.options || { });
 
             if (!cloudFunction) {
                 this._logger.warn('PubSub topic handler was not created. Adding function to firebase canceled');

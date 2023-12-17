@@ -8,13 +8,13 @@ import { Getter } from '@zajno/common/types/getter';
 import { Disposer, IDisposable } from '@zajno/common/functions/disposer';
 import NumberModel from './NumberModel';
 
-export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string>, IResetableModel, IDisposable {
+export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string | null>, IResetableModel, IDisposable {
     private _index: IValueModel<number> = new NumberModel();
 
     private readonly _items: Getter<readonly T[]>;
 
     private _indexLocked = false;
-    private _initialIndex: number = null;
+    private _initialIndex: number;
 
     private readonly _flags = createLazy(() => this.createFlags());
 
@@ -57,21 +57,25 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
         return Getter.getValue(this._items);
     }
 
-    get value() { return this.selectedValue; }
-    get selectedValue() {
+    get value(): string | null { return this.selectedValue; }
+    get selectedValue(): string | null {
         const vs = this.values;
         return vs.length ? vs[this._index.value] : null;
     }
 
-    set value(v: string) { this.selectedValue = v; }
-    set selectedValue(value: string) {
+    set value(v: string | null) { this.selectedValue = v; }
+    set selectedValue(value: string | null) {
+        if (value == null) {
+            return;
+        }
+
         const index = this.values.indexOf(value);
         if (index >= 0) {
             this.index = index;
         }
     }
 
-    get selectedItem(): T {
+    get selectedItem(): T | null {
         const items = this.items;
         return items.length ? items[this._index.value] : null;
     }

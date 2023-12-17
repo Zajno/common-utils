@@ -13,7 +13,7 @@ export type TextInputConfig = {
     noSubscribe?: boolean;
 };
 
-function FromGetter(getter: Getter<string>, setter: (val: string) => void, autorunDelay: number = null, noAutorun: boolean = null) {
+function FromGetter(getter: Getter<string | undefined>, setter: (val: string | undefined) => void, autorunDelay: number | undefined = undefined, noAutorun: boolean | undefined = undefined) {
     if (noAutorun || typeof getter !== 'function') {
         setter(Getter.getValue(getter));
         return null;
@@ -26,37 +26,37 @@ function FromGetter(getter: Getter<string>, setter: (val: string) => void, autor
     );
 }
 
-export class Text implements IValueModelReadonly<string> {
-    private _value: string = null;
+export class Text implements IValueModelReadonly<string | null> {
+    private _value: string | null = null;
 
     constructor(config: { value: Getter<string>, async?: boolean, noSubscribe?: boolean }) {
         makeObservable<Text, '_value'>(this, { _value: observable });
-        FromGetter(config.value, val => this._value = val, config.async ? 100 : null, config.noSubscribe);
+        FromGetter(config.value, val => this._value = val || null, config.async ? 100 : undefined, config.noSubscribe);
     }
 
     get value() { return this._value; }
 }
 
-export class TextInputVM extends ValidatableModel<string> implements IValueModel<string>, IResetableModel {
-    private _value = '';
+export class TextInputVM extends ValidatableModel<string> implements IValueModel<string | null>, IResetableModel {
+    private _value: string | null = '';
 
     private _focused = false;
 
-    private _name: string = null;
-    private _title: string = null;
+    private _name: string | null = null;
+    private _title: string | null = null;
 
-    private readonly _valueObserving: () => void = null;
+    private readonly _valueObserving: null | (() => void) = null;
 
     constructor(config?: TextInputConfig) {
         super();
 
         config = config || {};
 
-        const delay = config.async ? 100 : null;
+        const delay = config.async ? 100 : undefined;
 
-        FromGetter(config.name, val => this._name = val, delay);
-        FromGetter(config.title, val => this._title = val, delay);
-        this._valueObserving = FromGetter(config.value, v => runInAction(() => this._value = v), delay);
+        FromGetter(config.name, val => this._name = val || null, delay);
+        FromGetter(config.title, val => this._title = val || null, delay);
+        this._valueObserving = FromGetter(config.value, v => runInAction(() => { this._value = v || null; }), delay);
 
         makeObservable<TextInputVM, '_value' | '_focused'>(this, {
             _value: observable,
@@ -74,7 +74,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         this.setValue(val);
     }
 
-    public readonly setValue = (value: string) => {
+    public readonly setValue = (value: string | null) => {
         if (!this._valueObserving) {
             this._value = value;
 

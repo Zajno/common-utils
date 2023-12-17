@@ -19,7 +19,7 @@ export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive =
     extends Middleware<TArg, TResult, TContext>
     implements IFirebaseFunction {
 
-    private _endpoint: FirebaseEndpointRunnable = null;
+    private _endpoint: FirebaseEndpointRunnable | null = null;
 
     public static DefaultLogErrors: boolean = true;
     public LogErrors: boolean = FunctionFactory.DefaultLogErrors;

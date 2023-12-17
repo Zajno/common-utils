@@ -72,7 +72,7 @@ describe('Function API', () => {
     ).resolves.toEqual('lol_m0_m1_m2'));
 
     it('contains correct context', async () => {
-        const endpointDataHandler = vi.fn().mockImplementation(null);
+        const endpointDataHandler = vi.fn().mockImplementation(() => { /* no-op */ });
 
         const endpointCopy = Example.Server.ApiRoot.ExampleV1.clone();
         endpointCopy.handlers

@@ -38,7 +38,7 @@ describe('LazyPromise', () => {
         expect(l.busy).toBe(true);
         expect(l.promise).not.toBeNull();
 
-        const listener = vi.fn().mockImplementation(null);
+        const listener = vi.fn().mockImplementation(() => { /* no-op */ });
         const clean = reaction(() => l.value, vv => listener(vv), { fireImmediately: true });
 
         expect(listener).toHaveBeenCalledWith(undefined);

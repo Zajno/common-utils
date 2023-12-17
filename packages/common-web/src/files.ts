@@ -19,7 +19,7 @@ export const FileSupportedExtensions: Record<FileTypes, string[]> = {
 
 export const MaxUploadFileSizeMB = 100;
 
-export function getFileExtension(file: File): string {
+export function getFileExtension(file: File): string | null {
     const filename = file?.name || '';
     const lastDot = filename.lastIndexOf('.');
     if (lastDot < 0) {
@@ -31,6 +31,10 @@ export function getFileExtension(file: File): string {
 
 export function validateFileExtension(file: File, whitelist: (string | FileTypes)[]): boolean {
     const ext = getFileExtension(file);
+    if (!ext) {
+        return false;
+    }
+
     return whitelist?.some(e => {
         if (typeof e === 'string') {
             return e === ext;
@@ -86,6 +90,6 @@ export function formatExtensions(list: (string | FileTypes)[]): string {
                     res.push(...FileSupportedExtensions[item]);
                 }
                 return res;
-            }, [])
+            }, [] as string[])
         )).map(e => '.' + e).join(', ');
 }

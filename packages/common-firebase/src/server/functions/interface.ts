@@ -1,6 +1,7 @@
 import { ILogger } from '@zajno/common/logger/index';
 import * as functions from 'firebase-functions';
 import { IFunctionDefinitionInfo } from '../../functions/interface';
+import { ObjectOrPrimitive } from '@zajno/common/types';
 
 export type BaseFunctionContext = functions.https.CallableContext;
 
@@ -13,22 +14,22 @@ export type EndpointContext<T = never> = BaseFunctionContext & {
     readonly meta?: any;
 };
 
-export type EndpointFunction<T, TOut, TContext = never> = (data: T, context: EndpointContext<TContext>) => Promise<TOut>;
+export type EndpointFunction<T, TOut, TContext extends ObjectOrPrimitive = never> = (data: T, context: EndpointContext<TContext>) => Promise<TOut | null>;
 
-export type HandlerContext<TArg, TOut, TContext = never> = EndpointContext<TContext> & {
+export type HandlerContext<TArg, TOut, TContext extends ObjectOrPrimitive = never> = EndpointContext<TContext> & {
     input: TArg,
-    output: TOut,
+    output: TOut | null,
 };
 
 export type NextFunction = () => Promise<void>;
 
-export type EndpointHandler<TArg, TOut, TContext = never> = {
+export type EndpointHandler<TArg, TOut, TContext extends ObjectOrPrimitive = never> = {
     (ctx: HandlerContext<TArg, TOut, TContext>, next: NextFunction): Promise<void>;
 };
 
 type OmitSecondParameter<T> = T extends (first: infer F, second: any, ...last: infer L) => infer R ? (first: F, ...last: L) => R : never;
 
-export type EndpointHandlerVoid<TArg, TOut, TContext = never> = OmitSecondParameter<EndpointHandler<TArg, TOut, TContext>>;
+export type EndpointHandlerVoid<TArg, TOut, TContext extends ObjectOrPrimitive = never> = OmitSecondParameter<EndpointHandler<TArg, TOut, TContext>>;
 
 export type FirebaseEndpoint = functions.HttpsFunction;
 export type FirebaseEndpointRunnable = FirebaseEndpoint & functions.Runnable<any>;

@@ -46,14 +46,14 @@ export function querySnapshot<T extends IdentAny>(db: ServerFirestore, query: Qu
         cb: QuerySnapshotCallback<T>): Promise<T[]>;
 
 export function querySnapshot<T extends IdentAny>(db: DBProvider, query: Query<T>,
-    cb: QuerySnapshotCallback<T>,
+    cb: QuerySnapshotCallback<T> | null,
     converter: QuerySnapshotConverterCallback<T>): Promise<T[] | UnsubscribeSnapshot>;
 
 export async function querySnapshot<T extends IdentAny>(
     db: DBProvider,
     query: Query<T>,
-    cb: QuerySnapshotCallback<T> = null,
-    converter: QuerySnapshotConverterCallback<T> = null,
+    cb: QuerySnapshotCallback<T> | null = null,
+    converter: QuerySnapshotConverterCallback<T> | null = null,
     debugName?: string,
 ) {
     const convertSnapshots = (s: QuerySnapshot<T>): T[] => {
@@ -64,7 +64,7 @@ export async function querySnapshot<T extends IdentAny>(
             return data;
         } else {
             return docs.map((d) => {
-                const cc = d.data();
+                const cc = d.data()!;
                 cc.id = d.id;
                 return cc;
             });
@@ -73,7 +73,7 @@ export async function querySnapshot<T extends IdentAny>(
 
     if (db.isClient === true && cb) {
         const firstFetchPromise: Promise<UnsubscribeSnapshot> = new Promise((resolveP, rejectP) => {
-            let resolve = resolveP;
+            let resolve: typeof resolveP | null = resolveP;
             const unsubscribe = query
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 .onSnapshot(async (snapshot: QuerySnapshot<T>) => {
@@ -115,20 +115,20 @@ const logDocCount = <T>(doc: DocumentReference<T>, sub: boolean) => LOG_DOCS_COU
 
 export function documentSnapshot<T extends IdentAny>(db: DBProvider, doc: DocumentReference<T>): Promise<T>;
 export function documentSnapshot<T extends IdentAny>(db: DBProvider, doc: DocumentReference<T>,
-    cb: DocumentSnapshotCallback<T>): Promise<T | UnsubscribeSnapshot>;
+    cb: DocumentSnapshotCallback<T | null>): Promise<T | UnsubscribeSnapshot>;
 export function documentSnapshot<T extends IdentAny>(db: DBProvider, doc: DocumentReference<T>,
-    cb: DocumentSnapshotCallback<T>,
+    cb: DocumentSnapshotCallback<T | null> | null,
     converter: DocumentSnapshotConverterCallback<T>): Promise<T | UnsubscribeSnapshot>;
 
 export async function documentSnapshot<T extends IdentAny>(
     db: DBProvider,
     doc: DocumentReference<T>,
-    cb: DocumentSnapshotCallback<T> = null,
-    converter: DocumentSnapshotConverterCallback<T> = null,
-): Promise<T | UnsubscribeSnapshot> {
+    cb: DocumentSnapshotCallback<T | null> | null = null,
+    converter: DocumentSnapshotConverterCallback<T> | null = null,
+): Promise<T | null | UnsubscribeSnapshot> {
     logDocCount(doc, db.isClient === true && cb != null);
 
-    const convertSnapshot = (d: DocumentSnapshot<T>): T => {
+    const convertSnapshot = (d: DocumentSnapshot<T>): T | null => {
         if (!d.exists) {
             return null;
         }
@@ -137,7 +137,7 @@ export async function documentSnapshot<T extends IdentAny>(
             const res = converter(d);
             return res;
         } else {
-            const res = d.data();
+            const res = d.data()!;
             res.id = d.id;
             return res;
         }
@@ -146,7 +146,7 @@ export async function documentSnapshot<T extends IdentAny>(
     if (db.isClient === true && cb) {
 
         const firstFetchPromise: Promise<UnsubscribeSnapshot> = new Promise((resolveP, rejectP) => {
-            let resolve = resolveP;
+            let resolve: typeof resolveP | null = resolveP;
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             const unsubscribe = doc.onSnapshot(async (snapshot: DocumentSnapshot<T>) => {
                 try {
@@ -181,11 +181,12 @@ export async function documentSnapshot<T extends IdentAny>(
             return convertSnapshot(snapshot);
         } catch (error) {
             logger.error('ERROR IN DOCUMENT SNAPSHOT: ', 'PATH = ', (doc.path) || '<path>', error);
+            return null;
         }
     }
 }
 
-function getQueryPath<T = any>(q: Query<T>, debugName: string = null) {
+function getQueryPath<T = any>(q: Query<T>, debugName: string | null = null) {
     return debugName || q.debugName || (q as CollectionReference<T>).path || `<${typeof q} ${q.constructor?.name}>`;
 }
 

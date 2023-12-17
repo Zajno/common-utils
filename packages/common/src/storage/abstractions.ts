@@ -1,6 +1,6 @@
 
 export interface IStorage {
-    getValue(key: string): Promise<string>;
+    getValue(key: string): Promise<string | null>;
     setValue(key: string, value: string): Promise<void>;
 
     hasValue(key: string): Promise<boolean>;
@@ -8,7 +8,7 @@ export interface IStorage {
 }
 
 export interface IStorageSync {
-    getValue(key: string): string;
+    getValue(key: string): string | null;
     setValue(key: string, value: string): void;
 
     removeValue(key: string): boolean;

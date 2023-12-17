@@ -48,21 +48,30 @@ export function parseSearchQuery(search: string) {
     return res;
 }
 
-export function createSearchQuery(args: QueryObj, addQuestionMark = false) {
-    if (!args) {
-        return '';
-    }
-
-    let res: URLSearchParams = null;
-    Object.entries(args).forEach(([key, value]) => {
-        if (typeof value === 'boolean' || typeof value === 'string' || typeof value === 'number') {
-            (res = (res || new URLSearchParams())).set(key, value === true ? '' : value);
-        }
-    });
+export function createSearchQuery(args: QueryObj | null, addQuestionMark = false) {
+    const res = createSearchParams(args);
     const str = res?.toString() || '';
     if (!str || !addQuestionMark) {
         return str;
     }
 
     return '?' + str;
+}
+
+export function createSearchParams(args: QueryObj | null): URLSearchParams | null {
+    if (!args) {
+        return null;
+    }
+
+    let res: URLSearchParams | null = null;
+    Object.entries(args).forEach(([key, value]) => {
+        if (typeof value === 'boolean' || typeof value === 'string' || typeof value === 'number') {
+            if (!res) {
+                res = new URLSearchParams();
+            }
+
+            res.set(key, value === true ? '' : value);
+        }
+    });
+    return res;
 }
