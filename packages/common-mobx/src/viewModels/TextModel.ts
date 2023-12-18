@@ -3,6 +3,7 @@ import type { IValueModel, IResetableModel, IValueModelReadonly } from '@zajno/c
 import logger from '@zajno/common/logger/index';
 import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
+import { Nullable } from '@zajno/common/types';
 
 export type TextInputConfig = {
     name?: Getter<string>;
@@ -37,7 +38,7 @@ export class Text implements IValueModelReadonly<string | null> {
     get value() { return this._value; }
 }
 
-export class TextInputVM extends ValidatableModel<string> implements IValueModel<string | null>, IResetableModel {
+export class TextInputVM extends ValidatableModel<string> implements IValueModel<Nullable<string>>, IResetableModel {
     private _value: string | null = '';
 
     private _focused = false;

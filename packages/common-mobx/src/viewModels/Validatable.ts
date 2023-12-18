@@ -12,6 +12,7 @@ import {
     ValidationVoid,
 } from '@zajno/common/validation/index';
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
+import { Nullable } from '@zajno/common/types/misc';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
 export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0>>;
@@ -26,11 +27,10 @@ const EmptyValidator = () => 0;
 
 export abstract class ValidatableModel<T = string> implements ValidationVoid {
 
-    private _validator: null | ValueValidator<T | Readonly<T> | null, any> = null;
-    private _strings: null | ValidationErrorsStrings<any> = null;
+    private _validator: Nullable<ValueValidator<Nullable<T | Readonly<T>>, any>> = null;
+    private _strings: Nullable<ValidationErrorsStrings<any>> = null;
 
-    // @observable
-    private _error: string | null = null;
+    private _error: Nullable<string> = null;
 
     protected _validateOnChange = false;
 
@@ -41,7 +41,7 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
         });
     }
 
-    protected abstract get valueToValidate(): T | Readonly<T> | null;
+    protected abstract get valueToValidate(): Nullable<T | Readonly<T>>;
 
     get isValid() { return !this._error; }
 
@@ -68,7 +68,7 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     }
 
     /** should return true-thy error code if NOT OK; otherwise if OK it will return null or zero code */
-    public async validateValue(value: T | null): Promise<ValidationError | string | number | null> {
+    public async validateValue(value: Nullable<T>): Promise<ValidationError | string | number | null> {
         if (this._validator) {
             try {
                 const res = await this._validator(value);
