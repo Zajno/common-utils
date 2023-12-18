@@ -1,13 +1,14 @@
 import type { IValueModel } from './types';
 import { Getter } from '../types/getter';
+import { Nullable } from '../types/misc';
 
-export class Model<T> implements IValueModel<T | null> {
-    private _value: T | undefined | null;
+export class Model<T> implements IValueModel<Nullable<T>> {
+    private _value: Nullable<T>;
 
-    private readonly _defaultValue: Getter<T | null>;
+    private readonly _defaultValue: Getter<Nullable<T>>;
 
-    constructor(v: Getter<T | null> = null) {
-        this._value = Getter.getValue(v) ?? undefined;
+    constructor(v: Getter<Nullable<T>> = null) {
+        this._value = Getter.getValue(v);
         this._defaultValue = v;
     }
 
@@ -16,15 +17,11 @@ export class Model<T> implements IValueModel<T | null> {
         this.setValue(v);
     }
 
-    public readonly setValue = (value: T | undefined | null) => {
+    public readonly setValue = (value: Nullable<T>) => {
         this._value = value;
     };
 
     public readonly reset = () => {
-        if (this._defaultValue == null) {
-            this.setValue(undefined);
-        } else {
-            this.setValue(Getter.getValue(this._defaultValue));
-        }
+        this.setValue(Getter.getValue(this._defaultValue));
     };
 }
