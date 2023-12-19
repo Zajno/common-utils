@@ -4,6 +4,7 @@ import { catchPromise } from './safe';
 
 type Callback<T> = () => (T | Promise<T>);
 
+/** Runs a callback after a timeout, ignoring all consecutive calls until the first is processed.  */
 export class ThrottleAction<T = any> {
 
     private _timeoutRef: ReturnType<typeof setTimeout> | null = null;
@@ -38,7 +39,11 @@ export class ThrottleAction<T = any> {
         this.clear();
 
         if (this._locked) {
-            logger.warn('THROTTLE LOCKED');
+            // This happening when the previous call is still running, while the new one has finished its timeout and is willing to run.
+            // This is probably OK since the running call should cover the current one.
+            // TODO Maybe just don't start timeout if the lock is set?
+            // The reason for not doing that 👆 is there's still a valid case when previous is still working but it's legit to start a new one (e.g. some state has changed already)
+            logger.warn('[ThrottleAction] THROTTLE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
         } else if (cb) {
             let result: T | undefined = undefined;
             try {
@@ -76,7 +81,7 @@ export class ThrottleProcessor<TSubject, TResult = any> {
 
     private _promise: ManualPromise<TResult | undefined> | null = null;
 
-    constructor(readonly process: (objs: TSubject[]) => Promise<TResult>, timeout = 1000) {
+    constructor(private readonly process: (objs: TSubject[]) => Promise<TResult>, timeout = 1000) {
         if (!process) {
             throw new Error('Arg0 expected: process');
         }
@@ -84,16 +89,22 @@ export class ThrottleProcessor<TSubject, TResult = any> {
         this._action = new ThrottleAction(timeout);
     }
 
-    push(data: TSubject): Promise<TResult | undefined> {
-        this._queue.push(data);
+    async push(data: TSubject): Promise<{ result: TResult | undefined, index: number }> {
+        const index = this._queue.push(data) - 1;
 
         if (!this._promise) {
             this._promise = createManualPromise<TResult>();
         }
 
+        const p = this._promise.promise;
+
         this._action.tryRun(this._process, true);
 
-        return this._promise.promise;
+        const res = await p;
+        return {
+            result: res,
+            index,
+        };
     }
 
     private _process = async () => {

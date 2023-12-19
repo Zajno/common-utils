@@ -69,10 +69,10 @@ describe('throttle', () => {
         const initial = 1;
         let final = initial;
         const repeats = 5;
-        let promise: Promise<number | undefined> | null = null;
+        const promises: Promise<{ result: number | undefined, index: number }>[] = [];
 
         for (let i = 0; i < repeats; i++) {
-            promise = processor.push(final++);
+            promises.push(processor.push(final++));
         }
 
         expect(cb).not.toHaveBeenCalled();
@@ -82,7 +82,10 @@ describe('throttle', () => {
         const expectedSum = repeats * (initial + final - 1) / 2;
         expect(result).toBe(expectedSum);
 
-        await expect(promise).resolves.toBe(expectedSum);
+        for (let i = 0; i < repeats; ++i) {
+            const promise = promises[i];
+            await expect(promise).resolves.toStrictEqual({ result: expectedSum, index: i });
+        }
 
         expect(cb).toHaveBeenCalledTimes(1);
     });
