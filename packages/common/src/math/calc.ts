@@ -21,9 +21,9 @@ export function contains(val: number, from: number, to: number) {
     return val >= s && val <= e;
 }
 
-export function getIntersection(v1: number, v2: number, r1: number, r2: number): false | { ranges: number[][], merged: { s: number, e: number} } {
-    const v = [v1, v2].sort();
-    const r = [r1, r2].sort();
+export function getIntersection(start1: number, end1: number, start2: number, end2: number): false | { ranges: number[][], intersection: { start: number, end: number} } {
+    const v = [start1, end1].sort();
+    const r = [start2, end2].sort();
 
     const res = (v[0] >= r[0] && v[0] <= r[1])
         || (v[1] >= r[0] && v[1] <= r[1])
@@ -36,9 +36,9 @@ export function getIntersection(v1: number, v2: number, r1: number, r2: number):
 
     return {
         ranges: [v, r],
-        merged: {
-            s: Math.min(v[0], r[0]),
-            e: Math.max(v[1], r[1]),
+        intersection: {
+            start: Math.min(v[0], r[0]),
+            end: Math.max(v[1], r[1]),
         },
     };
 }
