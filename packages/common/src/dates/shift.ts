@@ -10,7 +10,7 @@ export function addDays(start: Date, amount: number, condition: (d: Date) => boo
     while (left > 0 && shift < maxShift) {
         ++shift;
 
-        current = add(current, dir, 'day', false);
+        current = shiftDate(current, dir, 'day', false);
         if (condition(current)) {
             --left;
         }
@@ -19,7 +19,7 @@ export function addDays(start: Date, amount: number, condition: (d: Date) => boo
 }
 
 
-export function add(date: Date | number, amount: number, granularity: Granularity, local = false): Date {
+export function shiftDate(date: Date | number, amount: number, granularity: Granularity, local = false): Date {
     const res = getDate(date);
     switch (granularity) {
         case 'month': {
@@ -35,6 +35,9 @@ export function add(date: Date | number, amount: number, granularity: Granularit
         }
     }
 }
+
+/** @deprecated User {@link shiftDate} instead */
+export const add = shiftDate;
 
 export function startOf(d: Date | number, g: Granularity, local = false): Date {
     const ms = getTime(d);
@@ -77,7 +80,7 @@ export function endOf(d: Date | number, g: Granularity, local = false): Date {
         return getDate(d);
     }
 
-    const nextD = add(d, 1, g, local);
+    const nextD = shiftDate(d, 1, g, local);
     const nextDStart = startOf(nextD, g, local);
     const nextDStartMs = nextDStart.getTime();
     return new Date(nextDStartMs - 1);
@@ -110,5 +113,5 @@ export function setDayOfWeek(d: Date | number, dayOfWeek: number, future: boolea
             diff -= 7;
         }
     }
-    return add(res, diff, 'day', local);
+    return shiftDate(res, diff, 'day', local);
 }

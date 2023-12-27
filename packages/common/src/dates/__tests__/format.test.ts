@@ -12,25 +12,25 @@ describe('Date Helpers - Format', () => {
         expect(DateHelpers.Format.toDistance(from, undefined)).toMatch(/weeks ago/);
         expect(DateHelpers.Format.toDistance(from, null as any)).toMatch(/weeks ago/);
 
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 5, 'hour'), from)).toBe('Today');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 16, 'hour'), from)).toBe('Tomorrow');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 1, 'day'), from)).toBe('Tomorrow');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 2, 'day'), from)).toBe('In 2 days');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 6, 'day'), from)).toBe('In 6 days');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 7, 'day'), from)).toBe('In a week');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 8, 'day'), from)).toBe('In a week');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 13, 'day'), from)).toBe('In a week');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, 2, 'week'), from)).toBe('In 2 weeks');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 5, 'hour'), from)).toBe('Today');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 16, 'hour'), from)).toBe('Tomorrow');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 1, 'day'), from)).toBe('Tomorrow');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 2, 'day'), from)).toBe('In 2 days');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 6, 'day'), from)).toBe('In 6 days');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 7, 'day'), from)).toBe('In a week');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 8, 'day'), from)).toBe('In a week');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 13, 'day'), from)).toBe('In a week');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, 2, 'week'), from)).toBe('In 2 weeks');
 
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -5, 'hour'), from)).toBe('Today');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -16, 'hour'), from)).toBe('Yesterday');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -1, 'day'), from)).toBe('Yesterday');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -2, 'day'), from)).toBe('2 days ago');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -6, 'day'), from)).toBe('6 days ago');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -7, 'day'), from)).toBe('Week ago');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -8, 'day'), from)).toBe('Week ago');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -13, 'day'), from)).toBe('Week ago');
-        expect(DateHelpers.Format.toDistance(DateHelpers.add(from, -2, 'week'), from)).toBe('2 weeks ago');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -5, 'hour'), from)).toBe('Today');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -16, 'hour'), from)).toBe('Yesterday');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -1, 'day'), from)).toBe('Yesterday');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -2, 'day'), from)).toBe('2 days ago');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -6, 'day'), from)).toBe('6 days ago');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -7, 'day'), from)).toBe('Week ago');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -8, 'day'), from)).toBe('Week ago');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -13, 'day'), from)).toBe('Week ago');
+        expect(DateHelpers.Format.toDistance(DateHelpers.shiftDate(from, -2, 'week'), from)).toBe('2 weeks ago');
 
     });
 

@@ -39,7 +39,7 @@ export function dateFromUnixDayIndex(d: number) {
     return new Date(d * 1000 * 3600 * 24);
 }
 
-export function decompose(date: number | Date, local: boolean, ...grans: Granularity[]): Partial<Record<Granularity, number>> {
+export function decompose(date: number | Date, local: boolean, ...grans: (Granularity & DecomposeGranularity)[]): Partial<Record<DecomposeGranularity, number>> {
     const dd = getDate(date);
     const offset = local ? dd.getTimezoneOffset() * 60000 : 0;
     const ms = dd.getTime() + offset;
@@ -47,29 +47,36 @@ export function decompose(date: number | Date, local: boolean, ...grans: Granula
     return decomposeMs(ms, ...grans);
 }
 
-export function decomposeMs<K extends Granularity>(ms: number, ...grans: K[]): Record<K, number> {
+type DecomposeGranularity = 'week' | 'day' | 'hour' | 'minute' | 'second';
+
+export function decomposeMs<K extends Granularity & DecomposeGranularity>(ms: number, ...grans: K[]): Record<K, number> {
     const res: Partial<Record<Granularity, number>> = {};
 
     // absolute values
-    let secs = Math.round(ms / 1000);
-    let mins = Math.trunc(secs / 60);
-    let hrs = Math.trunc(mins / 60);
-    const days = Math.trunc(hrs / 24);
+    let secs = Math.round(convert(ms, 'millisecond', 'second'));
+    let mins = convert(secs, 'second', 'minute');
+    let hrs = convert(mins, 'minute', 'hour');
+    let days = convert(hrs, 'hour', 'day');
 
     // apply only selected granularity
+    if (grans.includes('week' as K)) {
+        res.week = Math.ceil(days / 7);
+        days = days % 7;
+    }
+
     if (grans.includes('day' as K)) {
+        res.day = Math.trunc(days);
         hrs = hrs % 24;
-        res.day = days;
     }
 
     if (grans.includes('hour' as K)) {
+        res.hour = Math.trunc(hrs);
         mins = mins % 60;
-        res.hour = hrs;
     }
 
     if (grans.includes('minute' as K)) {
+        res.minute = Math.trunc(mins);
         secs = secs % 60;
-        res.minute = mins;
     }
 
     if (grans.includes('second' as K)) {
@@ -82,10 +89,8 @@ export function decomposeMs<K extends Granularity>(ms: number, ...grans: K[]): R
 export function decomposeDate<K extends Granularity>(d: Date, local: boolean, ...grans: K[]): Record<K, number> {
     const res: Partial<Record<Granularity, number>> = {};
     grans.forEach(g => {
-        if (g !== 'week') {
-            const diff = g === 'month' ? 1 : 0;
-            res[g] = DateX.get(d, g, local) + diff;
-        }
+        const diff = g === 'month' ? 1 : 0;
+        res[g] = DateX.get(d, g, local) + diff;
     });
     return res as Record<K, number>;
 }
