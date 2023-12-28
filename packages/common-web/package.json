@@ -32,7 +32,7 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^18.19.3",
+    "@types/node": "^20.10.5",
     "@zajno/common": "^2.2.4",
     "@zajno/eslint-config": "^3.0.1",
     "cpy-cli": "^5.0.0",
