@@ -22,11 +22,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-          cache: 'npm run'
+          cache: 'npm'
 
       - name: Install packages
-        run: npm run
-
+        run: npm i
 
       - name: Build
         run: npm run build
