@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn tsc -b tsconfig.build.json
+npx tsc -b tsconfig.build.json

@@ -14,7 +14,7 @@
     },
     "homepage": "https://github.com/Zajno/common-utils/tree/main/packages/eslint-config#readme",
     "engines": {
-        "node": "^16.0.0 || >=18.0.0"
+        "node": "^16 || ^18 || ^20"
     },
     "keywords": [
         "zajno",
@@ -24,7 +24,7 @@
     "main": "index.js",
     "scripts": {
         "publish:local": "yalc push --private --replace --update",
-        "test": "cd tests && yarn && yarn test"
+        "test": "cd tests && npm i && npm run test"
     },
     "dependencies": {
         "@typescript-eslint/eslint-plugin": "^6.14.0",

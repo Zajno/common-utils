@@ -8,7 +8,6 @@ public/
 coverage/
 
 .env
-yarn-error.log
 
 yalc.lock
 .yalc/

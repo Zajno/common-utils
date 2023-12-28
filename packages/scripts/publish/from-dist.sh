@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn build:full && yarn bundle && cd dist && yarn publish
+npm run build:full && npm run bundle && cd dist && npm run publish

@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn build --watch
+npm run build --watch

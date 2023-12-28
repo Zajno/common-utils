@@ -25,10 +25,10 @@ The source code is written in TypeScript, and intended to be used in TS project,
 
 It can be used a git submodule if you're brave enough, but it's possible to use it as npm package (kinda) as well. In your project:
 
-1. Install from NPM w/ yarn
+1. Install from NPM:
 
 ```
-yarn add @zajno/common
+npm i @zajno/common
 ```
 
 [`tslib`](https://www.npmjs.com/package/tslib) is the only peer dependency.
@@ -52,12 +52,12 @@ If you plan to update the sources while using it in your project, we'd recommend
 The flow will look like the following. [1] – operations made on this project, [2] – operations made on dependant project.
 
 1. install `yalc` globally
-2. `[1]` fork (if you're outside Zajno) and clone this project, do `yarn`
+2. `[1]` fork (if you're outside Zajno) and clone this project, do `npm i`
 3. `[1]` run `yalc publish --private`
-4. `[2]` run `yalc add @zajno/common && yarn`
+4. `[2]` run `yalc add @zajno/common && npm i`
 5. `[1]` make changes in local copy, run tests etc.
-6. `[1]` run some magic: `yarn push:local` – this should deliver your updated copy to local project(s) [2]
+6. `[1]` run some magic: `npm run push:local` – this should deliver your updated copy to local project(s) [2]
 7. `[2]` notice the changes in your project, repeat 5-7 until you're done
 8. `[2]` to cleanup, run `yalc remove @zajno/common` or just `yalc remove --all`
 9. `[1]` push your changes after making sure it's OK, we'd say thank you for a PR!
-9. `[2]` re-add the package into your project or specify tag/commit (e.g. `yarn upgrade @zajno/common`)
+9. `[2]` re-add the package into your project or specify tag/commit (e.g. `npm upgrade @zajno/common`)

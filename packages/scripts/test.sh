@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn vitest run --coverage
+npx vitest run --coverage

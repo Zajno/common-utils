@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn tsc -b --watch
+npx tsc -b --watch
