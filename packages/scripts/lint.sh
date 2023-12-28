@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn eslint "src/**/*.ts?(x)"
+npx eslint "src/**/*.ts?(x)"

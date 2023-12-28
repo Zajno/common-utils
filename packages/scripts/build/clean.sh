@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-yarn clean && yarn build
+npm run clean && npm run build

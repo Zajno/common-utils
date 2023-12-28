@@ -6,31 +6,17 @@
         "packages/*"
     ],
     "scripts": {
-        "build": "lerna run build:clean",
-        "lint": "lerna run lint",
-        "test": "lerna run test",
-        "all": "yarn build && yarn lint && yarn test"
+        "build": "time npm run build:clean --workspaces --if-present",
+        "lint": "time npm run lint --workspaces --if-present",
+        "test": "time npm run test --workspaces --if-present",
+        "all": "time (npm run build && npm run lint && npm run test)"
     },
     "dependencies": {},
     "devDependencies": {
-        "@types/node": "^18.19.3",
-        "@vitest/coverage-istanbul": "^1.0.4",
-        "lerna": "^8.0.1",
+        "@types/node": "^20.10.5",
+        "@vitest/coverage-istanbul": "^1.1.0",
         "rimraf": "^5.0.5",
         "scripty": "^2.1.1",
-        "vitest": "^1.0.4"
-    },
-    "rss": {
-        "clean": "rimraf ./dist *.tsbuildinfo",
-        "dev": "yarn clean && tsc --watch --noEmit",
-        "build": "tsc -b tsconfig.build.json",
-        "build:clean": "yarn clean && yarn build",
-        "build:w": "yarn build --watch",
-        "publish:local": "yarn build:full && yarn bundle && cd dist && yalc push --replace --update",
-        "publish:from-dist": "yarn build:full && yarn bundle && cd dist && yarn publish",
-        "build:full": "yarn build:clean && yarn lint && yarn test",
-        "bundle": "cpy --flat ../../LICENSE package.json README.md dist/",
-        "lint": "eslint \"src/**/*.ts?(x)\"",
-        "test": "vitest run"
+        "vitest": "^1.1.0"
     }
 }
