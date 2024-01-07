@@ -60,7 +60,8 @@ export function decomposeMs<K extends Granularity & DecomposeGranularity>(ms: nu
 
     // apply only selected granularity
     if (grans.includes('week' as K)) {
-        res.week = Math.ceil(days / 7);
+        // week is 1-based!
+        res.week = Math.floor(days / 7) + 1;
         days = days % 7;
     }
 
