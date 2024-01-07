@@ -14,7 +14,6 @@ export namespace DeferredGetter {
         get current(): null { return null; },
         get promise(): Promise<null> { return _resolvedPromise; },
         get busy() { return false; },
-        // isEmpty: true,
     } satisfies DeferredGetter<null>;
 }
 

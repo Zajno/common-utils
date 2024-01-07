@@ -1,6 +1,15 @@
 
-export type ConstantGranularity = 'millisecond' | 'second' | 'minute' | 'hour' | 'day' | 'week';
-export type Granularity = ConstantGranularity | 'month' | 'year';
+export type ConstantGranularity = 'millisecond'
+    | 'second'
+    | 'minute'
+    | 'hour'
+    | 'day'
+    | 'week' // 1-based
+;
+export type Granularity = ConstantGranularity
+    | 'month'
+    | 'year'
+;
 
 export namespace ConstantGranularity {
     export function toMs(g: ConstantGranularity): number {
@@ -29,4 +38,3 @@ export namespace ConstantGranularity {
         }
     }
 }
-

@@ -21,6 +21,10 @@ export function addDays(start: Date, amount: number, condition: (d: Date) => boo
 
 export function shiftDate(date: Date | number, amount: number, granularity: Granularity, local = false): Date {
     const res = getDate(date);
+    if (amount === 0) {
+        return res;
+    }
+
     switch (granularity) {
         case 'month': {
             DateX.set(res, 'month', local, DateX.get(res, 'month', local) + amount);
@@ -36,7 +40,7 @@ export function shiftDate(date: Date | number, amount: number, granularity: Gran
     }
 }
 
-/** @deprecated User {@link shiftDate} instead */
+/** @deprecated Use {@link shiftDate} instead */
 export const add = shiftDate;
 
 export function startOf(d: Date | number, g: Granularity, local = false): Date {
@@ -96,13 +100,13 @@ export function isSame(d1: Date | number, d2: Date | number, g: Granularity, loc
  * Allows to set day of week, symmetric to Date.getDay()
  * @param d Date representation
  * @param dayOfWeek 0..6 Sunday..Saturday
- * @param future true - only forward, false - only backward, null - closest
+ * @param future true - only forward or present, false - only backward or present, null - closest
  * @param local whether to use local time
  * @returns Date with the same time as d, but with the updated day of week
  */
 export function setDayOfWeek(d: Date | number, dayOfWeek: number, future: boolean | null = null, local = false) {
     const res = getDate(d);
-    const currentDayOfWeek = local ? res.getDay() : res.getUTCDay();
+    const currentDayOfWeek = DateX.get(res, 'weekDay', local);
     let diff = dayOfWeek - currentDayOfWeek;
 
     if (future != null) {
