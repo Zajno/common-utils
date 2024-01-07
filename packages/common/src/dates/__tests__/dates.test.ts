@@ -1088,8 +1088,14 @@ describe('Date Helpers', () => {
         expect(DateHelpers.DateX.get(new Date('2020-01-10'), 'week', false)).toBe(2);
         expect(DateHelpers.DateX.get(new Date('2020-01-12'), 'week', false)).toBe(3);
 
+        expect(DateHelpers.DateX.get(new Date('2020-01-01'), 'week', false)).toBe(1);
+        expect(DateHelpers.DateX.get(new Date('2021-01-01'), 'week', false)).toBe(1);
+        expect(DateHelpers.DateX.get(new Date('2022-01-01'), 'week', false)).toBe(1);
         expect(DateHelpers.DateX.get(new Date('2023-01-01'), 'week', false)).toBe(1);
-        expect(DateHelpers.DateX.get(new Date('2023-12-31'), 'week', false)).toBe(53);
+        expect(DateHelpers.DateX.get(new Date('2023-12-25'), 'week', false)).toBe(52);
+        expect(DateHelpers.DateX.get(new Date('2023-12-26'), 'week', false)).toBe(52);
+        expect(DateHelpers.DateX.get(new Date('2023-12-30'), 'week', false)).toBe(52);
+        expect(DateHelpers.DateX.get(new Date('2023-12-31'), 'week', false)).toBe(53); // it is Sunday here, so counted as next week
         expect(DateHelpers.DateX.get(new Date('2024-01-01'), 'week', false)).toBe(1);
 
         expect(DateHelpers.DateX.get(baseDate(), 'millisecond', true)).toBe(893);
