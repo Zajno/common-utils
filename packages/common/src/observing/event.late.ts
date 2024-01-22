@@ -18,7 +18,7 @@ export class OneTimeLateEvent<T = any> extends Event<T> {
     }
 
     triggerAsync(data?: T): Promise<Error[]> {
-        if (this._triggeredWith) {
+        if (this._triggered) {
             return Promise.resolve([] as Error[]);
         }
 
@@ -33,9 +33,15 @@ export class OneTimeLateEvent<T = any> extends Event<T> {
             catchPromise(
                 handler(this._triggeredWith),
             );
-            return () => { /* no-op */ };
+            // do not skip adding to handlers in case the event will be reset
         }
 
         return super.on(handler);
     }
+
+    /** Allows this event to be triggered again and existing subscribers to receive it */
+    reset = () => {
+        this._triggered = false;
+        this._triggeredWith = undefined;
+    };
 }
