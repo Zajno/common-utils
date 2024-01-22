@@ -54,6 +54,24 @@ describe('Event', () => {
         expect(handler3).toHaveBeenCalledAfter(handler2);
     });
 
+    it('resets handlers', () => {
+        const e = new Event<number>();
+        const handler1 = vi.fn();
+        e.on(handler1);
+
+        e.trigger(1);
+
+        expect(handler1).toHaveBeenCalledTimes(1);
+        expect(handler1).toHaveBeenCalledWith(1);
+
+        handler1.mockReset();
+        e.resetHandlers();
+
+        e.trigger(2);
+
+        expect(handler1).not.toHaveBeenCalled();
+    });
+
     it('triggers async handlers', async () => {
         const e = new Event<number>();
         const handler1 = vi.fn();
@@ -133,5 +151,23 @@ describe('OneTimeLateEvent', () => {
         e.on(handler);
         expect(handler).toHaveBeenCalledTimes(1);
         expect(handler).toHaveBeenCalledWith(1);
+    });
+
+    it('callable after reset', () => {
+        const e = new OneTimeLateEvent<number>();
+        e.trigger(1);
+        const handler = vi.fn();
+        e.on(handler);
+
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler).toHaveBeenCalledWith(1);
+
+        handler.mockReset();
+
+        e.reset();
+        e.trigger(2);
+
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler).toHaveBeenCalledWith(2);
     });
 });

@@ -36,6 +36,11 @@ export class Event<T = any> implements IEvent<T> {
         return this;
     }
 
+    /** Clears handlers list */
+    public resetHandlers = () => {
+        this._handlers = [];
+    };
+
     public on(handler: EventHandler<T>): Unsubscribe {
         this._handlers.push(handler);
         return () => {
