@@ -11,9 +11,8 @@ export interface IDayIndex extends IWeekIndex {
     day: number;
 }
 
-
 /**
- * Helps with converting sequential index to zero-based month, week, day index.
+ * Helps with converting sequential index to 0- or 1-based month, week, day index.
  *
  * Allows to use any number of days per week, not just 7. Also one can set any number of weeks per month (but it will be used globally).
  *
@@ -28,29 +27,49 @@ export class CalendarIndex implements IDayIndex {
     /** sequential index */
     public raw: number = 0;
 
-    constructor(readonly perWeek: number = 7) { }
+    /**
+     * @param perWeek how many indexes allocated per week
+     * @param [base=0] 1 or 0 - determines base for all indexes (0 by default)
+     */
+    constructor(readonly perWeek: number = 7, readonly base: 1 | 0 = 0) { }
 
     public get perMonth() { return this.perWeek * CalendarIndex.WEEKS_PER_MONTH; }
 
-    /** zero-based month index based on `perWeek` property */
-    public get month() { return Math.floor(this.raw / this.perMonth); }
+    /** 1/0-based month index based on `perWeek` property */
+    public get month() {
+        if (this.raw <= 0) {
+            return 0;
+        }
 
-    /** zero-based week index based on `perWeek` property */
-    public get week() {
-        const rest = this.raw % this.perMonth;
-        return Math.floor(rest / this.perWeek);
+        return basedFloor(this.base, this.raw, this.perMonth);
     }
 
     public get fullWeek() {
-        return Math.floor(this.raw / this.perWeek);
+        if (this.raw <= 0) {
+            return 0;
+        }
+
+        return basedFloor(this.base, this.raw, this.perWeek);
+    }
+
+    /** 1/0-based week index based on `perWeek` property */
+    public get week() {
+        const fw = this.fullWeek;
+        if (fw === 0) {
+            return 0;
+        }
+
+        return basedRemainder(this.base, fw, CalendarIndex.WEEKS_PER_MONTH);
     }
 
     public get day() {
-        return this.raw % this.perWeek;
+        return basedRemainder(this.base, this.raw, this.perWeek);
     }
 
-    public set(month: number, week: number = 0, day: number = 0) {
-        this.raw = month * this.perMonth + week * this.perWeek + day;
+    public set(month: number, week: number = this.base, day: number = this.base) {
+        const m = Math.max(month - this.base, 0);
+        const w = Math.max(week - this.base, 0);
+        this.raw = m * this.perMonth + w * this.perWeek + day;
         return this;
     }
 
@@ -61,4 +80,17 @@ export class CalendarIndex implements IDayIndex {
             day: this.day,
         };
     }
+}
+
+/** returns based (1/0) remainder of `value / div`
+ *
+ * Ex.: get day of week
+*/
+export function basedRemainder(this: void, base: 1 | 0, value: number, div: number) {
+    return (value - base) % div + base;
+}
+
+/** returns based (1/0) floor'ed of `value / div` */
+export function basedFloor(this: void, base: 1 | 0, value: number, div: number) {
+    return Math.floor((value - base) / div) + base;
 }
