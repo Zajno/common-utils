@@ -80,6 +80,12 @@ export class CalendarIndex implements IDayIndex {
             day: this.day,
         };
     }
+
+    public clone() {
+        const res = new CalendarIndex(this.perWeek, this.base);
+        res.raw = this.raw;
+        return res;
+    }
 }
 
 /** returns based (1/0) remainder of `value / div`
