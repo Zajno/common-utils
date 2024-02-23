@@ -29,7 +29,8 @@ export class Lazy<T> implements IDisposable, LazyLight<T> {
 
         // additional reset to make sure previous instance has been disposed
         this.reset();
-        this._instance = this._factory();
+        const res = this._factory();
+        this.setInstance(res);
     }
 
     prewarm() {
@@ -37,11 +38,15 @@ export class Lazy<T> implements IDisposable, LazyLight<T> {
         return this;
     }
 
+    setInstance = (instance: T | null) => {
+        this._instance = instance;
+    };
+
     reset() {
         if (this.hasValue && this._instance && this._disposer) {
             this._disposer(this._instance);
         }
-        this._instance = null;
+        this.setInstance(null);
     }
 
     dispose() { this.reset(); }
