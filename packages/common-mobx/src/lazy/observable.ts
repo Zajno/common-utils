@@ -8,10 +8,9 @@ export class LazyObservable<T> extends Lazy<T> {
     constructor(factory: (() => T), observableType: ObservableTypes = ObservableTypes.Default) {
         super(factory);
 
-        makeObservable<Lazy<T>, '_instance' | 'ensureInstance'>(this, {
+        makeObservable<Lazy<T>, '_instance'>(this, {
             _instance: ObservableTypes.toDecorator(observableType),
-            reset: action,
-            ensureInstance: action,
+            setInstance: action,
         });
     }
 }
@@ -27,7 +26,7 @@ export class LazyPromiseObservable<T> extends LazyPromise<T> {
 
         makeObservable<
             LazyPromise<T>,
-            '_instance' | '_busy' | 'setInstance' | 'ensureInstanceLoading'
+            '_instance' | '_busy' | 'ensureInstanceLoading'
         >(this, {
             _instance: ObservableTypes.toDecorator(observableType),
             _busy: observable,
