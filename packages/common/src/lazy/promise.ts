@@ -49,8 +49,13 @@ export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T
 
     public setInstance = (res: T | undefined) => {
         this._busy = false;
+
+        // refresh promise so it won't keep old callbacks
+        // + make sure it's resolved with the freshest value
+        // also do this before setting the instance... just in case :)
+        this._promise = Promise.resolve(res!);
+
         this._instance = res;
-        // keep this._promise to allow to re-use it outside
 
         return res;
     };
