@@ -43,4 +43,30 @@ describe('LazyPromise', () => {
         expect(l.hasValue).toBeFalse();
     });
 
+    it('setInstance', async () => {
+        const VAL = 'abc1';
+        const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
+
+        expect(l.hasValue).toBeFalse();
+        expect(l.busy).toBeFalse();
+
+        expect(l.value).toBeUndefined();
+        expect(l.busy).toBeTrue();
+
+        // loading started when accessed `value` above
+        const p = l.promise;
+
+        const VAL2 = 'abc2';
+        l.setInstance(VAL2);
+
+        // both old promise and new value should be resolved to the new value
+        await expect(p).resolves.toBe(VAL2);
+        await expect(l.promise).resolves.toBe(VAL2);
+
+        // after all loading
+        const VAL3 = 'abc3';
+        l.setInstance(VAL3);
+        await expect(l.promise).resolves.toBe(VAL3);
+    });
+
 });
