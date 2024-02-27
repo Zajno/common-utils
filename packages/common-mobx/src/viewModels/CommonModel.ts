@@ -30,16 +30,14 @@ export class CommonModel<T = any> extends ValidatableModel<T | null> {
     }
 
     // action
-    public readonly setValue = (value: T) => {
+    public readonly setValue = (value: T | null) => {
         this._value = value;
 
-        if (this._validateOnChange) {
-            this.validate();
-        }
+        this.validateOnChangeIfNeeded();
     };
 
     reset = () => {
-        this._value = Getter.getValue(this._defaultValue);
+        this.setValue(Getter.getValue(this._defaultValue));
         super.reset();
     };
 }

@@ -37,7 +37,7 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     constructor() {
         makeObservable<ValidatableModel<T>, '_error'>(this, {
             _error: observable,
-            reset: action,
+            resetError: action,
         });
     }
 
@@ -65,6 +65,12 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     public validateOnChange(enable = true) {
         this._validateOnChange = enable;
         return this;
+    }
+
+    protected validateOnChangeIfNeeded() {
+        if (this._validateOnChange) {
+            this.validate();
+        }
     }
 
     /** should return true-thy error code if NOT OK; otherwise if OK it will return null or zero code */
@@ -116,7 +122,11 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     }
 
     // @action
-    reset() {
+    resetError() {
         this._error = null;
+    }
+
+    reset() {
+        this.resetError();
     }
 }
