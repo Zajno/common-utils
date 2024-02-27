@@ -114,9 +114,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
         this._index.value = val;
 
-        if (this._validateOnChange) {
-            this.validate();
-        }
+        this.validateOnChangeIfNeeded();
 
         // update all flags to be properly selected
         try {
