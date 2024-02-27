@@ -1,6 +1,6 @@
 import { getDate, getTime } from './parse';
 import { DateX } from './datex';
-import { ConstantGranularity, Granularity } from './types';
+import { Granularity } from './types';
 
 export function addDays(start: Date, amount: number, condition: (d: Date) => boolean, maxShift = 365) {
     const dir = Math.sign(amount);
@@ -35,7 +35,7 @@ export function shiftDate(date: Date | number, amount: number, granularity: Gran
             return res;
         }
         default: {
-            return new Date(res.getTime() + amount * ConstantGranularity.toMs(granularity));
+            return Granularity.Constant.shift(res, amount, granularity);
         }
     }
 }
@@ -72,7 +72,7 @@ export function startOf(d: Date | number, g: Granularity, local = false): Date {
             return getDate(d);
         }
         default: {
-            const granMs = ConstantGranularity.toMs(g);
+            const granMs = Granularity.Constant.toMs(g);
             const startMs = ms - ms % granMs;
             return new Date(startMs);
         }
@@ -94,28 +94,4 @@ export function isSame(d1: Date | number, d2: Date | number, g: Granularity, loc
     const s1 = startOf(d1, g, local);
     const s2 = startOf(d2, g, local);
     return s1.getTime() === s2.getTime();
-}
-
-/**
- * Allows to set day of week, symmetric to Date.getDay()
- * @param d Date representation
- * @param dayOfWeek 0..6 Sunday..Saturday
- * @param future true - only forward or present, false - only backward or present, null - closest
- * @param local whether to use local time
- * @returns Date with the same time as d, but with the updated day of week
- */
-export function setDayOfWeek(d: Date | number, dayOfWeek: number, future: boolean | null = null, local = false) {
-    const res = getDate(d);
-    const currentDayOfWeek = DateX.get(res, 'weekDay', local);
-    let diff = dayOfWeek - currentDayOfWeek;
-
-    if (future != null) {
-        if (future && diff < 0) {
-            diff += 7;
-        }
-        if (!future && diff > 0) {
-            diff -= 7;
-        }
-    }
-    return shiftDate(res, diff, 'day', local);
 }

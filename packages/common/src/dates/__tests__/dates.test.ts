@@ -441,34 +441,34 @@ describe('Date Helpers', () => {
 
     test('convert', () => {
 
-        expect(() => DateHelpers.convert(1000, undefined as any, 'second')).toThrow('Unsupported granularity');
+        expect(() => DateHelpers.Granularity.Constant.convert(1000, undefined as any, 'second')).toThrow('Unsupported granularity');
 
-        expect(DateHelpers.convert(1000, 'millisecond', 'second')).toBe(1);
-        expect(DateHelpers.convert(1000, 'millisecond', 'minute')).toStrictEqual(1 / 60);
+        expect(DateHelpers.Granularity.Constant.convert(1000, 'millisecond', 'second')).toBe(1);
+        expect(DateHelpers.Granularity.Constant.convert(1000, 'millisecond', 'minute')).toStrictEqual(1 / 60);
 
-        expect(DateHelpers.convert(1000, 'second', 'millisecond')).toStrictEqual(Math.pow(1000, 2));
-        expect(DateHelpers.convert(300, 'second', 'minute')).toBe(5);
-        expect(DateHelpers.convert(60 * 60, 'second', 'hour')).toBe(1);
-        expect(DateHelpers.convert(60 * 60 * 2, 'second', 'day')).toStrictEqual(1 / 12);
-        expect(DateHelpers.convert(60 * 60 * 24 * 1.5, 'second', 'week')).toStrictEqual(1.5 / 7);
+        expect(DateHelpers.Granularity.Constant.convert(1000, 'second', 'millisecond')).toStrictEqual(Math.pow(1000, 2));
+        expect(DateHelpers.Granularity.Constant.convert(300, 'second', 'minute')).toBe(5);
+        expect(DateHelpers.Granularity.Constant.convert(60 * 60, 'second', 'hour')).toBe(1);
+        expect(DateHelpers.Granularity.Constant.convert(60 * 60 * 2, 'second', 'day')).toStrictEqual(1 / 12);
+        expect(DateHelpers.Granularity.Constant.convert(60 * 60 * 24 * 1.5, 'second', 'week')).toStrictEqual(1.5 / 7);
 
-        expect(DateHelpers.convert(123, 'minute', 'second')).toBe(7380);
-        expect(DateHelpers.convert(3213, 'minute', 'hour')).toBe(53.55);
-        expect(DateHelpers.convert(60 * 61, 'minute', 'hour')).toBe(61);
-        expect(DateHelpers.convert(60 * 36, 'minute', 'day')).toBe(1.5);
-        expect(DateHelpers.convert(60 * 24 * 14, 'minute', 'week')).toBe(2);
+        expect(DateHelpers.Granularity.Constant.convert(123, 'minute', 'second')).toBe(7380);
+        expect(DateHelpers.Granularity.Constant.convert(3213, 'minute', 'hour')).toBe(53.55);
+        expect(DateHelpers.Granularity.Constant.convert(60 * 61, 'minute', 'hour')).toBe(61);
+        expect(DateHelpers.Granularity.Constant.convert(60 * 36, 'minute', 'day')).toBe(1.5);
+        expect(DateHelpers.Granularity.Constant.convert(60 * 24 * 14, 'minute', 'week')).toBe(2);
 
-        expect(DateHelpers.convert(2.5, 'hour', 'second')).toBe(9000);
-        expect(DateHelpers.convert(11.5, 'hour', 'minute')).toBe(690);
-        expect(DateHelpers.convert(234, 'hour', 'day')).toBe(9.75);
-        expect(DateHelpers.convert(24 * 35, 'hour', 'week')).toBe(5);
+        expect(DateHelpers.Granularity.Constant.convert(2.5, 'hour', 'second')).toBe(9000);
+        expect(DateHelpers.Granularity.Constant.convert(11.5, 'hour', 'minute')).toBe(690);
+        expect(DateHelpers.Granularity.Constant.convert(234, 'hour', 'day')).toBe(9.75);
+        expect(DateHelpers.Granularity.Constant.convert(24 * 35, 'hour', 'week')).toBe(5);
 
-        expect(DateHelpers.convert(1 / 2, 'day', 'second')).toBe(43200);
-        expect(DateHelpers.convert(1 / 60, 'day', 'minute')).toBe(24);
-        expect(DateHelpers.convert(11, 'day', 'minute')).toBe(15840);
-        expect(DateHelpers.convert(4, 'day', 'hour')).toBe(96);
-        expect(DateHelpers.convert(28, 'day', 'week')).toBe(4);
-        expect(DateHelpers.convert(3.5, 'day', 'week')).toBe(0.5);
+        expect(DateHelpers.Granularity.Constant.convert(1 / 2, 'day', 'second')).toBe(43200);
+        expect(DateHelpers.Granularity.Constant.convert(1 / 60, 'day', 'minute')).toBe(24);
+        expect(DateHelpers.Granularity.Constant.convert(11, 'day', 'minute')).toBe(15840);
+        expect(DateHelpers.Granularity.Constant.convert(4, 'day', 'hour')).toBe(96);
+        expect(DateHelpers.Granularity.Constant.convert(28, 'day', 'week')).toBe(4);
+        expect(DateHelpers.Granularity.Constant.convert(3.5, 'day', 'week')).toBe(0.5);
     });
 
     test('min', () => {

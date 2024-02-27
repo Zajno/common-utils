@@ -5,6 +5,7 @@ import { arraysCompareDistinct } from '@zajno/common/math/arrays';
 import { FlagModel, ILabeledFlagModel } from './FlagModel';
 import { ValidatableModel } from './Validatable';
 import { withLabel } from '@zajno/common/models/wrappers';
+import { Getter } from '@zajno/common/types/getter';
 
 export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> implements IValueModel<readonly string[]>, IResetableModel, ICountableModel {
 
@@ -18,7 +19,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     private _indexesLocked = false;
 
     constructor(
-        private readonly _items: readonly T[],
+        private readonly _items: Getter<readonly T[]>,
         private readonly _accessor: (item: T) => string,
         ...selected: number[]
     ) {
@@ -28,6 +29,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
 
         makeObservable<MultiSelect<T>, '_indexes'>(this, {
             '_indexes': observable,
+            items: computed,
             selectedIndexes: computed,
             values: computed,
             selectedItems: computed,
@@ -42,18 +44,19 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     // @computed
     get selectedIndexes(): ReadonlyArray<number> { return Array.from(this._indexes); }
 
-    get items(): ReadonlyArray<T> { return this._items; }
+    // @computed
+    get items(): ReadonlyArray<T> { return Getter.getValue(this._items); }
 
     get flags() { return this._flags.value; }
 
     // @computed
     get values(): ReadonlyArray<string> {
-        return this._items.map(i => this._accessor(i));
+        return this.items.map(i => this._accessor(i));
     }
 
     // @computed
     get selectedItems(): ReadonlyArray<T> {
-        return this.selectedIndexes.map(i => this._items[i]);
+        return this.selectedIndexes.map(i => this.items[i]);
     }
 
     // @computed
@@ -68,7 +71,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     isIndexSelected(index: number) { return this._indexes.has(index); }
     isValueSelected(value: string) { return this.selectedValues.includes(value); }
 
-    get count() { return this._items.length; }
+    get count() { return this.items.length; }
     get selectedCount() { return this._indexes.size; }
     get isEmpty() { return this.selectedCount === 0; }
 
@@ -153,7 +156,7 @@ export class MultiSelect<T = any> extends ValidatableModel<ReadonlyArray<T>> imp
     }
 
     private createFlags() {
-        const flags: ReadonlyArray<ILabeledFlagModel> = this._items
+        const flags: ReadonlyArray<ILabeledFlagModel> = this.items
             .map((item, index) => {
                 const flag = withLabel(
                     new FlagModel(this._indexes.has(index)),
