@@ -1,6 +1,6 @@
-import { decomposeMs } from './convert';
-import { setDayOfWeek, shiftDate } from './shift';
 import { Granularity } from './types';
+import { decomposeMs } from './decompose';
+import { getDate } from './parse';
 
 export namespace DateX {
 
@@ -98,10 +98,34 @@ export namespace DateX {
 
     function setWeek(d: Date, local: boolean, week: number) {
         const current = getWeek(d, local);
-        const res = shiftDate(d, (week - current), 'week', local).getTime();
+        const res = Granularity.Constant.shift(d, (week - current), 'week').getTime();
 
         d.setTime(res);
 
         return res;
     }
+}
+
+/**
+ * Allows to set day of week, symmetric to Date.getDay()
+ * @param d Date representation
+ * @param dayOfWeek 0..6 Sunday..Saturday
+ * @param future true - only forward or present, false - only backward or present, null - closest
+ * @param local whether to use local time
+ * @returns Date with the same time as d, but with the updated day of week
+ */
+export function setDayOfWeek(d: Date | number, dayOfWeek: number, future: boolean | null = null, local = false) {
+    const res = getDate(d);
+    const currentDayOfWeek = DateX.get(res, 'weekDay', local);
+    let diff = dayOfWeek - currentDayOfWeek;
+
+    if (future != null) {
+        if (future && diff < 0) {
+            diff += 7;
+        }
+        if (!future && diff > 0) {
+            diff -= 7;
+        }
+    }
+    return Granularity.Constant.shift(res, diff, 'day');
 }

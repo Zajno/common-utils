@@ -7,3 +7,4 @@ export * from './period';
 export * from './shift';
 export * from './types';
 export * from './yearDate';
+export * from './decompose';

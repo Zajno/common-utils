@@ -1,5 +1,6 @@
 import * as MathX from '../math';
-import { decompose, decomposeDate, getDiscreteDiff } from './convert';
+import { decomposeDate, getDiscreteDiff } from './convert';
+import { decompose } from './decompose';
 import { getDate, getTime } from './parse';
 import { YearDate } from './yearDate';
 

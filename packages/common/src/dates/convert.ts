@@ -1,7 +1,7 @@
 import { DateX } from './datex';
 import { getDate, getTime } from './parse';
 import { isSame, startOf } from './shift';
-import { ConstantGranularity, Granularity } from './types';
+import { Granularity } from './types';
 
 type DateFields<T> = {
     [P in keyof T]: T[P] extends Date ? P : never;
@@ -21,12 +21,6 @@ export function ensureDates<T>(obj: T, ...fields: DateFields<T>[]) {
 export function isNetworkDay(n: number) { return n >= 1 && n <= 5; }
 export function isNetworkDate(d: Date) { return isNetworkDay(d.getUTCDay()); }
 
-export function convert(amount: number, g: ConstantGranularity, to: ConstantGranularity) {
-    const ms = amount * ConstantGranularity.toMs(g);
-    const toMs = ConstantGranularity.toMs(to);
-    return ms / toMs;
-}
-
 export function unix(d: Date | number) {
     return Math.floor(getTime(d) / 1000);
 }
@@ -39,54 +33,6 @@ export function dateFromUnixDayIndex(d: number) {
     return new Date(d * 1000 * 3600 * 24);
 }
 
-export function decompose(date: number | Date, local: boolean, ...grans: (Granularity & DecomposeGranularity)[]): Partial<Record<DecomposeGranularity, number>> {
-    const dd = getDate(date);
-    const offset = local ? dd.getTimezoneOffset() * 60000 : 0;
-    const ms = dd.getTime() + offset;
-
-    return decomposeMs(ms, ...grans);
-}
-
-type DecomposeGranularity = 'week' | 'day' | 'hour' | 'minute' | 'second';
-
-export function decomposeMs<K extends Granularity & DecomposeGranularity>(ms: number, ...grans: K[]): Record<K, number> {
-    const res: Partial<Record<Granularity, number>> = {};
-
-    // absolute values
-    let secs = Math.round(convert(ms, 'millisecond', 'second'));
-    let mins = convert(secs, 'second', 'minute');
-    let hrs = convert(mins, 'minute', 'hour');
-    let days = convert(hrs, 'hour', 'day');
-
-    // apply only selected granularity
-    if (grans.includes('week' as K)) {
-        // week is 1-based!
-        res.week = Math.floor(days / 7) + 1;
-        days = days % 7;
-    }
-
-    if (grans.includes('day' as K)) {
-        res.day = Math.trunc(days);
-        hrs = hrs % 24;
-    }
-
-    if (grans.includes('hour' as K)) {
-        res.hour = Math.trunc(hrs);
-        mins = mins % 60;
-    }
-
-    if (grans.includes('minute' as K)) {
-        res.minute = Math.trunc(mins);
-        secs = secs % 60;
-    }
-
-    if (grans.includes('second' as K)) {
-        res.second = secs;
-    }
-
-    return res as Record<K, number>;
-}
-
 export function decomposeDate<K extends Granularity>(d: Date, local: boolean, ...grans: K[]): Record<K, number> {
     const res: Partial<Record<Granularity, number>> = {};
     grans.forEach(g => {
@@ -95,7 +41,6 @@ export function decomposeDate<K extends Granularity>(d: Date, local: boolean, ..
     });
     return res as Record<K, number>;
 }
-
 
 export function splitDatesByDay(dates: number[]): number[][] {
     if (!dates) {
@@ -153,7 +98,7 @@ export function getDiscreteDiff(d1: number | Date, d2: number | Date, granularit
         }
 
         default: {
-            const ms = ConstantGranularity.toMs(granularity);
+            const ms = Granularity.Constant.toMs(granularity);
             v1 = startOf(d1, granularity, local).getTime() / ms;
             v2 = startOf(d2, granularity, local).getTime() / ms;
             break;
