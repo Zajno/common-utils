@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-mobx",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Zajno's re-usable utilities for JS/TS projects using MobX",
   "private": false,
   "repository": {
