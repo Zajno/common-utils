@@ -3,9 +3,9 @@ import { ILogger, ILoggerSwitchable, LoggerFunction } from './abstractions';
 export const EMPTY_FUNCTION = () => { /* no-op */ };
 
 export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
-    public log: LoggerFunction;
-    public warn: LoggerFunction;
-    public error: LoggerFunction;
+    public log: LoggerFunction = EMPTY_FUNCTION;
+    public warn: LoggerFunction = EMPTY_FUNCTION;
+    public error: LoggerFunction = EMPTY_FUNCTION;
 
     private _name: string | null = null;
 

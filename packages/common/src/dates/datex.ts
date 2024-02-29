@@ -6,7 +6,7 @@ export namespace DateX {
 
     export type DateGranularity = Granularity | 'weekDay';
 
-    export function get(d: Date, g: DateGranularity, local: boolean) {
+    export function get(d: Date, g: DateGranularity, local: boolean): number {
         switch (g) {
             case 'year': return local ? d.getFullYear() : d.getUTCFullYear();
             case 'month': return local ? d.getMonth() : d.getUTCMonth();
@@ -31,18 +31,17 @@ export namespace DateX {
     export function set(d: Date, g: 'second', local: boolean, sec: number, ms?: number): number;
     export function set(d: Date, g: 'millisecond', local: boolean, ms: number): number;
 
-    export function set(d: Date, g: DateGranularity, local: boolean, ...v: number[]) {
+    export function set(d: Date, g: DateGranularity, local: boolean, ...v: (number | undefined)[]): number {
         if (g === 'week') {
-            return setWeek(d, local, v[0]);
+            return setWeek(d, local, v[0] ?? 0);
         }
 
         if (g === 'weekDay') {
-            return setDayOfWeek(d, v[0], null, local);
+            return setDayOfWeek(d, v[0] ?? 0, null, local).getTime();
         }
 
         type _dateFn = (this: Date, ..._numbers: number[]) => number;
 
-        /* eslint-disable @typescript-eslint/unbound-method -- it's clearly defined as a function with `this: Date`  */
         const fn: null | _dateFn = (() => {
             switch (g) {
                 case 'year': return local ? d.setFullYear : d.setUTCFullYear;
@@ -55,9 +54,8 @@ export namespace DateX {
                 default: return null;
             }
         })();
-        /* eslint-enable @typescript-eslint/unbound-method */
 
-        return fn ? fn.call(d, ...v) : d.getTime();
+        return fn ? fn.call(d, ...v as number[]) : d.getTime();
     }
 
 

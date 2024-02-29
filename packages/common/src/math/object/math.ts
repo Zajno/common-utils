@@ -43,19 +43,22 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         if (typeof o2 === 'number') {
             const res = { } as T;
             Object.keys(o1).forEach(key => {
-                res[key] = Math.round(o1[key] / o2);
+                const kk = key as keyof DeepReadonly<T>;
+                const ov = o1[kk] as number;
+                res[kk as keyof T] = Math.round(ov / o2) as T[keyof T];
             });
             return res;
         }
 
         let min: number | null = null;
         Object.keys(o2).forEach(key => {
-            const v = o2[key] as number;
+            const kk = key as keyof DeepReadonly<T>;
+            const v = o2[kk] as number;
             if (!v) {
                 return;
             }
 
-            const b = o1[key] as number || 0;
+            const b = o1[kk] as number || 0;
             const c = Math.round(b / v);
             if (min == null || c < min) {
                 min = c;

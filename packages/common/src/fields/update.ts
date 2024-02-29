@@ -21,11 +21,11 @@ export function updateFieldExtended<T>(
     hasChanged: null | Fields.Comparer<T> = null,
 ): boolean {
 
-    hasChanged = hasChanged || ((v1: T, v2: T) => (get(v1) !== get(v2)));
+    const _hasChanged: Fields.Comparer<T> = hasChanged ?? ((v1, v2) => (get(v1) !== get(v2)));
 
     let changed = true;
 
-    if (get(source) !== undefined && hasChanged(source, target)) {
+    if (get(source) !== undefined && _hasChanged(source, target)) {
         changed = true;
         set(diff, get(target));
         set(target, get(source));

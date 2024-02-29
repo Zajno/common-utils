@@ -25,11 +25,11 @@ describe('nameof', () => {
             expect(nameof.full(obj).key('a').key('b').result).toBe('a.b');
 
             class Inner {
-                field: string;
+                field: string = '';
             }
 
             class Outer {
-                inner: Inner;
+                inner: Inner = new Inner();
             }
 
             expect(nameof.full<Outer>().key('inner').result).toBe('inner');

@@ -28,7 +28,7 @@ export function createThrowers<T extends ValidatorsSchema>(validators: T): Valid
     return Object.entries(validators).reduce((acc, [key, validator]) => {
         const kk = key as (string & keyof T);
         if ('validate' in validator) {
-            acc[kk] = (async v => {
+            acc[kk] = (async (v: any) => {
                 await validator.validate(v);
             }) as any;
         }
