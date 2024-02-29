@@ -33,9 +33,13 @@ export type LengthArray<
         R extends T[] = []
     > = number extends N
         ? T[]
-        : R['length'] extends N
-        ? R
-        : LengthArray<T, N, [T, ...R]>;
+        : (R['length'] extends N
+            ? R
+            : LengthArray<T, N, [T, ...R]>
+        );
+
+export type EmptyArray = [] & { length: 0 };
+export type NonEmptyArray<T = any> = T[] & { 0: T; };
 
 export type AnyObject = Record<string, any>;
 export type AnyFunction = (...args: any[]) => any;
