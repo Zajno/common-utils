@@ -11,12 +11,21 @@ import { CombineOptions, combineUrls } from './utils';
 
 export * from './types';
 
-const emptyFactory = (strings: readonly string[]): StaticBuilder => {
+const staticFactory = (strings: readonly string[]): StaticBuilder => {
+    const parts = strings.slice();
     return {
-        build: (_, options) => combineUrls(options, ...strings),
-        template: (_, options) => combineUrls(options, ...strings),
+        build: (_, options) => combineUrls(options, ...parts),
+        template: (_, options) => combineUrls(options, ...parts),
         args: [],
         as() { return this as any; },
+        append(...parts: string[]) {
+            parts.push(...parts);
+            return this;
+        },
+        prepend(...parts: string[]) {
+            parts.unshift(...parts);
+            return this;
+        },
     };
 };
 
@@ -26,10 +35,13 @@ export function build<TArgs extends string[]>(
     ...params: TArgs
 ): SwitchBuilder<TArgs> {
     if (params.length === 0) {
-        return emptyFactory(strings) as SwitchBuilder<TArgs>;
+        return staticFactory(strings) as SwitchBuilder<TArgs>;
     }
 
     type Key = TArgs[number];
+
+    const appendParts: string[] = [];
+    const prependParts: string[] = [];
 
     const build = (args: ArgValue[] | Record<Key, ArgValue> | undefined, options?: CombineOptions) => {
         const parts: string[] = [];
@@ -50,7 +62,8 @@ export function build<TArgs extends string[]>(
                 }
             }
         }
-        return combineUrls(options, ...parts);
+
+        return combineUrls(options, ...prependParts, ...parts, ...appendParts);
     };
 
     const template = (prefix?: TemplatePrefixing, options?: CombineOptions): string => {
@@ -72,6 +85,14 @@ export function build<TArgs extends string[]>(
         template,
         args: params,
         as() { return this as any; },
+        prepend(...parts: string[]) {
+            prependParts.push(...parts);
+            return this;
+        },
+        append(...parts: string[]) {
+            appendParts.push(...parts);
+            return this;
+        },
     };
 
     return result as SwitchBuilder<TArgs>;
@@ -89,14 +110,7 @@ const constructStatic = (input: StaticInput): StaticBuilder => {
         throw new Error('Path.construct: Invalid input, expected string | string[]');
     }
 
-    const p: string = staticPath;
-    const res: StaticBuilder = {
-        build: () => p,
-        template: () => p,
-        args: [],
-        as() { return this as any; },
-    };
-    return res;
+    return staticFactory([staticPath]);
 };
 
 function guardIsStatic(value: any): value is StaticInput {

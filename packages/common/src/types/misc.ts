@@ -42,6 +42,7 @@ export type EmptyArray = [] & { length: 0 };
 export type NonEmptyArray<T = any> = T[] & { 0: T; };
 
 export type AnyObject = Record<string, any>;
+export type EmptyObject = Record<PropertyKey, never>;
 export type AnyFunction = (...args: any[]) => any;
 export type Primitive = number | string | symbol | boolean | null | undefined | bigint;
 export type ObjectOrPrimitive = AnyObject | Primitive;

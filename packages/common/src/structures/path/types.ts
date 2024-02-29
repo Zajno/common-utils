@@ -3,10 +3,11 @@ import type { CombineOptions } from './utils';
 
 export type ArgValue = string | number;
 
+export type ObjectBuilderArgs<TArgs extends string> = Record<TArgs, ArgValue>;
 export type BuilderArgs<TArgs extends string, L extends number = number> = LengthArray<ArgValue, L> | Record<TArgs, ArgValue>;
 export type TemplatePrefixing = Nullable<string | ((key: string, index: number) => string)>;
 
-type BaseBuilder<A extends string[], B, P = TemplatePrefixing> = {
+interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
     /**
      * Builds the path using provided args.
      *
@@ -30,7 +31,7 @@ type BaseBuilder<A extends string[], B, P = TemplatePrefixing> = {
     template: (prefix?: P, options?: CombineOptions) => string;
 
     /** args as they were in the template */
-    args: A;
+    readonly args: A;
 
     /**
      * Types helper method to easily cast all kinds of builders to generic IBuilder or others.
@@ -41,18 +42,25 @@ type BaseBuilder<A extends string[], B, P = TemplatePrefixing> = {
      * In future probably some extra conversion may be required.
     */
     as<TOther extends BaseBuilder<any, any, any>>(marker?: TOther): TOther;
-};
+
+    /** Appends static parts to the output path, both for `build` & `template` */
+    append(...parts: string[]): ThisType<this>;
+
+    /** Prepends static parts to the output path, both for `build` & `template` */
+    prepend(...parts: string[]): ThisType<this>;
+}
 
 type EmptyBuilderArgs = [] | Record<PropertyKey, never>;
 
-export type Builder<TArgs extends string[]> = BaseBuilder<TArgs, BuilderArgs<TArgs[number], TArgs['length']>>;
-export type StaticBuilder = BaseBuilder<[], EmptyBuilderArgs>;
-export type IBuilder = BaseBuilder<string[], BuilderArgs<string>>;
+type ReadonlyArr<TArr extends ReadonlyArray<any>> = TArr extends ReadonlyArray<infer T> ? ReadonlyArray<T> : never;
+
+export interface Builder<TArgs extends readonly string[]> extends BaseBuilder<ReadonlyArr<TArgs>, BuilderArgs<TArgs[number], TArgs['length']>> { }
+export interface StaticBuilder extends BaseBuilder<readonly [], EmptyBuilderArgs> { }
+export interface IBuilder extends BaseBuilder<readonly string[], BuilderArgs<string>> { }
 
 export type StaticInput = string // static one-component path
-    | string[]; // static multi-component path, will be joined with '/' (by default)
+    | readonly string[]; // static multi-component path, will be joined with '/' (by default)
 
-export type ExtractArgs<T> = T extends Builder<infer TArgs> ? TArgs : string;
 export type BaseInput = StaticInput | BaseBuilder<any, any, any>;
 
 export type Output<TInput> = TInput extends StaticBuilder
@@ -62,12 +70,14 @@ export type Output<TInput> = TInput extends StaticBuilder
         : StaticBuilder
     );
 
-export type SwitchBuilder<TArg extends string[]> = [TArg] extends [never]
+export type SwitchBuilder<TArg extends readonly string[]> = [TArg] extends [never]
     ? StaticBuilder
     : ([] extends TArg
         ? StaticBuilder
-        : (string[] extends TArg
+        : (readonly string[] extends TArg
             ? IBuilder
             : Builder<TArg>
         )
     );
+
+export type ExtractArgs<T> = T extends Builder<infer TArgs> ? TArgs : readonly string[];

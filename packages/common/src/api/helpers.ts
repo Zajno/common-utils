@@ -10,7 +10,7 @@ export function setDefaults(settings: Partial<typeof DefaultSettings>) {
     Object.assign(DefaultSettings, settings);
 }
 
-export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs?: ApiEndpoint.ExtractInPath<T>) {
+export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs?: ApiEndpoint.ExtractPath<T>) {
     if (pathArgs) {
         return endpoint.pathBuilder.build(pathArgs, { addStart: DefaultSettings.basePrefix });
     }

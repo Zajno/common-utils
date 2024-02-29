@@ -14,7 +14,7 @@ type Extra<T> = {
 export type RequestConfig<TIn> = {
     method: EndpointMethods | string & Record<never, never>;
     url: string;
-    data: TIn;
+    data: TIn | null | undefined;
     headers: AnyObject;
 };
 
@@ -35,9 +35,12 @@ export function buildApiCaller(options: CallerOptions) {
 
     return async function callApi<T extends IEndpointInfo>(
         api: T,
-        data: ApiEndpoint.ExtractIn<T> & ApiEndpoint.ExtractInPath<T> & ApiEndpoint.ExtractQuery<T>,
+        data: ApiEndpoint.ExtractIn<T> | ApiEndpoint.ExtractPath<T> | ApiEndpoint.ExtractQuery<T>,
         extra?: Extra<T>,
     ) {
+
+        type TOut = ApiEndpoint.ExtractOut<T>;
+
         const { headers, log = 'res' } = extra || {};
 
         const resultInput = data && { ...data } as ApiEndpoint.ExtractIn<T>;
@@ -55,15 +58,20 @@ export function buildApiCaller(options: CallerOptions) {
         const queryKeysExpected = api.queryKeys;
         if (resultInput && queryKeysExpected?.length) {
             const queryInputs: AnyObject = {};
+            let empty = true;
             for (const key of queryKeysExpected) {
                 const v = resultInput[key];
                 if (v || v === 0) {
                     queryInputs[key] = v;
+                    empty = false;
                 }
                 delete resultInput[key];
             }
-            const params = new URLSearchParams(queryInputs);
-            queryStr = '?' + params.toString();
+
+            if (!empty) {
+                const params = new URLSearchParams(queryInputs);
+                queryStr = '?' + params.toString();
+            }
         }
 
         if (resultInput && bodyValidation) {
@@ -85,7 +93,7 @@ export function buildApiCaller(options: CallerOptions) {
             config.headers['Content-Type'] = 'multipart/form-data';
         }
 
-        const response = await request(config);
+        const response = await request(config) as { data: TOut };
         return PostProcessors.process(api, response.data);
     };
 }
