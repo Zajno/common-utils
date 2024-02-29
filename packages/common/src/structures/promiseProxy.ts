@@ -39,7 +39,7 @@ export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends
     const { loader, fnKeys, wrap, lazy: TLazy = LazyPromise } = options;
 
     // wrapper object that will hold values temporarily while loading is in progress
-    const wrapper = wrap || { } as Partial<PromiseProxy<T>>;
+    const wrapper = (wrap || { }) as Partial<PromiseProxy<T>>;
     const functionCalls = new Map<TFnKeys, any[]>();
 
     let _resolved: T | null = null;
@@ -49,7 +49,8 @@ export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends
         const result: T = await loader();
         // copy values from wrapper to result
         Object.entries(wrapper).forEach(([key, value]) => {
-            if (value !== undefined && (!wrap || wrap[key] == null)) {
+            const kk = key as keyof typeof wrap;
+            if (value !== undefined && (!wrap || wrap[kk] == null)) {
                 result[key as keyof T] = value as T[keyof T];
             }
         });
@@ -76,11 +77,11 @@ export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends
             const current = _resolved || lazy.value;
             if (current) {
                 if (wrap && !(key in current) && key in wrap) {
-                    return target[key];
+                    return target[key as keyof typeof target];
                 }
-                const res = current[key];
+                const res = current[key as keyof typeof current];
                 if (typeof res === 'function') {
-                    return res.bind(current);
+                    return (res as () => any).bind(current);
                 }
                 return res;
             }
@@ -91,14 +92,14 @@ export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends
                 };
             }
 
-            return target[key];
+            return target[key as keyof typeof target];
         },
         set(target, key, value): boolean {
             const current = _resolved || lazy.value;
             if (current) {
-                current[key] = value;
+                current[key as keyof typeof current] = value;
             } else {
-                target[key] = value;
+                target[key as keyof typeof target] = value;
             }
             return true;
         },

@@ -81,7 +81,13 @@ export class Event<T = any> implements IEvent<T> {
                 await cb(data);
             } catch (err) {
                 this.logError(data, cb, err);
-                errors.push(err);
+                if (err instanceof Error) {
+                    errors.push(err);
+                } else if (typeof err === 'string') {
+                    errors.push(new Error(err));
+                } else {
+                    errors.push(new Error(`Event handler thrown an exception: ${err as any}`));
+                }
             }
         });
 
@@ -92,7 +98,7 @@ export class Event<T = any> implements IEvent<T> {
         return this;
     }
 
-    private logError(data: T | null | undefined, cb: EventHandler<T>, err: Error) {
+    private logError(data: T | null | undefined, cb: EventHandler<T>, err: unknown) {
         this._logger?.error(`[Event.${typeof data}] Handler ${cb.name} thrown an exception: `, err);
     }
 }

@@ -1,9 +1,7 @@
 {
     "compilerOptions": {
-        "strict": false,
+        "strict": true,
         "noUnusedLocals": true,
-        "strictBindCallApply": true,
-        "strictNullChecks": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "allowSyntheticDefaultImports": true,

@@ -190,7 +190,7 @@ describe('math/arrays', () => {
         };
 
         check([1, 2, 3], 1, [2, 3]);
-        check([1, 2, 3], item => item === 1, [2, 3]);
+        check([1, 2, 3], (item: number) => item === 1, [2, 3]);
         check([1, 2, 3], '1', [1, 2, 3]);
     });
 });

@@ -87,7 +87,7 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
 
     public expectError<TName extends string, TError2 extends Error>(
         name: TName,
-        ErrCtor: new (...args: unknown[]) => TError2,
+        ErrCtor: new (...args: any[]) => TError2,
     ): PromiseExtended<T, TCustomErrors & Record<TName, TError2>> {
 
         this._errorProcessors.push(errorData => {

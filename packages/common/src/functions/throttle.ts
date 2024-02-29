@@ -79,7 +79,7 @@ export class ThrottleProcessor<TSubject, TResult = any> {
     private readonly _queue: TSubject[] = [];
     private readonly _action: ThrottleAction;
 
-    private _promise: ManualPromise<TResult | undefined> | null = null;
+    private _promise: ManualPromise<TResult> | null = null;
 
     constructor(private readonly process: (objs: TSubject[]) => Promise<TResult>, timeout = 1000) {
         if (!process) {
@@ -127,7 +127,7 @@ export class ThrottleProcessor<TSubject, TResult = any> {
 
     clear() {
         this._action.clear();
-        this._promise?.resolve(undefined);
+        this._promise?.resolve(undefined as TResult);
         this._promise = null;
     }
 }

@@ -9,7 +9,7 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
 
     public readonly Empty: Readonly<T>;
 
-    protected _validator: Predicate<DeepReadonly<T>>;
+    protected _validator: Predicate<DeepReadonly<T>> | undefined;
 
     constructor(readonly keys: Keys<T>) {
         this.Empty = this.getEmpty();

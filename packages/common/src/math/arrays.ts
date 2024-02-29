@@ -1,4 +1,4 @@
-import { Comparator, Getter, Predicate } from '../types';
+import { Comparator, Getter, Nullable, Predicate } from '../types';
 import { random } from './calc';
 
 /** type-safe `Array.isArray` wrapper  */
@@ -88,7 +88,7 @@ export function arrayCountByKey<T, TKey extends KeyOf<T>>(arr: ReadonlyArray<T>,
             continue;
         }
 
-        const keyValue = item[key] as string | number;
+        const keyValue = item[key] as number;
         let count = result[keyValue];
         if (count == null) {
             count = 1;
@@ -216,11 +216,11 @@ export function arraySwap<T>(arr: T[], i1: number, i2: number) {
 
 export function shuffle<T>(arr: null | undefined, slice: any): T[];
 export function shuffle<T>(arr: T[], slice: false): T[];
-export function shuffle<T>(arr: ReadonlyArray<T> | null | undefined): T[];
-export function shuffle<T>(arr: ReadonlyArray<T> | null | undefined, slice: true): T[];
+export function shuffle<T>(arr: Nullable<ReadonlyArray<T>>): T[];
+export function shuffle<T>(arr: Nullable<ReadonlyArray<T>>, slice: true): T[];
 
-export function shuffle<T>(arr: T[] | null | undefined, slice = true): T[] {
-    const res = (slice ? arr?.slice() : arr) || [];
+export function shuffle<T>(arr: Nullable<T[] | ReadonlyArray<T>>, slice = true): T[] {
+    const res: T[] = ((slice || !arr || !('push' in arr)) ? arr?.slice() : arr) || [];
 
     for (let i = 0; i < res.length - 1; ++i) {
         const nextIndex = random(i + 1, res.length - 1);
