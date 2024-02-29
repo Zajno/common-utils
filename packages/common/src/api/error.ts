@@ -14,8 +14,8 @@ export namespace ApiErrorResponse {
 
 export class ApiError<
     TCause = unknown,
-    TCodes = StatusCodes,
-    TErrors = number | string,
+    TCodes extends number = StatusCodes,
+    TErrors extends number | string = number | string,
 > extends Error {
 
     readonly cause?: TCause;
@@ -33,7 +33,7 @@ export class ApiError<
         Object.setPrototypeOf(this, ApiError.prototype);
     }
 
-    public static fromResponse<TCodes = StatusCodes, TErrors = number | string>(status: TCodes, responseData: unknown) {
+    public static fromResponse<TCodes extends number = StatusCodes, TErrors extends number | string = number | string>(status: TCodes, responseData: unknown) {
         const response = responseData as ApiErrorResponse<unknown, TErrors>;
         if (!response || response.code == null) {
             return new ApiError(
