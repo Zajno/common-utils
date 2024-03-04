@@ -1,5 +1,5 @@
 import { Path } from '../structures/path';
-import { ApiEndpoint, IEndpointInfo } from './endpoint';
+import { IEndpointInfo } from './endpoint';
 
 export const DefaultSettings = {
     templateArgPrefix: ':' satisfies Path.TemplatePrefixing,
@@ -10,7 +10,7 @@ export function setDefaults(settings: Partial<typeof DefaultSettings>) {
     Object.assign(DefaultSettings, settings);
 }
 
-export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs?: ApiEndpoint.ExtractPath<T>) {
+export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs?: IEndpointInfo.ExtractPath<T>) {
     if (pathArgs) {
         return endpoint.pathBuilder.build(pathArgs, { addStart: DefaultSettings.basePrefix });
     }
@@ -18,5 +18,9 @@ export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs?: ApiEndp
 }
 
 export function getFormattedDisplayName(endpoint: IEndpointInfo) {
-    return endpoint.displayName || endpoint.pathBuilder.template(DefaultSettings.templateArgPrefix, { addStart: DefaultSettings.basePrefix });
+    const template = endpoint.pathBuilder.template(DefaultSettings.templateArgPrefix, { addStart: DefaultSettings.basePrefix });
+    const prefix = endpoint.displayName
+        ? `[${endpoint.displayName}] `
+        : '';
+    return prefix + template;
 }

@@ -148,4 +148,41 @@ describe('PathBuilder', () => {
             expect(d2.args).toEqual(['version']);
         });
     });
+
+    describe('construct many', () => {
+        test('should build path', () => {
+            expect(construct().build()).toBe('');
+
+            expect(construct(
+                'foo',
+                'bar',
+            ).build()).toBe('foo/bar');
+
+            expect(construct(
+                'foo',
+                build`api/${'version'}`,
+                'bar',
+            ).build({ version: 'v1' })).toBe('foo/api/v1/bar');
+
+            const complex = construct(
+                'prefix',
+                build`api/${'version'}`,
+                'middle',
+                build`user/${'id'}`,
+                'suffix',
+            );
+
+            expect(complex.build({ version: 'v1', id: '123' })).toBe('prefix/api/v1/middle/user/123/suffix');
+
+            // @ts-expect-error missing args
+            expect(complex.build({ id: '123' })).toBe('prefix/api/middle/user/123/suffix');
+
+            // @ts-expect-error extraneous args
+            expect(complex.build({ version: 'v1', id: '123', extra: 'extra' })).toBe('prefix/api/v1/middle/user/123/suffix');
+
+            expect(complex.template()).toBe('prefix/api/version/middle/user/id/suffix');
+            expect(complex.args).toEqual(['version', 'id']);
+            expect(complex.as<IBuilder>()).toBe(complex);
+        });
+    });
 });

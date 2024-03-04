@@ -2,7 +2,7 @@
 export type { ProcessingFn } from './processor';
 
 export { ApiEndpoint } from './endpoint';
-export type { IEndpointInfo } from './endpoint';
+export type * from './endpoint.types';
 export { EndpointMethods } from './methods';
 export * from './helpers';
 

@@ -42,12 +42,6 @@ interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
      * In future probably some extra conversion may be required.
     */
     as<TOther extends BaseBuilder<any, any, any>>(marker?: TOther): TOther;
-
-    /** Appends static parts to the output path, both for `build` & `template` */
-    append(...parts: string[]): ThisType<this>;
-
-    /** Prepends static parts to the output path, both for `build` & `template` */
-    prepend(...parts: string[]): ThisType<this>;
 }
 
 type EmptyBuilderArgs = [] | Record<PropertyKey, never>;
@@ -81,3 +75,23 @@ export type SwitchBuilder<TArg extends readonly string[]> = [TArg] extends [neve
     );
 
 export type ExtractArgs<T> = T extends Builder<infer TArgs> ? TArgs : readonly string[];
+
+type CombineTwo<T1 extends BaseInput, T2 extends BaseInput> = Output<T1> extends StaticBuilder
+    ? Output<T2>
+    : Output<T2> extends StaticBuilder
+        ? Output<T1>
+        : (Output<T1> extends Builder<infer Arr1>
+            ? (Output<T2> extends Builder<infer Arr2>
+                ? Builder<[...Arr1, ...Arr2]>
+                : never)
+            : never);
+
+export type CombineBuilders<T extends BaseInput[]> = T extends [infer T1 extends BaseInput, infer T2 extends BaseInput, ...infer Rest]
+    ? CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any> & BaseInput
+        ? Rest extends BaseInput[]
+            ? CombineBuilders<[C, ...Rest]>
+            : never
+        : never
+    : T extends [infer T1]
+        ? Output<T1>
+        : StaticBuilder;

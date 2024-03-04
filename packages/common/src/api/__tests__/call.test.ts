@@ -1,6 +1,7 @@
 import { Path } from '../../structures/path';
 import { RequestConfigDetails, buildApiCaller } from '../call';
-import { ApiEndpoint, IEndpointInfo } from '../endpoint';
+import { ApiEndpoint } from '../endpoint';
+import { IEndpointInfo } from '../endpoint.types';
 import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register';
 
 describe('api/call', () => {
@@ -106,6 +107,31 @@ describe('api/call', () => {
             .withPath([base, 'user']);
 
         await expect(caller(endpoint, { email: '123', password: '321' })).resolves.toEqual({ input: { email: '123', password: '321' } });
+    });
+
+    test('output type', () => {
+        const caller = buildApiCaller({
+            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+                return { status: 200, data: { input: input.data } as TOut };
+            },
+        });
+
+        const prefix = '/user/' as const;
+        interface Result { name: string, id: number }
+
+        const endpoint = ApiEndpoint.get<Result>()
+            .withPath(prefix, Path.build`offers/${'id'}`);
+
+        const outEx: IEndpointInfo.ExtractOut<typeof endpoint> = { name: '123', id: 123 };
+        const callE = () => caller(endpoint, null);
+
+        // check that caller returns the same type as the endpoint declares
+        function testOut(out: IEndpointInfo.ExtractOut<typeof endpoint>) {
+            return out;
+        }
+
+        const outReal: Awaited<ReturnType<typeof callE>> = outEx;
+        testOut(outReal);
     });
 
 });

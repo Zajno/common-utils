@@ -54,8 +54,14 @@ export type ToPlainObject<T> = T extends (AnyFunction | Primitive)
         : never
     );
 
+export type Nullable<T> = T | null | undefined;
+
 export type PickNullable<T, K extends keyof T> = {
-    [P in K]?: T[P] | null | undefined;
+    [P in K]?: Nullable<T[P]>;
 };
 
-export type Nullable<T> = T | null | undefined;
+export type EmptyObjectNullable = (EmptyObject | null | undefined);
+export type Coalesce<T, TReplace = EmptyObjectNullable> = [T] extends [never] | [null] | [undefined]
+    ? TReplace
+    : T
+;
