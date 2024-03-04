@@ -109,6 +109,21 @@ describe('api/call', () => {
         await expect(caller(endpoint, { email: '123', password: '321' })).resolves.toEqual({ input: { email: '123', password: '321' } });
     });
 
+    test('input type', () => {
+        const caller = buildApiCaller({
+            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+                return { status: 200, data: { input: input.data } as TOut };
+            },
+        });
+
+        const endpoint = ApiEndpoint.post<{ id: string }, { name: string }>()
+            .withPath(Path.build`offers/${'id'}`);
+
+        // TODO fix this:
+        // @ ts-expect-error - id is missing
+        caller(endpoint, { });
+    });
+
     test('output type', () => {
         const caller = buildApiCaller({
             request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
