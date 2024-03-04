@@ -1,40 +1,41 @@
-import { IStorageSync } from './abstractions';
+import { IStorage } from './abstractions';
 
-export class KeyStorage {
-    constructor(readonly storage: IStorageSync, readonly key: string) { }
+export class KeyStorage<T = string> {
 
-    get value(): string | null { return this.storage.getValue(this.key); }
-    set value(v: string) { this.storage.setValue(this.key, v); }
+    private _convertInput: (v: T) => string = v => v as unknown as string;
+    private _convertOutput: (s: string | null) => T = s => s as unknown as T;
 
-    public clean() {
-        this.storage.removeValue(this.key);
+    constructor(readonly storage: IStorage, readonly key: string) { }
+
+    addConverters<K>(convertInput: (v: K) => string, convertOutput: (s: string | null) => K) {
+        const res = this as unknown as KeyStorage<K>;
+        res._convertInput = convertInput;
+        res._convertOutput = convertOutput;
+        return res;
     }
 
-    public getHasValue() {
+    addJSONConverters<K>() {
+        return this.addConverters<K>(
+            v => JSON.stringify(v),
+            s => JSON.parse(s || 'null') as K,
+        );
+    }
+
+    async get(): Promise<T | null> {
+        const res = await this.storage.getValue(this.key);
+        return this._convertOutput(res);
+    }
+
+    async set(v: T): Promise<void> {
+        const data = this._convertInput(v);
+        return this.storage.setValue(this.key, data);
+    }
+
+    public async clean(): Promise<void> {
+        await this.storage.remove(this.key);
+    }
+
+    public getHasValue(): Promise<boolean> {
         return this.storage.hasValue(this.key);
-    }
-}
-
-export class KeyStorageConverted<T> {
-    private readonly _storage: KeyStorage;
-
-    constructor(
-        storage: IStorageSync,
-        key: string,
-        readonly input: (v: T) => string = (v => JSON.stringify(v)),
-        readonly output: (s: string | null) => T = (s => JSON.parse(s || 'null') as T),
-    ) {
-        this._storage = new KeyStorage(storage, key);
-    }
-
-    get value(): T | null { return this.output(this._storage.value); }
-    set value(v: T) { this._storage.value = this.input(v); }
-
-    public clean() {
-        this._storage.clean();
-    }
-
-    public getHasValue() {
-        return this._storage.getHasValue();
     }
 }

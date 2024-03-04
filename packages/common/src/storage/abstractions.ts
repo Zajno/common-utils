@@ -14,5 +14,3 @@ export interface IStorageSync {
     removeValue(key: string): boolean;
     hasValue(key: string): boolean;
 }
-
-export default IStorage;

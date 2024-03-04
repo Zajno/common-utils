@@ -1,7 +1,8 @@
 import { ArgValue,
     BaseInput,
     Builder,
-    Output,
+    BuilderArgs,
+    CombineBuilders,
     StaticBuilder,
     StaticInput,
     SwitchBuilder,
@@ -18,14 +19,6 @@ const staticFactory = (strings: readonly string[]): StaticBuilder => {
         template: (_, options) => combineUrls(options, ...parts),
         args: [],
         as() { return this as any; },
-        append(...parts: string[]) {
-            parts.push(...parts);
-            return this;
-        },
-        prepend(...parts: string[]) {
-            parts.unshift(...parts);
-            return this;
-        },
     };
 };
 
@@ -85,14 +78,6 @@ export function build<TArgs extends string[]>(
         template,
         args: params,
         as() { return this as any; },
-        prepend(...parts: string[]) {
-            prependParts.push(...parts);
-            return this;
-        },
-        append(...parts: string[]) {
-            appendParts.push(...parts);
-            return this;
-        },
     };
 
     return result as SwitchBuilder<TArgs>;
@@ -117,19 +102,57 @@ function guardIsStatic(value: any): value is StaticInput {
     return typeof value === 'string' || Array.isArray(value);
 }
 
+export const Empty = build``;
+
 /**
- * For input, use static `string | string[]` args to make the path static,
+ * For input, use any amount of arguments, each one can be:
  *
- * or use the `build` (creates `Builder`) tagged template literal to make the path dynamic,
- *
- * or provide `BuilderData` on your own.
+ * - static `string | string[]` args to make the path part static
+ * - pre-built `Builder` to make the path part dynamic, which can be created by:
+ *   - `build` tagged template literal
+ *   - manually implementing `Builder<string[]>`
+ *   - another `construct` call
 */
-export function construct<T extends BaseInput>(input: T): Output<T> {
-    if (guardIsStatic(input)) {
-        return constructStatic(input) as Output<never>;
+export function construct<TArr extends BaseInput[]>(...inputs: TArr): CombineBuilders<TArr> {
+    if (!inputs.length) {
+        return Empty as CombineBuilders<TArr>;
     }
 
-    return input as unknown as Output<T>;
-}
+    const convertToOutput = (input: BaseInput) => {
+        if (guardIsStatic(input)) {
+            return constructStatic(input) as Builder<string[]>;
+        }
 
-export const Empty = build``;
+        return input as Builder<string[]>;
+    };
+
+    if (inputs.length === 1) {
+        return convertToOutput(inputs[0]) as CombineBuilders<TArr>;
+    }
+
+    const outputs = inputs.map(convertToOutput);
+    const args = outputs.map(o => o.args).flat();
+
+    const skipOuterOptions = (options: CombineOptions | undefined): CombineOptions | undefined => {
+        if (!options) {
+            return options;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { addStart: _, addTrail: __, ...rest } = options;
+        return rest;
+    };
+
+    const result = {
+        build: (args: BuilderArgs<string, number>, options?: CombineOptions) => {
+            const innerOptions = skipOuterOptions(options);
+            return combineUrls(options, ...outputs.map(o => o.build(args, innerOptions)));
+        },
+        template: (prefix: TemplatePrefixing, options?: CombineOptions) => {
+            const innerOptions = skipOuterOptions(options);
+            return combineUrls(options, ...outputs.map(o => o.template(prefix, innerOptions)));
+        },
+        args,
+        as() { return this as any; },
+    };
+    return result as unknown as CombineBuilders<TArr>;
+}

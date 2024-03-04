@@ -1,17 +1,9 @@
-import { AnyObject, EmptyObject } from '../types';
+import { AnyObject } from '../types';
 import { Path } from '../structures/path';
 import { EndpointMethods } from './methods';
+import { IEndpointInfo } from './endpoint.types';
 
-export interface IEndpointInfo {
-    readonly method: EndpointMethods;
-    readonly isForm?: boolean;
-
-    readonly pathBuilder: Path.IBuilder;
-
-    readonly displayName?: string;
-
-    readonly queryKeys?: string[];
-}
+export type { IEndpointInfo };
 
 export class ApiEndpoint<
     TIn extends object | null,
@@ -20,20 +12,27 @@ export class ApiEndpoint<
     TQuery extends object,
     TErrors,
     THeaders,
-> implements IEndpointInfo {
+> implements
+IEndpointInfo,
+IEndpointInfo.IIn<TIn>,
+IEndpointInfo.IOut<TOut>,
+IEndpointInfo.IPath<TPath>,
+IEndpointInfo.IQuery<TQuery>,
+IEndpointInfo.IErrors<TErrors>,
+IEndpointInfo.IHeaders<THeaders> {
 
     method: EndpointMethods = EndpointMethods.GET;
     path: Path.SwitchBuilder<TPath> = Path.Empty.as<Path.SwitchBuilder<TPath>>();
 
     isForm?: boolean;
-    queryKeys?: (string & keyof TQuery)[];
-    headers?: THeaders;
-
     displayName?: string;
 
     in?: TIn;
     out?: TOut;
+    queryKeys?: (string & keyof TQuery)[];
+
     errors?: TErrors;
+    headers?: THeaders;
 
     public get pathBuilder() { return this.path.as<Path.IBuilder>(); }
 
@@ -56,12 +55,12 @@ export class ApiEndpoint<
         return ApiEndpoint.construct<null, TOut>(EndpointMethods.DELETE, displayName);
     }
 
-    public withPath<P extends Path.BaseInput>(path: P): ApiEndpoint<TIn, TOut, Path.ExtractArgs<P>, TQuery, TErrors, THeaders> {
-        type Args = Path.ExtractArgs<P>;
+    public withPath<P extends Path.BaseInput[]>(...path: P): ApiEndpoint<TIn, TOut, Path.ExtractArgs<Path.CombineBuilders<P>>, TQuery, TErrors, THeaders> {
+        type PathType = Path.CombineBuilders<P>;
+        type Args = Path.ExtractArgs<PathType>;
         const res = this as unknown as ApiEndpoint<TIn, TOut, Args, TQuery, TErrors, THeaders>;
-        type PathType = Path.SwitchBuilder<Args>;
-        const p = Path.construct(path);
-        res.path = p as unknown as PathType;
+        const p = Path.construct(...path);
+        res.path = p as unknown as Path.SwitchBuilder<Args>;
         return res;
     }
 
@@ -83,33 +82,4 @@ export class ApiEndpoint<
         this.isForm = true;
         return this;
     }
-}
-
-export namespace ApiEndpoint {
-
-    type Any = AnyObject;
-    type Empty = (EmptyObject | null | undefined);
-    type Coalesce<T> = [T] extends [never] | [null] | [undefined]
-        ? Empty
-        : T
-    ;
-
-    export type ExtractIn<T> = T extends ApiEndpoint<infer TIn, any, any, any, any, any>
-        ? Coalesce<TIn>
-        : Empty;
-
-    export type ExtractPath<T> = T extends ApiEndpoint<any, any, infer TPath extends string[], any, any, any>
-        ? (readonly [] extends TPath ? Empty : Path.ObjectBuilderArgs<TPath[number]>)
-        : Empty;
-
-    export type ExtractQuery<T> = T extends ApiEndpoint<any, any, any, infer TQuery, any, any>
-        ? TQuery
-        : Empty;
-
-    export type ExtractOut<T> = T extends ApiEndpoint<any, infer TOut, any, any, any, any>
-        ? TOut
-        : Empty;
-
-    export type ExtractErrors<T> = T extends ApiEndpoint<any, any, any, any, infer TErrors, any> ? TErrors : Any;
-    export type ExtractHeaders<T> = T extends ApiEndpoint<any, any, any, any, any, infer THeaders> ? THeaders : Any;
 }

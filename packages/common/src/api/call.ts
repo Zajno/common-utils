@@ -1,13 +1,12 @@
 import { PostProcessors, PreProcessors } from './register';
 import { AnyObject } from '../types';
-import { ApiEndpoint, IEndpointInfo } from './endpoint';
+import { IEndpointInfo } from './endpoint';
 import { EndpointMethods } from './methods';
-
-type LogTypes = boolean | 'full' | 'req' | 'res';
+import { LogTypes } from './logging';
 
 type Extra<T> = {
-    headers?: ApiEndpoint.ExtractHeaders<T>;
-    log?: LogTypes;
+    headers?: IEndpointInfo.ExtractHeaders<T>;
+    log?: LogTypes<IEndpointInfo.ExtractIn<T>, IEndpointInfo.ExtractOut<T>>;
     noLoader?: boolean;
 };
 
@@ -18,7 +17,7 @@ export type RequestConfig<TIn> = {
     headers: AnyObject;
 };
 
-export type RequestConfigDetails<T extends IEndpointInfo = IEndpointInfo, TIn = ApiEndpoint.ExtractIn<T>> = RequestConfig<TIn> & {
+export type RequestConfigDetails<T extends IEndpointInfo = IEndpointInfo, TIn = IEndpointInfo.ExtractIn<T>> = RequestConfig<TIn> & {
     _api: T;
     _noLoader?: boolean;
     _log?: LogTypes;
@@ -29,21 +28,23 @@ type CallerOptions = {
     request: <TIn, TOut>(config: RequestConfigDetails<IEndpointInfo, TIn>) => Promise<{ data: TOut }>;
 };
 
+export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<T> | IEndpointInfo.ExtractPath<T> | IEndpointInfo.ExtractQuery<T>;
+
 export function buildApiCaller(options: CallerOptions) {
 
     const { bodyValidation, request } = options;
 
     return async function callApi<T extends IEndpointInfo>(
         api: T,
-        data: ApiEndpoint.ExtractIn<T> | ApiEndpoint.ExtractPath<T> | ApiEndpoint.ExtractQuery<T>,
+        data: EndpointCallArgs<T>,
         extra?: Extra<T>,
     ) {
 
-        type TOut = ApiEndpoint.ExtractOut<T>;
+        type TOut = IEndpointInfo.ExtractOut<T>;
 
         const { headers, log = 'res' } = extra || {};
 
-        const resultInput = data && { ...data } as ApiEndpoint.ExtractIn<T>;
+        const resultInput = data && { ...data } as IEndpointInfo.ExtractIn<T>;
         const pathInputs: Record<string, string | number> = {};
         let queryStr: string = '';
 
@@ -78,11 +79,15 @@ export function buildApiCaller(options: CallerOptions) {
             await bodyValidation(api, resultInput);
         }
 
+        const sendingData = resultInput && Object.keys(resultInput).length > 0
+            ? resultInput
+            : undefined;
+
         const method = api.method || 'GET';
         const config: RequestConfigDetails<T> = {
             method,
             url: api.pathBuilder.build(pathInputs) + queryStr,
-            data: PreProcessors.process(api, resultInput) || undefined,
+            data: PreProcessors.process(api, sendingData) || undefined,
             headers: headers as AnyObject || {},
             _api: api,
             _noLoader: extra?.noLoader == null ? method as string === 'GET' : extra.noLoader,

@@ -1,6 +1,6 @@
 import { ProcessingFn, ProcessorsRegistry } from './processor';
 import { getFormattedDisplayName } from './helpers';
-import { ApiEndpoint, IEndpointInfo } from './endpoint';
+import { IEndpointInfo } from './endpoint';
 
 export const PreProcessors = new ProcessorsRegistry<IEndpointInfo>();
 export const PostProcessors = new ProcessorsRegistry<IEndpointInfo>();
@@ -15,10 +15,10 @@ export function cleanupProcessors() {
     PostProcessors.cleanup();
 }
 
-export function registerPreProcessor<T extends IEndpointInfo>(api: T, processor: ProcessingFn<ApiEndpoint.ExtractIn<T>>, name?: string) {
+export function registerPreProcessor<T extends IEndpointInfo>(api: T, processor: ProcessingFn<IEndpointInfo.ExtractIn<T>>, name?: string) {
     return PreProcessors.register(api, processor, formatEndpointName(api, ' | <pre_proc>', name));
 }
 
-export function registerPostProcessor<T extends IEndpointInfo>(api: T, processor: ProcessingFn<ApiEndpoint.ExtractOut<T>>, name?: string) {
+export function registerPostProcessor<T extends IEndpointInfo>(api: T, processor: ProcessingFn<IEndpointInfo.ExtractOut<T>>, name?: string) {
     return PostProcessors.register(api, processor, formatEndpointName(api, ' | <post_proc>', name));
 }

@@ -1,7 +1,11 @@
-import { ApiEndpoint } from '../endpoint';
+import { ApiEndpoint, IEndpointInfo } from '../endpoint';
 import { Path } from '../../structures/path';
 
 describe('api/endpoint', () => {
+
+    function testOutput<T extends IEndpointInfo>(_endpoint: T, out: IEndpointInfo.ExtractOut<T>) {
+        return out;
+    }
 
     it('constructs', () => {
 
@@ -10,6 +14,10 @@ describe('api/endpoint', () => {
             .withQuery<{ full?: boolean }>('full')
             .withErrors<{ message: string }>()
             .withHeaders({ 'x-token': '123' });
+
+        type TOut = IEndpointInfo.ExtractOut<typeof endpoint>;
+        const out: TOut = { name: '123' };
+        testOutput(endpoint, out);
 
         expect(endpoint.pathBuilder.template(':', { addStart: true })).toBe('/user/:id');
         expect(endpoint.pathBuilder.build()).toBe('user');
