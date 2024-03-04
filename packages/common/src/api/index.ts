@@ -8,3 +8,4 @@ export * from './helpers';
 
 export { buildApiCaller } from './call';
 export { registerPostProcessor, registerPreProcessor } from './register';
+export { LogTypes } from './logging';

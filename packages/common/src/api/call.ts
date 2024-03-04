@@ -2,12 +2,11 @@ import { PostProcessors, PreProcessors } from './register';
 import { AnyObject } from '../types';
 import { IEndpointInfo } from './endpoint';
 import { EndpointMethods } from './methods';
-
-type LogTypes = boolean | 'full' | 'req' | 'res';
+import { LogTypes } from './logging';
 
 type Extra<T> = {
     headers?: IEndpointInfo.ExtractHeaders<T>;
-    log?: LogTypes;
+    log?: LogTypes<IEndpointInfo.ExtractIn<T>, IEndpointInfo.ExtractOut<T>>;
     noLoader?: boolean;
 };
 
