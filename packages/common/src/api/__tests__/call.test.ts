@@ -33,14 +33,14 @@ describe('api/call', () => {
             endpoint,
             { id: '123' },
             { headers: { 'x-token': '123' } },
-        )).resolves.toEqual({ input: {} });
+        )).resolves.toEqual({ input: undefined });
 
         expect(request).toHaveBeenCalledWith({
             _log: 'res',
             _noLoader: false,
             method: 'POST',
             url: 'user/123',
-            data: {},
+            data: undefined,
             headers: { 'x-token': '123' },
             _api: endpoint,
         });

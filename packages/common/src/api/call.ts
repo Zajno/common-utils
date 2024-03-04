@@ -80,11 +80,15 @@ export function buildApiCaller(options: CallerOptions) {
             await bodyValidation(api, resultInput);
         }
 
+        const sendingData = resultInput && Object.keys(resultInput).length > 0
+            ? resultInput
+            : undefined;
+
         const method = api.method || 'GET';
         const config: RequestConfigDetails<T> = {
             method,
             url: api.pathBuilder.build(pathInputs) + queryStr,
-            data: PreProcessors.process(api, resultInput) || undefined,
+            data: PreProcessors.process(api, sendingData) || undefined,
             headers: headers as AnyObject || {},
             _api: api,
             _noLoader: extra?.noLoader == null ? method as string === 'GET' : extra.noLoader,
