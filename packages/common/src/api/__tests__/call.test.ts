@@ -63,6 +63,24 @@ describe('api/call', () => {
         });
         request.mockClear();
 
+
+        await expect(caller(
+            endpoint,
+            { id: 312, full: false, token: 'hey' },
+            { log: 'full', noLoader: true },
+        )).resolves.toEqual({ input: { token: 'hey' } });
+
+        expect(request).toHaveBeenCalledWith({
+            _log: 'full',
+            _noLoader: true,
+            method: 'POST',
+            url: 'user/312?full=false',
+            data: { token: 'hey' },
+            headers: {},
+            _api: endpoint,
+        });
+        request.mockClear();
+
         const formEndpoint = ApiEndpoint.post<{ token: string }, null>()
             .asForm();
 
@@ -122,6 +140,17 @@ describe('api/call', () => {
         // TODO fix this:
         // @ ts-expect-error - id is missing
         caller(endpoint, { });
+
+        const endpoint2 = ApiEndpoint.post<null, string>()
+            .withQuery<{ id: string }>('id');
+
+        // TODO fix this:
+        // @ ts-expect-error - id is missing
+        caller(endpoint2, { });
+
+        // TODO fix this:
+        // @ ts-expect-error - id is not a string/number
+        caller(endpoint2, { id: { num: 123 } });
     });
 
     test('output type', () => {

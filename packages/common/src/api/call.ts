@@ -62,7 +62,7 @@ export function buildApiCaller(options: CallerOptions) {
             let empty = true;
             for (const key of queryKeysExpected) {
                 const v = resultInput[key];
-                if (v || v === 0) {
+                if (v != null) {
                     queryInputs[key] = v;
                     empty = false;
                 }
