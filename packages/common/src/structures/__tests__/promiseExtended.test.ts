@@ -196,12 +196,12 @@ describe('PromiseExtended', () => {
         });
 
         const testWith = async (input: number, expected: number | PromiseExtended.ErrorData) => {
-            const _onSuccess = vi.fn(data => {
-                console.log('Success:', input, data);
-            });
-            const _onError = vi.fn(error => {
-                console.error('Error Message:', input, error.error);
-            });
+            const _onSuccess = vi.fn(
+                // data => console.log('Success:', input, data)
+            );
+            const _onError = vi.fn(
+                // error => console.error('Error Message:', input, error.error)
+            );
 
             // never throws!
             await expect(
