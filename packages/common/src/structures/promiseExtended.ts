@@ -61,6 +61,16 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
         return new PromiseExtended<T, TErrors>(promise);
     }
 
+    public static succeeded<T>(data: T): PromiseExtended<T> {
+        return new PromiseExtended(Promise.resolve(data));
+    }
+
+    public static errored<T, TErrors extends Record<string, unknown>>(source: Error | string): PromiseExtended<T, TErrors> {
+        const err = typeof source === 'string' ? new Error(source) : source;
+        const promise = new PromiseExtended<T, TErrors>(Promise.reject(err));
+        return promise;
+    }
+
     public onError(cb: Nullable<(data: PromiseExtended.ErrorData & TCustomErrors) => void>): this {
         if (cb != null) {
             this._promise = this._promise.then(data => {
@@ -134,6 +144,16 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
     }
 
     private _catch = (err: unknown) => {
+        if (err instanceof PromiseExtendedInnerMarker) {
+            // we've caught the marker, so we need to redirect everything to the inner instance
+            // first, if we still didn't catch any error, we're taking it from the inner instance
+            if (!this._error && err.instance._error) {
+                this.onErrorCaught(err.instance.getError());
+            }
+            // returning inner promise will also resolve with their resolved data
+            return err.data;
+        }
+
         let message = '';
         if (Array.isArray(err)) {
             message = err.map(e => (e as Error).message).join('\n');
@@ -146,6 +166,16 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
         return undefined;
     };
 
+    /** Adds to the end of chain special marker that allow outer PromiseExtended to correctly process this instance with its own onSuccess/onError callbacks.
+     *
+     * See `example for combining` test case for more details.
+     */
+    public pop() {
+        return this.then<T, T>(data => {
+            throw new PromiseExtendedInnerMarker(this, data);
+        });
+    }
+
     protected onErrorCaught(data: PromiseExtended.ErrorData) {
         this._error = data;
     }
@@ -156,4 +186,16 @@ export namespace PromiseExtended {
         error: string;
         source: Error;
     };
+}
+
+/*
+
+Idea: would be nice to combine few Promises and PromiseExtended's into one PromiseExtended instance, so the final result will be handled by onSuccess/onError
+
+*/
+
+class PromiseExtendedInnerMarker<T = any> extends Error {
+    constructor(readonly instance: PromiseExtended<T>, readonly data: T) {
+        super('This is a marker error for PromiseExtended instance, it should be handled internally. If you see this, it means an async function `PromiseExtended.pop()` was called in is not wrapped with `PromiseExtended.run()` or not awaited.');
+    }
 }
