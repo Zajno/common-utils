@@ -1,4 +1,5 @@
 import { setTimeoutAsync } from '../../async/timeout';
+import { Nullable } from '../../types';
 import { PromiseExtended } from '../promiseExtended';
 
 describe('PromiseExtended', () => {
@@ -72,28 +73,41 @@ describe('PromiseExtended', () => {
     });
 
     it('expectError', async () => {
-        class CustomError extends Error { }
+        class CustomError extends Error {
+            public processed: boolean = false;
+        }
 
         const workerFailCustom = async () => {
             await setTimeoutAsync(100);
             throw new CustomError('Some custom error');
         };
 
-        const _onError = vi.fn();
+        let receivedError: Nullable<CustomError>;
+
+        const _onError = vi.fn(({ source }) => { receivedError = source; });
 
         const res = PromiseExtended
             .run(workerFailCustom)
-            .expectError('custom', CustomError)
+            .expectError(
+                'custom',
+                CustomError,
+                e => { e.processed = true; },
+            )
             .onError(_onError);
 
         await expect(res).resolves.not.toThrow();
 
+        const expectedError = new CustomError('Some custom error');
+        expectedError.processed = true;
+
         expect(_onError).toHaveBeenCalledTimes(1);
         expect(_onError).toHaveBeenCalledWith({
             error: 'Some custom error',
-            source: new CustomError('Some custom error'),
-            custom: new CustomError('Some custom error'),
+            source: expectedError,
+            custom: expectedError,
         });
+
+        expect(receivedError?.processed).toBe(true);
     });
 
     it('wrap: returns inner instance', async () => {

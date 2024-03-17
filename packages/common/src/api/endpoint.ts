@@ -31,7 +31,7 @@ IEndpointInfo.IHeaders<THeaders> {
     out?: TOut;
     queryKeys?: (string & keyof TQuery)[];
 
-    errors?: TErrors;
+    errorProcessor?: (err: TErrors) => void;
     headers?: THeaders;
 
     public get pathBuilder() { return this.path.as<Path.IBuilder>(); }
@@ -70,8 +70,10 @@ IEndpointInfo.IHeaders<THeaders> {
         return res;
     }
 
-    public withErrors<TErr>(_errors?: TErr): ApiEndpoint<TIn, TOut, TPath, TQuery, TErr, THeaders> {
-        return this as unknown as ApiEndpoint<TIn, TOut, TPath, TQuery, TErr, THeaders>;
+    public withErrors<TErr>(errorProcessor?: (err: TErr) => void): ApiEndpoint<TIn, TOut, TPath, TQuery, TErr, THeaders> {
+        const res = this as unknown as ApiEndpoint<TIn, TOut, TPath, TQuery, TErr, THeaders>;
+        res.errorProcessor = errorProcessor;
+        return res;
     }
 
     public withHeaders<THeads>(_headersMarker?: THeads): ApiEndpoint<TIn, TOut, TPath, TQuery, TErrors, THeads> {
