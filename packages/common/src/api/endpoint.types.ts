@@ -9,6 +9,7 @@ export interface IEndpointInfo {
     readonly pathBuilder: Path.IBuilder;
 
     readonly displayName?: string;
+    readonly errorProcessor?: (err?: any) => void;
 
     readonly queryKeys?: string[];
 }
@@ -32,7 +33,7 @@ export namespace IEndpointInfo {
     }
 
     export interface IErrors<TErrors> {
-        readonly errors?: TErrors;
+        readonly errorProcessor?: (err: TErrors) => void;
     }
 
     export interface IHeaders<THeaders> {

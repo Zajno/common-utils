@@ -8,7 +8,7 @@ export class LocalizedValidationErrors<TStrings extends AnyObject, TErrors exten
     private _strings: ValidationErrorsStrings<TErrors> | null = null;
 
     constructor(private readonly factory: ValidationErrorsFactory<TStrings, TErrors>) {
-        makeObservable<LocalizedValidationErrors<AnyObject, string>, '_strings'>(this, {
+        makeObservable<LocalizedValidationErrors<TStrings, string>, '_strings'>(this, {
             _strings: observable.ref,
             updateLocale: action,
         });
