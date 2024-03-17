@@ -3,26 +3,27 @@ import { IEvent, Event } from '@zajno/common/observing/event';
 import { ILogger, createLogger } from '@zajno/common/logger/index';
 import { DisposeFunction, IDisposable } from '@zajno/common/functions/disposer';
 import { Getter } from '@zajno/common/types/getter';
+import { Nullable } from '@zajno/common/types/misc';
 
 export class TransitionObserver<T> implements IDisposable {
 
-    private _event: Event<T>;
+    private _event: Nullable<Event<T>>;
     private _getter: null | (() => T) = null;
-    private _filter: null | ((next: T, prev: T) => boolean) = null;
+    private _filter: null | ((next: T, prev: Nullable<T>) => boolean) = null;
 
     private _disposer: undefined | DisposeFunction;
-    private _prev: T;
+    private _prev: Nullable<T>;
 
-    private _from: Getter<T>;
-    private _to: Getter<T>;
+    private _from: Nullable<Getter<T>>;
+    private _to: Nullable<Getter<T>>;
 
-    private _cb: null | ((v: T) => any);
+    private _cb: Nullable<(v: Nullable<T>) => any>;
     private _fireOnce = false;
 
-    private _promise: null | Promise<T>;
-    private _promiseReject: null | ((err?: any) => any);
+    private _promise: Nullable<Promise<Nullable<T>>>;
+    private _promiseReject: Nullable<((err?: any) => any)>;
 
-    private logger: ILogger;
+    private logger: Nullable<ILogger>;
 
     constructor(getter?: () => T) {
         if (getter) {
@@ -60,12 +61,12 @@ export class TransitionObserver<T> implements IDisposable {
         return this;
     }
 
-    filter(filter: (next: T, prev: T) => boolean) {
+    filter(filter: (next: T, prev: Nullable<T>) => boolean) {
         this._filter = filter;
         return this;
     }
 
-    cb(cb: (v: T) => any) {
+    cb(cb: (v: Nullable<T>) => any) {
         if (this.isPromising) {
             throw new Error('Cannot set callback when promise is running');
         }
@@ -104,13 +105,13 @@ export class TransitionObserver<T> implements IDisposable {
                 return Promise.reject(new Error('Cannot get promise for disposed TransitionObserver'));
             }
 
-            this._promise = new Promise<T>((resolve, reject) => {
+            this._promise = new Promise<Nullable<T>>((resolve, reject) => {
                 this._promiseReject = reject;
 
                 let timeoutHandle: any = null;
                 if (timeout) {
                     timeoutHandle = setTimeout(() => {
-                        this._finishPromise(this._promiseReject, new Error(`TransitionObserver Aborted – timed out after ${timeout}ms`));
+                        this._finishPromise(reject, new Error(`TransitionObserver Aborted – timed out after ${timeout}ms`));
                     }, timeout);
                 }
 
@@ -131,8 +132,8 @@ export class TransitionObserver<T> implements IDisposable {
         }
 
         return new TransitionObserver<T>(this._getter)
-            .from(this._to)
-            .to(this._from);
+            .from(this._to!)
+            .to(this._from!);
     }
 
     enableLogging(name: string | ILogger) {
@@ -150,7 +151,7 @@ export class TransitionObserver<T> implements IDisposable {
             this._disposer = undefined;
         }
         if (this.isPromising) {
-            this._finishPromise(this._promiseReject, new Error('TransitionObserver Aborted'));
+            this._finishPromise(this._promiseReject ?? (() => { /* no-op */ }), new Error('TransitionObserver Aborted'));
         }
     };
 

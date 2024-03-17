@@ -19,7 +19,7 @@ describe('CommonModel', () => {
         const fn = async () => {
             mm = new CommonModel<string[]>(() => [], true)
                 .setValidationConfig({
-                    validator: (v: readonly any[]) => v.length > 0 ? ValidationErrors.None : ValidationErrors.ShouldBeNonEmpty,
+                    validator: (v: null | readonly any[]) => (v?.length && v?.length > 0) ? ValidationErrors.None : ValidationErrors.ShouldBeNonEmpty,
                     errors: {
                         [ValidationErrors.ShouldBeNonEmpty]: NotEmptyError,
                     },

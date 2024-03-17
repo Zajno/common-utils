@@ -62,7 +62,7 @@ describe('MultiSelectModel', () => {
             onIsValueSelected,
         ] = mocks;
 
-        const wrapMock = mock => ((a: any) => mock(toJS(a)));
+        const wrapMock = (mock: any) => ((a: any) => mock(toJS(a)));
 
         const expectEmptyCalls = () => {
             expect(onSelectedIndexes).toHaveBeenCalledWith([]);

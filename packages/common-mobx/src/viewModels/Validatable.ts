@@ -27,7 +27,7 @@ const EmptyValidator = () => 0;
 
 export abstract class ValidatableModel<T = string> implements ValidationVoid {
 
-    private _validator: Nullable<ValueValidator<Nullable<T | Readonly<T>>, any>> = null;
+    private _validator: Nullable<ValueValidator<T | Readonly<T>, any>> = null;
     private _strings: Nullable<ValidationErrorsStrings<any>> = null;
 
     private _error: Nullable<string> = null;
@@ -41,13 +41,13 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
         });
     }
 
-    protected abstract get valueToValidate(): Nullable<T | Readonly<T>>;
+    protected abstract get valueToValidate(): T | Readonly<T> | null;
 
     get isValid() { return !this._error; }
 
     get error() { return this._error; }
 
-    public setValidationConfig<TErrors extends string | number = ValidationErrors>(config?: ValidationConfig<T, TErrors> | ValidationThrower<T>) {
+    public setValidationConfig<TErrors extends string | number = ValidationErrors>(config?: ValidationConfig<T, TErrors> | ValidationThrower<T | Readonly<T>>) {
         if (config) {
             if (typeof config === 'function') {
                 this._validator = config;
@@ -74,17 +74,19 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     }
 
     /** should return true-thy error code if NOT OK; otherwise if OK it will return null or zero code */
-    public async validateValue(value: Nullable<T>): Promise<ValidationError | string | number | null> {
+    public async validateValue(value: T | null): Promise<ValidationError | string | number | null> {
         if (this._validator) {
             try {
-                const res = await this._validator(value);
+                const res = await this._validator(value!);
                 return res ?? null;
             } catch (err) {
                 if (err instanceof ValidationError) {
                     return err;
                 }
                 // added yup compatibility
-                return err.errors?.[0] || err.message || 'Unspecified error';
+                return (err as { errors: string[] }).errors?.[0]
+                    || (err as { message: string }).message
+                    || 'Unspecified error';
             }
         }
         return null;

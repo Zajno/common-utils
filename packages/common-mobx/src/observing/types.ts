@@ -4,11 +4,11 @@ export enum ObservableTypes {
     Ref = 'ref',
     Shallow = 'shallow',
     Full = 'full',
+
+    Default = Ref,
 }
 
 export namespace ObservableTypes {
-    export const Default = ObservableTypes.Ref;
-
     export function toDecorator(typeOrIsRef: ObservableTypes | boolean) {
         if (typeof typeOrIsRef === 'boolean') {
             return typeOrIsRef
