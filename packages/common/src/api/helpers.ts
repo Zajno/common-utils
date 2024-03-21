@@ -10,15 +10,19 @@ export function setDefaults(settings: Partial<typeof DefaultSettings>) {
     Object.assign(DefaultSettings, settings);
 }
 
-export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs?: IEndpointInfo.ExtractPath<T>) {
-    if (pathArgs) {
-        return endpoint.pathBuilder.build(pathArgs, { addStart: DefaultSettings.basePrefix });
-    }
-    return endpoint.pathBuilder.template(DefaultSettings.templateArgPrefix, { addStart: DefaultSettings.basePrefix });
+type PrefixOptions = string | boolean;
+const getPrefix = (prefix: PrefixOptions) => typeof prefix === 'string' ? prefix : (prefix ? DefaultSettings.basePrefix : false);
+
+export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs: IEndpointInfo.ExtractPath<T>, prefix: string | boolean = true) {
+    return endpoint.pathBuilder.build(pathArgs || undefined, { addStart: getPrefix(prefix) });
+}
+
+export function getTemplate<T extends IEndpointInfo>(endpoint: T, prefix: string | boolean = true) {
+    return endpoint.pathBuilder.template(DefaultSettings.templateArgPrefix, { addStart: getPrefix(prefix) });
 }
 
 export function getFormattedDisplayName(endpoint: IEndpointInfo) {
-    const template = endpoint.pathBuilder.template(DefaultSettings.templateArgPrefix, { addStart: DefaultSettings.basePrefix });
+    const template = getTemplate(endpoint);
     const prefix = endpoint.displayName
         ? `[${endpoint.displayName}] `
         : '';

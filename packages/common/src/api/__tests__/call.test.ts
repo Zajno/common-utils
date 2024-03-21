@@ -39,7 +39,7 @@ describe('api/call', () => {
             _log: 'res',
             _noLoader: false,
             method: 'POST',
-            url: 'user/123',
+            url: '/user/123',
             data: undefined,
             headers: { 'x-token': '123' },
             _api: endpoint,
@@ -56,7 +56,7 @@ describe('api/call', () => {
             _log: 'full',
             _noLoader: true,
             method: 'POST',
-            url: 'user/312?full=true',
+            url: '/user/312?full=true',
             data: { token: 'hey' },
             headers: {},
             _api: endpoint,
@@ -74,7 +74,7 @@ describe('api/call', () => {
             _log: 'full',
             _noLoader: true,
             method: 'POST',
-            url: 'user/312?full=false',
+            url: '/user/312?full=false',
             data: { token: 'hey' },
             headers: {},
             _api: endpoint,
@@ -95,7 +95,7 @@ describe('api/call', () => {
             _log: 'res',
             _noLoader: false,
             method: 'POST',
-            url: '',
+            url: '/',
             data: { token: '123' },
             headers: { 'Content-Type': 'multipart/form-data' },
             _api: formEndpoint,
@@ -144,13 +144,22 @@ describe('api/call', () => {
         const endpoint2 = ApiEndpoint.post<null, string>()
             .withQuery<{ id: string }>('id');
 
-        // TODO fix this:
-        // @ ts-expect-error - id is missing
-        caller(endpoint2, { });
+        // type QueryType = IEndpointInfo.ExtractQuery<typeof endpoint2>;
 
         // TODO fix this:
-        // @ ts-expect-error - id is not a string/number
-        caller(endpoint2, { id: { num: 123 } });
+        // @ ts-expect-error - id is missing when it's not optional
+        caller(endpoint2, null);
+        caller(endpoint2, { });
+
+        // @ts-expect-error - id is not a string/number
+        caller(endpoint2, { id: true });
+
+        const endpoint3 = ApiEndpoint.post<null, string>()
+            .withQuery<{ id: string[], str?: string, num?: number }>('id', 'str', 'num');
+
+
+        // no error here for missing optional fields
+        caller(endpoint3, { id: ['123'] });
     });
 
     test('output type', () => {

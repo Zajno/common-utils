@@ -28,8 +28,14 @@ export namespace IEndpointInfo {
         readonly path: Path.SwitchBuilder<TPath>;
     }
 
+    export type QueryKeysType = boolean | string | string[] | number | number[];
+    export type QueryArgs = Record<string, QueryKeysType>;
+
     export interface IQuery<TQuery extends object> {
+        /** actual query keys to be used in argument object parsing */
         readonly queryKeys?: (string & keyof TQuery)[];
+        /** dummy marker object for better type determining */
+        readonly queryTemplate?: TQuery;
     }
 
     export interface IErrors<TErrors> {
@@ -51,7 +57,7 @@ export namespace IEndpointInfo {
         ? (readonly [] extends TPath ? Empty : Path.ObjectBuilderArgs<TPath[number]>)
         : Empty;
 
-    export type ExtractQuery<T> = T extends IQuery<infer TQuery>
+    export type ExtractQuery<T> = T extends IQuery<infer TQuery extends QueryArgs>
         ? TQuery
         : Empty;
 
