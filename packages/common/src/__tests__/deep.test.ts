@@ -20,7 +20,8 @@ describe('Deep Types', () => {
             a.arr[0].n = 2;
 
             // example of how to deal with keys of Deep
-            const keyFn = <T extends AnyObject, TKey extends string & keyof T>(obj: Deep.DeepReadonly<T>, key: TKey): Deep.DeepReadonly<T[TKey]> => obj[key];
+            // note: key needs more stronger constraints because not all fields can survive the deep readonly transformation
+            const keyFn = <T extends AnyObject, TKey extends keyof Deep.DeepReadonly<T>>(obj: Deep.DeepReadonly<T>, key: TKey): Deep.DeepReadonly<T>[TKey] => obj[key];
 
             const typeConsistency = <T>(_v1: T, _v2: T) => { /* no-op */ };
 
