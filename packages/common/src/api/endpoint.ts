@@ -22,7 +22,7 @@ IEndpointInfo.IErrors<TErrors>,
 IEndpointInfo.IHeaders<THeaders> {
 
     method: EndpointMethods = EndpointMethods.GET;
-    path: Path.SwitchBuilder<TPath> = Path.Empty.as<Path.SwitchBuilder<TPath>>();
+    path: Path.SwitchBuilder<TPath> = Path.Empty.as<TPath>();
 
     isForm?: boolean;
     displayName?: string;

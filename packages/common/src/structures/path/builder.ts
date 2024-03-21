@@ -1,3 +1,4 @@
+import { Nullable } from '../../types/misc';
 import { ArgValue,
     BaseInput,
     Builder,
@@ -14,11 +15,16 @@ export * from './types';
 
 const staticFactory = (strings: readonly string[]): StaticBuilder => {
     const parts = strings.slice();
+    let defaultOptions = undefined as Nullable<CombineOptions>;
     return {
-        build: (_, options) => combineUrls(options, ...parts),
-        template: (_, options) => combineUrls(options, ...parts),
+        build: (_, options) => combineUrls(CombineOptions.merge(defaultOptions, options), ...parts),
+        template: (_, options) => combineUrls(CombineOptions.merge(defaultOptions, options), ...parts),
         args: [],
         as() { return this as any; },
+        withDefaults(defaults) {
+            defaultOptions = defaults;
+            return this;
+        },
     };
 };
 
@@ -35,6 +41,7 @@ export function build<TArgs extends string[]>(
 
     const appendParts: string[] = [];
     const prependParts: string[] = [];
+    let defaultOptions = undefined as Nullable<CombineOptions>;
 
     const build = (args: ArgValue[] | Record<Key, ArgValue> | undefined, options?: CombineOptions) => {
         const parts: string[] = [];
@@ -56,7 +63,7 @@ export function build<TArgs extends string[]>(
             }
         }
 
-        return combineUrls(options, ...prependParts, ...parts, ...appendParts);
+        return combineUrls(CombineOptions.merge(defaultOptions, options), ...prependParts, ...parts, ...appendParts);
     };
 
     const template = (prefix?: TemplatePrefixing, options?: CombineOptions): string => {
@@ -78,6 +85,10 @@ export function build<TArgs extends string[]>(
         template,
         args: params,
         as() { return this as any; },
+        withDefaults(defaults) {
+            defaultOptions = defaults;
+            return this;
+        },
     };
 
     return result as SwitchBuilder<TArgs>;

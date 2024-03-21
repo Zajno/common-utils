@@ -41,7 +41,18 @@ interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
      *
      * In future probably some extra conversion may be required.
     */
-    as<TOther extends BaseBuilder<any, any, any>>(marker?: TOther): TOther;
+    as<TOther>(marker?: TOther): TOther extends readonly string[]
+        ? SwitchBuilder<TOther>
+        : (TOther extends BaseBuilder<any, any>
+            ? TOther
+            : never
+        );
+
+    // NOTE: changed cast via params type to support different args via Switcher
+    // as<TOther extends BaseBuilder<any, any, any>>(marker?: TOther): TOther;
+
+    /** Allows to specify default combine options for the current builder instance. */
+    withDefaults: (defaults: CombineOptions) => this;
 }
 
 type EmptyBuilderArgs = [] | Record<PropertyKey, never>;
@@ -78,20 +89,22 @@ export type ExtractArgs<T> = T extends Builder<infer TArgs> ? TArgs : readonly s
 
 type CombineTwo<T1 extends BaseInput, T2 extends BaseInput> = Output<T1> extends StaticBuilder
     ? Output<T2>
-    : Output<T2> extends StaticBuilder
+    : (Output<T2> extends StaticBuilder
         ? Output<T1>
         : (Output<T1> extends Builder<infer Arr1>
             ? (Output<T2> extends Builder<infer Arr2>
                 ? Builder<[...Arr1, ...Arr2]>
                 : never)
-            : never);
+            : never)
+    );
 
 export type CombineBuilders<T extends BaseInput[]> = T extends [infer T1 extends BaseInput, infer T2 extends BaseInput, ...infer Rest]
-    ? CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any> & BaseInput
-        ? Rest extends BaseInput[]
+    ? (CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any> & BaseInput
+        ? (Rest extends BaseInput[]
             ? CombineBuilders<[C, ...Rest]>
             : never
-        : never
-    : T extends [infer T1]
+        ) : never
+    ) : (T extends [infer T1]
         ? Output<T1>
-        : StaticBuilder;
+        : StaticBuilder
+    );
