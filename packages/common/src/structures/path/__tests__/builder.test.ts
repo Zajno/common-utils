@@ -116,6 +116,15 @@ describe('PathBuilder', () => {
             expect(example.template(null, { separator: '' })).toBe('version-id');
         });
 
+        test('no slashes - default options', () => {
+
+            const example = build`${'version'}-${'id'}`.withDefaults({ separator: '' });
+
+            expect(example.build({ version: 'v1', id: '123' })).toBe('v1-123');
+            expect(example.build({ version: 'v1', id: '123' }, { separator: '$' })).toBe('v1$-$123');
+            expect(example.template()).toBe('version-id');
+        });
+
         test('consequent args', () => {
             const example = build`${'version'}${'id'}`;
 

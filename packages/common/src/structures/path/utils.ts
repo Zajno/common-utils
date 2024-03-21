@@ -27,6 +27,12 @@ export type CombineOptions = {
     trimSymbol?: string;
 };
 
+export namespace CombineOptions {
+    export function merge(...options: Nullable<CombineOptions>[]): CombineOptions {
+        return Object.assign({}, ...options);
+    }
+}
+
 export function combineUrls(options: Nullable<CombineOptions>, ...parts: Nullable<string>[]): string;
 export function combineUrls(...parts: Nullable<string>[]): string;
 
