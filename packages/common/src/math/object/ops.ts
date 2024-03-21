@@ -32,7 +32,8 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         const result = this.getEmpty();
         if (o != null) {
             this.keys.forEach(key => {
-                result[key] = o[key] as T[NumKey<T>];
+                const kk = key as string & NumKey<T> & keyof DeepReadonly<T>;
+                result[key] = o[kk] as T[NumKey<T>];
             });
         }
         return result;
@@ -63,8 +64,9 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
             if (SkipCondition.shouldSkip(condition, key, val)) {
                 return;
             }
-
-            res[key] = val as DeepPartial<T>[NumKey<T>];
+            const kk = key as keyof DeepPartial<T>;
+            const vv = val as DeepPartial<T>[keyof DeepPartial<T>];
+            res[kk] = vv;
         });
         return res;
     }

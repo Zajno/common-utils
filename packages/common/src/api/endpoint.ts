@@ -30,6 +30,7 @@ IEndpointInfo.IHeaders<THeaders> {
     in?: TIn;
     out?: TOut;
     queryKeys?: (string & keyof TQuery)[];
+    queryTemplate?: TQuery;
 
     errorProcessor?: (err: TErrors) => void;
     headers?: THeaders;

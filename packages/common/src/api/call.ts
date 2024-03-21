@@ -3,6 +3,7 @@ import { AnyObject } from '../types';
 import { IEndpointInfo } from './endpoint';
 import { EndpointMethods } from './methods';
 import { LogTypes } from './logging';
+import { getPath } from './helpers';
 
 type Extra<T> = {
     headers?: IEndpointInfo.ExtractHeaders<T>;
@@ -86,7 +87,7 @@ export function buildApiCaller(options: CallerOptions) {
         const method = api.method || 'GET';
         const config: RequestConfigDetails<T> = {
             method,
-            url: api.pathBuilder.build(pathInputs) + queryStr,
+            url: getPath(api, pathInputs as IEndpointInfo.ExtractPath<T>) + queryStr,
             data: PreProcessors.process(api, sendingData) || undefined,
             headers: headers as AnyObject || {},
             _api: api,

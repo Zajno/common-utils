@@ -1,6 +1,6 @@
 import { Path } from '../../structures/path';
 import { ApiEndpoint } from '../endpoint';
-import { DefaultSettings, getFormattedDisplayName, getPath, setDefaults } from '../helpers';
+import { DefaultSettings, getFormattedDisplayName, getPath, getTemplate, setDefaults } from '../helpers';
 
 describe('api/helpers', () => {
 
@@ -18,7 +18,8 @@ describe('api/helpers', () => {
         const endpoint = ApiEndpoint.get()
             .withPath('user', Path.build`${'id'}`);
 
-        expect(getPath(endpoint)).toEqual('/api/user/$id');
+        expect(getTemplate(endpoint)).toEqual('/api/user/$id');
+        expect(getTemplate(endpoint, '/prefix/')).toEqual('/prefix/user/$id');
         expect(getPath(endpoint, { id: 123 })).toEqual('/api/user/123');
 
         expect(getFormattedDisplayName(endpoint)).toEqual('/api/user/$id');
