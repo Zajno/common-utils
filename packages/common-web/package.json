@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-web",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Zajno's re-usable utilities for JS/TS projects for Web",
   "private": false,
   "repository": {

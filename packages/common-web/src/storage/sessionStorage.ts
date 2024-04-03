@@ -1,4 +1,4 @@
-import { KeyStorage, KeyStorageConverted } from '@zajno/common/storage/keyStorage';
+import { KeyStorage } from '@zajno/common/storage/keyStorage';
 import { StorageAsyncWrapper } from '@zajno/common/storage/asyncWrapper';
 import { IStorage, IStorageSync } from '@zajno/common/storage/abstractions';
 import { WebStorage } from './webStorage';
@@ -18,19 +18,7 @@ export const SessionStorage: IStorageSync = new WebSessionStorage();
 export const SessionStorageAsync: IStorage = new StorageAsyncWrapper(SessionStorage);
 
 export class SessionKeyStorage extends KeyStorage {
-    constructor(readonly key: string) {
-        super(SessionStorage, key);
+    constructor(key: string) {
+        super(SessionStorageAsync, key);
     }
 }
-
-export class SessionKeyStorageConverted<T> extends KeyStorageConverted<T> {
-    constructor(
-        key: string,
-        input?: (v: T) => string,
-        output?: (s: string) => T,
-    ) {
-        super(SessionStorage, key, input, output);
-    }
-}
-
-export default SessionStorage;

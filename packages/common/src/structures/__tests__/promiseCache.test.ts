@@ -124,6 +124,28 @@ describe('PromiseCache', () => {
         await expect(def.promise).resolves.toStrictEqual(getRes(1));
     });
 
+    it('fetching fails', async () => {
+        const cache = new PromiseCache<number, number>(
+            async _id => {
+                await setTimeoutAsync(100);
+                throw new Error('Fetch failed');
+            },
+            id => id.toString(),
+            id => +id,
+        )
+        .useLogger('')
+        .useBatching(async _ids => {
+            await setTimeoutAsync(100);
+            throw new Error('Batch fetch failed');
+        });
+
+        await expect(Promise.all([cache.get(1), cache.get(2)])).resolves.toStrictEqual([null, null]);
+
+        cache.useBatching(null!);
+
+        await expect(cache.get(3)).resolves.toBeNull();
+    });
+
     it('batching fails', async () => {
 
         const loaderFn = vi.fn();
@@ -181,5 +203,32 @@ describe('PromiseCache', () => {
         for (let i = 0; i < 5; ++i) {
             expect(logger.warn).toHaveBeenCalledWith('batch fetch failed', i, batchError);
         }
+    });
+
+    it('clears', async () => {
+        const cache = new PromiseCache<number, number>(
+            async id => {
+                await setTimeoutAsync(200);
+                return id;
+            },
+            id => id.toString(),
+            id => +id,
+        ).useLogger('test');
+
+        expect(cache.hasKey(1)).toBe(false);
+
+        const p1 = cache.get(1);
+
+        await setTimeoutAsync(50);
+
+        expect(cache.hasKey(1)).toBe(true);
+
+        cache.clear();
+
+        expect(cache.hasKey(1)).toBe(false);
+
+        await expect(p1).resolves.toBe(1);
+
+        expect(cache.getCurrent(1, false)).toBeUndefined();
     });
 });

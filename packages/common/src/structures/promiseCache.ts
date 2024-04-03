@@ -19,14 +19,15 @@ export namespace DeferredGetter {
 
 export class PromiseCache<T, K = string> {
 
-    protected readonly _itemsCache: Record<string, T | null | undefined> = { };
-    protected readonly _itemsStatus: Record<string, boolean> = { };
+    protected _itemsCache: Record<string, T | null | undefined> = {};
+    protected _itemsStatus: Record<string, boolean> = {};
 
-    private readonly _fetchCache: Record<string, Promise<T | null>> = { };
+    private _fetchCache: Record<string, Promise<T | null>> = {};
 
     private _batch: ThrottleProcessor<K, T[]> | null = null;
 
     private _logger: ILogger | null = null;
+    private _version = 0;
     protected _busyCount = 0;
 
     constructor(
@@ -118,9 +119,19 @@ export class PromiseCache<T, K = string> {
     }
 
     protected _doFetchAsync = async (id: K, key: string) => {
+        let isInSameVersion = true;
         try {
             this.onBeforeFetch(key);
+            const v = this._version;
+
             let res: T | null = await this.tryFetchInBatch(id);
+
+            if (v !== this._version) {
+                isInSameVersion = false;
+                // resolve with actual result but don't store it
+                return res;
+            }
+
             if (this._fetchCache[key] != null) {
                 this._logger?.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
@@ -128,7 +139,11 @@ export class PromiseCache<T, K = string> {
             }
             return res;
         } finally {
-            this.onFetchComplete(key);
+            if (isInSameVersion) {
+                this.onFetchComplete(key);
+            } else {
+                this._logger?.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
+            }
         }
     };
 
@@ -157,6 +172,16 @@ export class PromiseCache<T, K = string> {
         }
 
         return this.keys().map(this.keyParser);
+    }
+
+    clear() {
+        ++this._version;
+        this._busyCount = 0;
+        this._batch?.clear();
+
+        this._itemsCache = {};
+        this._itemsStatus = {};
+        this._fetchCache = {};
     }
 
     protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, busy: boolean | undefined) {
@@ -197,6 +222,7 @@ export class PromiseCache<T, K = string> {
         this._itemsStatus[key] = false;
     }
 
+    /** @pure */
     protected async tryFetchInBatch(id: K): Promise<T | null> {
         const fetchWrap = () => this.fetcher(id).catch(err => {
             this._logger?.warn('fetcher failed', id, err);
