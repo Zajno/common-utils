@@ -26,6 +26,7 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
                 | 'storeResult'
                 | 'onFetchComplete'
                 | '_set'
+                | 'clear'
         >(this, {
             _busyCount: observable,
             _itemsCache: observable.shallow,
@@ -36,6 +37,7 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
             storeResult: action,
             onFetchComplete: action,
             _set: action,
+            clear: action,
         });
 
         this._observeItems = observeItems;
