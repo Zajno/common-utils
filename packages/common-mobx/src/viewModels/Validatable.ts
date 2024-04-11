@@ -124,8 +124,8 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     }
 
     // @action
-    resetError() {
-        this._error = null;
+    resetError(error?: Nullable<string>) {
+        this._error = error;
     }
 
     reset() {
