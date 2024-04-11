@@ -1,5 +1,5 @@
 import logger from '@zajno/common/logger/index';
-import { StorageContext } from './firebase';
+import { FirebaseStorageBucket, StorageContext } from './firebase';
 
 export async function removeDirectoryFromStorage(path: string): Promise<void> {
     if (!path) {
@@ -9,9 +9,9 @@ export async function removeDirectoryFromStorage(path: string): Promise<void> {
     logger.log(`Start deleting files :::: ${path}`);
     try {
         await StorageContext.bucket.deleteFiles({ prefix: path });
-        logger.log(`Files successfully deleted :::: ${path}`);
+        logger.log('Files successfully deleted, path =', path);
     } catch (error) {
-        logger.error(`Error while deleting files :::: ${path} :::: ${error}`);
+        logger.error('Error while deleting files fir path =', path, error);
     }
 }
 
@@ -27,7 +27,7 @@ export async function deleteFile(fileRef: string) {
     }
 }
 
-export async function deleteAllFilesIn(targetBucket, path: string) {
+export async function deleteAllFilesIn(targetBucket: FirebaseStorageBucket, path: string) {
     logger.log(`Deleting all files by path: ${targetBucket.name}/${path}`);
     const [files] = await targetBucket.getFiles({ prefix: path });
     await Promise.all(

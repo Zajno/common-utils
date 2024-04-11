@@ -12,7 +12,7 @@ import { Middleware } from './middleware';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter';
 import { createLogger } from '@zajno/common/logger/index';
 import { badRandomString } from '@zajno/common/math/calc';
-import { META_ARG_KEY } from '../../functions/composite';
+import { META_ARG_KEY, MetaHolder } from '../../functions/composite';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 
 export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive = never>
@@ -43,9 +43,9 @@ export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive =
     protected createEndpointHandler(): EndpointFunction<TArg, TResult> {
         const handler: EndpointFunction<TArg, TResult> = (data: TArg, ctx: BaseFunctionContext) => {
 
-            const meta = data && data[META_ARG_KEY];
+            const meta = data && (data as MetaHolder)[META_ARG_KEY];
             if (meta) {
-                delete data[META_ARG_KEY];
+                delete (data as MetaHolder)[META_ARG_KEY];
             }
 
             const path = this.generatedPathForInput(data);
@@ -79,7 +79,7 @@ export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive =
                 if (logErrors) {
                     ctx.logger.error(err);
                 }
-                throw tryConvertToHttpError(err);
+                throw tryConvertToHttpError(err as Error);
             }
         };
     }
@@ -88,6 +88,6 @@ export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive =
     public mergeContext<C extends ([TContext] extends [never] ? never : ObjectOrPrimitive)>(
         _marker?: C
     ): FunctionFactory<TArg, TResult, Partial<TContext & C>> {
-        return this as FunctionFactory<TArg, TResult, Partial<TContext & C>>;
+        return this as unknown as FunctionFactory<TArg, TResult, Partial<TContext & C>>;
     }
 }

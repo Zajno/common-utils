@@ -159,7 +159,7 @@ export class FunctionCompositeFactory<T extends CompositeEndpointInfo, TContext 
     }
 
     public mergeContext<C extends ([TContext] extends [never] ? never : ObjectOrPrimitive)>(_marker?: C): FunctionCompositeFactory<T, Partial<TContext & C>> {
-        return this as FunctionCompositeFactory<T, Partial<TContext & C>>;
+        return this as unknown as FunctionCompositeFactory<T, Partial<TContext & C>>;
     }
 
     public useFunctionsMap(map: FunctionsMap<T, TContext>) {

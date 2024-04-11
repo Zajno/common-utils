@@ -112,7 +112,7 @@ export namespace Server {
 
         // use middlewares for all endpoints
         ExampleV1.useMiddlewaresMap({
-            foo: async (_, next: any) => {
+            foo: async (_: unknown, next: any) => {
                 await next();
             },
         } as any);

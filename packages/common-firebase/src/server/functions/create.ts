@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
-import { EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface';
-import logger from '@zajno/common/logger/index';
+import { EndpointContext, EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface';
+import logger from '@zajno/common/logger';
 import { GlobalRuntimeOptions } from './globalSettings';
 
 type PromiseOrT<T> = PromiseLike<T> | T;
@@ -10,8 +10,18 @@ export type ScheduledFunction = ((context: functions.EventContext) => PromiseOrT
 export type PubSubTopicListener = (message: functions.pubsub.Message, context: functions.EventContext) => PromiseOrT<any>;
 export type SchedulerOptions = { timeZone?: string, runtime?: functions.RuntimeOptions };
 
-export function createHttpsCallFunction<T = any, TOut = void>(worker: EndpointFunction<T, TOut>, options: functions.RuntimeOptions | null = null): FirebaseEndpointRunnable {
-    return getBaseBuilder(options).https.onCall(worker);
+export function createHttpsCallFunction<T = any, TOut = void>(
+    worker: EndpointFunction<T, TOut>,
+    options: functions.RuntimeOptions | null = null,
+): FirebaseEndpointRunnable {
+    return getBaseBuilder(options)
+        .https.onCall((data, ctx) => {
+            const eCtx = ctx as EndpointContext;
+            if (!eCtx.endpoint) {
+                logger.warn('[createHttpsCallFunction] Endpoint context is not defined, further logic may fail. Request url =', ctx.rawRequest.url);
+            }
+            return worker(data, eCtx);
+        });
 }
 
 export function createHttpsRequestFunction<TRes = any>(worker: RequestEndpointFunction<TRes>, options: functions.RuntimeOptions | null = null): functions.HttpsFunction {

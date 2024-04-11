@@ -33,14 +33,14 @@ export class BaseRepo<T extends IdentAny> {
     }
 
     public query(query: Query<T>): Promise<T[]>;
-    public query(query: Query<T>, cb: QuerySnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
+    public query(query: Query<T>, cb: QuerySnapshotCallback<T | null>): Promise<UnsubscribeSnapshot>;
 
     query(query: Query<T>, cb: QuerySnapshotCallback<T | null> | null = null): Promise<T[] | UnsubscribeSnapshot> {
         return querySnapshot<T>(this.db, query, cb, this.queryConverter);
     }
 
     document(doc: DocumentReference<T>): Promise<T>;
-    document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
+    document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T | null>): Promise<UnsubscribeSnapshot>;
 
     document(doc: DocumentReference<T>, cb: DocumentSnapshotCallback<T | null> | null = null): Promise<T | UnsubscribeSnapshot> {
         return documentSnapshot(this.db, doc, cb, this.convertDocumentSnapshot);

@@ -45,7 +45,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
     constructor(forceInitialize = false) {
         super();
-        makeObservable<AuthControllerBase, '_authUser'>(this, {
+        makeObservable<AuthControllerBase<TUser>, '_authUser'>(this, {
             _authUser: observable,
         });
 
@@ -244,7 +244,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
             this.setNextProvider(AuthProviders.None);
             logger.error('Failed to perform a sign in for user:', email, '; Error:', err);
             return {
-                error: err,
+                error: err as Error,
                 email: email || undefined,
             };
         }
@@ -291,8 +291,9 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
             return { result: true };
         } catch (err) {
-            logger.log('failed to update password:', err.code);
-            if (err.code === 'auth/requires-recent-login') {
+            const e1 = err as Error & { code: string };
+            logger.log('failed to update password:', e1.code);
+            if (e1.code === 'auth/requires-recent-login') {
                 if (oldPassword) {
                     const email = this.authUser?.email;
                     assert(!!email, 'email is null');
@@ -301,13 +302,14 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
                         logger.log('re-authenticating with email/password for', email);
                         await authUser.reauthenticateWithCredential(cred);
                     } catch (err2) {
+                        const e2 = err as Error & { code: string };
                         logger.log('failed to re-authenticate, ERROR:', err2);
                         return {
                             result: false,
-                            error: err2.code === 'auth/wrong-password'
+                            error: e2.code === 'auth/wrong-password'
                                 ? AuthErrors.WrongPassword
                                 : AuthErrors.InvalidAuthState,
-                            original: err2,
+                            original: e2,
                         };
                     }
 
@@ -316,8 +318,8 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
                 return {
                     result: false,
-                    error: AuthErrors.NeedsReauthentication,
-                    original: err,
+                    error: AuthErrors.NeedsReAuthentication,
+                    original: e1,
                 };
             } else {
                 throw err;
@@ -347,23 +349,24 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
             // await this.init();
             return true;
         } catch (err) {
+            const e1 = err as Error & { code: string, email: string };
             this.setNextProvider(AuthProviders.None);
 
             // tslint:disable-next-line: triple-equals
-            if (err.code == '-3' || (err.message && err.message.includes('error -3'))) {
+            if (e1.code == '-3' || (e1.message && e1.message.includes('error -3'))) {
                 logger.log('Cancel sign in with google');
                 return false;
             }
 
-            logger.warn('Google Sign in error:', err.message, err);
+            logger.warn('Google Sign in error:', e1.message, err);
 
             // Handle Errors here.
-            const errorCode: string = err.code;
-            // const errorMessage = err.message;
+            const errorCode: string = e1.code;
+            // const errorMessage = e1.message;
             // The email of the user's account used.
-            const email = err.email;
+            const email = e1.email;
             // The firebase.auth.AuthCredential type that was used.
-            // const credential = err.credential;
+            // const credential = e1.credential;
 
             if (errorCode === 'auth/account-exists-with-different-credential') {
                 // Construct the email link credential from the current URL.
@@ -424,7 +427,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         const currentAuthUser = this._authUser;
         assert(!!currentAuthUser, 'currentAuthUser is null');
 
-        const diff: typeof data = { };
+        const diff: typeof data = {};
         if (!transferFields.changed(data, currentAuthUser, diff, 'displayName', 'photoURL')) {
             return;
         }

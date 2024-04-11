@@ -80,5 +80,5 @@ export enum AuthErrors {
     Unknown = 0,
     InvalidAuthState,
     WrongPassword,
-    NeedsReauthentication,
+    NeedsReAuthentication,
 }

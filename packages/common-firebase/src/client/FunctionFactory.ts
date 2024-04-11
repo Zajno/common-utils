@@ -66,7 +66,17 @@ export class FunctionFactory<TArg, TResult> {
 
             return data;
         } catch (err) {
-            this.logger.warn('Failed with error after', Date.now() - start, 'ms, see details below.', { code: err.code, message: err.message, details: err.details });
+            const e = err as firebase.functions.HttpsError;
+            this.logger.warn(
+                'Failed with error after',
+                Date.now() - start,
+                'ms, see details below.',
+                {
+                    code: e.code,
+                    message: e.message,
+                    details: e.details,
+                });
+
             // eslint-disable-next-line no-console
             console.error(err);
             throw err;

@@ -4,6 +4,7 @@ import { IDatabaseContext, ServerRealtimeDB } from '../database/realtime';
 import { IFirestoreContext, ServerFirestore } from '../database';
 import Admin, { AdminLib } from './admin';
 import { AppConfig } from '../config';
+
 const FirestoreDb = createLazy(() => {
     const firestoreDb: ServerFirestore = Admin.firestore() as ServerFirestore;
     firestoreDb.isClient = false;
@@ -16,10 +17,12 @@ const RealtimeDb = createLazy(() => {
     return Admin.database(cfg.databaseURL);
 });
 
+export type FirebaseStorageBucket = ReturnType<typeof storage.bucket>;
+
 const storage = Admin.storage();
 const StorageBucket = createLazy(() => {
     const bucketName = AppConfig.value?.storageBucket || storage.bucket().name;
-    const bucket: ReturnType<typeof storage.bucket> = storage.bucket(bucketName);
+    const bucket: FirebaseStorageBucket = storage.bucket(bucketName);
     return bucket;
 });
 
