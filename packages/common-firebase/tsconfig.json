@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
+    "strictFunctionTypes": false,
     "paths": {
       "@zajno/common/*": ["../common/src/*"],
       "@zajno/common-mobx/*": ["../common-mobx/src/*"],
