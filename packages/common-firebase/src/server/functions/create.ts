@@ -17,9 +17,9 @@ export function createHttpsCallFunction<T = any, TOut = void>(
     return getBaseBuilder(options)
         .https.onCall((data, ctx) => {
             const eCtx = ctx as EndpointContext;
-            if (!eCtx.endpoint) {
-                logger.warn('[createHttpsCallFunction] Endpoint context is not defined, further logic may fail. Request url =', ctx.rawRequest.url);
-            }
+            // if (!eCtx.endpoint) {
+            //     logger.warn('[createHttpsCallFunction] Endpoint context is not defined, further logic may fail. Request url =', ctx.rawRequest?.url);
+            // }
             return worker(data, eCtx);
         });
 }
