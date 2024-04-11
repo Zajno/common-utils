@@ -4,6 +4,8 @@ export interface IDisposable {
     dispose(): void;
 }
 
+export type ISymbolDisposable = globalThis.Disposable & IDisposable;
+
 export interface DisposeFunction {
     (): void;
 }
