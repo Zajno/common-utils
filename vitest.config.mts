@@ -15,4 +15,7 @@ export default defineConfig({
     setupFiles: setupPath,
     globalSetup: globalSetupPath,
   },
+  esbuild: {
+    target: 'es2022',
+  },
 });
