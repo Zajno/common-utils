@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
-    "@zajno/common": "^2.2.4",
+    "@zajno/common": "^2.3.7",
     "@zajno/eslint-config": "^3.0.1",
     "cpy-cli": "^5.0.0",
     "eslint": "^8.56.0",
@@ -42,7 +42,7 @@
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "@zajno/common": "^2.2.4",
+    "@zajno/common": "^2.3.7",
     "tslib": "^2.6.2"
   },
   "files": [
