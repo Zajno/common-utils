@@ -3,7 +3,6 @@ import { setTimeoutAsync } from '@zajno/common/async/timeout';
 import { CommonModel } from '../CommonModel';
 import { LoadingModel } from '../LoadingModel';
 import { SelectString } from '../SelectModel';
-import { TextInputVM } from '../TextModel';
 import { ValueModel } from '../ValueModel';
 import { FlagModel } from '../FlagModel';
 import { reaction } from 'mobx';
@@ -127,10 +126,6 @@ describe('Others', () => {
 
         await expect((async () => {
             return new SelectString([]);
-        })()).resolves.not.toThrow();
-
-        await expect((async () => {
-            return new TextInputVM();
         })()).resolves.not.toThrow();
 
         await expect((async () => {
