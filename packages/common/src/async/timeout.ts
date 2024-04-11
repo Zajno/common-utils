@@ -27,28 +27,6 @@ export function setTimeoutAsync(ms: number, useCancel: null | ((cb: () => void) 
     return res;
 }
 
-/* global requestAnimationFrame */
-
-export function setTimeoutFramesAsync(frames: number) {
-    if (typeof requestAnimationFrame === 'undefined') {
-        throw new Error('setTimeoutFramesAsync is not supported because "requestAnimationFrame" is not defined.');
-    }
-
-    return new Promise<void>(resolve => {
-        let left = frames || 0;
-
-        const cb = () => {
-            if (--left <= 0) {
-                resolve();
-            } else {
-                requestAnimationFrame(cb);
-            }
-        };
-
-        cb();
-    });
-}
-
 export function timeoutPromise<T>(p: Promise<T>, timeoutMs: number, waitForMinElapsed?: number): Promise<{ resolved: T | undefined, timedOut?: boolean, elapsed: number }> {
     const started = Date.now();
 
@@ -81,4 +59,9 @@ export function timeoutPromise<T>(p: Promise<T>, timeoutMs: number, waitForMinEl
             finish(res, false);
         }).catch(reject);
     });
+}
+
+/** @deprecated Not Supported! Moved to `@zajno/common-web` package due to dependency on DOM's `requestAnimationFrame` */
+export function setTimeoutFramesAsync() {
+    throw new Error('setTimeoutFramesAsync has been moved to "@zajno/common-web" because it depends on "window.requestAnimationFrame".');
 }

@@ -2,6 +2,7 @@ import { FunctionDefinition } from './definition';
 import { EndpointSettings, IFunctionDefinition } from './interface';
 
 export const META_ARG_KEY = '__meta';
+export type MetaHolder = Partial<Record<typeof META_ARG_KEY, any>>;
 
 export type EndpointSpec<TArg, TResult> = (arg: TArg) => TResult; // can be just an empty object
 
@@ -80,7 +81,10 @@ function specsToFunctions<T extends CompositeEndpointInfo>(this: void, info: T, 
         const innerEndpoint = getSpec(k, endpoint);
         if (p && typeof p === 'object') { // nested composition
             const innerSpec = p as (CompositeEndpointInfo & T[keyof T]);
-            result[k] = specsToFunctions(innerSpec, innerEndpoint as FunctionDefinition<EndpointArg<typeof innerSpec>, EndpointResult<typeof innerSpec>>) as any;
+            result[k] = specsToFunctions(
+                innerSpec,
+                innerEndpoint as unknown as FunctionDefinition<EndpointArg<typeof innerSpec>, EndpointResult<typeof innerSpec>>
+            ) as any;
         } else {
             result[k] = innerEndpoint as any;
         }

@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-web",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Zajno's re-usable utilities for JS/TS projects for Web",
   "private": false,
   "repository": {
@@ -32,18 +32,18 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "@zajno/common": "^2.2.4",
+    "@types/node": "^20.12.7",
+    "@zajno/common": "^2.3.7",
     "@zajno/eslint-config": "^3.0.1",
     "cpy-cli": "^5.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "rimraf": "^5.0.5",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "@zajno/common": "^2.2.4",
-    "tslib": "^2.6.2"
+    "@zajno/common": "^2.3.7",
+    "tslib": "^2.6"
   },
   "files": [
     "*",

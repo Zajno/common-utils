@@ -10,6 +10,7 @@
         "isolatedModules": true,
         "esModuleInterop": true,
         "target": "ES2022",
+        "lib": ["ESNext"],
         "module": "CommonJS",
         "moduleResolution": "node",
         "jsx": "react",

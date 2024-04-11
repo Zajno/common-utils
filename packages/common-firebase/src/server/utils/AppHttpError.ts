@@ -32,7 +32,15 @@ namespace AppHttpError {
     } satisfies Partial<Record<https.FunctionsErrorCode, string>>;
 
     export function Construct(code: ErrorCodes | https.FunctionsErrorCode, message: string, details: unknown = undefined) {
-        return new https.HttpsError(code, message || DefaultStrings[code], details);
+        return new https.HttpsError(
+            code,
+            message
+                || (code in DefaultStrings
+                    ? DefaultStrings[code as ErrorCodes]
+                    : DefaultStrings[ErrorCodes.Unknown]
+                ),
+            details,
+        );
     }
 
     export function InvalidArguments<T = any>(...list: InvalidArgDescription<T>[]) {

@@ -56,8 +56,9 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
                 this._strings = config.errors;
             }
         } else {
-            this._validator = EmptyValidator;
+            this._validator = null;
             this._strings = null;
+            this._error = null;
         }
         return this;
     }
@@ -124,8 +125,8 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
     }
 
     // @action
-    resetError() {
-        this._error = null;
+    resetError(error: Nullable<string> = null) {
+        this._error = error;
     }
 
     reset() {

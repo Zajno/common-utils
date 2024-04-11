@@ -1,4 +1,4 @@
-import { EndpointContext, FunctionCompositeFactory, SpecTo, useAsyncInitCompositionLoader } from '../../server/functions';
+import { EndpointContext, FunctionCompositeFactory, NextFunction, SpecTo, useAsyncInitCompositionLoader } from '../../server/functions';
 import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
 import AppHttpError from '../../server/utils/AppHttpError';
 import { getNestedFunction, wrapEndpoint } from './config';
@@ -31,7 +31,7 @@ describe('declaration', () => {
             .use((_ctx, next) => { str += '2'; return next(); })
             .useBeforeAll((_ctx, next) => { str += '1'; return next(); })
             .useMiddlewaresMap({
-                foo: async (_ctx, next) => {
+                foo: async (_ctx: EndpointContext, next: NextFunction) => {
                     str += '_4';
                     await next();
                 },
@@ -138,7 +138,7 @@ describe('broken api', () => {
         it('validates context', async () => {
 
             const authValidator = vi.fn(AuthValidator);
-            const contextPopulist: (ctx: EndpointContext<{ contextParam: 'TEST' }>) => Promise<void> = vi.fn(async ctx => {
+            const contextPopulist: (ctx: EndpointContext<{ contextParam: string }>) => Promise<void> = vi.fn(async ctx => {
                 ctx.data = {
                     ...ctx.data,
                     contextParam: 'TEST',

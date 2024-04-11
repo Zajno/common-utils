@@ -112,7 +112,7 @@ export class Middleware<TArg, TResult, TContext extends ObjectOrPrimitive = neve
     }
 
     mergeContext<C extends ([TContext] extends [never] ? never : ObjectOrPrimitive)>(_marker?: C) {
-        return this as Middleware<TArg, TResult, Partial<TContext & C>>;
+        return this as unknown as Middleware<TArg, TResult, Partial<TContext & C>>;
     }
 
     private _checkChainLocked() {
@@ -144,6 +144,12 @@ export const AuthValidator: EndpointHandlerVoid<any, any, any> = async (ctx) => 
     }
 };
 
+export namespace IMiddleware {
+    export type ExtractArg<T> = T extends IMiddleware<infer A, any, any> ? A : never;
+    export type ExtractResult<T> = T extends IMiddleware<any, infer R, any> ? R : never;
+    export type ExtractContext<T> = T extends IMiddleware<any, any, infer C> ? C : never;
+}
+
 export namespace Middleware {
 
     const EnableSafeMiddlewareNext = true;
@@ -166,7 +172,7 @@ export namespace Middleware {
             return hh[0];
         }
 
-        const moveNext = (ctx: HandlerContext<A, R, C>, next: NextFunction, index: number) => {
+        const moveNext = (ctx: HandlerContext<A, R, C>, next: NextFunction, index: number): Promise<void> => {
             if (index >= hh.length) {
                 return next();
             }
@@ -178,7 +184,7 @@ export namespace Middleware {
     }
 
     export function wrapHandler<A, R, C extends ObjectOrPrimitive = never>(handler: EndpointHandlerVoid<A, R, C>): EndpointHandler<A, R, C> {
-        const res = async (ctx, next) => {
+        const res: EndpointHandlerInternal<A, R, C> = async (ctx, next) => {
             await handler(ctx);
             if (next) {
                 await next();
@@ -189,7 +195,7 @@ export namespace Middleware {
     }
 
     export function wrapFunction<A, R, C extends ObjectOrPrimitive = never>(func: EndpointFunction<A, R, C>): EndpointHandler<A, R, C> {
-        const res = async (ctx, next) => {
+        const res: EndpointHandlerInternal<A, R, C> = async (ctx, next) => {
             const output = await func(ctx.input, ctx);
             ctx.output = ctx.output ? Object.assign(ctx.output, output) : output;
             if (next) {
@@ -205,7 +211,7 @@ export namespace Middleware {
             return null;
         }
 
-        if (!EnableSafeMiddlewareNext || (h as any)._safeNext) {
+        if (!EnableSafeMiddlewareNext || (h as EndpointHandlerInternal<A, R, C>)._safeNext) {
             return h;
         }
 
@@ -226,6 +232,8 @@ export namespace Middleware {
         return new MiddlewareAggregator(middlewares);
     }
 }
+
+type EndpointHandlerInternal<T1, T2, T3 extends ObjectOrPrimitive> = EndpointHandler<T1, T2, T3> & { _safeNext?: boolean };
 
 class MiddlewareAggregator<TContext extends ObjectOrPrimitive = never> implements IMiddleware<any, any, TContext> {
 
@@ -271,6 +279,6 @@ class MiddlewareAggregator<TContext extends ObjectOrPrimitive = never> implement
     }
 
     mergeContext<C extends ([TContext] extends [never] ? never : ObjectOrPrimitive)>(_marker?: C) {
-        return this as IMiddleware<any, any, Partial<TContext & C>>;
+        return this as unknown as IMiddleware<any, any, Partial<TContext & C>>;
     }
 }

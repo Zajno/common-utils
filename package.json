@@ -13,10 +13,10 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@types/node": "^20.10.5",
-        "@vitest/coverage-istanbul": "^1.1.0",
+        "@types/node": "^20.12.7",
+        "@vitest/coverage-istanbul": "^1.4.0",
         "rimraf": "^5.0.5",
         "scripty": "^2.1.1",
-        "vitest": "^1.1.0"
+        "vitest": "^1.4.0"
     }
 }
