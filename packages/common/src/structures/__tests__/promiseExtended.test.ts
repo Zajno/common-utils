@@ -135,12 +135,16 @@ describe('PromiseExtended', () => {
             .onSuccess(_onSuccess)
             .onError(_onError);
 
+        const resPromise = res.toSuccessPromise();
+
         await expect(res).resolves.not.toThrow();
 
         expect(_onSuccess).toHaveBeenCalledTimes(1);
         expect(_onSuccess).toHaveBeenCalledWith('test');
 
         expect(_onError).toHaveBeenCalledTimes(0);
+
+        await expect(resPromise).resolves.toBe(true);
     });
 
     it('static: errored', async () => {
@@ -149,16 +153,20 @@ describe('PromiseExtended', () => {
             const _onSuccess = vi.fn();
             const _onError = vi.fn();
 
-            await expect(
-                pr
-                    .onSuccess(_onSuccess)
-                    .onError(_onError)
-            ).resolves.not.toThrow();
+            const _pr = pr
+                .onSuccess(_onSuccess)
+                .onError(_onError);
+
+            const resPromise = _pr.toSuccessPromise();
+
+            await expect(_pr).resolves.not.toThrow();
 
             expect(_onSuccess).toHaveBeenCalledTimes(0);
 
             expect(_onError).toHaveBeenCalledTimes(1);
             expect(_onError).toHaveBeenCalledWith(errResult);
+
+            await expect(resPromise).resolves.toBe(false);
         };
 
         await testError(
@@ -169,6 +177,11 @@ describe('PromiseExtended', () => {
         await testError(
             PromiseExtended.errored('test error'),
             { error: 'test error', source: new Error('test error') }
+        );
+
+        await testError(
+            PromiseExtended.errored([new Error('test error')]),
+            { error: 'test error', source: [new Error('test error')] as unknown as Error }
         );
     });
 

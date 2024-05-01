@@ -1,17 +1,16 @@
 import { action, makeObservable, observable } from 'mobx';
 import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
+import { IValueModel } from '@zajno/common/models/types';
 
-export class CommonModel<T = any> extends ValidatableModel<T | null> {
+export class CommonModel<T = any> extends ValidatableModel<T> implements IValueModel<T> {
 
-    // observable[.ref]
-    private _value: T | null;
+    private _value: T;
+    private _defaultValue: Getter<T>;
 
-    private _defaultValue: Getter<T | null> = null;
-
-    constructor(v: Getter<T | null> = null, useRefObservable = true) {
+    constructor(v: Getter<T>, useRefObservable = true) {
         super();
-        this._value = Getter.getValue(v) || null;
+        this._value = Getter.getValue(v);
         this._defaultValue = v;
 
         makeObservable<CommonModel<T>, '_value'>(this, {
@@ -24,13 +23,13 @@ export class CommonModel<T = any> extends ValidatableModel<T | null> {
         return this._value;
     }
 
-    public get value(): T | null { return this._value; }
+    public get value(): T { return this._value; }
     public set value(v: T) {
         this.setValue(v);
     }
 
     // action
-    public readonly setValue = (value: T | null) => {
+    public readonly setValue = (value: T) => {
         this._value = value;
 
         this.validateOnChangeIfNeeded();
