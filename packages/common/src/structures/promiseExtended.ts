@@ -65,7 +65,7 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
         return new PromiseExtended(Promise.resolve(data));
     }
 
-    public static errored<T, TErrors extends Record<string, unknown>>(source: Error | string): PromiseExtended<T, TErrors> {
+    public static errored<T, TErrors extends Record<string, unknown>>(source: Error | Error[] | string): PromiseExtended<T, TErrors> {
         const err = typeof source === 'string' ? new Error(source) : source;
         const promise = new PromiseExtended<T, TErrors>(Promise.reject(err));
         return promise;
@@ -132,6 +132,19 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
         return this;
     }
 
+    toSuccessPromise(): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            this.onSuccess(() => resolve(true))
+                .onError(() => resolve(false))
+                // below is unreachable, but just in case
+                .catch(() => {
+                    /* istanbul ignore next -- @preserve */
+                    resolve(false);
+                });
+        });
+    }
+
+    /* istanbul ignore next -- @preserve */
     get [Symbol.toStringTag](): string { return this._promise[Symbol.toStringTag]; }
 
     private getError() {
