@@ -43,14 +43,21 @@ export function getIntersection(start1: number, end1: number, start2: number, en
     };
 }
 
-export function roundNumber(val: number, signs = 2, mode?: 'floor' | 'ceil') {
+export type RoundMode = 'floor' | 'ceil' | 'round' | 'trunc';
+
+export function roundByMode(val: number, mode: RoundMode) {
+    switch (mode) {
+        case 'floor': return Math.floor(val);
+        case 'ceil': return Math.ceil(val);
+        case 'trunc': return Math.trunc(val);
+        default: return Math.round(val);
+    }
+}
+
+export function roundNumber(val: number, signs = 2, mode?: RoundMode) {
     const k = 10 ** signs;
     let v = (val + Number.EPSILON) * k;
-    switch (mode) {
-        case 'floor': v = Math.floor(v); break;
-        case 'ceil': v = Math.ceil(v); break;
-        default: v = Math.round(v); break;
-    }
+    v = roundByMode(v, mode || 'round');
     return v / k;
 }
 
@@ -58,10 +65,12 @@ export function roundHalf(num: number): number {
     return Math.round(num * 2) / 2;
 }
 
-export function random(min: number = 0, max: number = 1, trunc = true) {
+export function random(min: number = 0, max: number = 1, round: boolean | RoundMode = true) {
     const r = Math.random();
     const res = min + r * (max - min);
-    return trunc ? Math.trunc(res) : res;
+    return round
+        ? (roundByMode(res, round === true ? 'round' : round))
+        : res;
 }
 
 export function badRandomString(length = 12) {
