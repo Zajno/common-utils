@@ -59,6 +59,9 @@ describe('math/calc', () => {
             });
         };
 
+        testRandom(0, 0, true);
+        testRandom(1, 1, true);
+        testRandom(100, 100, true);
         testRandom(0, 1, true);
         testRandom(0, 1, false);
         testRandom(1, 100, true);

@@ -69,7 +69,7 @@ export function random(min: number = 0, max: number = 1, round: boolean | RoundM
     const r = Math.random();
     const res = min + r * (max - min);
     return round
-        ? (roundByMode(res, round === true ? 'round' : round))
+        ? roundByMode(res, round === true ? 'round' : round)
         : res;
 }
 

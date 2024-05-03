@@ -222,8 +222,8 @@ export function shuffle<T>(arr: Nullable<ReadonlyArray<T>>, slice: true): T[];
 export function shuffle<T>(arr: Nullable<T[] | ReadonlyArray<T>>, slice = true): T[] {
     const res: T[] = ((slice || !arr || !('push' in arr)) ? arr?.slice() : arr) || [];
 
-    for (let i = 0; i < res.length - 1; ++i) {
-        const nextIndex = random(i + 1, res.length - 1);
+    for (let i = 0; i < res.length; ++i) {
+        const nextIndex = random(i, res.length - 1);
         arraySwap(res, i, nextIndex);
     }
 
