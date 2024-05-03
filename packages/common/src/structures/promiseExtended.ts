@@ -14,7 +14,7 @@ import type { Nullable } from '../types/misc';
  *
  * ```ts
  * function doWork() {
- *    return new PromiseExtended()
+ *    return PromiseExtended
  *      .run(async () => {
  *          // return 42;
  *          throw new Error('Some error');
