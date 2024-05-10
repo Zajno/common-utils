@@ -51,7 +51,7 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
 
     public static run<T, TErrors extends Record<string, unknown> = Record<never, unknown>>(worker: Promise<T> | (() => Promise<T>)): PromiseExtended<T, TErrors> {
         const promise = typeof worker === 'function'
-            ? worker()
+            ? safeGetPromise(worker)
             : worker;
 
         if (promise instanceof PromiseExtended) {
@@ -212,5 +212,17 @@ Idea: would be nice to combine few Promises and PromiseExtended's into one Promi
 class PromiseExtendedInnerMarker<T = any> extends Error {
     constructor(readonly instance: PromiseExtended<T>, readonly data: T) {
         super('This is a marker error for PromiseExtended instance, it should be handled internally. If you see this, it means an async function `PromiseExtended.pop()` was called in is not wrapped with `PromiseExtended.run()` or not awaited.');
+    }
+}
+
+function safeGetPromise<T>(cb: () => Promise<T>): Promise<T> {
+    try {
+        const res = cb();
+        if (res == null) {
+            return Promise.reject(new Error('PromiseExtended: target promise is null or undefined'));
+        }
+        return res;
+    } catch (err) {
+        return Promise.reject(err);
     }
 }
