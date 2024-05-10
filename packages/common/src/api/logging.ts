@@ -1,4 +1,4 @@
-import { Nullable } from 'vitest';
+import { Nullable } from '../types';
 
 export type LogTypes<TIn = any, TOut = any> = boolean | 'full' | LogTypes.Dir | {
     req?: boolean | LogTypes.LogFn<TIn>;
