@@ -8,6 +8,7 @@ import { ArgValue,
     StaticInput,
     SwitchBuilder,
     TemplatePrefixing,
+    TransformMap,
 } from './types';
 import { CombineOptions, combineUrls } from './utils';
 
@@ -25,6 +26,8 @@ const staticFactory = (strings: readonly string[]): StaticBuilder => {
             defaultOptions = defaults;
             return this;
         },
+        withBuildTransform() { return this; },
+        withTemplateTransform() { return this; },
     };
 };
 
@@ -39,11 +42,11 @@ export function build<TArgs extends string[]>(
 
     type Key = TArgs[number];
 
-    const appendParts: string[] = [];
-    const prependParts: string[] = [];
     let defaultOptions = undefined as Nullable<CombineOptions>;
+    let buildTransforms: TransformMap<string[]> | null = null;
+    let templateTransforms: TransformMap<string[]> | null = null;
 
-    const build = (args: ArgValue[] | Record<Key, ArgValue> | undefined, options?: CombineOptions) => {
+    const build = (args: ArgValue[] | Record<Key, ArgValue> | undefined, options?: CombineOptions, transforms: Nullable<TransformMap<string[]>> = buildTransforms) => {
         const parts: string[] = [];
 
         const getValue = !args
@@ -56,28 +59,43 @@ export function build<TArgs extends string[]>(
             parts.push(strings[i]);
 
             if (i < params.length) {
-                const v = getValue(params[i], i);
+                let v = getValue(params[i], i);
                 if (v != null) {
+                    const t = transforms?.[params[i]];
+                    if (t) {
+                        v = t(v);
+                    }
+
                     parts.push(v);
                 }
             }
         }
 
-        return combineUrls(CombineOptions.merge(defaultOptions, options), ...prependParts, ...parts, ...appendParts);
+        return combineUrls(
+            CombineOptions.merge(defaultOptions, options),
+            ...parts,
+        );
     };
 
     const template = (prefix?: TemplatePrefixing, options?: CombineOptions): string => {
         let args: string[];
 
+        const t = templateTransforms
+            ? (v: string) => {
+                const t = templateTransforms![v];
+                return t ? t(v) : v;
+            }
+            : (v: string) => v;
+
         if (typeof prefix === 'string') {
-            args = params.map(p => prefix + p);
+            args = params.map(p => prefix + t(p));
         } else if (typeof prefix === 'function') {
-            args = params.map(prefix);
+            args = params.map((p, i) => prefix(t(p), i));
         } else {
-            args = params;
+            args = params.map(t);
         }
 
-        return build(args, options);
+        return build(args, options, {});
     };
 
     const result: Builder<string[]> = {
@@ -87,6 +105,14 @@ export function build<TArgs extends string[]>(
         as() { return this as any; },
         withDefaults(defaults) {
             defaultOptions = defaults;
+            return this;
+        },
+        withBuildTransform(transforms) {
+            buildTransforms = transforms;
+            return this;
+        },
+        withTemplateTransform(transforms) {
+            templateTransforms = transforms;
             return this;
         },
     };
@@ -164,6 +190,18 @@ export function construct<TArr extends BaseInput[]>(...inputs: TArr): CombineBui
         },
         args,
         as() { return this as any; },
+        withDefaults(defaults: CombineOptions) {
+            outputs.forEach(o => o.withDefaults(defaults));
+            return this;
+        },
+        withBuildTransform(transforms: TransformMap<string[]>) {
+            outputs.forEach(o => o.withBuildTransform(transforms));
+            return this;
+        },
+        withTemplateTransform(transforms: TransformMap<string[]>) {
+            outputs.forEach(o => o.withTemplateTransform(transforms));
+            return this;
+        },
     };
     return result as unknown as CombineBuilders<TArr>;
 }
