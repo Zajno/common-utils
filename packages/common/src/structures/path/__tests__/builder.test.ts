@@ -194,4 +194,61 @@ describe('PathBuilder', () => {
             expect(complex.as<IBuilder>()).toBe(complex);
         });
     });
+
+    describe('transform', () => {
+
+        test('should build path with build transforms', () => {
+            const example = build`api/${'version'}/user/${'id'}`;
+
+            const transformed = example.withBuildTransform({
+                version: v => `v${v}`,
+                id: id => `#${id}`,
+            });
+
+            expect(transformed.build({ version: '1', id: '123' })).toBe('api/v1/user/#123');
+            expect(transformed.build({ version: 2, id: 321 })).toBe('api/v2/user/#321');
+            expect(transformed.build({ version: '3', id: '321' }, { addStart: true, addTrail: true })).toBe('/api/v3/user/#321/');
+
+            expect(transformed.template()).toBe('api/version/user/id');
+            expect(transformed.template(':')).toBe('api/:version/user/:id');
+            expect(transformed.template(s => `\${${s}}`)).toBe('api/${version}/user/${id}');
+        });
+
+        test('should build path with template transforms', () => {
+            const example = build`api/${'version'}/user/${'id'}`;
+
+            const transformed = example.withTemplateTransform({
+                version: v => `_${v}`,
+                id: id => `${id}?`,
+            });
+
+            expect(transformed.build({ version: '1', id: '123' })).toBe('api/1/user/123');
+            expect(transformed.build({ version: 2, id: 321 })).toBe('api/2/user/321');
+            expect(transformed.build({ version: '3', id: '321' }, { addStart: true, addTrail: true })).toBe('/api/3/user/321/');
+
+            expect(transformed.template()).toBe('api/_version/user/id?');
+            expect(transformed.template(':')).toBe('api/:_version/user/:id?');
+            expect(transformed.template(s => `\${${s}}`)).toBe('api/${_version}/user/${id?}');
+        });
+
+        test('should not affect on static path', () => {
+
+            const example = construct(build`api/v1`, '');
+
+            const transformed = example
+                .withBuildTransform({})
+                .withTemplateTransform({})
+                .withDefaults({ separator: '$#*@%T&*' })
+            ;
+
+            expect(transformed.build()).toBe('api/v1');
+            expect(transformed.build({ }, { separator: '1231234' })).toBe('api/v1');
+            expect(transformed.build({ }, { separator: '?', addStart: true, addTrail: true })).toBe('?api/v1?');
+
+            expect(transformed.template()).toBe('api/v1');
+            expect(transformed.template(':')).toBe('api/v1');
+            expect(transformed.template('?????', { separator: '?', addStart: true, addTrail: true })).toBe('?api/v1?');
+        });
+
+    });
 });

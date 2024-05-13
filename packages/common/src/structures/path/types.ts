@@ -53,7 +53,17 @@ interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
 
     /** Allows to specify default combine options for the current builder instance. */
     withDefaults: (defaults: CombineOptions) => this;
+
+    /** Allows to specify **build** transformation per key for the current builder instance. */
+    withBuildTransform: (transforms: TransformMap<A>) => this;
+
+    /** Allows to specify **template** transformation per key for the current builder instance. */
+    withTemplateTransform: (transforms: TransformMap<A>) => this;
 }
+
+export type TransformMap<A extends readonly string[]> = {
+    [K in A[number]]?: (v: ArgValue) => string;
+};
 
 type EmptyBuilderArgs = [] | Record<PropertyKey, never>;
 
