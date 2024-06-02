@@ -2,7 +2,7 @@ import * as validation from '..';
 import { ValidationErrors } from '../ValidationErrors';
 import { faker } from '@faker-js/faker';
 import fc from 'fast-check';
-import { toArbitrary } from 'utils/tests/main';
+import { toArbitrary } from '../../../utils/tests/main';
 
 describe('validation websites', () => {
     it('test', () => {
