@@ -1,6 +1,7 @@
 
 import { setTimeoutAsync } from '../../async/timeout';
 import { ILogger } from '../../logger';
+import { random } from '../../math';
 import { DeferredGetter, PromiseCache } from '../promiseCache';
 
 describe('PromiseCache', () => {
@@ -230,5 +231,30 @@ describe('PromiseCache', () => {
         await expect(p1).resolves.toBe(1);
 
         expect(cache.getCurrent(1, false)).toBeUndefined();
+    });
+
+    it('auto-invalidation', async () => {
+        const generator = vi.fn(() => random(0, 1000));
+
+        const cache = new PromiseCache<string, string>(
+            async id => {
+                await setTimeoutAsync(200);
+                return `${id}_${generator()}`;
+            },
+        ).useInvalidationTime(100);
+
+        await expect(cache.get('1')).resolves.toBeTruthy();
+        expect(generator).toHaveBeenCalledTimes(1);
+        generator.mockClear();
+
+        await expect(cache.get('1')).resolves.toBeTruthy();
+        expect(generator).toHaveBeenCalledTimes(0);
+        generator.mockClear();
+
+        await setTimeoutAsync(101);
+
+        await expect(cache.get('1')).resolves.toBeTruthy();
+        expect(generator).toHaveBeenCalledTimes(1);
+        generator.mockClear();
     });
 });

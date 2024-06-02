@@ -17,14 +17,25 @@ export namespace DeferredGetter {
     } satisfies DeferredGetter<null>;
 }
 
+const BATCHING_DELAY = 200;
+
+/** Caches items by key which are resolve by a promise.
+ *
+ * Supports:
+ *  - custom key adapter and parser for non-string keys.
+ *  - batching of fetches.
+ *  - auto-invalidation of cached items.
+*/
 export class PromiseCache<T, K = string> {
 
     protected _itemsCache: Record<string, T | null | undefined> = {};
     protected _itemsStatus: Record<string, boolean> = {};
 
     private _fetchCache: Record<string, Promise<T | null>> = {};
+    private _timestamps = new Map<string, number>();
 
     private _batch: ThrottleProcessor<K, T[]> | null = null;
+    private _invalidationTimeMs: number | null = null;
 
     private _logger: ILogger | null = null;
     private _version = 0;
@@ -65,8 +76,25 @@ export class PromiseCache<T, K = string> {
         return this;
     }
 
+    /**
+     * Provide a fetcher function that takes multiple ids and returns multiple results at once. Will be called with a slight delay to allow multiple ids to be collected.
+     *
+     * Warning: resolved array should have the same order as the input array.
+     *
+     * When provided, effectively replaces the main fetcher; but in case of fail, fallbacks to the main fetcher.
+    */
     useBatching(fetcher: (ids: K[]) => Promise<T[]>) {
-        this._batch = fetcher ? new ThrottleProcessor(fetcher, 200) : null;
+        this._batch = fetcher ? new ThrottleProcessor(fetcher, BATCHING_DELAY) : null;
+        return this;
+    }
+
+    /**
+     * Enables auto-invalidation of cached items.
+     *
+     * @param ms Time in milliseconds after which the item will be considered invalid. If null, auto-invalidation is disabled.
+    */
+    useInvalidationTime(ms: number | null) {
+        this._invalidationTimeMs = ms;
         return this;
     }
 
@@ -87,7 +115,8 @@ export class PromiseCache<T, K = string> {
 
     getCurrent(id: K, initiateFetch = true): T | null | undefined {
         const key = this._pk(id);
-        const item = this._itemsCache[key];
+        const isInvalid = this.getIsInvalidated(key);
+        const item = isInvalid ? undefined : this._itemsCache[key];
         if (initiateFetch) {
             this.get(id);
         }
@@ -97,7 +126,8 @@ export class PromiseCache<T, K = string> {
 
     get(id: K): Promise<T | null> {
         const key = this._pk(id);
-        const item = this._itemsCache[key];
+        const isInvalid = this.getIsInvalidated(key);
+        const item = isInvalid ? undefined : this._itemsCache[key];
         if (item !== undefined) {
             this._logger?.log(key, 'item resolved to', item);
             return Promise.resolve(item);
@@ -190,6 +220,15 @@ export class PromiseCache<T, K = string> {
         _setX(key, this._itemsCache, item);
     }
 
+    protected getIsInvalidated(key: string) {
+        if (!this._invalidationTimeMs) {
+            return false;
+        }
+
+        const ts = this._timestamps.get(key);
+        return ts != null && Date.now() - ts > this._invalidationTimeMs;
+    }
+
     /** @override */
     protected setStatus(key: string, status: boolean) {
         this._itemsStatus[key] = status;
@@ -201,6 +240,12 @@ export class PromiseCache<T, K = string> {
     }
 
     /** @override */
+    protected storeResult(key: string, res: T | null) {
+        this._itemsCache[key] = res;
+        this._timestamps.set(key, Date.now());
+    }
+
+    /** @override */
     protected onBeforeFetch(_key: string) {
         ++this._busyCount;
     }
@@ -208,11 +253,6 @@ export class PromiseCache<T, K = string> {
     /** @override */
     protected prepareResult(res: T | null) {
         return res || null;
-    }
-
-    /** @override */
-    protected storeResult(key: string, res: T | null) {
-        this._itemsCache[key] = res;
     }
 
     /** @override */
