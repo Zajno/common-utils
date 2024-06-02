@@ -40,6 +40,7 @@ describe('api/endpoint', () => {
         // @ts-expect-error unknown method
         expect(ApiEndpoint.construct('PUT').method).toBe('PUT');
 
+        expect(ApiEndpoint.delete().method).toBe('DELETE');
     });
 
 });

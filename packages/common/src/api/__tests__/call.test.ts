@@ -9,7 +9,9 @@ describe('api/call', () => {
     test('constructs', async () => {
         const request = vi.fn();
 
-        const caller = buildApiCaller({
+        type ExtraParams = { someRandomExtraField?: string };
+
+        const caller = buildApiCaller<ExtraParams>({
             request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
                 request(input);
                 return { status: 200, data: { input: input.data } as TOut };
@@ -23,6 +25,18 @@ describe('api/call', () => {
 
         await expect(caller(getEndpoint, null)).resolves.toEqual({ input: undefined });
 
+        expect(request).toHaveBeenCalledWith({
+            _log: 'res',
+            _noLoader: true,
+            _extra: {},
+            method: 'GET',
+            url: '/',
+            data: undefined,
+            headers: {},
+            _api: getEndpoint,
+        });
+        request.mockClear();
+
         const endpoint = ApiEndpoint.post<{ token?: string }, { name: string }>('Get User')
             .withPath(Path.build`/user/${'id'}`)
             .withQuery<{ full?: boolean }>('full')
@@ -32,10 +46,13 @@ describe('api/call', () => {
         await expect(caller(
             endpoint,
             { id: '123' },
-            { headers: { 'x-token': '123' } },
+            { headers: { 'x-token': '123' }, someRandomExtraField: 'extra' },
         )).resolves.toEqual({ input: undefined });
 
         expect(request).toHaveBeenCalledWith({
+            _extra: {
+                someRandomExtraField: 'extra',
+            },
             _log: 'res',
             _noLoader: false,
             method: 'POST',
@@ -54,6 +71,7 @@ describe('api/call', () => {
 
         expect(request).toHaveBeenCalledWith({
             _log: 'full',
+            _extra: {},
             _noLoader: true,
             method: 'POST',
             url: '/user/312?full=true',
@@ -72,6 +90,7 @@ describe('api/call', () => {
 
         expect(request).toHaveBeenCalledWith({
             _log: 'full',
+            _extra: {},
             _noLoader: true,
             method: 'POST',
             url: '/user/312?full=false',
@@ -93,6 +112,7 @@ describe('api/call', () => {
         await expect(caller(formEndpoint, { token: '123' })).resolves.toEqual({ input: { token: '123' } });
         expect(request).toHaveBeenCalledWith({
             _log: 'res',
+            _extra: {},
             _noLoader: false,
             method: 'POST',
             url: '/',

@@ -98,14 +98,14 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
     public expectError<TName extends string, TError2 extends Error>(
         name: TName,
         ErrCtor: new (...args: any[]) => TError2,
-        processor?: (value: TError2) => void,
+        processor?: (value: TError2) => void | Partial<TCustomErrors & Record<TName, TError2>>,
     ): PromiseExtended<T, TCustomErrors & Record<TName, TError2>> {
 
         this._errorProcessors.push(errorData => {
             const src = errorData?.source;
             if (src && src instanceof ErrCtor) {
-                processor?.(src);
-                Object.assign(errorData, { [name]: errorData.source });
+                const res = processor?.(src);
+                Object.assign(errorData, { [name]: src }, res);
             }
         });
 
