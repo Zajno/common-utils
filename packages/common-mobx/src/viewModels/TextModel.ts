@@ -1,5 +1,5 @@
 import { observable, makeObservable, reaction, action } from 'mobx';
-import type { IValueModel, IResetableModel, IValueModelReadonly } from '@zajno/common/models/types';
+import type { IValueModel, IResetableModel, IValueModelReadonly, IFocusableModel } from '@zajno/common/models/types';
 import logger from '@zajno/common/logger/index';
 import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable';
@@ -49,7 +49,7 @@ export class Text extends SymbolDisposable implements IValueModelReadonly<string
     }
 }
 
-export class TextInputVM extends ValidatableModel<string> implements IValueModel<Nullable<string>>, IResetableModel, ISymbolDisposable {
+export class TextInputVM extends ValidatableModel<string> implements IValueModel<Nullable<string>>, IFocusableModel, IResetableModel, ISymbolDisposable {
     private readonly _value = new ValueModel<string | null>();
     private readonly _focused = new FlagModel();
 

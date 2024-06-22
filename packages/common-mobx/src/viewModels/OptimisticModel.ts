@@ -3,7 +3,7 @@ import { Getter } from '@zajno/common/types/getter';
 import { ValueModel } from './ValueModel';
 
 /**
- * Optimistic model is a obsevable VM that allows to change its value and then revert it back if the change was not successful.
+ * Optimistic model is a observable VM that allows to change its value and then revert it back if the change was not successful.
  *
  * To change value, use `value` property setter or `setValue` method. Setter passed to ctor is async by default and should return whether value was changed successfully.
  *
@@ -11,7 +11,7 @@ import { ValueModel } from './ValueModel';
  *
  * If the value was not changed successfully, the model will revert the value back to its original value.
  *
- * Otherwise, if the result is truethy, the model will keep the new value, but will not read it from the getter. This is helpful is the getter can return incorrect value right after the change.
+ * Otherwise, if the result is truthy, the model will keep the new value, but will not read it from the getter. This is helpful is the getter can return incorrect value right after the change.
  */
 export class OptimisticModel<T> implements IValueModel<T>, IResetableModel {
 
