@@ -13,6 +13,8 @@ import {
 } from '@zajno/common/validation/index';
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
 import { Nullable } from '@zajno/common/types/misc';
+import { IValueModel } from '@zajno/common/models/types';
+import { extendObjectWithFocusable } from './extensions';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
 export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0>>;
@@ -131,5 +133,36 @@ export abstract class ValidatableModel<T = string> implements ValidationVoid {
 
     reset() {
         this.resetError();
+    }
+
+    public static extendWithFocus<T extends ValidatableModel<any>>(model: T) {
+        return extendObjectWithFocusable(model, v => {
+            if (!v) {
+                model.validate();
+            } else {
+                ValidatableModel.prototype.reset.call(model);
+            }
+        });
+    }
+}
+
+export class GenericValidatable<T> extends ValidatableModel<T> implements IValueModel<T> {
+
+    constructor(private readonly model: IValueModel<T>) {
+        super();
+    }
+
+    get value() { return this.model.value; }
+    set value(v: T) { this.setValue(v); }
+
+    protected get valueToValidate() { return this.model.value; }
+
+    setValue(value: T) {
+        this.model.value = value;
+        this.validateOnChangeIfNeeded();
+    }
+
+    extendWithFocus() {
+        return ValidatableModel.extendWithFocus(this);
     }
 }
