@@ -23,13 +23,14 @@ export function arrayCompareG<T>(arr: ReadonlyArray<T> | null | undefined, cond:
 }
 
 export function arrayCompare(arr: ReadonlyArray<number> | null | undefined, absolute: boolean, cond: (i: number, t: number) => boolean) {
-    if (!Array.isArray(arr) || arr.length <= 0) {
+    if (!arr || !Array.isArray(arr) || arr.length <= 0) {
         return null;
     }
 
-    let max = arr[0];
-    for (let i = 1; i < arr.length; i++) {
-        const e = absolute ? Math.abs(arr[i]) : arr[i];
+    const _arr = arr as ReadonlyArray<number>;
+    let max = _arr[0];
+    for (let i = 1; i < _arr.length; i++) {
+        const e = absolute ? Math.abs(_arr[i]) : _arr[i];
         if (cond(e, max)) {
             max = e;
         }
