@@ -3,7 +3,7 @@ import { ILogger, LoggerFunction } from './abstractions';
 import { CONSOLE, ConsoleLogger } from './console';
 import { ProxyLogger } from './proxy';
 import { batchLoggers } from './batch';
-import { removeItem } from '../math';
+import { removeItem } from '../math/arrays';
 
 export type { ILogger, LoggerFunction };
 export { NamedLogger } from './named';

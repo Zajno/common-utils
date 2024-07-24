@@ -1,4 +1,4 @@
-import { RemoveFirstParameter, Awaitify } from '../types/functions';
+import type { RemoveFirstParameter, Awaitify } from '../types/functions';
 
 export interface IStorage<T = string> {
     getValue(key: string): Promise<T | null>;

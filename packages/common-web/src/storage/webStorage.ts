@@ -1,5 +1,5 @@
 
-import { IStorageSync } from '@zajno/common/storage';
+import type { IStorageSync } from '@zajno/common/storage/types';
 
 export abstract class WebStorage implements IStorageSync {
 
