@@ -1,4 +1,4 @@
-import { IKeyedStorage, IKeyedStorageSync, IStorage, IStorageSync } from './types';
+import type { IKeyedStorage, IKeyedStorageSync, IStorage, IStorageSync } from './types';
 
 export namespace Storages {
 

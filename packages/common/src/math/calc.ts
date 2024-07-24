@@ -43,6 +43,10 @@ export function getIntersection(start1: number, end1: number, start2: number, en
     };
 }
 
+export function isIntersected(start1: number, end1: number, start2: number, end2: number) {
+    return start1 <= end2 && end1 >= start2;
+}
+
 export type RoundMode = 'floor' | 'ceil' | 'round' | 'trunc';
 
 export function roundByMode(val: number, mode: RoundMode) {

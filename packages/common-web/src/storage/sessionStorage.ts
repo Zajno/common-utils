@@ -1,4 +1,5 @@
-import { Storages, IStorage, IStorageSync } from '@zajno/common/storage';
+import type { IStorage, IStorageSync } from '@zajno/common/storage/types';
+import { Storages } from '@zajno/common/storage/wrappers';
 import { WebStorage } from './webStorage';
 
 class WebSessionStorage extends WebStorage {
