@@ -4,7 +4,7 @@ import { createLogger, ILogger } from '../logger';
 export type DeferredGetter<T> = {
     readonly current: T | null | undefined;
     readonly promise: Promise<T | null>;
-    readonly busy: boolean;
+    readonly busy: boolean | undefined;
 };
 
 export namespace DeferredGetter {
@@ -108,34 +108,42 @@ export class PromiseCache<T, K = string> {
         };
     }
 
-    getIsBusy(id: K): boolean {
+    getIsBusy(id: K): boolean | undefined {
         const key = this._pk(id);
-        return this._itemsStatus[key];
+        const res = this._itemsStatus[key];
+        return res || (this.getIsInvalidated(key) ? undefined : res);
+    }
+
+    protected _getCurrent(id: K) {
+        const key = this._pk(id);
+        const isInvalid = this.getIsInvalidated(key);
+        // make sure current item is hooked here from the cache (required by observers)
+        const item = this._itemsCache[key];
+        if (isInvalid) {
+            this._logger?.log(key, 'item is invalidated');
+        }
+        return { item: isInvalid ? undefined : item, key };
     }
 
     getCurrent(id: K, initiateFetch = true): T | null | undefined {
-        const key = this._pk(id);
-        const isInvalid = this.getIsInvalidated(key);
-        const item = isInvalid ? undefined : this._itemsCache[key];
+        const { item, key } = this._getCurrent(id);
         if (initiateFetch) {
             this.get(id);
         }
-        this._logger?.log(key, 'getCurrent returns', item);
+        this._logger?.log(key, 'getCurrent: returns', item);
         return item;
     }
 
     get(id: K): Promise<T | null> {
-        const key = this._pk(id);
-        const isInvalid = this.getIsInvalidated(key);
-        const item = isInvalid ? undefined : this._itemsCache[key];
+        const { item, key } = this._getCurrent(id);
         if (item !== undefined) {
-            this._logger?.log(key, 'item resolved to', item);
+            this._logger?.log(key, 'get: item resolved to', item);
             return Promise.resolve(item);
         }
 
         let promise = this._fetchCache[key];
         if (promise != null) {
-            this._logger?.log(key, 'item resolved to <promise>');
+            this._logger?.log(key, 'get: item resolved to <promise>');
             return promise;
         }
 
@@ -231,6 +239,7 @@ export class PromiseCache<T, K = string> {
 
     /** @override */
     protected setStatus(key: string, status: boolean) {
+        this._logger?.log(key, 'status update:', status);
         this._itemsStatus[key] = status;
     }
 

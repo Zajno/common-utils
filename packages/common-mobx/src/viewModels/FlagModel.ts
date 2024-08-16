@@ -23,6 +23,9 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
         makeObservable<FlagModel, '_value'>(this, {
             _value: observable,
             setValue: action,
+            setTrue: action,
+            setFalse: action,
+            toggle: action,
         });
     }
 

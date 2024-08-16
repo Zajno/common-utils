@@ -36,16 +36,18 @@ export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T
     protected ensureInstanceLoading() {
         if (this._busy === null) {
             this._busy = true;
-            this._promise = this._factory().then(v => {
-                // case: during the promise `setInstance` was called
-                if (!this._busy && this._instance !== undefined) {
-                    return this._instance;
-                }
-                this.setInstance(v);
-                return v;
-            });
+            this._promise = this._factory().then(this.onResolved);
         }
     }
+
+    protected onResolved = (res: T) => {
+        // case: during the promise `setInstance` was called
+        if (!this._busy && this._instance !== undefined) {
+            return this._instance;
+        }
+        this.setInstance(res);
+        return res;
+    };
 
     public setInstance = (res: T | undefined) => {
         this._busy = false;
