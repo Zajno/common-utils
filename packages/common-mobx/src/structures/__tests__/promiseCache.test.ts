@@ -1,10 +1,10 @@
 import { Disposer } from '@zajno/common/functions/disposer';
 import { PromiseCacheObservable } from '../promiseCache';
 import { reaction, runInAction } from 'mobx';
+import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
 describe('PromiseCache observable', () => {
     it('reacts on change', async () => {
-
         const cache = new PromiseCacheObservable(
             async (id: string) => id,
         );
@@ -79,6 +79,67 @@ describe('PromiseCache observable', () => {
         });
 
         checkHandler('2');
+
+        disposer.dispose();
+    });
+
+    it('handles invalidation by timeout', async () => {
+        const fetcher = vi.fn(async (id: string) => ({ id }));
+
+        const cache = new PromiseCacheObservable(fetcher)
+            .useInvalidationTime(10)
+            .useLogger('test');
+
+        const handler = vi.fn();
+        const checkHandler = (res: any) => {
+            expect(handler).toHaveBeenCalledTimes(1);
+            expect(handler).toHaveBeenCalledWith(res);
+
+            handler.mockClear();
+        };
+
+        const disposer = new Disposer();
+        disposer.add(
+            reaction(
+                () => cache.getCurrent('1', false),
+                v => handler(v?.id),
+                { fireImmediately: true },
+            )
+        );
+
+        checkHandler(undefined);
+
+        const deferred = cache.getDeferred('1');
+
+        const doPass = async () => {
+            // busy should be undefined when item is invalidated
+            expect(deferred.busy).toBe(undefined);
+            expect(deferred.current).toBeUndefined();
+            // here busy should be true since fetch is in progress
+            expect(deferred.busy).toBe(true);
+
+            await setTimeoutAsync(5);
+
+            expect(deferred.current).toStrictEqual({ id: '1' });
+            expect(deferred.busy).toBe(false);
+
+            expect(fetcher).toHaveBeenCalledTimes(1);
+            fetcher.mockClear();
+
+            checkHandler('1');
+        };
+
+        // PASS 1 - initial fetch
+        await doPass();
+
+        // WAITING FOR INVALIDATION
+        await setTimeoutAsync(20);
+
+        // PASS 2 - re-fetch after invalidation
+
+        // here the target item should be invalidated and re-fetched
+        // so the handler should be called with an updated value
+        await doPass();
 
         disposer.dispose();
     });

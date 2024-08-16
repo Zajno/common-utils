@@ -1,5 +1,8 @@
+import { action } from 'mobx';
 import { NumberModel } from './NumberModel';
 import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
+
+type Worker<T> = () => (T | Promise<T>);
 
 export class LoadingModel implements IValueModel<boolean>, IResetableModel {
 
@@ -25,13 +28,13 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
         }
     }
 
-    public async useLoading<T>(cb: () => (T | Promise<T>)): Promise<T>;
-    public async useLoading<T>(cb: () => (T | Promise<T>), exclusive: false): Promise<T>;
-    public async useLoading<T>(cb: () => (T | Promise<T>), exclusive: true): Promise<T | false>;
-    public async useLoading<T>(cb: () => (T | Promise<T>), exclusive: 'throw'): Promise<T>;
+    public async useLoading<T>(cb: Worker<T>): Promise<T>;
+    public async useLoading<T>(cb: Worker<T>, exclusive: false): Promise<T>;
+    public async useLoading<T>(cb: Worker<T>, exclusive: true): Promise<T | false>;
+    public async useLoading<T>(cb: Worker<T>, exclusive: 'throw'): Promise<T>;
 
-    public useLoading<T>(cb: () => (T | Promise<T>), exclusive: boolean | 'throw' = false): Promise<T | false> {
-        return withLoading(this, cb, exclusive as any);
+    public useLoading<T>(cb: Worker<T>, exclusive: boolean | 'throw' = false): Promise<T | false> {
+        return _withLoading(this, cb, exclusive as any);
     }
 
     public reset = () => {
@@ -40,13 +43,13 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
     };
 }
 
-export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>)): Promise<T>;
-export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: false): Promise<T>;
-export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: true): Promise<T | false>;
-export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: 'throw'): Promise<T>;
-export function withLoading<T>(model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: boolean | 'throw'): Promise<T | false>;
+function _withLoading<T>(model: IValueModel<boolean>, cb: Worker<T>): Promise<T>;
+function _withLoading<T>(model: IValueModel<boolean>, cb: Worker<T>, exclusive: false): Promise<T>;
+function _withLoading<T>(model: IValueModel<boolean>, cb: Worker<T>, exclusive: true): Promise<T | false>;
+function _withLoading<T>(model: IValueModel<boolean>, cb: Worker<T>, exclusive: 'throw'): Promise<T>;
+function _withLoading<T>(model: IValueModel<boolean>, cb: Worker<T>, exclusive: boolean | 'throw'): Promise<T | false>;
 
-export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb: () => (T | Promise<T>), exclusive: boolean | 'throw' = false): Promise<T | false> {
+async function _withLoading<T>(this: void, model: IValueModel<boolean>, cb: Worker<T>, exclusive: boolean | 'throw' = false): Promise<T | false> {
     if (exclusive && model.value) {
         if (exclusive === 'throw') {
             throw new Error('Operation cannot be started because another one is in progress already.');
@@ -63,3 +66,5 @@ export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb
         model.value = false;
     }
 }
+
+export const withLoading = action(_withLoading);
