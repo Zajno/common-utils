@@ -234,27 +234,53 @@ describe('PromiseCache', () => {
     });
 
     it('auto-invalidation', async () => {
-        const generator = vi.fn(() => random(0, 1000));
+        const generator = vi.fn(() => random(0, 10000));
 
         const cache = new PromiseCache<string, string>(
             async id => {
-                await setTimeoutAsync(200);
+                await setTimeoutAsync(50);
                 return `${id}_${generator()}`;
             },
         ).useInvalidationTime(100);
 
-        await expect(cache.get('1')).resolves.toBeTruthy();
-        expect(generator).toHaveBeenCalledTimes(1);
-        generator.mockClear();
+        const checkGenerator = (times: number) => {
+            expect(generator).toHaveBeenCalledTimes(times);
+            generator.mockClear();
+        };
 
         await expect(cache.get('1')).resolves.toBeTruthy();
-        expect(generator).toHaveBeenCalledTimes(0);
-        generator.mockClear();
+        checkGenerator(1);
+
+        await expect(cache.get('1')).resolves.toBeTruthy();
+        checkGenerator(0);
+
+        await setTimeoutAsync(50);
+
+        expect(cache.getCurrent('1')).toBeTruthy(); // value still here
+
+        await setTimeoutAsync(51);
+
+        expect(cache.getCurrent('1', false)).toBeUndefined(); // value invalidated
+
+        await expect(cache.get('1')).resolves.toBeTruthy();
+        checkGenerator(1);
+
+        cache.useInvalidationTime(100, true); // switch to 'keepInstance' mode
+
+        const previous = cache.getCurrent('1');
+        expect(previous).toBeTruthy(); // value still here
+
+        checkGenerator(0);
 
         await setTimeoutAsync(101);
 
-        await expect(cache.get('1')).resolves.toBeTruthy();
-        expect(generator).toHaveBeenCalledTimes(1);
-        generator.mockClear();
+        expect(cache.getCurrent('1', false)).toBe(previous); // value invalidated but old is returned
+        expect(cache.getDeferred('1').busy).toBeUndefined(); // should indicate that cache is in undefined state
+
+        const nextPromise = cache.get('1');
+        await expect(nextPromise).resolves.toBeTruthy();
+        await expect(nextPromise).resolves.not.toBe(previous); // should return new value (yes, random can be the same but it's very unlikely)
+
+        checkGenerator(1);
     });
 });

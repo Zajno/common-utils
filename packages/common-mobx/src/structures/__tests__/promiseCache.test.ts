@@ -88,7 +88,8 @@ describe('PromiseCache observable', () => {
 
         const cache = new PromiseCacheObservable(fetcher)
             .useInvalidationTime(10)
-            .useLogger('test');
+            // .useLogger('test')
+            ;
 
         const handler = vi.fn();
         const checkHandler = (res: any) => {
@@ -140,6 +141,80 @@ describe('PromiseCache observable', () => {
         // here the target item should be invalidated and re-fetched
         // so the handler should be called with an updated value
         await doPass();
+
+        disposer.dispose();
+    });
+
+    it('handles invalidation by timeout with keepInstance', async () => {
+        const fetcher = vi.fn(async (id: string) => ({ id }));
+
+        const cache = new PromiseCacheObservable(fetcher)
+            .useInvalidationTime(10, true)
+        ;
+
+        const handler = vi.fn();
+        const checkHandler = (res: any) => {
+            expect(handler).toHaveBeenCalledTimes(1);
+            expect(handler).toHaveBeenCalledWith(res);
+
+            handler.mockClear();
+        };
+
+        const disposer = new Disposer();
+        disposer.add(
+            reaction(
+                () => cache.getCurrent('1', false),
+                v => handler(v?.id),
+                { fireImmediately: true },
+            )
+        );
+
+        checkHandler(undefined);
+
+        const deferred = cache.getDeferred('1');
+
+
+        // PASS 1 - initial fetch
+        // busy should be undefined when item is empty
+        expect(deferred.busy).toBe(undefined);
+        expect(deferred.current).toBeUndefined();
+        // here busy should be true since fetch is in progress
+        expect(deferred.busy).toBe(true);
+
+        await setTimeoutAsync(5);
+
+        expect(deferred.current).toStrictEqual({ id: '1' });
+        expect(deferred.busy).toBe(false);
+
+        expect(fetcher).toHaveBeenCalledTimes(1);
+        fetcher.mockClear();
+
+        checkHandler('1');
+
+        // WAITING FOR INVALIDATION
+        await setTimeoutAsync(20);
+
+        // PASS 2 - re-fetch after invalidation
+
+        expect(deferred.busy).toBe(undefined);
+        expect(fetcher).toHaveBeenCalledTimes(0);
+
+        expect(deferred.current).toStrictEqual({ id: '1' }); // returning old value
+
+        expect(handler).toHaveBeenCalledTimes(0); // no reaction
+
+        // here busy should be true since fetch is in progress
+        expect(deferred.busy).toBe(true);
+
+        await setTimeoutAsync(5);
+
+        expect(deferred.current).toStrictEqual({ id: '1' });
+        expect(deferred.busy).toBe(false);
+
+        expect(fetcher).toHaveBeenCalledTimes(1);
+        fetcher.mockClear();
+
+        checkHandler('1');
 
         disposer.dispose();
     });

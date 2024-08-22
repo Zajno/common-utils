@@ -36,6 +36,7 @@ export class PromiseCache<T, K = string> {
 
     private _batch: ThrottleProcessor<K, T[]> | null = null;
     private _invalidationTimeMs: number | null = null;
+    private _keepInstanceDuringInvalidation = false;
 
     private _logger: ILogger | null = null;
     private _version = 0;
@@ -93,8 +94,9 @@ export class PromiseCache<T, K = string> {
      *
      * @param ms Time in milliseconds after which the item will be considered invalid. If null, auto-invalidation is disabled.
     */
-    useInvalidationTime(ms: number | null) {
+    useInvalidationTime(ms: number | null, keepInstance = false) {
         this._invalidationTimeMs = ms;
+        this._keepInstanceDuringInvalidation = keepInstance;
         return this;
     }
 
@@ -111,7 +113,11 @@ export class PromiseCache<T, K = string> {
     getIsBusy(id: K): boolean | undefined {
         const key = this._pk(id);
         const res = this._itemsStatus[key];
-        return res || (this.getIsInvalidated(key) ? undefined : res);
+        if (res) {
+            return res;
+        }
+        const isInvalid = this.getIsInvalidated(key);
+        return isInvalid ? undefined : res;
     }
 
     protected _getCurrent(id: K) {
@@ -122,12 +128,17 @@ export class PromiseCache<T, K = string> {
         if (isInvalid) {
             this._logger?.log(key, 'item is invalidated');
         }
-        return { item: isInvalid ? undefined : item, key };
+        return {
+            item: (isInvalid && !this._keepInstanceDuringInvalidation) ? undefined : item,
+            key,
+            isInvalid,
+        };
     }
 
     getCurrent(id: K, initiateFetch = true): T | null | undefined {
         const { item, key } = this._getCurrent(id);
         if (initiateFetch) {
+            // spin fetch
             this.get(id);
         }
         this._logger?.log(key, 'getCurrent: returns', item);
@@ -135,9 +146,11 @@ export class PromiseCache<T, K = string> {
     }
 
     get(id: K): Promise<T | null> {
-        const { item, key } = this._getCurrent(id);
-        if (item !== undefined) {
-            this._logger?.log(key, 'get: item resolved to', item);
+        const { item, key, isInvalid } = this._getCurrent(id);
+
+        // return cached item if it's not invalidated
+        if (item !== undefined && !isInvalid) {
+            this._logger?.log(key, 'get: item resolved to', item, isInvalid ? '(invalidated)' : '');
             return Promise.resolve(item);
         }
 
