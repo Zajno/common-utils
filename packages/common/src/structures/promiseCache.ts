@@ -84,8 +84,8 @@ export class PromiseCache<T, K = string> {
      *
      * When provided, effectively replaces the main fetcher; but in case of fail, fallbacks to the main fetcher.
     */
-    useBatching(fetcher: (ids: K[]) => Promise<T[]>) {
-        this._batch = fetcher ? new ThrottleProcessor(fetcher, BATCHING_DELAY) : null;
+    useBatching(fetcher: (ids: K[]) => Promise<T[]>, delay = BATCHING_DELAY) {
+        this._batch = fetcher ? new ThrottleProcessor(fetcher, delay) : null;
         return this;
     }
 
