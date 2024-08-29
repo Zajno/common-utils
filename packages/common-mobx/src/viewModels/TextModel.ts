@@ -68,7 +68,7 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
 
         this._valueObserving = FromGetter(
             config.value,
-            this._value.setValue,
+            this._value.setValue.bind(this._value),
             config.async ? 100 : undefined,
         );
     }
