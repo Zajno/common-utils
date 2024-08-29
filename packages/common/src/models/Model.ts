@@ -17,11 +17,11 @@ export class Model<T> implements IValueModel<Nullable<T>> {
         this.setValue(v);
     }
 
-    public readonly setValue = (value: Getter<Nullable<T>>) => {
+    public setValue(value: Getter<Nullable<T>>) {
         this._value = value;
-    };
+    }
 
-    public readonly reset = () => {
+    public reset() {
         this.setValue(this._defaultValue);
-    };
+    }
 }

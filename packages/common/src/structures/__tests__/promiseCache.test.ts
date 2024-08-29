@@ -134,11 +134,11 @@ describe('PromiseCache', () => {
             id => id.toString(),
             id => +id,
         )
-        .useLogger('')
-        .useBatching(async _ids => {
-            await setTimeoutAsync(100);
-            throw new Error('Batch fetch failed');
-        });
+            .useLogger('')
+            .useBatching(async _ids => {
+                await setTimeoutAsync(100);
+                throw new Error('Batch fetch failed');
+            });
 
         await expect(Promise.all([cache.get(1), cache.get(2)])).resolves.toStrictEqual([null, null]);
 
@@ -204,6 +204,55 @@ describe('PromiseCache', () => {
         for (let i = 0; i < 5; ++i) {
             expect(logger.warn).toHaveBeenCalledWith('batch fetch failed', i, batchError);
         }
+    });
+
+    it('continuos batching', async () => {
+        const getRes = (id: string | number) => ({ id });
+
+        const fetcher = vi.fn(async (id: string | number) => {
+            await setTimeoutAsync(10);
+            return getRes(id);
+        });
+
+        const cache = new PromiseCache(
+            fetcher,
+            id => id.toString(),
+            id => +id,
+        );
+
+        const batchLoader = vi.fn(async (ids: number[]) => {
+            await setTimeoutAsync(50);
+            return ids.map(getRes);
+        });
+
+        cache.useBatching(batchLoader, 50);
+
+        // timings should be set in a way so there should be few batches
+
+        const doRequests = (base = 1, delay = 10) => {
+            const ids = Array.from({ length: 10 }).map((_, i) => i + base);
+
+            const results = Promise.all(
+                ids.map(async id => {
+                    await setTimeoutAsync(delay);
+                    return cache.get(id);
+                }),
+            );
+
+            return { ids, results };
+        };
+
+        const { ids: ids1, results: results1 } = doRequests(1);
+
+        await setTimeoutAsync(50 + 5);
+
+        const { ids: ids2, results: results2 } = doRequests(6);
+
+        await expect(results1).resolves.toStrictEqual(ids1.map(getRes));
+        await expect(results2).resolves.toStrictEqual(ids2.map(getRes));
+
+        expect(batchLoader).toHaveBeenCalledTimes(2);
+        expect(fetcher).toHaveBeenCalledTimes(0);
     });
 
     it('clears', async () => {
