@@ -32,7 +32,7 @@ describe('LazyPromise', () => {
         const l = new LazyPromiseObservable(() => setTimeoutAsync(200).then(() => VAL));
 
         expect(l.hasValue).toBe(false);
-        expect(l.busy).toBe(false);
+        expect(l.busy).toBeNull();
 
         expect(l.value).toBeUndefined();
         expect(l.busy).toBe(true);

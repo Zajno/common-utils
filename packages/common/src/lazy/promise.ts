@@ -1,17 +1,13 @@
-import type { IDisposable } from '../functions/disposer';
-import type { ILazy, LazyLight } from './light';
+import type { IExpireTracker } from '../structures/expire';
+import type { ILazyPromise } from './types';
 
-export type ILazyPromise<T> = ILazy<T> & {
-    readonly busy: boolean;
-    readonly promise: Promise<T>;
-};
-
-export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T> {
+export class LazyPromise<T> implements ILazyPromise<T> {
 
     private _instance: T | undefined = undefined;
     private _busy: boolean | null = null;
 
-    private _promise: Promise<T> | null = null;
+    private _promise: Promise<T> | undefined;
+    private _expireTracker: IExpireTracker | undefined;
 
     constructor(
         private readonly _factory: () => Promise<T>,
@@ -20,7 +16,7 @@ export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T
         this._instance = initial;
     }
 
-    get busy() { return this._busy || false; }
+    get busy() { return this._busy; }
     get hasValue() { return this._busy === false; }
 
     get promise() {
@@ -33,21 +29,36 @@ export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T
         return this._instance!;
     }
 
+    /** does not calls factory */
+    get currentValue() {
+        return this._instance;
+    }
+
+    public withExpire = (tracker: IExpireTracker | undefined) => {
+        this._expireTracker = tracker;
+        return this;
+    };
+
     protected ensureInstanceLoading() {
+        if (this.busy === false && this._instance !== undefined && this._expireTracker?.isExpired) {
+            // do not reset the instance, just make sure it will be reloaded
+            this._busy = null;
+        }
+
         if (this._busy === null) {
             this._busy = true;
-            this._promise = this._factory().then(this.onResolved);
+            this._promise = this._factory().then(this.onResolved.bind(this));
         }
     }
 
-    protected onResolved = (res: T) => {
+    protected onResolved(res: T) {
         // case: during the promise `setInstance` was called
         if (!this._busy && this._instance !== undefined) {
             return this._instance;
         }
         this.setInstance(res);
         return res;
-    };
+    }
 
     public setInstance = (res: T | undefined) => {
         this._busy = false;
@@ -59,13 +70,17 @@ export class LazyPromise<T> implements IDisposable, LazyLight<T>, ILazyPromise<T
 
         this._instance = res;
 
+        if (this._expireTracker) {
+            this._expireTracker.restart();
+        }
+
         return res;
     };
 
     reset = () => {
         this._busy = null;
         this._instance = this.initial;
-        this._promise = null;
+        this._promise = undefined;
     };
 
     dispose = () => this.reset();
