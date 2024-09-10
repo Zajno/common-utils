@@ -119,6 +119,6 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
         }
 
         const response = await request(config) as { data: TOut };
-        return PostProcessors.process(api, response.data);
+        return PostProcessors.process(api, response?.data);
     };
 }

@@ -24,13 +24,17 @@ export type ValidatorThrowers<T extends ValidatorsSchema> = {
     [P in (string & keyof T)]: T[P] extends ValidationGenericLike<infer K> ? ValidationThrower<K> : never;
 };
 
+export function createThrower<T>(schema: ValidationGenericLike<T>): ValidationThrower<T> {
+    return async (value: T) => {
+        await schema.validate(value);
+    };
+}
+
 export function createThrowers<T extends ValidatorsSchema>(validators: T): ValidatorThrowers<T> {
     return Object.entries(validators).reduce((acc, [key, validator]) => {
         const kk = key as (string & keyof T);
         if ('validate' in validator) {
-            acc[kk] = (async (v: any) => {
-                await validator.validate(v);
-            }) as any;
+            acc[kk] = createThrower(validator) as ValidatorThrowers<T>[typeof kk];
         }
 
         return acc;
