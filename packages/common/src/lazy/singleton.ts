@@ -3,7 +3,7 @@ import type { ILazy } from './types';
 
 export class Lazy<T> implements ILazy<T> {
 
-    protected _instance: T | undefined;
+    protected _instance: T | undefined = undefined;
     private _expireTracker: IExpireTracker | undefined;
     private _disposer?: (prev: T) => void;
 
