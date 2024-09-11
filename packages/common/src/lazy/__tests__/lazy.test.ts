@@ -1,6 +1,7 @@
 import { Lazy } from '../singleton';
 import { LazyPromise } from '../promise';
 import { setTimeoutAsync } from '../../async/timeout';
+import { ExpireTracker } from '../../structures/expire';
 
 describe('Lazy', () => {
     it('simple', () => {
@@ -19,6 +20,29 @@ describe('Lazy', () => {
         expect(l.hasValue).toBeTrue();
         expect(l.value).toBe(VAL);
     });
+
+    test('with expire', async () => {
+        let incrementor = 0;
+
+        const expire = new ExpireTracker(10);
+
+        const l = new Lazy(() => ++incrementor)
+            .withExpire(expire);
+
+        expect(l.hasValue).toBeFalse();
+        expect(l.value).toBe(incrementor);
+        expect(incrementor).toBe(1);
+        expect(l.hasValue).toBeTrue();
+        expect(expire.isExpired).toBeFalse();
+        expect(expire.remainingMs).toBeLessThanOrEqual(10);
+
+        await setTimeoutAsync(11);
+
+        expect(expire.isExpired).toBeTrue();
+        expect(l.hasValue).toBeTrue();
+        expect(l.value).toBe(incrementor);
+        expect(incrementor).toBe(2);
+    });
 });
 
 describe('LazyPromise', () => {
@@ -28,7 +52,7 @@ describe('LazyPromise', () => {
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
         expect(l.hasValue).toBeFalse();
-        expect(l.busy).toBeFalse();
+        expect(l.busy).toBeNull();
 
         expect(l.value).toBeUndefined();
         expect(l.busy).toBeTrue();
@@ -48,7 +72,7 @@ describe('LazyPromise', () => {
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
         expect(l.hasValue).toBeFalse();
-        expect(l.busy).toBeFalse();
+        expect(l.busy).toBeNull();
 
         expect(l.value).toBeUndefined();
         expect(l.busy).toBeTrue();
@@ -69,4 +93,47 @@ describe('LazyPromise', () => {
         await expect(l.promise).resolves.toBe(VAL3);
     });
 
+    test('with expire', async () => {
+        let incrementor = 0;
+
+        const expire = new ExpireTracker(10);
+
+        const l = new LazyPromise(() => setTimeoutAsync(10).then(() => ++incrementor))
+            .withExpire(expire);
+
+        expect(l.hasValue).toBeFalse();
+        expect(l.busy).toBeFalsy();
+
+        expect(l.value).toBeUndefined();
+        expect(l.busy).toBeTrue();
+
+        const next = incrementor + 1;
+        await expect(l.promise).resolves.toBe(next);
+        expect(incrementor).toBe(next);
+
+        expect(l.hasValue).toBeTrue();
+        expect(l.busy).toBeFalse();
+        expect(l.value).toBe(1);
+        expect(expire.isExpired).toBeFalse();
+        expect(expire.remainingMs).toBeLessThanOrEqual(10);
+
+        await setTimeoutAsync(11);
+
+        expect(expire.isExpired).toBeTrue();
+        expect(l.hasValue).toBeTrue();
+        expect(l.value).toBe(1); // still the same value
+
+        await expect(l.promise).resolves.toBe(2);
+        expect(incrementor).toBe(2);
+        expect(expire.isExpired).toBeFalse();
+
+        expire.expire();
+        expect(expire.isExpired).toBeTrue();
+        expect(l.hasValue).toBeTrue();
+        expect(l.value).toBe(2); // still the same value
+        await expect(l.promise).resolves.toBe(3);
+        expect(incrementor).toBe(3);
+        expect(expire.isExpired).toBeFalse();
+        expect(l.value).toBe(3);
+    });
 });

@@ -146,7 +146,7 @@ describe('throttle', () => {
         loadMany.mockClear();
         resultProcessor.mockClear();
 
-        await setTimeoutAsync(100); // wait for 2nd batch
+        await setTimeoutAsync(150); // wait for 2nd batch
 
         expect(loadMany).toHaveBeenCalledTimes(1);
         expect(resultProcessor).toHaveBeenCalledTimes(1);

@@ -84,7 +84,7 @@ describe('PromiseCache observable', () => {
     });
 
     it('handles invalidation by timeout', async () => {
-        const fetcher = vi.fn(async (id: string) => ({ id }));
+        const fetcher = vi.fn(async (id: string) => setTimeoutAsync(10).then(() => ({ id })));
 
         const cache = new PromiseCacheObservable(fetcher)
             .useInvalidationTime(10)
@@ -119,7 +119,7 @@ describe('PromiseCache observable', () => {
             // here busy should be true since fetch is in progress
             expect(deferred.busy).toBe(true);
 
-            await setTimeoutAsync(5);
+            await setTimeoutAsync(10);
 
             expect(deferred.current).toStrictEqual({ id: '1' });
             expect(deferred.busy).toBe(false);

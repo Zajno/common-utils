@@ -1,26 +1,50 @@
-import type { IDisposable } from '../functions/disposer';
-import type { LazyLight } from './light';
+import type { IExpireTracker } from '../structures/expire';
+import type { ILazy } from './types';
 
-export class Lazy<T> implements IDisposable, LazyLight<T> {
+export class Lazy<T> implements ILazy<T> {
 
-    protected _instance: T | null = null;
+    protected _instance: T | undefined = undefined;
+    private _expireTracker: IExpireTracker | undefined;
+    private _disposer?: (prev: T) => void;
 
-    constructor(
-        protected readonly _factory: (() => T),
-        protected readonly _disposer?: (prev: T) => void,
-    ) {
+    constructor(protected readonly _factory: (() => T)) { }
 
-    }
-
-    get hasValue() { return this._instance !== null; }
+    get hasValue() { return this._instance !== undefined; }
 
     get value() {
         this.ensureInstance();
         return this._instance!;
     }
 
+    get currentValue() {
+        return this._instance;
+    }
+
     /** Override me: additional way to make sure instance is valid */
-    protected get isValid() { return this.hasValue; }
+    protected get isValid() {
+        if (!this.hasValue) {
+            return false;
+        }
+
+        if (this._expireTracker) {
+            if (this._expireTracker.isExpired) {
+                this.reset();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public withDisposer = (disposer: (prev: T) => void) => {
+        this._disposer = disposer;
+        return this;
+    };
+
+    public withExpire = (tracker: IExpireTracker | undefined) => {
+        this._expireTracker = tracker;
+        return this;
+    };
 
     private ensureInstance() {
         if (this.isValid) {
@@ -38,15 +62,19 @@ export class Lazy<T> implements IDisposable, LazyLight<T> {
         return this;
     }
 
-    setInstance = (instance: T | null) => {
+    setInstance(instance: T | undefined) {
         this._instance = instance;
-    };
+
+        if (this._instance !== undefined && this._expireTracker) {
+            this._expireTracker.restart();
+        }
+    }
 
     reset() {
         if (this.hasValue && this._instance && this._disposer) {
             this._disposer(this._instance);
         }
-        this.setInstance(null);
+        this.setInstance(undefined);
     }
 
     dispose() { this.reset(); }
