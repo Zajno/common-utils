@@ -278,6 +278,26 @@ export function findIndexLeast(num: number, arr: number[], sort = false) {
     return arr.findIndex(i => i > num);
 }
 
+export function findLastIndex<T>(arr: Nullable<ReadonlyArray<T>>, predicate: Predicate<T>) {
+    if (!arr?.length) {
+        return -1;
+    }
+
+    for (let i = arr.length - 1; i >= 0; i--) {
+        if (predicate(arr[i])) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+export function findLast<T>(arr: Nullable<ReadonlyArray<T>>, predicate: Predicate<T>) {
+    const i = findLastIndex(arr, predicate);
+    return i >= 0 ? arr![i] : null;
+}
+
+
 // eslint-disable-next-line @typescript-eslint/ban-types -- anything for which `typeof` will be 'function'
 type NonFunction<T> = T extends Function ? never : T;
 
