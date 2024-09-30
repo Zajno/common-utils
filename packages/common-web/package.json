@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-web",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Zajno's re-usable utilities for JS/TS projects for Web",
   "private": false,
   "repository": {
@@ -48,7 +48,8 @@
   "files": [
     "*",
     "LICENSE",
-    "!.DS_Store"
+    "!.DS_Store",
+    "!*.tsbuildinfo"
   ],
   "publishConfig": {
     "access": "public"

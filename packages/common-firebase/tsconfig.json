@@ -1,22 +1,29 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "dist",
-    "strictFunctionTypes": false,
-    "paths": {
-      "@zajno/common/*": ["../common/src/*"],
-      "@zajno/common-mobx/*": ["../common-mobx/src/*"],
-    }
-  },
-  "include": [
-    "src"
-  ],
-  "references": [
-    {
-      "path": "../common/tsconfig.ref.json"
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "strictFunctionTypes": false,
+        "declarationMap": false,
+        "declaration": false,
+        "rootDir": "src",
+        "paths": {
+            "@zajno/common/*": [
+                "../common/src/*"
+            ],
+            "@zajno/common-mobx/*": [
+                "../common-mobx/src/*"
+            ],
+        }
     },
-    {
-      "path": "../common-mobx/tsconfig.ref.json"
-    },
-  ]
+    "include": [
+        "src"
+    ],
+    "references": [
+        {
+            "path": "../common/tsconfig.ref.json"
+        },
+        {
+            "path": "../common-mobx/tsconfig.ref.json"
+        },
+    ]
 }
