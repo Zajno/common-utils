@@ -32,17 +32,17 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
-    "@zajno/common": "^2.3.7",
-    "@zajno/eslint-config": "^3.0.1",
+    "@types/node": "^20.16.10",
+    "@zajno/common": "^2.3.18",
+    "@zajno/eslint-config": "^3.0.2",
     "cpy-cli": "^5.0.0",
-    "eslint": "^8.57.0",
-    "rimraf": "^5.0.5",
-    "tslib": "^2.6.2",
-    "typescript": "^5.4.5"
+    "eslint": "^8.57.1",
+    "rimraf": "^6.0.1",
+    "tslib": "^2.7.0",
+    "typescript": "^5.6.2"
   },
   "peerDependencies": {
-    "@zajno/common": "^2.3.7",
+    "@zajno/common": "~2.3.18",
     "tslib": "^2.6"
   },
   "files": [
