@@ -68,7 +68,7 @@ export class PromiseCache<T, K = string> {
         return this.keyAdapter(k);
     }
 
-    useLogger(nameOrLogger?: string | ILogger | undefined) {
+    useLogger(nameOrLogger?: string | ILogger) {
         if (nameOrLogger != null && typeof nameOrLogger !== 'string') {
             this._logger = nameOrLogger;
         } else {

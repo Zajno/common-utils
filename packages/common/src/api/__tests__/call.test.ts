@@ -139,7 +139,7 @@ describe('api/call', () => {
             },
         });
 
-        const base = 'api' as const;
+        const base = 'api';
 
         const endpoint = ApiEndpoint.post<{ email: string | null, password: string | null }, { token: string }>()
             .withPath([base, 'user']);
@@ -189,21 +189,21 @@ describe('api/call', () => {
             },
         });
 
-        const prefix = '/user/' as const;
+        const prefix = '/user/';
         interface Result { name: string, id: number }
 
         const endpoint = ApiEndpoint.get<Result>()
             .withPath(prefix, Path.build`offers/${'id'}`);
 
         const outEx: IEndpointInfo.ExtractOut<typeof endpoint> = { name: '123', id: 123 };
-        const callE = () => caller(endpoint, null);
+        const _callE = () => caller(endpoint, null);
 
         // check that caller returns the same type as the endpoint declares
         function testOut(out: IEndpointInfo.ExtractOut<typeof endpoint>) {
             return out;
         }
 
-        const outReal: Awaited<ReturnType<typeof callE>> = outEx;
+        const outReal: Awaited<ReturnType<typeof _callE>> = outEx;
         testOut(outReal);
     });
 

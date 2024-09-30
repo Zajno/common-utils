@@ -46,7 +46,7 @@ describe('Deep Types', () => {
             // T' should be assignable to 'DeepReadonlyPartial<T>'. (here works only via cast)
             (<T>(_obj: T): Deep.DeepReadonlyPartial<T> => _obj as Deep.DeepReadonlyPartial<T>)(a);
 
-        } catch (err) {
+        } catch (_err) {
             // suppress JS runtime errors if any
         }
 
@@ -62,7 +62,7 @@ describe('Deep Types', () => {
             const a: Deep.DeepReadonly<{ a: string }> = { a: '123' };
             fn(a);
 
-        } catch (err) {
+        } catch (_err) {
             // suppress JS runtime errors if any
         }
 

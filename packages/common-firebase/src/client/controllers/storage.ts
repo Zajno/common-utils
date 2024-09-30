@@ -52,7 +52,7 @@ export class StorageController implements IStorageController {
             const ref = Firebase.Instance.storage.ref(refPath);
             const url = await ref.getDownloadURL();
             return url;
-        } catch (err) {
+        } catch (_err) {
             logger.warn('File for ref', refPath, 'was not found');
             return null;
         }

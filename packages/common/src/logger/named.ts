@@ -13,7 +13,7 @@ export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
 
     protected abstract get implementation(): ILogger;
 
-    constructor(name?: string | undefined) {
+    constructor(name?: string) {
         this._name = name || null;
         this.disable();
     }

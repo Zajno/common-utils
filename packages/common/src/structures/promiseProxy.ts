@@ -1,7 +1,7 @@
 import { LazyPromise } from '../lazy/promise';
 import { AnyObject, FunctionKeys, StringKeys } from '../types';
 
-const PromiseGetter = '__promise' as const;
+const PromiseGetter = '__promise';
 
 type AllowedFnKeys<T extends AnyObject> = FunctionKeys<T, any[], void>;
 

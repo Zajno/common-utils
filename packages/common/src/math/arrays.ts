@@ -297,8 +297,7 @@ export function findLast<T>(arr: Nullable<ReadonlyArray<T>>, predicate: Predicat
     return i >= 0 ? arr![i] : null;
 }
 
-
-// eslint-disable-next-line @typescript-eslint/ban-types -- anything for which `typeof` will be 'function'
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type -- anything for which `typeof` will be 'function'
 type NonFunction<T> = T extends Function ? never : T;
 
 export function removeItem<T>(array: T[], item: NonFunction<T> | Predicate<T>): T | null {

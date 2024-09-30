@@ -382,7 +382,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
                     // The phone user can now sign in with their phone number or email.
                     return false;
 
-                } catch (innerErr) {
+                } catch (_innerErr) {
                     // Some error occurred.
                 }
             }
