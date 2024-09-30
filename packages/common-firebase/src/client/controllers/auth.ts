@@ -14,7 +14,7 @@ import { createLogger } from '@zajno/common/logger/index';
 import { Event } from '@zajno/common/observing/event';
 import { transferFields } from '@zajno/common/fields/transfer';
 import { prepareEmail } from '@zajno/common/validation/emails';
-import { IStorage } from '@zajno/common/storage/abstractions';
+import { IStorage } from '@zajno/common/storage';
 import { Disposable } from '@zajno/common/functions/disposer';
 import { FlagModel, NumberModel } from '@zajno/common-mobx/viewModels/index';
 import { assert } from '@zajno/common/functions/assert';
@@ -28,7 +28,7 @@ const UserSignInEmailStorageKey = 'auth:signin:email';
 const MagicLinkReasonKey = 'auth:signin:reason';
 const PasswordResetRequestedKey = 'auth:passwordreset';
 
-export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> extends Disposable implements IAuthController {
+export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> extends Disposable implements IAuthController {
     private _authUser: AuthUserWithProviders<TUser> | null = null;
 
     protected readonly _initializing = new NumberModel(0);
@@ -146,7 +146,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
     public skipPasswordMode(): void {
         this._setPasswordMode.setFalse();
-        this.Storage.remove(PasswordResetRequestedKey);
+        this.Storage.removeValue(PasswordResetRequestedKey);
     }
 
     protected setNextProvider(p: AuthProviders) {
@@ -200,7 +200,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         // don't use Promise.all here – it crashes Expo
         await this.Storage.setValue(UserSignInEmailStorageKey, email);
         await this.Storage.setValue(MagicLinkReasonKey, reason || 'empty');
-        await this.Storage.remove(PasswordResetRequestedKey);
+        await this.Storage.removeValue(PasswordResetRequestedKey);
 
         await Firebase.Instance.auth.sendSignInLinkToEmail(email, {
             url: this.locationUrl,
@@ -232,8 +232,8 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
                 this._setPasswordMode.setTrue();
             }
 
-            await this.Storage.remove(MagicLinkReasonKey);
-            await this.Storage.remove(UserSignInEmailStorageKey);
+            await this.Storage.removeValue(MagicLinkReasonKey);
+            await this.Storage.removeValue(UserSignInEmailStorageKey);
 
             this.logger.log('processEmailLink succeed with reason =', reason);
             this._magicLinkSucceeded.trigger(reason);
@@ -256,7 +256,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
         try {
             this.setNextProvider(AuthProviders.EmailAndPassword);
             await Firebase.Instance.auth.signInWithEmailAndPassword(e, password);
-            await this.Storage.remove(PasswordResetRequestedKey);
+            await this.Storage.removeValue(PasswordResetRequestedKey);
         } catch (err) {
             this.setNextProvider(AuthProviders.None);
             throw err;
@@ -287,7 +287,7 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
             assert(!!this._authUser, 'authUser is null');
             this._authUser.providers = await this.getEmailAuthMethod(authUser.email);
             this._setPasswordMode.setFalse();
-            await this.Storage.remove(PasswordResetRequestedKey);
+            await this.Storage.removeValue(PasswordResetRequestedKey);
 
             return { result: true };
         } catch (err) {
@@ -400,8 +400,8 @@ export default abstract class AuthControllerBase<TUser extends AuthUser = AuthUs
 
                 await this.servicesSignOut();
 
-                await this.Storage.remove(AuthProviderIdKey);
-                await this.Storage.remove(MagicLinkReasonKey);
+                await this.Storage.removeValue(AuthProviderIdKey);
+                await this.Storage.removeValue(MagicLinkReasonKey);
 
                 await Firebase.Instance.auth.signOut();
             } catch (err) {
