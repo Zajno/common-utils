@@ -3,7 +3,7 @@ import { forEachAsync } from '../async/arrays';
 import { ILogger, createLogger } from '../logger';
 import { catchPromise } from '../functions/safe';
 
-export type EventHandler<T = any> = (data?: T | undefined) => void | Promise<void>;
+export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 type Unsubscribe = () => void;
 
 export interface IEvent<T = any> {

@@ -1,11 +1,9 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "composite": true,
         "noEmit": false,
-        "rootDir": "src",
-        "declaration": true,
-        "outDir": "dist/ref",
+        "module": "ES2022",
+        "outDir": "dist/esm",
     },
     "include": [
         "src"
@@ -18,5 +16,5 @@
         {
             "path": "../common/tsconfig.ref.json"
         }
-    ],
+    ]
 }

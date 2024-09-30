@@ -1,11 +1,9 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "composite": true,
         "noEmit": false,
-        "rootDir": "src",
-        "declaration": true,
-        "outDir": "dist/ref",
+        "module": "CommonJS",
+        "outDir": "dist/cjs",
     },
     "include": [
         "src"
@@ -17,6 +15,9 @@
     "references": [
         {
             "path": "../common/tsconfig.ref.json"
-        }
-    ],
+        },
+        {
+            "path": "../common-mobx/tsconfig.ref.json"
+        },
+    ]
 }

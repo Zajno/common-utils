@@ -28,7 +28,7 @@ export class LoggersManager {
     }
 
     /** Attaches existing instance, optionally adds name prefix to it */
-    public attach(instance: ILogger, name?: string | undefined): boolean {
+    public attach(instance: ILogger, name?: string): boolean {
         const proxy = new ProxyLogger(instance, name);
         this._all.add(proxy);
         return true;

@@ -67,7 +67,10 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
 
     public static errored<T, TErrors extends Record<string, unknown>>(source: Error | Error[] | string): PromiseExtended<T, TErrors> {
         const err = typeof source === 'string' ? new Error(source) : source;
-        const promise = new PromiseExtended<T, TErrors>(Promise.reject(err));
+        const promise = new PromiseExtended<T, TErrors>(
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            Promise.reject(err)
+        );
         return promise;
     }
 
@@ -113,21 +116,21 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
     }
 
     then<TResult1 = T, TResult2 = never>(
-        onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined,
-        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null | undefined,
+        onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
     ) {
         const res = this as PromiseExtended<TResult1 | TResult2, TCustomErrors>;
         res._promise = this._promise.then(onfulfilled, onrejected);
         return res;
     }
 
-    catch<TResult = never>(onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null | undefined) {
+    catch<TResult = never>(onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null) {
         const res = this as PromiseExtended<T | TResult, TCustomErrors>;
         res._promise = this._promise.catch(onrejected);
         return res;
     }
 
-    finally(onfinally?: (() => void) | null | undefined) {
+    finally(onfinally?: (() => void) | null) {
         this._promise = this._promise.finally(onfinally);
         return this;
     }
@@ -223,6 +226,6 @@ function safeGetPromise<T>(cb: () => Promise<T>): Promise<T> {
         }
         return res;
     } catch (err) {
-        return Promise.reject(err);
+        return Promise.reject(err as Error);
     }
 }

@@ -1,11 +1,10 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "composite": true,
         "noEmit": false,
+        "module": "ES2022",
+        "outDir": "dist/esm",
         "rootDir": "src",
-        "declaration": true,
-        "outDir": "dist/ref",
     },
     "include": [
         "src"
@@ -13,10 +12,5 @@
     "exclude": [
         "node_modules",
         "**/__tests__/**"
-    ],
-    "references": [
-        {
-            "path": "../common/tsconfig.ref.json"
-        }
     ],
 }

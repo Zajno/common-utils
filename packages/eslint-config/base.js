@@ -5,6 +5,7 @@ module.exports = {
     },
     'plugins': [
         '@typescript-eslint',
+        '@stylistic',
     ],
     'parser': '@typescript-eslint/parser',
     'extends': [
@@ -24,27 +25,32 @@ module.exports = {
         '@typescript-eslint/naming-convention': 'off',
         '@typescript-eslint/no-dupe-class-members': 'error',
         '@typescript-eslint/no-empty-function': 'error',
+        '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
         '@typescript-eslint/no-explicit-any': 'off',
         'no-inner-declarations': 0,
         '@typescript-eslint/no-inferrable-types': 'off',
         '@typescript-eslint/no-parameter-properties': 'off',
         '@typescript-eslint/no-require-imports': 'off',
         '@typescript-eslint/no-unused-expressions': 'error',
-        '@typescript-eslint/no-unused-vars': [1, { 'argsIgnorePattern': '^_' }],
+        '@typescript-eslint/no-unused-vars': ['warn', {
+            'argsIgnorePattern': '^_',
+            'varsIgnorePattern': '^_',
+            'caughtErrorsIgnorePattern': '^_',
+        }],
         '@typescript-eslint/no-var-requires': 'error',
         '@typescript-eslint/prefer-namespace-keyword': 'error',
-        '@typescript-eslint/quotes': [
+        '@stylistic/quotes': [
             'error',
             'single',
             {
                 'avoidEscape': true,
             },
         ],
-        '@typescript-eslint/semi': [
+        '@stylistic/semi': [
             'error',
             'always',
         ],
-        '@typescript-eslint/type-annotation-spacing': 'error',
+        '@stylistic/type-annotation-spacing': 'error',
         // the following are from stricter mode so consider enabling them
         '@typescript-eslint/no-floating-promises': 0,
         '@typescript-eslint/no-unsafe-return': 0,
@@ -55,7 +61,7 @@ module.exports = {
         '@typescript-eslint/no-namespace': 0,
         '@typescript-eslint/unbound-method': [0, { ignoreStatic: true }],
         'prefer-spread': 0,
-        '@typescript-eslint/func-call-spacing': 1,
+        '@stylistic/func-call-spacing': 1,
 
         '@typescript-eslint/require-await': 0,
 

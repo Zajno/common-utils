@@ -48,7 +48,7 @@ export class TasksQueue<T> {
                         resolve(rr);
                         return rr;
                     } catch (err) {
-                        reject(err);
+                        reject(err as Error);
                         throw err;
                     }
                 };

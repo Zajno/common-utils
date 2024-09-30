@@ -1,11 +1,12 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "composite": true,
         "noEmit": false,
-        "rootDir": "src",
+        "module": "ES2022",
+        "outDir": "dist/types",
         "declaration": true,
-        "outDir": "dist/ref",
+        "emitDeclarationOnly": true,
+        "rootDir": "src"
     },
     "include": [
         "src"

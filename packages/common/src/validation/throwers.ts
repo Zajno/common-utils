@@ -8,7 +8,7 @@ export namespace ValidationThrower {
         try {
             await validator(value);
             return true;
-        } catch (e) {
+        } catch (_e) {
             return false;
         }
     }

@@ -4,6 +4,8 @@
     "outDir": "dist",
     "lib": ["ESNext", "DOM"],
     "types": [],
+    "declarationMap": false,
+    "declaration": false,
     "paths": {
       "@zajno/common/*": ["../common/src/*"]
     }

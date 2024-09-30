@@ -2,6 +2,10 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "noEmit": false,
+        "module": "ES2022",
+        "outDir": "dist/types",
+        "declaration": true,
+        "emitDeclarationOnly": true,
         "rootDir": "src"
     },
     "include": [

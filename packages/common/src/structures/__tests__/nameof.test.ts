@@ -9,9 +9,9 @@ describe('nameof', () => {
     });
 
     it('works w/o obj arg', () => {
-        const obj = { a: { b: { c: 123 } } };
+        const _obj = { a: { b: { c: 123 } } };
 
-        expect(nameof<typeof obj>('a')).toBe('a');
+        expect(nameof<typeof _obj>('a')).toBe('a');
     });
 
     describe('full', () => {

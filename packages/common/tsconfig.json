@@ -1,15 +1,16 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "dist",
-    "paths": {
-      "utils/*": [
-        "./utils/*"
-      ]
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "declarationMap": false,
+        "declaration": false,
+        "paths": {
+            "utils/*": [
+                "./utils/*"
+            ]
+        },
     },
-  },
-  "include": [
-    "src",
-    "utils"
-  ],
+    "include": [
+        "src",
+        "utils"
+    ],
 }

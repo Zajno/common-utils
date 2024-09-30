@@ -28,7 +28,7 @@ export function addParamsToUrl(url: string, additionalUrlParams?: Map<string, st
             });
         }
         urlWithParams = res.toString();
-    } catch (error) {
+    } catch (_error) {
         // use original target if url parse error
     }
 

@@ -34,7 +34,7 @@ export class FunctionFactory<TArg, TResult> {
     }
 
     async execute(arg: TArg): Promise<TResult> {
-        const DefinitionFunction = this.Definition.Function;
+        const _DefinitionFunction = this.Definition.Function;
         const start = Date.now();
         try {
             const timeout = typeof this.Definition.Options?.timeoutSeconds === 'number'
@@ -42,7 +42,7 @@ export class FunctionFactory<TArg, TResult> {
                 : 60_000;
 
 
-            const fn: typeof DefinitionFunction = this.firebaseFunctions.httpsCallable(
+            const fn: typeof _DefinitionFunction = this.firebaseFunctions.httpsCallable(
                 this.Definition.CallableName,
                 { timeout },
             );
