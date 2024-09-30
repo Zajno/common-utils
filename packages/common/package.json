@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "2.3.19",
+  "version": "2.4.0",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "private": false,
   "repository": {
@@ -35,7 +35,7 @@
     "@faker-js/faker": "^8.4.1",
     "@types/node": "^20.16.10",
     "@vitest/coverage-istanbul": "^2.1.1",
-    "@zajno/eslint-config": "^3.0.2",
+    "@zajno/eslint-config": "*",
     "cpy-cli": "^5.0.0",
     "eslint": "^8.57.1",
     "fast-check": "^3.22.0",
@@ -53,6 +53,7 @@
   "files": [
     "LICENSE",
     "!.DS_Store",
+    "!*.tsbuildinfo",
     "*"
   ],
   "publishConfig": {

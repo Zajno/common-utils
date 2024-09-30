@@ -2,9 +2,10 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "noEmit": false,
-        "composite": true,
+        "module": "ES2022",
+        "outDir": "dist/types",
         "declaration": true,
-        "outDir": "dist/ref",
+        "emitDeclarationOnly": true,
         "rootDir": "src"
     },
     "include": [
@@ -13,5 +14,10 @@
     "exclude": [
         "node_modules",
         "**/__tests__/**"
+    ],
+    "references": [
+        {
+            "path": "../common/tsconfig.ref.json"
+        }
     ],
 }
