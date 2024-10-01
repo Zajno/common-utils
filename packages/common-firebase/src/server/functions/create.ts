@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import { EndpointContext, EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface';
 import logger from '@zajno/common/logger';
 import { GlobalRuntimeOptions } from './globalSettings';
@@ -49,7 +49,7 @@ function getBaseBuilder(runtimeOptions: functions.RuntimeOptions | undefined | n
 const DefaultAllowMethods = ['POST'];
 
 export const FilterRequestMethod = (methods: string[] = DefaultAllowMethods) => {
-    const mdlwr: EndpointHandler<any, any, any> = (ctx, next) => {
+    const middleware: EndpointHandler<any, any, any> = (ctx, next) => {
         if (ctx?.rawRequest && !methods.includes(ctx.rawRequest.method)) {
             logger.log('Request has been skipped because HTTP method =', ctx.rawRequest.method);
             return Promise.resolve();
@@ -57,5 +57,5 @@ export const FilterRequestMethod = (methods: string[] = DefaultAllowMethods) => 
 
         return next();
     };
-    return mdlwr;
+    return middleware;
 };

@@ -1,4 +1,4 @@
-import type { RuntimeOptions } from 'firebase-functions';
+import type { RuntimeOptions } from 'firebase-functions/v1';
 
 export type Converter<T1, T2> = (a: T1) => T2;
 export type Processor<T1, T2> = (a: T1) => T2 | Promise<T2>;

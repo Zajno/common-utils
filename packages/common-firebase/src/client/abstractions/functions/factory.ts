@@ -1,9 +1,9 @@
-import type firebase from 'firebase/compat';
-import { IFunctionDefinition } from '../functions';
-import { IFunctionDefinitionInfo } from '../functions/interface';
-import { ILogger, createLogger } from '@zajno/common/logger/index';
+import { ILogger, createLogger } from '@zajno/common/logger';
 import { Event, IEvent } from '@zajno/common/observing/event';
-import { META_ARG_KEY } from '../functions/composite';
+
+import type { IFunctionWorker, IFunctionDefinition, IFunctionDefinitionInfo, IFunctionsError } from './types';
+import type { FunctionType } from '../../../functions/interface';
+import { META_ARG_KEY } from '../../../functions/composite';
 
 const _onFactoryCreated = new Event<FunctionFactoryHook>();
 
@@ -14,12 +14,16 @@ export type FunctionFactoryHook = {
     addMeta(meta: any): void;
 };
 
-export class FunctionFactory<TArg, TResult> {
+export interface IFirebaseFunctionsProvider {
+    createCallable<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>): FunctionType<TArg, TResult>;
+}
+
+export class FunctionFactory<TArg, TResult> implements IFunctionWorker<TArg, TResult> {
 
     private readonly logger: ILogger;
     private _meta: any = null;
 
-    constructor(readonly Definition: IFunctionDefinition<TArg, TResult>, private readonly firebaseFunctions: firebase.functions.Functions) {
+    constructor(readonly functions: IFirebaseFunctionsProvider, readonly Definition: IFunctionDefinition<TArg, TResult>) {
         this.logger = createLogger(`[${Definition.CallableName}]`);
 
         _onFactoryCreated.trigger({
@@ -34,18 +38,9 @@ export class FunctionFactory<TArg, TResult> {
     }
 
     async execute(arg: TArg): Promise<TResult> {
-        const _DefinitionFunction = this.Definition.Function;
         const start = Date.now();
         try {
-            const timeout = typeof this.Definition.Options?.timeoutSeconds === 'number'
-                ? this.Definition.Options.timeoutSeconds * 1000
-                : 60_000;
-
-
-            const fn: typeof _DefinitionFunction = this.firebaseFunctions.httpsCallable(
-                this.Definition.CallableName,
-                { timeout },
-            );
+            const fn = this.functions.createCallable(this.Definition);
             const processedArgs = await this.Definition.ArgProcessor(arg);
             this.logger.log('Executing with args:', processedArgs, ...(this._meta ? ['with meta:', this._meta] : []));
 
@@ -66,7 +61,7 @@ export class FunctionFactory<TArg, TResult> {
 
             return data;
         } catch (err) {
-            const e = err as firebase.functions.HttpsError;
+            const e = err as IFunctionsError;
             this.logger.warn(
                 'Failed with error after',
                 Date.now() - start,
@@ -76,7 +71,6 @@ export class FunctionFactory<TArg, TResult> {
                     message: e.message,
                     details: e.details,
                 });
-
             // eslint-disable-next-line no-console
             console.error(err);
             throw err;

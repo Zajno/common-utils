@@ -1,0 +1,2 @@
+
+export { Firestore } from './instance';

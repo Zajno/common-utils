@@ -12,6 +12,8 @@ namespace TestApi {
     export const Api = createCompositionExport(new FunctionComposite(api1, 'broken'));
 }
 
+type TestContext = EndpointContext<{ contextParam: string }>;
+
 describe('declaration', () => {
     const ENDPOINT = () => new FunctionCompositeFactory(TestApi.Api());
 
@@ -138,20 +140,20 @@ describe('broken api', () => {
         it('validates context', async () => {
 
             const authValidator = vi.fn(AuthValidator);
-            const contextPopulist: (ctx: EndpointContext<{ contextParam: string }>) => Promise<void> = vi.fn(async ctx => {
+            const contextPopulist: (ctx: TestContext) => Promise<void> = vi.fn(async ctx => {
                 ctx.data = {
                     ...ctx.data,
                     contextParam: 'TEST',
                 };
             });
-            const contextValidator = vi.fn((ctx, next) => {
+            const contextValidator = vi.fn((ctx: TestContext, next) => {
                 if (ctx.data?.contextParam !== 'TEST') {
                     throw new Error('invalid context');
                 }
                 return next();
             });
 
-            const fooMiddleware = vi.fn((ctx, next) => {
+            const fooMiddleware = vi.fn((ctx: TestContext, next) => {
                 if (ctx.data?.contextParam !== 'TEST') {
                     throw new Error('[foo] invalid context');
                 }
