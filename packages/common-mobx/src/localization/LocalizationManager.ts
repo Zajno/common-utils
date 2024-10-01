@@ -45,11 +45,12 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends An
     }
 
     private updateDependencies() {
-        if (this._currentStrings || !this._currentLocale) {
+        const { _currentLocale: locale, _currentStrings: strings } = this;
+        if (!strings || !locale) {
             return;
         }
 
-        this._dependents.forEach(d => d.updateLocale(this._currentStrings!, this._currentLocale!));
+        this._dependents.forEach(d => d.updateLocale(strings, locale));
     }
 
     private getStrings(locale: string): TStrings {
