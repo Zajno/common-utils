@@ -1,18 +1,15 @@
 import { IEvent } from '@zajno/common/observing/event';
-import type firebase from 'firebase/compat/app';
-
-export type FirebaseUser = firebase.User;
 
 export type AuthUser = {
-    uid: string;
-    displayName: string | null;
+    uid: string,
+    displayName: string | null,
 
-    email: string | null;
-    emailVerified: boolean;
+    email: string | null,
+    emailVerified: boolean,
 
-    phoneNumber: string | null;
+    phoneNumber: string | null,
 
-    photoURL: string | null;
+    photoURL: string | null,
 };
 
 export type AuthUserWithProviders<T> = T & {

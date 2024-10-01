@@ -1,4 +1,4 @@
-import type * as functions from 'firebase-functions';
+import type * as functions from 'firebase-functions/v1';
 import type { IMiddleware } from './middleware';
 import { LazyPromise } from '@zajno/common/lazy/promise';
 import { EndpointHandler } from './interface';

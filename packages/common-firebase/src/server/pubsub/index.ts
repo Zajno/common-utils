@@ -1,4 +1,4 @@
-import type { pubsub, CloudFunction } from 'firebase-functions';
+import type { pubsub, CloudFunction } from 'firebase-functions/v1';
 import logger, { createLogger, ILogger } from '@zajno/common/logger/index';
 import { Event } from '@zajno/common/observing/event';
 import { LazyPromise } from '@zajno/common/lazy/promise';

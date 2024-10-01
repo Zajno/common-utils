@@ -1,10 +1,10 @@
 import { createCompositionExport, FunctionComposite, spec } from '../functions/composite';
-import Firebase from '../client/firebase';
 import { ContextTo, EndpointContext, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions';
 import { Middleware } from '../server/functions/middleware';
 import AppHttpError from '../server/utils/AppHttpError';
 import { useAsyncInitLoader } from '../server/functions/loader';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
+import { Functions } from '../client/web/functions';
 
 export namespace ExampleEndpoint {
     const api_v1 = {
@@ -36,14 +36,14 @@ export namespace ExampleEndpoint {
 
 export namespace Client {
     export async function test1(id: string) {
-        const result = await Firebase.Instance.functions.create(ExampleEndpoint.v1.example)
+        const result = await Functions.create(ExampleEndpoint.v1.example)
            .execute({ id: id });
 
         return result.ok;
     }
 
     export async function test2(id: string) {
-        const result = await Firebase.Instance.functions.create(ExampleEndpoint.v1.namespace.nested)
+        const result = await Functions.create(ExampleEndpoint.v1.namespace.nested)
            .execute({ lol: id });
 
         return result.kek;

@@ -12,10 +12,13 @@ export type FirebaseConfig = {
 
 let appConfig: FirebaseConfig | null = null;
 
-export function setAppConfig(config: FirebaseConfig) {
-    appConfig = config;
-}
-
+/** Singleton storage for a client/server Firebase App config
+ *
+ * @deprecated Is not used within this library so it's better to have your own one only if needed */
 export const AppConfig = {
     get value() { return appConfig; },
+
+    setCurrent(config: FirebaseConfig) {
+        appConfig = config;
+    },
 };
