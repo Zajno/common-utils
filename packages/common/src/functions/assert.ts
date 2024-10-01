@@ -6,9 +6,9 @@ export function assert(condition: boolean, error: Getter<string | Error>, object
         return;
     }
 
-    const e = Getter.getValue(error);
+    const e = Getter.toValue(error);
     if (objectToLog) {
-        logger.error('Assertion failed:', e, Getter.getValue(objectToLog));
+        logger.error('Assertion failed:', e, Getter.toValue(objectToLog));
     }
 
     if (typeof e === 'string') {
