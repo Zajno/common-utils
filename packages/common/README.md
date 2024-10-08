@@ -61,6 +61,9 @@ The motivation to have this – just to control and organize some shared code th
 
 * [`Validation`](./src/validation/index.ts): abstractions & helpers for validation.
 
+### Tests
+
+Tests are written with Vitest, coverage is (kinda) tracked with Coveralls. Test coverage is mainly dictated by real-world usage in the projects.
 
 ## Usage
 
@@ -69,6 +72,8 @@ Sources are in TypeScript, shipped as CJS & ESM modules targeted on `ES2022`.
 ### Distribution
 
 There's no barrel exports, so you can import each module separately. Each `index.ts` file is outlined in generated `package.json`'s `exports` field. Might require `tslib` as a peer dependency.
+
+The package does't really use `semver` for now, breaking changes to existing modules can be introduced in minor versions, so it's recommended to use `~` in your `package.json`'s dependencies. New modules can be introduced in minor & patch versions.
 
 ### Install
 
