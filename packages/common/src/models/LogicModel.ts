@@ -31,7 +31,7 @@ export class LogicModel {
 
     protected readonly _loading: LoadingModel;
 
-    public get isLoading(): boolean { return this._loading.value; }
+    public get isLoading(): boolean { return this._loading.isLoading; }
 
     protected logger: ILogger;
 
