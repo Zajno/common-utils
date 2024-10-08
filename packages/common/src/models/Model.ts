@@ -1,8 +1,8 @@
-import type { IValueModel } from './types';
+import type { IResetableModel, IValueModel } from './types';
 import { Getter } from '../types/getter';
 import { Nullable } from '../types/misc';
 
-export class Model<T> implements IValueModel<Nullable<T>> {
+export class Model<T> implements IValueModel<Nullable<T>>, IResetableModel {
     private _value: Getter<Nullable<T>>;
 
     private readonly _defaultValue: Getter<Nullable<T>>;
@@ -12,7 +12,7 @@ export class Model<T> implements IValueModel<Nullable<T>> {
         this._defaultValue = v;
     }
 
-    public get value() { return Getter.getValue(this._value)!; }
+    public get value() { return Getter.toValue(this._value)!; }
     public set value(v: T) {
         this.setValue(v);
     }
