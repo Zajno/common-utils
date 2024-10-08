@@ -33,7 +33,10 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         if (o != null) {
             this.keys.forEach(key => {
                 const kk = key as string & NumKey<T> & keyof DeepReadonly<T>;
-                result[key] = o[kk] as T[NumKey<T>];
+                const v = o[kk] as T[NumKey<T>];
+                if (v !== undefined) {
+                    result[key] = v;
+                }
             });
         }
         return result;
