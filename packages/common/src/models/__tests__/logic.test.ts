@@ -1,5 +1,5 @@
 import { setTimeoutAsync } from '../../async/timeout';
-import { LogicModel } from '../logicModel';
+import { LogicModel } from '../LogicModel_';
 
 describe('LogicModel', () => {
 
