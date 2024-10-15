@@ -45,8 +45,8 @@ describe('LoadingModel', () => {
 
             expect(m.isLoading).toBeTruthy();
 
-            await expect(second).resolves.toStrictEqual({ exclusivenessFailed: true });
-            await expect(first).resolves.toStrictEqual({ exclusivenessFailed: false, result: 100 });
+            await expect(second).resolves.toStrictEqual({ aborted: true });
+            await expect(first).resolves.toStrictEqual({ aborted: false, result: 100 });
 
             expect(m.value).toBe(false);
             expect(m.isLoading).toBeFalsy();
@@ -60,7 +60,7 @@ describe('LoadingModel', () => {
             const first = m.useLoading(worker, true);
             expect(m.isLoading).toBeTruthy();
 
-            await expect(first).resolves.toStrictEqual({ exclusivenessFailed: false, result: 100 });
+            await expect(first).resolves.toStrictEqual({ aborted: false, result: 100 });
 
             expect(m.isLoading).toBeFalsy();
         });
