@@ -1,4 +1,4 @@
-import { LoadingModel, withLoading } from './Loading';
+import { ExclusiveLoadingError, LoadingModel, withLoading } from './Loading';
 import { Getter, Nullable } from '../types';
 import { PromiseExtended } from '../structures/promiseExtended';
 import { createLogger, ILogger } from '../logger';
@@ -83,11 +83,11 @@ export class LogicModel {
                     let result: T | undefined;
                     if (!noLoading) {
                         const resultWithLoading = await withLoading(this._loading, worker, !!exclusive);
-                        if (resultWithLoading.exclusivenessFailed) {
+                        if (resultWithLoading.aborted) {
                             const othersNames = Array.from(this._runningActionNames, n => `"${n}"`).join(', ') || '<?>';
                             const message = `runAction(exclusive=${exclusive}): "${storedName}" has been skipped, others in progress: ${othersNames}`;
                             if (exclusive === 'throw') {
-                                throw new Error(message);
+                                throw new ExclusiveLoadingError(message, storedName);
                             }
 
                             this.logger.warn(message);

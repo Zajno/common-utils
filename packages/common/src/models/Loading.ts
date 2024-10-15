@@ -4,18 +4,18 @@ import type { IResetableModel, IValueModel } from './types';
 export type LoadingWorker<T> = () => (T | Promise<T>);
 
 export type LoadingResult<T = unknown> = {
-    exclusivenessFailed: true;
+    aborted: true;
 } | {
-    exclusivenessFailed: false;
+    aborted: false;
     result: T;
 };
 
 export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb: LoadingWorker<T>, exclusive: boolean | 'throw' = false): Promise<LoadingResult<T>> {
     if (exclusive && model.value) {
         if (exclusive === 'throw') {
-            throw new Error('Operation cannot be started because another one is in progress already.');
+            throw new ExclusiveLoadingError();
         }
-        return { exclusivenessFailed: true };
+        return { aborted: true };
     }
 
     model.value = true;
@@ -23,7 +23,7 @@ export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb
     try {
         const res = await cb();
         return {
-            exclusivenessFailed: false,
+            aborted: false,
             result: res,
         };
     } finally {
@@ -85,5 +85,15 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
      * Called in the ctor. Should be pure and should NOT access `this`. */
     protected pureConstructNumberModel(): IValueModel<number> & IResetableModel {
         return new Model<number>(0);
+    }
+}
+
+export class ExclusiveLoadingError extends Error {
+
+    constructor(
+        message = 'Operation cannot be started because another one is in progress already.',
+        public readonly actionName?: string,
+    ) {
+        super(message);
     }
 }
