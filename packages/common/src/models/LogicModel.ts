@@ -27,6 +27,8 @@ type RunOptions = {
     noLogs?: boolean;
 };
 
+type ActionResult<T> = PromiseExtended<T | undefined, { exclusive: ExclusiveLoadingError }>;
+
 export class LogicModel {
 
     protected readonly _loading: LoadingModel;
@@ -47,7 +49,7 @@ export class LogicModel {
         return new LoadingModel(useFirstInit);
     }
 
-    protected runAction<T = unknown>(worker: () => Promise<T>, options: RunOptions = {}, errorCtx?: Getter<unknown>): PromiseExtended<T | undefined> {
+    protected runAction<T = unknown>(worker: () => Promise<T>, options: RunOptions = {}, errorCtx?: Getter<unknown>): ActionResult<T> {
         const started = Date.now();
         const name = options.name;
         if (name && !options.noLogs) {
@@ -121,7 +123,7 @@ export class LogicModel {
         };
 
         return PromiseExtended.run(runner)
-            // .expectError('network', NetworkError)
+            .expectError('exclusive', ExclusiveLoadingError)
             .onError(data => {
                 this.logger.error(...formatError({
                     name,
