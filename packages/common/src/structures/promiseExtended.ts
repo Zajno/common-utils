@@ -99,10 +99,24 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
     }
 
     public expectError<TName extends string, TError2 extends Error>(
+        config: PromiseExtended.ErrorConfig<TName, TError2, TCustomErrors>,
+    ): PromiseExtended<T, TCustomErrors & Record<TName, TError2>>;
+
+    public expectError<TName extends string, TError2 extends Error>(
         name: TName,
         ErrCtor: new (...args: any[]) => TError2,
         processor?: (value: TError2) => void | Partial<TCustomErrors & Record<TName, TError2>>,
+    ): PromiseExtended<T, TCustomErrors & Record<TName, TError2>>;
+
+    public expectError<TName extends string, TError2 extends Error>(
+        nameOrConfig: TName | PromiseExtended.ErrorConfig<TName, TError2, TCustomErrors>,
+        _ErrCtor?: new (...args: any[]) => TError2,
+        _processor?: (value: TError2) => void | Partial<TCustomErrors & Record<TName, TError2>>,
     ): PromiseExtended<T, TCustomErrors & Record<TName, TError2>> {
+
+        const { name, ErrCtor, processor } = typeof nameOrConfig === 'string'
+            ? { name: nameOrConfig, ErrCtor: _ErrCtor!, processor: _processor }
+            : nameOrConfig;
 
         this._errorProcessors.push(errorData => {
             const src = errorData?.source;
@@ -204,6 +218,25 @@ export namespace PromiseExtended {
         error: string;
         source: Error;
     };
+
+    export type ErrorConfig<TName extends string, TError2 extends Error, TPrevErrors> = {
+        name: TName;
+        ErrCtor: new (...args: any[]) => TError2;
+        processor?: (value: TError2) => void | Partial<TPrevErrors & Record<TName, TError2>>;
+    };
+
+    export namespace ErrorConfig {
+        export function createExpecter<TName extends string, TError2 extends Error>(
+            config: Omit<ErrorConfig<TName, TError2, unknown>, 'processor'>,
+        ) {
+            return <T, TPrevErrors extends Record<string, unknown>>(
+                promise: PromiseExtended<T, TPrevErrors>,
+                processor?: (error: TError2) => void | Partial<TPrevErrors & Record<TName, TError2>>,
+            ) => {
+                return promise.expectError({ ...config, processor });
+            };
+        }
+    }
 }
 
 /*

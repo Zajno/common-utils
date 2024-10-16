@@ -3,7 +3,7 @@ import { Getter, Nullable } from '../types';
 import { PromiseExtended } from '../structures/promiseExtended';
 import { createLogger, ILogger } from '../logger';
 
-type RunOptions = {
+export type ActionRunOptions = {
     /** Action name, required for logging and joining. */
     name?: string;
 
@@ -27,7 +27,6 @@ type RunOptions = {
     noLogs?: boolean;
 };
 
-type ActionResult<T> = PromiseExtended<T | undefined, { exclusive: ExclusiveLoadingError }>;
 
 export class LogicModel {
 
@@ -49,7 +48,7 @@ export class LogicModel {
         return new LoadingModel(useFirstInit);
     }
 
-    protected runAction<T = unknown>(worker: () => Promise<T>, options: RunOptions = {}, errorCtx?: Getter<unknown>): ActionResult<T> {
+    protected runAction<T = unknown>(worker: () => Promise<T>, options: ActionRunOptions = {}, errorCtx?: Getter<unknown>): ActionResult<T> {
         const started = Date.now();
         const name = options.name;
         if (name && !options.noLogs) {
@@ -122,8 +121,7 @@ export class LogicModel {
             }
         };
 
-        return PromiseExtended.run(runner)
-            .expectError('exclusive', ExclusiveLoadingError)
+        return ActionResult.expectExclusive(PromiseExtended.run(runner))
             .onError(data => {
                 this.logger.error(...formatError({
                     name,
@@ -161,4 +159,23 @@ function formatError(this: void, { name, err, errorCtx, elapsed }: ErrorData) {
         ...prepend(getErrorCause(), '\nCause:'),
         ...prepend(Getter.toValue(errorCtx), '\nContext:'),
     ];
+}
+
+export type ActionResult<T, TCustomErrors extends Record<string, unknown> = Record<never, unknown>> = ReturnType<typeof ActionResult.expectExclusive<T | undefined, TCustomErrors>>;
+
+export namespace ActionResult {
+    export type Expect = { exclusive: ExclusiveLoadingError };
+
+    export namespace Expect {
+        export const Config = {
+            name: 'exclusive',
+            ErrCtor: ExclusiveLoadingError,
+        } as const;
+    }
+
+    export const expectExclusive = PromiseExtended.ErrorConfig.createExpecter(Expect.Config);
+
+    export function createSucceeded<T>(data: T): ActionResult<T> {
+        return expectExclusive(PromiseExtended.succeeded(data));
+    }
 }
