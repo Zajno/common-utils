@@ -76,15 +76,29 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
             return 0;
         }
 
-        if (typeof o2 === 'number' && o2 === 0 || typeof o2 !== 'number' && this.isEmpty(o2)) {
+        const checkRight = <K extends AnyObject>(val: number | K, getIsEmpty: (k: K) => boolean) => {
+            return typeof val === 'number' && val === 0 || typeof val !== 'number' && getIsEmpty(val);
+        };
+
+        if (checkRight(o2, v => this.isEmpty(v))) {
             return Number.POSITIVE_INFINITY;
         }
 
-        const vals = this._math.map(pair => {
-            const val = _getInnerValue(o1, pair.key);
-            return pair.ops.div(val, _getInnerValue(o2, pair.key));
+        const results = this._math.map(pair => {
+            const left = _getInnerValue(o1, pair.key);
+            if (pair.ops.isEmpty(left)) {
+                return 0;
+            }
+
+            const right = _getInnerValue(o2, pair.key);
+
+            if (checkRight(right, v => pair.ops.isEmpty(v))) {
+                return 0;
+            }
+
+            return pair.ops.div(left, right);
         }).filter(Boolean);
 
-        return Math.min(...vals);
+        return results.length ? Math.min(...results) : 0;
     }
 }
