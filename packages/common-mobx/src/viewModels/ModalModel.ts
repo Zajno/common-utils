@@ -1,4 +1,4 @@
-import { ValueModel } from './ValueModel';
+import { ValueModel } from './ValueModel.js';
 
 export class ModalViewModel<T> {
 

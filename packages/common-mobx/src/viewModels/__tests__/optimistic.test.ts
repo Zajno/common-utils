@@ -1,5 +1,5 @@
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
-import { OptimisticModel } from '../OptimisticModel';
+import { OptimisticModel } from '../OptimisticModel.js';
 
 describe('OptimisticModel', () => {
 

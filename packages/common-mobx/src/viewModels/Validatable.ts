@@ -14,7 +14,7 @@ import {
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
 import { Nullable } from '@zajno/common/types/misc';
 import { IValueModel } from '@zajno/common/models/types';
-import { extendObjectWithFocusable } from './extensions';
+import { extendObjectWithFocusable } from './extensions.js';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;
 export type ValidationErrorsStrings<TErrors extends string | number = number> = Partial<Omit<Record<TErrors, string>, 0>>;

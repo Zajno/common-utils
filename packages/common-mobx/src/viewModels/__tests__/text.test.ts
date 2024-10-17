@@ -1,6 +1,6 @@
-import { Text, TextInputVM } from '../TextModel';
+import { Text, TextInputVM } from '../TextModel.js';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
-import { ValueModel } from '../ValueModel';
+import { ValueModel } from '../ValueModel.js';
 import { ValidationError, ValidationErrors } from '@zajno/common/validation';
 
 describe('TextViewModel', () => {

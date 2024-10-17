@@ -1,15 +1,15 @@
 // re-export for convenience
 // export * from '@zajno/common/models/types';
 
-export * from './Validatable';
-export * from './CommonModel';
-export * from './ValueModel';
+export * from './Validatable.js';
+export * from './CommonModel.js';
+export * from './ValueModel.js';
 
-export * from './TextModel';
-export * from './FlagModel';
-export * from './NumberModel';
+export * from './TextModel.js';
+export * from './FlagModel.js';
+export * from './NumberModel.js';
 
-export * from './SelectModel';
-export * from './MultiSelectModel';
+export * from './SelectModel.js';
+export * from './MultiSelectModel.js';
 
-export * from './ModalModel';
+export * from './ModalModel.js';

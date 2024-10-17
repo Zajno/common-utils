@@ -1,5 +1,5 @@
 import { configure } from 'mobx';
-import { Select, SelectString } from '../SelectModel';
+import { Select, SelectString } from '../SelectModel.js';
 
 configure({ enforceActions: 'never' });
 

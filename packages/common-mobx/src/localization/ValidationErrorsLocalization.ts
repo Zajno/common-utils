@@ -1,6 +1,6 @@
-import { ValidationErrorsStrings } from './abstractions';
-import { StringsShape } from './defaultShape';
-import { LocalizedValidationErrors } from './LocalizedValidationErrors';
+import { ValidationErrorsStrings } from './abstractions.js';
+import { StringsShape } from './defaultShape.js';
+import { LocalizedValidationErrors } from './LocalizedValidationErrors.js';
 import { ValidationErrors } from '@zajno/common/validation/ValidationErrors';
 
 function locationFactory(strings: StringsShape): ValidationErrorsStrings<ValidationErrors> {
