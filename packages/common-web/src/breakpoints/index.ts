@@ -1,3 +1,3 @@
 
-export type { BreakpointData, ICurrentBreakpointInfo } from './types';
-export { BreakpointsManager } from './manager';
+export type { BreakpointData, ICurrentBreakpointInfo } from './types.js';
+export { BreakpointsManager } from './manager.js';

@@ -1,8 +1,8 @@
-import { BreakpointData, ICurrentBreakpointInfo } from './types';
+import { BreakpointData, ICurrentBreakpointInfo } from './types.js';
 import { Event } from '@zajno/common/observing/event';
 import { createLogger } from '@zajno/common/logger';
 import { assert } from '@zajno/common/functions/assert';
-import { calcRem } from './rem';
+import { calcRem } from './rem.js';
 
 const logger = createLogger('[Breakpoints]');
 
