@@ -1,5 +1,5 @@
-import { ILogger } from './abstractions';
-import { EMPTY_FUNCTION, NamedLogger } from './named';
+import { ILogger } from './abstractions.js';
+import { EMPTY_FUNCTION, NamedLogger } from './named.js';
 
 export const EMPTY_LOGGER: ILogger = {
     log: EMPTY_FUNCTION,

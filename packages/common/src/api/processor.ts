@@ -1,4 +1,4 @@
-import logger from '../logger';
+import logger from '../logger/index.js';
 
 export type ProcessingFn<T = unknown> = (input: T) => T;
 

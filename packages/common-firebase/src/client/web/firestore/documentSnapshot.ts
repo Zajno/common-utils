@@ -11,7 +11,7 @@ import {
     DocumentSnapshotCallback,
     logDocCount,
     UnsubscribeSnapshot,
-} from '../../../database/firestore';
+} from '../../../database/firestore/index.js';
 import { wrapAsync } from '@zajno/common/functions/safe';
 import { Nullable } from '@zajno/common/types';
 

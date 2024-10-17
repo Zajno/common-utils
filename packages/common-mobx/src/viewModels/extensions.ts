@@ -1,5 +1,5 @@
 import { IFocusableModel } from '@zajno/common/models/types';
-import { FlagModel } from './FlagModel';
+import { FlagModel } from './FlagModel.js';
 
 export function extendObjectWithFocusable<T extends object>(obj: T, onSetFocus?: (v: boolean) => void): T & IFocusableModel {
     const _focused = new FlagModel();

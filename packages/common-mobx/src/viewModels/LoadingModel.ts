@@ -1,5 +1,5 @@
 import { action } from 'mobx';
-import { NumberModel } from './NumberModel';
+import { NumberModel } from './NumberModel.js';
 import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
 import { withLoading as _withLoading, LoadingModel as _LoadingModel } from '@zajno/common/models/Loading';
 

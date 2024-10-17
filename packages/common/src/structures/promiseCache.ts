@@ -1,5 +1,5 @@
-import { ThrottleProcessor } from '../functions/throttle';
-import { createLogger, ILogger } from '../logger';
+import { ThrottleProcessor } from '../functions/throttle.js';
+import { createLogger, ILogger } from '../logger/index.js';
 
 export type DeferredGetter<T> = {
     readonly current: T | null | undefined;

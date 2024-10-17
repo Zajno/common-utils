@@ -1,2 +1,2 @@
-export { FunctionDefinition } from './definition';
-export type { IFunctionDefinition } from './interface';
+export { FunctionDefinition } from './definition.js';
+export type { IFunctionDefinition } from './interface.js';

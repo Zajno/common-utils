@@ -1,4 +1,4 @@
-import { FirebaseApp, createFirebaseLazy, logger } from '../app';
+import { FirebaseApp, createFirebaseLazy, logger } from '../app.js';
 import {
     connectAuthEmulator,
     getAuth,

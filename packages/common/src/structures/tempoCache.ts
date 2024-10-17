@@ -1,6 +1,6 @@
-import type { ILazy, ILazyPromise } from '../lazy/types';
-import { IResetableModel } from '../models/types';
-import { ExpireTracker } from './expire';
+import type { ILazy, ILazyPromise } from '../lazy/types.js';
+import { IResetableModel } from '../models/types.js';
+import { ExpireTracker } from './expire.js';
 
 /**
  * Calls factory fn to fetch and store some value for a limited time.

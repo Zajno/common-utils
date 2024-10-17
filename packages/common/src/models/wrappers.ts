@@ -1,5 +1,5 @@
-import { Getter } from '../types/getter';
-import type { ILabel, IValueModel } from './types';
+import { Getter } from '../types/getter.js';
+import type { ILabel, IValueModel } from './types.js';
 
 export function withLabel<T, TModel extends IValueModel<T>, TLabel = string>(model: TModel, label: Getter<TLabel>) {
     const _label = label;

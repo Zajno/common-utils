@@ -1,2 +1,2 @@
 
-export { Firestore } from './instance';
+export { Firestore } from './instance.js';

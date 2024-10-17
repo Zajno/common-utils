@@ -1,6 +1,6 @@
-import { inject, withLabel, mixinLabel, spyModel } from '../wrappers';
-import { Model } from '../Model';
-import { IValueModel, IValueModelReadonly } from '../types';
+import { inject, withLabel, mixinLabel, spyModel } from '../wrappers.js';
+import { Model } from '../Model.js';
+import { IValueModel, IValueModelReadonly } from '../types.js';
 
 describe('labeled', () => {
     test('consistency', () => {

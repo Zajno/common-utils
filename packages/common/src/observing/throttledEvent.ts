@@ -1,5 +1,5 @@
-import { Event } from './event';
-import { ThrottleAction } from '../functions/throttle';
+import { Event } from './event.js';
+import { ThrottleAction } from '../functions/throttle.js';
 
 export class ThrottledEvent extends Event {
 

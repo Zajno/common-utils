@@ -1,4 +1,4 @@
-import { reactionDisposable, autorunDisposable } from '../disposable';
+import { reactionDisposable, autorunDisposable } from '../disposable.js';
 
 describe('disposable', () => {
 

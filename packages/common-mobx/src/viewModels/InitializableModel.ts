@@ -1,4 +1,4 @@
-import NumberModel from './NumberModel';
+import NumberModel from './NumberModel.js';
 
 export class InitializableModel {
     private readonly _counter = new NumberModel(0);

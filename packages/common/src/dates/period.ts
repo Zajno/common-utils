@@ -1,5 +1,5 @@
-import { shiftDate } from './shift';
-import { Granularity } from './types';
+import { shiftDate } from './shift.js';
+import { Granularity } from './types.js';
 
 export type Period = { amount: number, granularity: Granularity };
 export namespace Period {

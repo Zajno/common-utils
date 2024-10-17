@@ -1,4 +1,4 @@
-import { CalendarIndex, basedFloor, basedRemainder } from '../calendarIndex';
+import { CalendarIndex, basedFloor, basedRemainder } from '../calendarIndex.js';
 
 type Parts = { month: number, week: number, fullWeek: number, day: number };
 

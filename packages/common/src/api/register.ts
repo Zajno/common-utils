@@ -1,6 +1,6 @@
-import { ProcessingFn, ProcessorsRegistry } from './processor';
-import { getFormattedDisplayName } from './helpers';
-import { IEndpointInfo } from './endpoint';
+import { ProcessingFn, ProcessorsRegistry } from './processor.js';
+import { getFormattedDisplayName } from './helpers.js';
+import { IEndpointInfo } from './endpoint.js';
 
 export const PreProcessors = new ProcessorsRegistry<IEndpointInfo>();
 export const PostProcessors = new ProcessorsRegistry<IEndpointInfo>();

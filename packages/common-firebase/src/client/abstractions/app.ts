@@ -1,4 +1,4 @@
-import type { FirebaseConfig } from '../../config';
+import type { FirebaseConfig } from '../../config.js';
 
 const EmptyAppSettings = {
     functionsEmulator: null! as { url: string },

@@ -1,8 +1,8 @@
-import { Path } from '../../structures/path';
-import { RequestConfigDetails, buildApiCaller } from '../call';
-import { ApiEndpoint } from '../endpoint';
-import { IEndpointInfo } from '../endpoint.types';
-import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register';
+import { Path } from '../../structures/path/index.js';
+import { RequestConfigDetails, buildApiCaller } from '../call.js';
+import { ApiEndpoint } from '../endpoint.js';
+import { IEndpointInfo } from '../endpoint.types.js';
+import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register.js';
 
 describe('api/call', () => {
 

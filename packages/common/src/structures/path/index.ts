@@ -1,2 +1,2 @@
-export * from './utils';
-export * as Path from './builder';
+export * from './utils.js';
+export * as Path from './builder.js';

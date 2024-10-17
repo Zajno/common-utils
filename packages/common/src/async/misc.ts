@@ -10,4 +10,4 @@ export async function chainPromises(...promises: (() => Promise<void>)[]) {
     return promises.reduce(applyAsync, Promise.resolve());
 }
 
-export * from './manualPromise';
+export * from './manualPromise.js';

@@ -1,5 +1,5 @@
-import { Model } from './Model';
-import type { IResetableModel, IValueModel } from './types';
+import { Model } from './Model.js';
+import type { IResetableModel, IValueModel } from './types.js';
 
 export type LoadingWorker<T> = () => (T | Promise<T>);
 

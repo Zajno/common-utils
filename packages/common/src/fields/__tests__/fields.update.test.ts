@@ -1,4 +1,4 @@
-import { updateArray } from '../update';
+import { updateArray } from '../update.js';
 
 describe('fields/update', () => {
     it('empty input', () => {

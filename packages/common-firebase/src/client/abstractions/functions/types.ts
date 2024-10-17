@@ -1,4 +1,4 @@
-import type { IFunctionDefinition, IFunctionDefinitionInfo } from '../../../functions/interface';
+import type { IFunctionDefinition, IFunctionDefinitionInfo } from '../../../functions/interface.js';
 
 export type { IFunctionDefinition, IFunctionDefinitionInfo };
 

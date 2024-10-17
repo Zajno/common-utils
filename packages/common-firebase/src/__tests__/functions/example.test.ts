@@ -1,6 +1,6 @@
-import * as Example from '../../examples/compositeFunctionExample';
-import { EndpointTestContext, getNestedFunction, wrapEndpoint } from './config';
-import AppHttpError from '../../server/utils/AppHttpError';
+import * as Example from '../../examples/compositeFunctionExample.js';
+import { EndpointTestContext, getNestedFunction, wrapEndpoint } from './config.js';
+import AppHttpError from '../../server/utils/AppHttpError.js';
 
 
 describe('Function API', () => {

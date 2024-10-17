@@ -1,5 +1,5 @@
-import { Path } from '../structures/path';
-import { IEndpointInfo } from './endpoint';
+import { Path } from '../structures/path/index.js';
+import { IEndpointInfo } from './endpoint.js';
 
 export const DefaultSettings = {
     templateArgPrefix: ':' satisfies Path.TemplatePrefixing,

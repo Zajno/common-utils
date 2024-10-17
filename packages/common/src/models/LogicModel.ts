@@ -1,7 +1,7 @@
-import { ExclusiveLoadingError, LoadingModel, withLoading } from './Loading';
-import { Getter, Nullable } from '../types';
-import { PromiseExtended } from '../structures/promiseExtended';
-import { createLogger, ILogger } from '../logger';
+import { ExclusiveLoadingError, LoadingModel, withLoading } from './Loading.js';
+import { Getter, Nullable } from '../types/index.js';
+import { PromiseExtended } from '../structures/promiseExtended.js';
+import { createLogger, ILogger } from '../logger/index.js';
 
 export type ActionRunOptions = {
     /** Action name, required for logging and joining. */

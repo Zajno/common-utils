@@ -1,7 +1,7 @@
-import { Getter } from '../types/getter';
-import { ILogger } from './abstractions';
-import { CONSOLE } from './console';
-import { ProxyLogger } from './proxy';
+import { Getter } from '../types/getter.js';
+import { ILogger } from './abstractions.js';
+import { CONSOLE } from './console.js';
+import { ProxyLogger } from './proxy.js';
 
 // TBD Introduce more logger types ?
 export type LoggerTypes = 'console';

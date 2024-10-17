@@ -1,6 +1,6 @@
 import FFT from 'firebase-functions-test';
 import type { ContextOptions } from 'firebase-functions-test/lib/main';
-import type { FunctionFactory } from '../../server/functions';
+import type { FunctionFactory } from '../../server/functions/index.js';
 import { AnyObject, ObjectOrPrimitive } from '@zajno/common/types/misc';
 
 const FFTest = FFT({ });

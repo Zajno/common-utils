@@ -1,4 +1,4 @@
-import { Nullable } from '../types';
+import { Nullable } from '../types/index.js';
 
 export type LogTypes<TIn = any, TOut = any> = boolean | 'full' | LogTypes.Dir | {
     req?: boolean | LogTypes.LogFn<TIn>;

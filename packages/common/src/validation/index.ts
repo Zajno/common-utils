@@ -1,8 +1,8 @@
-export * from './ValidationErrors';
-export * from './types';
-export * from './validators';
-export * from './wrappers';
-export * from './helpers';
+export * from './ValidationErrors.js';
+export * from './types.js';
+export * from './validators.js';
+export * from './wrappers.js';
+export * from './helpers.js';
 
 // TODO Make it universal
 // This module looks like pretty project-specific, so probably won't be useful

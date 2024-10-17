@@ -1,5 +1,5 @@
-import * as validation from '..';
-import { ValidationErrors } from '../ValidationErrors';
+import * as validation from '../index.js';
+import { ValidationErrors } from '../ValidationErrors.js';
 
 describe('validation (TODO)', () => {
     it('Validators', () => {

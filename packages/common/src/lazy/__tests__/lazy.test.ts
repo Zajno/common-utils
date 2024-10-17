@@ -1,7 +1,7 @@
-import { Lazy } from '../singleton';
-import { LazyPromise } from '../promise';
-import { setTimeoutAsync } from '../../async/timeout';
-import { ExpireTracker } from '../../structures/expire';
+import { Lazy } from '../singleton.js';
+import { LazyPromise } from '../promise.js';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { ExpireTracker } from '../../structures/expire.js';
 
 describe('Lazy', () => {
     it('simple', () => {

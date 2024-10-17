@@ -1,5 +1,5 @@
-import { ILogger } from './abstractions';
-import { NamedLogger } from './named';
+import { ILogger } from './abstractions.js';
+import { NamedLogger } from './named.js';
 
 export const CONSOLE: ILogger = console;
 

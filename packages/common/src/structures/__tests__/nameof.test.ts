@@ -1,4 +1,4 @@
-import { nameof } from '../nameof';
+import { nameof } from '../nameof.js';
 
 describe('nameof', () => {
 

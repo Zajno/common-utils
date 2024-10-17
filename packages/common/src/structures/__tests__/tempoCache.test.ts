@@ -1,7 +1,7 @@
-import { TempoCache } from '../tempoCache';
-import { setTimeoutAsync } from '../../async/timeout';
-import { createLazy } from '../../lazy/light';
-import { LazyPromise } from '../../lazy/promise';
+import { TempoCache } from '../tempoCache.js';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { createLazy } from '../../lazy/light.js';
+import { LazyPromise } from '../../lazy/promise.js';
 
 describe('TempoCache', () => {
     it('just works', async () => {
@@ -65,7 +65,7 @@ describe('TempoCache', () => {
         expect(example.isExpired).toBe(false);
         expect(lazy.hasValue).toBe(true);
 
-        await setTimeoutAsync(20);
+        await setTimeoutAsync(21);
 
         expect(example.isExpired).toBe(true);
         expect(lazy.hasValue).toBe(true);

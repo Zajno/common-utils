@@ -1,7 +1,7 @@
 import { reaction } from 'mobx';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
-import { LazyObservable, LazyPromiseObservable } from '../observable';
+import { LazyObservable, LazyPromiseObservable } from '../observable.js';
 
 describe('Lazy', () => {
 

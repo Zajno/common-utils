@@ -1,9 +1,9 @@
 import { Timer, TimerState } from '@zajno/common/observing/timer';
-import { FlagModel } from './FlagModel';
+import { FlagModel } from './FlagModel.js';
 import { Nullable } from '@zajno/common/types';
 import { Disposable } from '@zajno/common/functions/disposer';
 import { action } from 'mobx';
-import { ValueModel } from './ValueModel';
+import { ValueModel } from './ValueModel.js';
 
 export class TimerViewModel extends Disposable {
 

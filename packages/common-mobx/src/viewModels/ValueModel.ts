@@ -1,7 +1,7 @@
 import { action, makeObservable } from 'mobx';
 import { Getter } from '@zajno/common/types/getter';
 import { Model } from '@zajno/common/models/Model';
-import { ObservableTypes } from '../observing/types';
+import { ObservableTypes } from '../observing/types.js';
 import { Nullable } from '@zajno/common/types/misc';
 
 export class ValueModel<T> extends Model<T> {

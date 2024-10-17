@@ -1,6 +1,6 @@
 import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
 import { Getter } from '@zajno/common/types/getter';
-import { ValueModel } from './ValueModel';
+import { ValueModel } from './ValueModel.js';
 
 /**
  * Optimistic model is a observable VM that allows to change its value and then revert it back if the change was not successful.

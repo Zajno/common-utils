@@ -5,8 +5,8 @@ import {
     EndpointHandlerVoid,
     EndpointFunction,
     NextFunction,
-} from './interface';
-import AppHttpError from '../utils/AppHttpError';
+} from './interface.js';
+import AppHttpError from '../utils/AppHttpError.js';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 import { truthy } from '@zajno/common/types/arrays';
 import { assert } from '@zajno/common/functions/assert';

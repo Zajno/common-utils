@@ -1,16 +1,16 @@
 import type * as functions from 'firebase-functions/v1';
-import type { IMiddleware } from './middleware';
+import type { IMiddleware } from './middleware.js';
 import { LazyPromise } from '@zajno/common/lazy/promise';
-import { EndpointHandler } from './interface';
+import { EndpointHandler } from './interface.js';
 import {
     createHttpsRequestFunction,
     createScheduledFunction,
     RequestEndpointFunction,
     ScheduledFunction,
     SchedulerOptions,
-} from './create';
-import { ICompositionMiddleware, MiddlewaresMap } from './composite';
-import { CompositeEndpointInfo, EndpointArg, EndpointResult } from '../../functions/composite';
+} from './create.js';
+import { ICompositionMiddleware, MiddlewaresMap } from './composite.js';
+import { CompositeEndpointInfo, EndpointArg, EndpointResult } from '../../functions/composite.js';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 
 type Initializer<TArg> = (arg: TArg) => (void | Promise<void>);

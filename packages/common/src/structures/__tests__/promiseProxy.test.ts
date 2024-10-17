@@ -1,5 +1,5 @@
-import { setTimeoutAsync } from '../../async/timeout';
-import { createPromiseProxy } from '../promiseProxy';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { createPromiseProxy } from '../promiseProxy.js';
 
 // tests for createPromiseProxy
 describe('createPromiseProxy', () => {

@@ -1,8 +1,8 @@
-import type { CompositeEndpointInfo } from '../../functions/composite';
-import type { IFunctionDefinition } from '../../functions';
-import type { EndpointContext, EndpointFunction, EndpointHandler } from './interface';
-import { Middleware as MiddlewareClass } from './middleware';
-import type { MiddlewaresMap } from './composite';
+import type { CompositeEndpointInfo } from '../../functions/composite.js';
+import type { IFunctionDefinition } from '../../functions/index.js';
+import type { EndpointContext, EndpointFunction, EndpointHandler } from './interface.js';
+import { Middleware as MiddlewareClass } from './middleware.js';
+import type { MiddlewaresMap } from './composite.js';
 import { ObjectOrPrimitive } from '@zajno/common/types';
 
 export namespace SpecTo {

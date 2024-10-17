@@ -1,7 +1,7 @@
-import * as DateHelpers from '../dates';
-import * as MathHelpers from '../math';
-import logger, { ILogger } from '../logger';
-import { Event } from './event';
+import * as DateHelpers from '../dates/index.js';
+import * as MathHelpers from '../math/index.js';
+import logger, { ILogger } from '../logger/index.js';
+import { Event } from './event.js';
 
 export class ProgressTracker {
 

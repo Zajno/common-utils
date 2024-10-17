@@ -1,5 +1,5 @@
 import { observable, runInAction } from 'mobx';
-import { TransitionObserver } from '../transition';
+import { TransitionObserver } from '../transition.js';
 
 function createStore<T>(value: T) {
     const s = observable.object({

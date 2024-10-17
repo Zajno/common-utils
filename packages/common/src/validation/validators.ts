@@ -1,5 +1,5 @@
-import creditCard from './creditCard';
-import { ValidationErrors } from './ValidationErrors';
+import creditCard from './creditCard.js';
+import { ValidationErrors } from './ValidationErrors.js';
 
 export const ValidatorsRegExps = {
     // There is at least first and last name

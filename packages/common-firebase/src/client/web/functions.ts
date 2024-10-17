@@ -4,9 +4,9 @@ import {
     httpsCallable,
 } from 'firebase/functions';
 
-import { FirebaseApp, createFirebaseLazy, logger } from './app';
-import type { IFirebaseFunctions, IFunctionDefinition, IFirebaseFunctionsProvider, IFunctionWorker } from '../abstractions/functions';
-import { FunctionFactory } from '../abstractions/functions';
+import { FirebaseApp, createFirebaseLazy, logger } from './app.js';
+import type { IFirebaseFunctions, IFunctionDefinition, IFirebaseFunctionsProvider, IFunctionWorker } from '../abstractions/functions/index.js';
+import { FunctionFactory } from '../abstractions/functions/index.js';
 
 export const FunctionsRaw = createFirebaseLazy(() => {
     const { functionsEmulator } = FirebaseApp.Settings;

@@ -1,6 +1,6 @@
 import type { IStorage, IStorageSync } from '@zajno/common/storage/types';
 import { Storages } from '@zajno/common/storage/wrappers';
-import { WebStorage } from './webStorage';
+import { WebStorage } from './webStorage.js';
 
 class WebLocalStorage extends WebStorage {
     protected get storage() {

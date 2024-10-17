@@ -1,6 +1,6 @@
-import { LocalizationManager } from './LocalizationManager';
-import { LocalizedValidationErrors } from './LocalizedValidationErrors';
+import { LocalizationManager } from './LocalizationManager.js';
+import { LocalizedValidationErrors } from './LocalizedValidationErrors.js';
 
-export * from './abstractions';
+export * from './abstractions.js';
 
 export { LocalizationManager, LocalizedValidationErrors };

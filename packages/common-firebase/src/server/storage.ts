@@ -1,7 +1,7 @@
 import { createLazy } from '@zajno/common/lazy/light';
 import logger from '@zajno/common/logger';
-import { AppConfig } from '../config';
-import Admin from './admin';
+import { AppConfig } from '../config.js';
+import Admin from './admin.js';
 
 
 const storage = Admin.storage();

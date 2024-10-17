@@ -1,4 +1,4 @@
-import { Comparator } from '../types';
+import { Comparator } from '../types/index.js';
 
 export namespace Fields {
     export type Getter<T> = (obj: Partial<T>) => (T[keyof T] | undefined);

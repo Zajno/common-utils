@@ -1,8 +1,8 @@
 import { ValidationErrors } from '@zajno/common/validation';
-import { CommonModel } from '../CommonModel';
-import { SelectString } from '../SelectModel';
-import { ValueModel } from '../ValueModel';
-import { FlagModel } from '../FlagModel';
+import { CommonModel } from '../CommonModel.js';
+import { SelectString } from '../SelectModel.js';
+import { ValueModel } from '../ValueModel.js';
+import { FlagModel } from '../FlagModel.js';
 import { reaction } from 'mobx';
 import { spyModel } from '@zajno/common/models/wrappers';
 

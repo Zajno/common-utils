@@ -1,4 +1,4 @@
-import * as distribution from '../distribution';
+import * as distribution from '../distribution.js';
 
 describe('math/distribution', () => {
     it('extendDistribution', () => {

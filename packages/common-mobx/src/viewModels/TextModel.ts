@@ -2,12 +2,12 @@ import { observable, makeObservable, reaction, action } from 'mobx';
 import type { IValueModel, IResetableModel, IValueModelReadonly, IFocusableModel } from '@zajno/common/models/types';
 import logger from '@zajno/common/logger/index';
 import { Getter } from '@zajno/common/types/getter';
-import { ValidatableModel } from './Validatable';
+import { ValidatableModel } from './Validatable.js';
 import { Nullable } from '@zajno/common/types';
 import { DisposeFunction, ISymbolDisposable } from '@zajno/common/functions/disposer';
 import { SymbolDisposable } from '@zajno/common/functions/disposer.symbols';
-import { ValueModel } from './ValueModel';
-import { FlagModel } from './FlagModel';
+import { ValueModel } from './ValueModel.js';
+import { FlagModel } from './FlagModel.js';
 
 export type TextInputConfig = {
     name?: Getter<string>;

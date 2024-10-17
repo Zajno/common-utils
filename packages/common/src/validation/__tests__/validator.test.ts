@@ -1,8 +1,8 @@
-import * as validation from '..';
-import { ValidationErrors } from '../ValidationErrors';
+import * as validation from '../index.js';
+import { ValidationErrors } from '../ValidationErrors.js';
 import { faker } from '@faker-js/faker';
 import fc from 'fast-check';
-import { toArbitrary } from '../../../utils/tests/main';
+import { toArbitrary } from '../../../utils/tests/main.js';
 
 describe('validation websites', () => {
     it('test', () => {

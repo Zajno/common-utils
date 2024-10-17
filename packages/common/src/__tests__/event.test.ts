@@ -1,7 +1,7 @@
-import { Event, oneTimeSubscription } from '../observing/event';
-import { OneTimeLateEvent } from '../observing/event.late';
-import { setTimeoutAsync } from '../async/timeout';
-import { catchPromise } from '../functions/safe';
+import { Event, oneTimeSubscription } from '../observing/event.js';
+import { OneTimeLateEvent } from '../observing/event.late.js';
+import { setTimeoutAsync } from '../async/timeout.js';
+import { catchPromise } from '../functions/safe.js';
 
 describe('Event', () => {
 

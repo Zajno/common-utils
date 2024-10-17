@@ -1,7 +1,7 @@
-import { throwNotOk } from './helpers';
-import { ValidatorFunction } from './types';
-import { ValidationErrors } from './ValidationErrors';
-import { Validators } from './validators';
+import { throwNotOk } from './helpers.js';
+import { ValidatorFunction } from './types.js';
+import { ValidationErrors } from './ValidationErrors.js';
+import { Validators } from './validators.js';
 
 export const Wrappers = {
     required<T = string>(validator: ValidatorFunction<T>): ValidatorFunction<T> {

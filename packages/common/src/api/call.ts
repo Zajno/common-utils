@@ -1,9 +1,9 @@
-import { PostProcessors, PreProcessors } from './register';
-import { AnyObject } from '../types';
-import { IEndpointInfo } from './endpoint';
-import { EndpointMethods } from './methods';
-import { LogTypes } from './logging';
-import { getPath } from './helpers';
+import { PostProcessors, PreProcessors } from './register.js';
+import { AnyObject } from '../types/index.js';
+import { IEndpointInfo } from './endpoint.js';
+import { EndpointMethods } from './methods.js';
+import { LogTypes } from './logging.js';
+import { getPath } from './helpers.js';
 
 /** Request options to be used by call implementation (e.g. interceptor). Passed as separate object argument to the call method.  */
 type Extra<T> = {

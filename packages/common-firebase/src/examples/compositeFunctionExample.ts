@@ -1,10 +1,10 @@
-import { createCompositionExport, FunctionComposite, spec } from '../functions/composite';
-import { ContextTo, EndpointContext, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions';
-import { Middleware } from '../server/functions/middleware';
-import AppHttpError from '../server/utils/AppHttpError';
-import { useAsyncInitLoader } from '../server/functions/loader';
+import { createCompositionExport, FunctionComposite, spec } from '../functions/composite.js';
+import { ContextTo, EndpointContext, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions/index.js';
+import { Middleware } from '../server/functions/middleware.js';
+import AppHttpError from '../server/utils/AppHttpError.js';
+import { useAsyncInitLoader } from '../server/functions/loader.js';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
-import { Functions } from '../client/web/functions';
+import { Functions } from '../client/web/functions.js';
 
 export namespace ExampleEndpoint {
     const api_v1 = {

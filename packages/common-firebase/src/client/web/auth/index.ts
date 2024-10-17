@@ -1,3 +1,3 @@
 
-export { Auth } from './instance';
-export { AuthControllerBase, logger as authLogger } from './controller';
+export { Auth } from './instance.js';
+export { AuthControllerBase, logger as authLogger } from './controller.js';

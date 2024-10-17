@@ -1,6 +1,6 @@
-import { Granularity } from './types';
-import { decomposeMs } from './decompose';
-import { getDate } from './parse';
+import { Granularity } from './types.js';
+import { decomposeMs } from './decompose.js';
+import { getDate } from './parse.js';
 
 export namespace DateX {
 

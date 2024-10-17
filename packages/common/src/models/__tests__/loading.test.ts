@@ -1,5 +1,5 @@
-import { setTimeoutAsync } from '../../async/timeout';
-import { LoadingModel } from '../Loading';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { LoadingModel } from '../Loading.js';
 
 describe('LoadingModel', () => {
     describe('works', () => {

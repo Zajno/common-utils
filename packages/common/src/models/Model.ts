@@ -1,6 +1,6 @@
-import type { IResetableModel, IValueModel } from './types';
-import { Getter } from '../types/getter';
-import { Nullable } from '../types/misc';
+import type { IResetableModel, IValueModel } from './types.js';
+import { Getter } from '../types/getter.js';
+import { Nullable } from '../types/misc.js';
 
 export class Model<T> implements IValueModel<Nullable<T>>, IResetableModel {
     private _value: Getter<Nullable<T>>;

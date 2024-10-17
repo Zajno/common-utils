@@ -1,7 +1,7 @@
 
-export * from './calc';
-export * from './arrays';
-export * from './distribution';
+export * from './calc.js';
+export * from './arrays.js';
+export * from './distribution.js';
 
 export function getNumberSuffix(num: number) {
     const lastDigit = (num || 0) % 10;

@@ -1,5 +1,5 @@
-import { Comparator, Getter, Nullable, Predicate } from '../types';
-import { random } from './calc';
+import { Comparator, Getter, Nullable, Predicate } from '../types/index.js';
+import { random } from './calc.js';
 
 /** type-safe `Array.isArray` wrapper  */
 export function isArray<T>(value: any): value is T[] {

@@ -1,5 +1,5 @@
 import { Disposer } from '@zajno/common/functions/disposer';
-import { PromiseCacheObservable } from '../promiseCache';
+import { PromiseCacheObservable } from '../promiseCache.js';
 import { reaction, runInAction } from 'mobx';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
