@@ -1,4 +1,4 @@
-import * as math from '../index';
+import * as math from '../index.js';
 
 describe('math', () => {
     it('getNumberSuffix', () => {

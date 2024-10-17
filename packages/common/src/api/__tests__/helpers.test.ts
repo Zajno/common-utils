@@ -1,6 +1,6 @@
-import { Path } from '../../structures/path';
-import { ApiEndpoint } from '../endpoint';
-import { DefaultSettings, getFormattedDisplayName, getPath, getTemplate, setDefaults } from '../helpers';
+import { Path } from '../../structures/path/index.js';
+import { ApiEndpoint } from '../endpoint.js';
+import { DefaultSettings, getFormattedDisplayName, getPath, getTemplate, setDefaults } from '../helpers.js';
 
 describe('api/helpers', () => {
 

@@ -1,6 +1,6 @@
-import { getTime } from './parse';
-import { endOf, startOf } from './shift';
-import { Granularity } from './types';
+import { getTime } from './parse.js';
+import { endOf, startOf } from './shift.js';
+import { Granularity } from './types.js';
 
 export function contains(start: Date | number, end: Date | number, target: Date | number, granularity: Granularity = 'second') {
     const t = getTime(target);

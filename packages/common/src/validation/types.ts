@@ -1,4 +1,4 @@
-import { ValidationErrors } from './ValidationErrors';
+import { ValidationErrors } from './ValidationErrors.js';
 
 export type ValidatorFunction<T = string, TErrors = ValidationErrors, TContext = any> = (val: T, ctx?: TContext) => TErrors;
 export type ValidatorFunctionAsync<T = string, TErrors = ValidationErrors, TContext = any> = (val: T, ctx?: TContext) => Promise<TErrors>;

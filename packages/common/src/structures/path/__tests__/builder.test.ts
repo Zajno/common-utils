@@ -1,5 +1,5 @@
-import { build, construct, Empty, IBuilder } from '../builder';
-import { combineUrls } from '../utils';
+import { build, construct, Empty, IBuilder } from '../builder.js';
+import { combineUrls } from '../utils.js';
 
 describe('PathBuilder', () => {
 

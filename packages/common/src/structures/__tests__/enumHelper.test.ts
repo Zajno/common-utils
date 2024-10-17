@@ -1,4 +1,4 @@
-import EnumHelper, { EnumBitwiseHelper, EnumStringHelper } from '../helpers/enum';
+import EnumHelper, { EnumBitwiseHelper, EnumStringHelper } from '../helpers/enum.js';
 
 enum Enum {
     Val1 = 1,

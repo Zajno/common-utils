@@ -1,6 +1,6 @@
-import { createLogger, ILogger } from '../../logger';
-import { Event } from '../../observing/event';
-import { OneTimeLateEvent } from '../../observing/event.late';
+import { createLogger, ILogger } from '../../logger/index.js';
+import { Event } from '../../observing/event.js';
+import { OneTimeLateEvent } from '../../observing/event.late.js';
 
 export type QueueItem = () => void | Promise<void>;
 

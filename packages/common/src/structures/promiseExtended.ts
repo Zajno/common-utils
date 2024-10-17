@@ -1,4 +1,4 @@
-import type { Nullable } from '../types/misc';
+import type { Nullable } from '../types/misc.js';
 
 /**
  * The idea here is to wrap a promise (or promise getter) so it will never throw natively, but still be able to provide success/fail results:

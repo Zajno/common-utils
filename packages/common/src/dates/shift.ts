@@ -1,6 +1,6 @@
-import { getDate, getTime } from './parse';
-import { DateX } from './datex';
-import { Granularity } from './types';
+import { getDate, getTime } from './parse.js';
+import { DateX } from './datex.js';
+import { Granularity } from './types.js';
 
 export function addDays(start: Date, amount: number, condition: (d: Date) => boolean, maxShift = 365) {
     const dir = Math.sign(amount);

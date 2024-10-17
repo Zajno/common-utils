@@ -1,4 +1,4 @@
-import * as arrays from '../arrays';
+import * as arrays from '../arrays.js';
 
 describe('math/arrays', () => {
     it('arrayCompareG', () => {

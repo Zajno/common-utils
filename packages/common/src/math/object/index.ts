@@ -1,7 +1,7 @@
-export * from './types';
+export * from './types.js';
 
-export { ObjectOps } from './ops';
-export { ObjectMath } from './math';
+export { ObjectOps } from './ops.js';
+export { ObjectMath } from './math.js';
 
-export { CompositeObjectOps } from './ops.composite';
-export { CompositeObjectMath } from './math.composite';
+export { CompositeObjectOps } from './ops.composite.js';
+export { CompositeObjectMath } from './math.composite.js';

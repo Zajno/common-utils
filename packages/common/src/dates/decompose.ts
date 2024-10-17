@@ -1,5 +1,5 @@
-import { getDate } from './parse';
-import { Granularity } from './types';
+import { getDate } from './parse.js';
+import { Granularity } from './types.js';
 
 export type DecomposeGranularity = 'week' | 'day' | 'hour' | 'minute' | 'second';
 

@@ -1,5 +1,5 @@
-import { TasksQueue } from '../tasks';
-import { setTimeoutAsync } from '../../../async/timeout';
+import { TasksQueue } from '../tasks.js';
+import { setTimeoutAsync } from '../../../async/timeout.js';
 import 'jest-extended';
 
 describe('TasksQueue', () => {

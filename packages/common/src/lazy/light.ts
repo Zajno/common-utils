@@ -1,4 +1,4 @@
-import type { ILazy } from './types';
+import type { ILazy } from './types.js';
 
 export function createLazy<T>(factory: () => T) {
     const _factory = factory;

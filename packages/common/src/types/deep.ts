@@ -1,4 +1,4 @@
-import { AnyFunction } from './misc';
+import { AnyFunction } from './misc.js';
 
 export type DeepReadonly<T> = T extends Array<infer U>
     ? ReadonlyArray<DeepReadonly<U>>

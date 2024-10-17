@@ -1,4 +1,4 @@
-import { AnyObject, DeepReadonly, TypedKeys } from '../../types';
+import { AnyObject, DeepReadonly, TypedKeys } from '../../types/index.js';
 
 export type NumKey<T extends AnyObject> = TypedKeys<T, number>;
 

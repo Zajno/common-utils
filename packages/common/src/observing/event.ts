@@ -1,7 +1,7 @@
-import type { Predicate } from '../types';
-import { forEachAsync } from '../async/arrays';
-import { ILogger, createLogger } from '../logger';
-import { catchPromise } from '../functions/safe';
+import type { Predicate } from '../types/index.js';
+import { forEachAsync } from '../async/arrays.js';
+import { ILogger, createLogger } from '../logger/index.js';
+import { catchPromise } from '../functions/safe.js';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 type Unsubscribe = () => void;

@@ -1,4 +1,4 @@
-import type { IDisposable } from '../functions/disposer';
+import type { IDisposable } from '../functions/disposer.js';
 
 export class Pool<T> {
 

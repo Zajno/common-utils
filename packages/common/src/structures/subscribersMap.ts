@@ -1,6 +1,6 @@
-import { createLogger, ILogger } from '../logger';
-import { combineDisposers, IDisposable } from '../functions/disposer';
-import { catchPromise } from '../functions/safe';
+import { createLogger, ILogger } from '../logger/index.js';
+import { combineDisposers, IDisposable } from '../functions/disposer.js';
+import { catchPromise } from '../functions/safe.js';
 
 type Unsub = () => void;
 

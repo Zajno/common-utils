@@ -1,5 +1,5 @@
-import { catchPromise } from '../functions/safe';
-import { Event, EventHandler } from './event';
+import { catchPromise } from '../functions/safe.js';
+import { Event, EventHandler } from './event.js';
 
 export class OneTimeLateEvent<T = any> extends Event<T> {
 

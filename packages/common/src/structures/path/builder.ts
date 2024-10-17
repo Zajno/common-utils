@@ -1,4 +1,4 @@
-import { Nullable } from '../../types/misc';
+import { Nullable } from '../../types/misc.js';
 import { ArgValue,
     BaseInput,
     Builder,
@@ -9,10 +9,10 @@ import { ArgValue,
     SwitchBuilder,
     TemplatePrefixing,
     TransformMap,
-} from './types';
-import { CombineOptions, combineUrls } from './utils';
+} from './types.js';
+import { CombineOptions, combineUrls } from './utils.js';
 
-export * from './types';
+export * from './types.js';
 
 const staticFactory = (strings: readonly string[]): StaticBuilder => {
     const parts = strings.slice();

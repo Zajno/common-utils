@@ -1,4 +1,4 @@
-import type { IDisposable } from './disposer';
+import type { IDisposable } from './disposer.js';
 
 // Symbol.dispose ??= Symbol('Symbol.dispose');
 if (!('dispose' in Symbol)) {

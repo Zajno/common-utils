@@ -1,4 +1,4 @@
-import { getDate } from './parse';
+import { getDate } from './parse.js';
 
 
 export type Granularity = Granularity.Constant

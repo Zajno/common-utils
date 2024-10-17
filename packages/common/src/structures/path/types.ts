@@ -1,5 +1,5 @@
-import type { LengthArray, Nullable } from '../../types/misc';
-import type { CombineOptions } from './utils';
+import type { LengthArray, Nullable } from '../../types/misc.js';
+import type { CombineOptions } from './utils.js';
 
 export type ArgValue = string | number;
 

@@ -1,4 +1,4 @@
-import * as calc from '../calc';
+import * as calc from '../calc.js';
 
 describe('math/calc', () => {
     it('clamp', () => {

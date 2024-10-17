@@ -1,4 +1,4 @@
-import { getDate } from './parse';
+import { getDate } from './parse.js';
 
 /** Useful for recurring dates like birthday */
 export type YearDate = { day: number | null, month: number | null };

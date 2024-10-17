@@ -1,6 +1,6 @@
-import { Path } from '../structures/path';
-import { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc';
-import { EndpointMethods } from './methods';
+import { Path } from '../structures/path/index.js';
+import { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
+import { EndpointMethods } from './methods.js';
 
 export interface IEndpointInfo {
     readonly method: EndpointMethods;

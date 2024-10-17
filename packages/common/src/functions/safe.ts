@@ -1,4 +1,4 @@
-import { Nullable } from '../types';
+import { Nullable } from '../types/index.js';
 
 type LaxPromise<T> = Promise<T> | T | void;
 

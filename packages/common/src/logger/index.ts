@@ -1,10 +1,10 @@
-import { ILogger, LoggerFunction } from './abstractions';
-import { ConsoleLogger } from './console';
-import { batchLoggers } from './batch';
-import { LoggerModes, LoggersManager } from './manager';
+import { ILogger, LoggerFunction } from './abstractions.js';
+import { ConsoleLogger } from './console.js';
+import { batchLoggers } from './batch.js';
+import { LoggerModes, LoggersManager } from './manager.js';
 
 export type { ILogger, LoggerFunction };
-export { NamedLogger } from './named';
+export { NamedLogger } from './named.js';
 export { ConsoleLogger, batchLoggers };
 
 const manager = new LoggersManager();

@@ -1,5 +1,5 @@
-import { LazyPromise } from '../lazy/promise';
-import { AnyObject, FunctionKeys, StringKeys } from '../types';
+import { LazyPromise } from '../lazy/promise.js';
+import { AnyObject, FunctionKeys, StringKeys } from '../types/index.js';
 
 const PromiseGetter = '__promise';
 

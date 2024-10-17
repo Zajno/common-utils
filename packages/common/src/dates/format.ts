@@ -1,8 +1,8 @@
-import * as MathX from '../math';
-import { decomposeDate, getDiscreteDiff } from './convert';
-import { decompose } from './decompose';
-import { getDate, getTime } from './parse';
-import { YearDate } from './yearDate';
+import * as MathX from '../math/index.js';
+import { decomposeDate, getDiscreteDiff } from './convert.js';
+import { decompose } from './decompose.js';
+import { getDate, getTime } from './parse.js';
+import { YearDate } from './yearDate.js';
 
 export namespace Format {
 

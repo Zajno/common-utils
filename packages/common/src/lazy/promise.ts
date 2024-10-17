@@ -1,5 +1,5 @@
-import type { IExpireTracker } from '../structures/expire';
-import type { ILazyPromise } from './types';
+import type { IExpireTracker } from '../structures/expire.js';
+import type { ILazyPromise } from './types.js';
 
 export class LazyPromise<T> implements ILazyPromise<T> {
 

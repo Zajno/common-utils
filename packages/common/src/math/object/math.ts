@@ -1,8 +1,8 @@
-import { TypedKeys } from '../../types';
-import { DeepReadonly, DeepReadonlyPartial } from '../../types/deep';
-import { _getValue } from './helpers';
-import { ObjectOps } from './ops';
-import { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from './types';
+import { TypedKeys } from '../../types/index.js';
+import { DeepReadonly, DeepReadonlyPartial } from '../../types/deep.js';
+import { _getValue } from './helpers.js';
+import { ObjectOps } from './ops.js';
+import { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from './types.js';
 
 type NumVal<T extends object> = T[NumKey<T>];
 

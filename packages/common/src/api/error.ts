@@ -1,4 +1,4 @@
-import { StatusCodes } from './statusCodes';
+import { StatusCodes } from './statusCodes.js';
 
 export type ApiErrorResponse<TCause = never, TErrors = number | string> = {
     code?: TErrors,

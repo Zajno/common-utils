@@ -1,7 +1,7 @@
-import { DateX } from './datex';
-import { getDate, getTime } from './parse';
-import { isSame, startOf } from './shift';
-import { Granularity } from './types';
+import { DateX } from './datex.js';
+import { getDate, getTime } from './parse.js';
+import { isSame, startOf } from './shift.js';
+import { Granularity } from './types.js';
 
 type DateFields<T> = {
     [P in keyof T]: T[P] extends Date ? P : never;

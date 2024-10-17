@@ -1,7 +1,7 @@
-import { ManualPromise, createManualPromise } from '../async/misc';
-import { createLogger, ILogger } from '../logger';
-import { random } from '../math';
-import { catchPromise } from './safe';
+import { ManualPromise, createManualPromise } from '../async/misc.js';
+import { createLogger, ILogger } from '../logger/index.js';
+import { random } from '../math/index.js';
+import { catchPromise } from './safe.js';
 
 type Callback<T> = () => (T | Promise<T>);
 

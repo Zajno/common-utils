@@ -1,8 +1,8 @@
 
-import { setTimeoutAsync } from '../../async/timeout';
-import { ILogger } from '../../logger';
-import { random } from '../../math';
-import { DeferredGetter, PromiseCache } from '../promiseCache';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { ILogger } from '../../logger/index.js';
+import { random } from '../../math/index.js';
+import { DeferredGetter, PromiseCache } from '../promiseCache.js';
 
 describe('PromiseCache', () => {
 

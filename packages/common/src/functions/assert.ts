@@ -1,5 +1,5 @@
-import { Getter } from '../types';
-import logger from '../logger';
+import { Getter } from '../types/index.js';
+import logger from '../logger/index.js';
 
 export function assert(condition: boolean, error: Getter<string | Error>, objectToLog?: Getter<any>): asserts condition {
     if (condition) {

@@ -1,6 +1,6 @@
-import { setTimeoutAsync } from '../../async/timeout';
-import { catchPromise } from '../safe';
-import { ThrottleAction, ThrottleProcessor } from '../throttle';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { catchPromise } from '../safe.js';
+import { ThrottleAction, ThrottleProcessor } from '../throttle.js';
 
 describe('throttle', () => {
 

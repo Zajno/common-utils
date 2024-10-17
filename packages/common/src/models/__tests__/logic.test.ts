@@ -1,5 +1,5 @@
-import { setTimeoutAsync } from '../../async/timeout';
-import { LogicModel } from '../LogicModel';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import { LogicModel } from '../LogicModel.js';
 
 describe('LogicModel', () => {
 

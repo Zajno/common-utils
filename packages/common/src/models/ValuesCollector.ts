@@ -1,4 +1,4 @@
-import type { IValueModel } from './types';
+import type { IValueModel } from './types.js';
 
 export interface IValueCollector<TSource, TValue> {
     getValue(source: TSource): TValue;

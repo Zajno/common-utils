@@ -1,11 +1,11 @@
 
-export type { ProcessingFn } from './processor';
+export type { ProcessingFn } from './processor.js';
 
-export { ApiEndpoint } from './endpoint';
-export type * from './endpoint.types';
-export { EndpointMethods } from './methods';
-export * from './helpers';
+export { ApiEndpoint } from './endpoint.js';
+export type * from './endpoint.types.js';
+export { EndpointMethods } from './methods.js';
+export * from './helpers.js';
 
-export { buildApiCaller } from './call';
-export { registerPostProcessor, registerPreProcessor } from './register';
-export { LogTypes } from './logging';
+export { buildApiCaller } from './call.js';
+export { registerPostProcessor, registerPreProcessor } from './register.js';
+export { LogTypes } from './logging.js';

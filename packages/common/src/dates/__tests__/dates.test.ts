@@ -1,4 +1,4 @@
-import * as DateHelpers from '..';
+import * as DateHelpers from '../index.js';
 
 describe('Date Helpers', () => {
     test('startOf', () => {

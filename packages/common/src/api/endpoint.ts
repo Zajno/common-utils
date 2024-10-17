@@ -1,7 +1,7 @@
-import { AnyObject } from '../types';
-import { Path } from '../structures/path';
-import { EndpointMethods } from './methods';
-import { IEndpointInfo } from './endpoint.types';
+import { AnyObject } from '../types/index.js';
+import { Path } from '../structures/path/index.js';
+import { EndpointMethods } from './methods.js';
+import { IEndpointInfo } from './endpoint.types.js';
 
 export type { IEndpointInfo };
 

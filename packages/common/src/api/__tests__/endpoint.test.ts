@@ -1,5 +1,5 @@
-import { ApiEndpoint, IEndpointInfo } from '../endpoint';
-import { Path } from '../../structures/path';
+import { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
+import { Path } from '../../structures/path/index.js';
 
 describe('api/endpoint', () => {
 
