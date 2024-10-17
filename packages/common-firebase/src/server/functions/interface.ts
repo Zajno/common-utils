@@ -1,6 +1,6 @@
 import { ILogger } from '@zajno/common/logger/index';
 import * as functions from 'firebase-functions/v1';
-import { IFunctionDefinitionInfo } from '../../functions/interface';
+import { IFunctionDefinitionInfo } from '../../functions/interface.js';
 import { ObjectOrPrimitive } from '@zajno/common/types';
 
 export type BaseFunctionContext = functions.https.CallableContext;

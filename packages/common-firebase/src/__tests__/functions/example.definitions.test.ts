@@ -1,4 +1,4 @@
-import { ExampleEndpoint } from '../../examples/compositeFunctionExample';
+import { ExampleEndpoint } from '../../examples/compositeFunctionExample.js';
 
 describe('functions definitions arg/result processors', () => {
     const d = ExampleEndpoint.v1();

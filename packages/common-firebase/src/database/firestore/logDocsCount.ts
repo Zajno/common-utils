@@ -3,7 +3,7 @@ import {
     IDocumentReference,
     IQuery,
     IQuerySnapshot,
-} from './types';
+} from './types.js';
 
 
 let docsCounter = 0;

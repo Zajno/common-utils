@@ -4,9 +4,9 @@ import { Event } from '@zajno/common/observing/event';
 import { LazyPromise } from '@zajno/common/lazy/promise';
 import { createLazy } from '@zajno/common/lazy/light';
 import type { PubSub as CloudPubSub, ClientConfig } from '@google-cloud/pubsub';
-import { AppConfig } from '../../config';
-import { EndpointSettings } from '../../functions/interface';
-import { createTopicListener } from '../functions';
+import { AppConfig } from '../../config.js';
+import { EndpointSettings } from '../../functions/interface.js';
+import { createTopicListener } from '../functions/index.js';
 import { AnyObject } from '@zajno/common/types/misc';
 
 export namespace PubSub {

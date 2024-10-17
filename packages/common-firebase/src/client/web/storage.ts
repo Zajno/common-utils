@@ -1,5 +1,5 @@
 import { createLogger } from '@zajno/common/logger';
-import { FirebaseApp, createFirebaseLazy, logger as rootLogger } from './app';
+import { FirebaseApp, createFirebaseLazy, logger as rootLogger } from './app.js';
 import {
     getStorage,
     connectStorageEmulator,
@@ -13,7 +13,7 @@ import {
     formatDate,
     IFirebaseStorage,
     ProgressListener,
-} from '../abstractions/storage';
+} from '../abstractions/storage/index.js';
 
 export const FirebaseStorageRaw = createFirebaseLazy(() => {
     const storageInstance = getStorage(FirebaseApp.Current);

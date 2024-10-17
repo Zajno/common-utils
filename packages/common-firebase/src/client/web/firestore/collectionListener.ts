@@ -3,8 +3,8 @@ import { IDisposable, Disposer } from '@zajno/common/functions/disposer';
 import { Event } from '@zajno/common/observing/event';
 import { IdentAny } from '@zajno/common/types/ident';
 import { Query } from 'firebase/firestore';
-import { QuerySnapshotCallback } from '../../../database/types';
-import { querySnapshot } from './querySnapshot';
+import { QuerySnapshotCallback } from '../../../database/types.js';
+import { querySnapshot } from './querySnapshot.js';
 
 type ArgsToQuery<T, TArgs> = (args: TArgs) => Query<T>;
 

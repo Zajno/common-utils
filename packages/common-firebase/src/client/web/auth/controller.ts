@@ -8,7 +8,7 @@ import {
     AuthErrors,
     AuthUserUpdate,
     FirebaseError,
-} from '../../abstractions/auth';
+} from '../../abstractions/auth.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import { createLogger } from '@zajno/common/logger';
 import { Event } from '@zajno/common/observing/event';
@@ -36,7 +36,7 @@ import {
     signOut,
     updateProfile,
 } from 'firebase/auth';
-import { Auth } from './instance';
+import { Auth } from './instance.js';
 import { truthy } from '@zajno/common/types/arrays';
 import { assert } from '@zajno/common/functions/assert';
 

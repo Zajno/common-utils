@@ -1,8 +1,8 @@
-import AppHttpError from '../utils/AppHttpError';
-import { ArgExtract, CompositeEndpointInfo, EndpointArg, EndpointResult, FunctionComposite, ResExtract } from '../../functions/composite';
-import { FunctionFactory } from './factory';
-import { IMiddleware, IMiddlewareChild, Middleware, MiddlewareChild } from './middleware';
-import { EndpointFunction, EndpointHandler, HandlerContext } from './interface';
+import AppHttpError from '../utils/AppHttpError.js';
+import { ArgExtract, CompositeEndpointInfo, EndpointArg, EndpointResult, FunctionComposite, ResExtract } from '../../functions/composite.js';
+import { FunctionFactory } from './factory.js';
+import { IMiddleware, IMiddlewareChild, Middleware, MiddlewareChild } from './middleware.js';
+import { EndpointFunction, EndpointHandler, HandlerContext } from './interface.js';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
 
 type MiddlewareMapInner<T extends CompositeEndpointInfo, TContext extends ObjectOrPrimitive = any> = MiddlewaresMap<T, TContext> & IMiddlewareChild<EndpointArg<T>, EndpointResult<T>, TContext>;

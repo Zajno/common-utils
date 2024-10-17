@@ -3,7 +3,7 @@ import {
     Converter,
     EndpointSettings,
     FunctionType,
-} from './interface';
+} from './interface.js';
 
 export class FunctionDefinition<TArg, TResult> implements IFunctionDefinition<TArg, TResult> {
     readonly Function: FunctionType<TArg, TResult> = null as any;

@@ -1,9 +1,9 @@
-import { EndpointContext, FunctionCompositeFactory, NextFunction, SpecTo, useAsyncInitCompositionLoader } from '../../server/functions';
-import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite';
-import AppHttpError from '../../server/utils/AppHttpError';
-import { getNestedFunction, wrapEndpoint } from './config';
+import { EndpointContext, FunctionCompositeFactory, NextFunction, SpecTo, useAsyncInitCompositionLoader } from '../../server/functions/index.js';
+import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite.js';
+import AppHttpError from '../../server/utils/AppHttpError.js';
+import { getNestedFunction, wrapEndpoint } from './config.js';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
-import { AuthValidator } from '../../server/functions/middleware';
+import { AuthValidator } from '../../server/functions/middleware.js';
 
 namespace TestApi {
     const api1 = {

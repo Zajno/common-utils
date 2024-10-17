@@ -1,5 +1,5 @@
 
-export type { UnsubscribeSnapshot, QuerySnapshotCallback, DocumentSnapshotCallback } from '../types';
+export type { UnsubscribeSnapshot, QuerySnapshotCallback, DocumentSnapshotCallback } from '../types.js';
 
 /** Duck typed from client Firestore types */
 

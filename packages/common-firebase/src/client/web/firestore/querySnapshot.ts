@@ -6,7 +6,7 @@ import {
     logQueryCount,
     UnsubscribeSnapshot,
     QuerySnapshotCallback,
-} from '../../../database/firestore';
+} from '../../../database/firestore/index.js';
 import {
     DocumentSnapshot,
     onSnapshot,

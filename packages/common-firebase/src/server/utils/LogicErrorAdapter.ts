@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions';
-import { RepoLogicError as LogicError } from '../../database/RepoLogicError';
+import { RepoLogicError as LogicError } from '../../database/RepoLogicError.js';
 
 export function toHttpError(this: LogicError) {
     let code: functions.https.FunctionsErrorCode;

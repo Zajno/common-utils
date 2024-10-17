@@ -1,9 +1,9 @@
 import { ILogger, createLogger } from '@zajno/common/logger';
 import { Event, IEvent } from '@zajno/common/observing/event';
 
-import type { IFunctionWorker, IFunctionDefinition, IFunctionDefinitionInfo, IFunctionsError } from './types';
-import type { FunctionType } from '../../../functions/interface';
-import { META_ARG_KEY } from '../../../functions/composite';
+import type { IFunctionWorker, IFunctionDefinition, IFunctionDefinitionInfo, IFunctionsError } from './types.js';
+import type { FunctionType } from '../../../functions/interface.js';
+import { META_ARG_KEY } from '../../../functions/composite.js';
 
 const _onFactoryCreated = new Event<FunctionFactoryHook>();
 

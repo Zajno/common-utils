@@ -1,5 +1,5 @@
-import { DocumentSnapshotCallback, UnsubscribeSnapshot } from '../types';
-import { IReference } from './types';
+import { DocumentSnapshotCallback, UnsubscribeSnapshot } from '../types.js';
+import { IReference } from './types.js';
 
 export function getData<T = any>(ref: IReference): Promise<T>;
 export function getData<T = any>(ref: IReference, cb: DocumentSnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
