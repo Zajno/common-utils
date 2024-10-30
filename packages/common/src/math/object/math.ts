@@ -88,7 +88,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
 
     abs(c: DeepReadonly<T>, stripNegatives: AbsOptions = false): T | null {
         return this.process(c, (val) => {
-            if (val >= 0) {
+            if (val == null || val >= 0) {
                 return val;
             }
 
