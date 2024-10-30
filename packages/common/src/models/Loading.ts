@@ -33,7 +33,7 @@ export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb
 
 export class LoadingModel implements IValueModel<boolean>, IResetableModel {
 
-    private readonly _number: IValueModel<number> & IResetableModel;
+    protected readonly _number: IValueModel<number> & IResetableModel;
     protected _firstInit: boolean;
 
     /**
@@ -61,7 +61,7 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
         this._number.reset();
     };
 
-    protected setValue(isLoading: boolean) {
+    public setValue(isLoading: boolean) {
         if (isLoading) {
             this.incrementLoading();
         } else {
