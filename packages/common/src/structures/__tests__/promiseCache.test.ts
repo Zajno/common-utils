@@ -321,7 +321,7 @@ describe('PromiseCache', () => {
 
         checkGenerator(0);
 
-        await setTimeoutAsync(101);
+        await setTimeoutAsync(105);
 
         expect(cache.getCurrent('1', false)).toBe(previous); // value invalidated but old is returned
         expect(cache.getDeferred('1').busy).toBeUndefined(); // should indicate that cache is in undefined state
