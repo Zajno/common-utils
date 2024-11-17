@@ -1,7 +1,7 @@
 import * as MathX from '../math/index.js';
 import { decomposeDate, getDiscreteDiff } from './convert.js';
-import { decompose } from './decompose.js';
-import { getDate, getTime } from './parse.js';
+import { decomposeMs } from './decompose.js';
+import { getDate } from './parse.js';
 import { YearDate } from './yearDate.js';
 
 export namespace Format {
@@ -37,8 +37,8 @@ export namespace Format {
         }
     }
 
-    export function timespan(ms: Date | number, local = false): string {
-        const decs = decompose(getTime(ms), local, 'second', 'minute', 'hour');
+    export function timespan(ms: number): string {
+        const decs = decomposeMs(ms, 'second', 'minute', 'hour');
 
         const parts: string[] = [];
 
