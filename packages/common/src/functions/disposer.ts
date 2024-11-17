@@ -97,3 +97,16 @@ export class Disposable implements IDisposable {
         this.disposer.dispose();
     };
 }
+
+export function isDisposable(v: unknown): v is IDisposable {
+    return !!v && typeof v === 'object' && 'dispose' in v && typeof v.dispose === 'function';
+}
+
+export function tryDispose(v: unknown): v is IDisposable {
+    if (isDisposable(v)) {
+        v.dispose();
+        return true;
+    }
+
+    return false;
+}

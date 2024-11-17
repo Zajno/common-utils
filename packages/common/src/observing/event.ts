@@ -21,6 +21,8 @@ export class Event<T = any> implements IEvent<T> {
         }
     }
 
+    public get isEmpty() { return this._handlers.length === 0; }
+
     public withLogger(logger?: ILogger | null): this;
     public withLogger(name?: string | null): this;
 

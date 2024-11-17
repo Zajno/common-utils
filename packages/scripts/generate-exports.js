@@ -4,6 +4,8 @@ const path = require('path');
 // Path to your src folder and package.json file
 const SRC_DIR = path.resolve(process.cwd(), 'src');
 const PACKAGE_JSON_PATH = path.resolve(process.cwd(), 'dist/package.json');
+const FOLDER_IGNORE_PATTERNS = [/__tests__/, /node_modules/];
+const VERBOSE = false;
 
 // Utility to check if a file exists
 const fileExists = (filePath) => fs.existsSync(filePath);
@@ -33,6 +35,11 @@ function updatePackageJsonWithExports() {
                 return;
             }
 
+            if (FOLDER_IGNORE_PATTERNS.some((pattern) => folder.name.match(pattern))) {
+                VERBOSE && console.log('--- Ignoring folder:', folder.name);
+                return;
+            }
+
             const folderPath = path.join(currentPath, folder.name);
             const indexTsPath = path.join(folderPath, 'index.ts');
             const indexJsPath = path.join(folderPath, 'index.js');
@@ -53,7 +60,7 @@ function updatePackageJsonWithExports() {
                     "default": `./cjs/${relativePath}/index.js`,
                 };
             } else {
-                // console.log('--- No index.ts/.js found in', currentPath, '=>', relativePath);
+                VERBOSE && console.log('--- No index.ts/.js found in', currentPath, '=>', relativePath);
             }
 
             processDirectory(folderPath, relativePath);

@@ -5,8 +5,9 @@ import { IdentAny } from '@zajno/common/types/ident';
 import { Query } from 'firebase/firestore';
 import { QuerySnapshotCallback } from '../../../database/types.js';
 import { querySnapshot } from './querySnapshot.js';
+import { assert } from '@zajno/common/functions/assert';
 
-type ArgsToQuery<T, TArgs> = (args: TArgs) => Query<T>;
+type ArgsToQuery<T, TArgs> = (args: TArgs) => { query: Query<T>, debugName?: string };
 
 export class CollectionListener<T extends IdentAny, TArgs = any> implements IDisposable {
 
@@ -38,20 +39,25 @@ export class CollectionListener<T extends IdentAny, TArgs = any> implements IDis
 
     public getByKey(key: string): ReadonlyArray<Readonly<T>> | undefined { return this._byKey.get(key); }
 
-    public async addCollection(key: string, query: Query<T>, cb?: QuerySnapshotCallback<T>): Promise<void> {
+    public async addCollection(key: string, query: Query<T>, cb?: QuerySnapshotCallback<T>, debugName?: string): Promise<void> {
         this._disposer.execute(key);
 
         this._disposer.add(
-            await querySnapshot(query, async (items: T[]) => {
-                runInAction(() => {
-                    this._byKey.set(key, items);
-                    this._reAssemble();
-                });
+            await querySnapshot(
+                query,
+                async (items: T[]) => {
+                    runInAction(() => {
+                        this._byKey.set(key, items);
+                        this._reAssemble();
+                    });
 
-                if (cb) {
-                    await cb(items);
-                }
-            }),
+                    if (cb) {
+                        await cb(items);
+                    }
+                },
+                undefined,
+                debugName,
+            ),
             key,
         );
     }
@@ -61,7 +67,8 @@ export class CollectionListener<T extends IdentAny, TArgs = any> implements IDis
             throw new Error('query builder is not set');
         }
         const query = this._queryBuilder(args);
-        return this.addCollection(key, query, cb);
+        assert(query.query && query.query instanceof Query, 'query must be a valid Query object');
+        return this.addCollection(key, query.query, cb, query.debugName);
     }
 
     private _reAssemble() {
