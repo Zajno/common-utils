@@ -21,11 +21,12 @@ import { Nullable } from '@zajno/common/types';
 export type QuerySnapshotConverterCallback<T> = (items: DocumentSnapshot<T>[]) => T[];
 
 export function querySnapshot<T extends IdentAny>(query: Query<T>): Promise<T[]>;
-export function querySnapshot<T extends IdentAny>(query: Query<T>, cb: QuerySnapshotCallback<T>): Promise<UnsubscribeSnapshot>;
-
-export function querySnapshot<T extends IdentAny>(query: Query<T>,
+export function querySnapshot<T extends IdentAny>(
+    query: Query<T>,
     cb: QuerySnapshotCallback<T>,
-    converter: QuerySnapshotConverterCallback<T>): Promise<T[] | UnsubscribeSnapshot>;
+    converter?: QuerySnapshotConverterCallback<T>,
+    debugName?: string,
+): Promise<UnsubscribeSnapshot>;
 
 export async function querySnapshot<T extends IdentAny>(
     query: Query<T>,
