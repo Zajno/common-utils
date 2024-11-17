@@ -20,7 +20,7 @@ import { Nullable } from '@zajno/common/types';
 
 export type QuerySnapshotConverterCallback<T> = (items: DocumentSnapshot<T>[]) => T[];
 
-export function querySnapshot<T extends IdentAny>(query: Query<T>): Promise<T[]>;
+export function querySnapshot<T extends IdentAny>(query: Query<T>, debugName?: string): Promise<T[]>;
 export function querySnapshot<T extends IdentAny>(
     query: Query<T>,
     cb: QuerySnapshotCallback<T>,
@@ -30,9 +30,9 @@ export function querySnapshot<T extends IdentAny>(
 
 export async function querySnapshot<T extends IdentAny>(
     query: Query<T>,
-    cb?: QuerySnapshotCallback<T>,
+    cbOrDebugName?: QuerySnapshotCallback<T> | string,
     converter?: QuerySnapshotConverterCallback<T>,
-    debugName?: string,
+    debugNameOrEmpty?: string,
 ) {
     const convertSnapshots = (s: QuerySnapshot<T>): T[] => {
         const docs: DocumentSnapshot<T>[] = s.docs;
@@ -50,6 +50,14 @@ export async function querySnapshot<T extends IdentAny>(
             }).filter(truthy);
         }
     };
+
+    let cb: Nullable<QuerySnapshotCallback<T>> = null;
+    let debugName = debugNameOrEmpty;
+    if (typeof cbOrDebugName === 'function') {
+        cb = cbOrDebugName;
+    } else if (typeof cbOrDebugName === 'string') {
+        debugName = cbOrDebugName;
+    }
 
     if (cb) {
         const firstFetchPromise: Promise<UnsubscribeSnapshot> = new Promise((resolveP, rejectP) => {

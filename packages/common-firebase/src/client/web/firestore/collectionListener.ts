@@ -5,6 +5,7 @@ import { IdentAny } from '@zajno/common/types/ident';
 import { Query } from 'firebase/firestore';
 import { QuerySnapshotCallback } from '../../../database/types.js';
 import { querySnapshot } from './querySnapshot.js';
+import { assert } from '@zajno/common/functions/assert';
 
 type ArgsToQuery<T, TArgs> = (args: TArgs) => { query: Query<T>, debugName?: string };
 
@@ -66,6 +67,7 @@ export class CollectionListener<T extends IdentAny, TArgs = any> implements IDis
             throw new Error('query builder is not set');
         }
         const query = this._queryBuilder(args);
+        assert(query.query && query.query instanceof Query, 'query must be a valid Query object');
         return this.addCollection(key, query.query, cb, query.debugName);
     }
 
