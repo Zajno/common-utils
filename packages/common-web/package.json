@@ -1,8 +1,9 @@
 {
   "name": "@zajno/common-web",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Zajno's re-usable utilities for JS/TS projects for Web",
   "private": false,
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-utils.git"
@@ -23,6 +24,7 @@
     "publish:from-dist": "scripty",
     "build:full": "scripty",
     "bundle": "scripty",
+    "update-exports": "scripty",
     "lint": "scripty",
     "test": "echo \"No tests yet...\"; exit 0"
   },
@@ -53,5 +55,10 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    "./*": "./src/*.ts",
+    "./breakpoints": "./src/breakpoints/index.ts",
+    "./storage": "./src/storage/index.ts"
   }
 }
