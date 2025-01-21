@@ -1,4 +1,4 @@
-import { ILogger } from '@zajno/common/logger/index';
+import { ILogger } from '@zajno/common/logger';
 import * as functions from 'firebase-functions/v1';
 import { IFunctionDefinitionInfo } from '../../functions/interface.js';
 import { ObjectOrPrimitive } from '@zajno/common/types';

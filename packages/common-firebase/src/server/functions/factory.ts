@@ -10,7 +10,7 @@ import {
 import { createHttpsCallFunction } from './create.js';
 import { Middleware } from './middleware.js';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter.js';
-import { createLogger } from '@zajno/common/logger/index';
+import { createLogger } from '@zajno/common/logger';
 import { badRandomString } from '@zajno/common/math/calc';
 import { META_ARG_KEY, MetaHolder } from '../../functions/composite.js';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';

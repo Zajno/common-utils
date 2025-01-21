@@ -30,7 +30,7 @@ describe('Function API', () => {
 
     it('runs as composite with context', async () => {
         await expect(
-            ExampleFunc({ id: ctx.auth.uid }, ctx)
+            ExampleFunc({ id: ctx.auth?.uid }, ctx)
         ).resolves.toMatchObject({ ok: true });
     });
 

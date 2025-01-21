@@ -1,8 +1,9 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "4.1.2",
+  "version": "4.2.0",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "private": false,
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-utils.git"
@@ -23,6 +24,7 @@
     "publish:from-dist": "scripty",
     "build:full": "scripty",
     "bundle": "scripty",
+    "update-exports": "scripty",
     "lint": "scripty",
     "test": "scripty"
   },
@@ -71,5 +73,18 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    "./*": "./src/*.ts",
+    "./client/abstractions/functions": "./src/client/abstractions/functions/index.ts",
+    "./client/abstractions/storage": "./src/client/abstractions/storage/index.ts",
+    "./client/web": "./src/client/web/index.ts",
+    "./client/web/auth": "./src/client/web/auth/index.ts",
+    "./client/web/firestore": "./src/client/web/firestore/index.ts",
+    "./database/firestore": "./src/database/firestore/index.ts",
+    "./database/realtime": "./src/database/realtime/index.ts",
+    "./functions": "./src/functions/index.ts",
+    "./server/functions": "./src/server/functions/index.ts",
+    "./server/pubsub": "./src/server/pubsub/index.ts"
   }
 }

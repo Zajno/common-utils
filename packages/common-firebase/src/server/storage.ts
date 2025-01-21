@@ -2,20 +2,21 @@ import { createLazy } from '@zajno/common/lazy/light';
 import logger from '@zajno/common/logger';
 import { AppConfig } from '../config.js';
 import Admin from './admin.js';
+import type { storage as Storage } from 'firebase-admin';
 
+export type StorageType = Storage.Storage;
+export type BucketType = ReturnType<StorageType['bucket']>;
 
-const storage = Admin.storage();
+const storage: StorageType = Admin.storage();
 const StorageBucket = createLazy(() => {
     const bucketName = AppConfig.value?.storageBucket || storage.bucket().name;
     const bucket: ReturnType<typeof storage.bucket> = storage.bucket(bucketName);
     return bucket;
 });
 
-type BucketType = ReturnType<typeof storage.bucket>;
-
 export const StorageContext = {
-    get storage() { return storage; },
-    get bucket() { return StorageBucket.value; },
+    get storage(): StorageType { return storage; },
+    get bucket(): BucketType { return StorageBucket.value; },
 };
 
 export async function removeDirectoryFromStorage(path: string): Promise<void> {
