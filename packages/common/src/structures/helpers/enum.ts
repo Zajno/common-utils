@@ -36,7 +36,7 @@ export class EnumStringHelper<T extends string> {
 
 type ValueToStringMap = { [val: number]: string };
 
-export default class EnumHelper<T extends number> {
+export class EnumHelper<T extends number> {
     public readonly Keys: string[];
     public readonly Values: T[];
 
@@ -78,6 +78,9 @@ export default class EnumHelper<T extends number> {
             : null;
     }
 }
+
+/** @deprecated default export is deprecated, use named one instead */
+export default EnumHelper;
 
 export class EnumBitwiseHelper<T extends number> extends EnumHelper<T> {
     toStrings(value: T, overrideMap: ValueToStringMap | null = null): string[] {

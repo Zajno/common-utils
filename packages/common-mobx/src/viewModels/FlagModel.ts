@@ -38,7 +38,10 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     }
 
     // @action
-    /** override me to spy */
+    /** override me to spy.
+     *
+     * WARNING: use `bind` to use as callback to preserve `this` context. Otherwise, use `onChange` method
+     */
     public setValue(value: boolean) {
         this._value = value;
     }
@@ -62,6 +65,11 @@ export class FlagModel implements IFlagModel, IFlagModelReadonly {
     /** Possible issue: if this method is used in trackable context (e.g. autorun), it might lead to an infinite loop  */
     toggle = () => {
         this.value = !this.value;
+    };
+
+    /** just sets input value, useful as a callback */
+    onChange = (value: boolean) => {
+        this.setValue(value);
     };
 
     reset = () => {
