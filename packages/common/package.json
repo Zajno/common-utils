@@ -1,8 +1,9 @@
 {
   "name": "@zajno/common",
-  "version": "2.4.7",
+  "version": "2.5.0",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "private": false,
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-utils.git"
@@ -23,6 +24,7 @@
     "publish:from-dist": "scripty",
     "build:full": "scripty",
     "bundle": "scripty",
+    "update-exports": "scripty",
     "lint": "scripty",
     "test": "scripty"
   },
@@ -58,5 +60,20 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    "./*": "./src/*.ts",
+    "./api": "./src/api/index.ts",
+    "./async": "./src/async/index.ts",
+    "./dates": "./src/dates/index.ts",
+    "./fields": "./src/fields/index.ts",
+    "./functions": "./src/functions/index.ts",
+    "./logger": "./src/logger/index.ts",
+    "./math": "./src/math/index.ts",
+    "./math/object": "./src/math/object/index.ts",
+    "./storage": "./src/storage/index.ts",
+    "./structures/path": "./src/structures/path/index.ts",
+    "./types": "./src/types/index.ts",
+    "./validation": "./src/validation/index.ts"
   }
 }
