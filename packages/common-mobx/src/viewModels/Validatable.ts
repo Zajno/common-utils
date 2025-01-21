@@ -10,7 +10,7 @@ import {
     ValidationErrors,
     ValidationError,
     ValidationVoid,
-} from '@zajno/common/validation/index';
+} from '@zajno/common/validation';
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
 import { Nullable } from '@zajno/common/types/misc';
 import { IValueModel } from '@zajno/common/models/types';
