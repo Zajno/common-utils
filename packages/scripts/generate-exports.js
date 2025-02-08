@@ -34,7 +34,7 @@ function getExports(relativePath) {
 
 // Function to update package.json with exports
 function updatePackageJsonWithExports() {
-    console.log('Updating package.json with exports', SRC_MODE ? 'for src' : 'for dist', process.argv);
+    console.log('Updating package.json with exports', SRC_MODE ? 'for src' : 'for dist');
 
     // Load the existing package.json
     const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, 'utf8'));

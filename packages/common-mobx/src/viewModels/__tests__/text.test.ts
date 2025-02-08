@@ -91,8 +91,8 @@ describe('TextViewModel', () => {
             expect(vm.isValid).toBe(true);
             expect(vm.error).toBeFalsy();
 
-            expect(vm.validateValue('test')).resolves.toBeFalsy();
-            expect(vm.validateValue('abc')).resolves.toBe(1);
+            await expect(vm.validateValue('test')).resolves.toBeFalsy();
+            await expect(vm.validateValue('abc')).resolves.toBe(1);
             // still no error after validateValue since it's pure
             expect(vm.error).toBeFalsy();
 
