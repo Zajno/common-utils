@@ -34,7 +34,7 @@
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@types/node": "^20.16.10",
-    "@vitest/coverage-istanbul": "^2.1.1",
+    "@vitest/coverage-istanbul": "^2.1.9",
     "@zajno/eslint-config": "*",
     "cpy-cli": "^5.0.0",
     "eslint": "^8.57.1",
@@ -45,7 +45,7 @@
     "ts-node": "^10.9.2",
     "tslib": "^2.7.0",
     "typescript": "^5.6.2",
-    "vitest": "^2.1.1"
+    "vitest": "^2.1.9"
   },
   "peerDependencies": {
     "tslib": "^2.6"
