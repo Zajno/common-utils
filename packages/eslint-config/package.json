@@ -42,7 +42,8 @@
         "typescript": "^5"
     },
     "files": [
-        "*.js",
+        "*.mjs",
+        "*.d.ts",
         "!.DS_Store",
         "!tests"
     ],
