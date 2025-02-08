@@ -2,7 +2,7 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "noEmit": false,
-        "module": "ES2022",
+        "module": "NodeNext",
         "outDir": "dist/types",
         "declaration": true,
         "emitDeclarationOnly": true,

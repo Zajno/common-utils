@@ -79,8 +79,7 @@ export async function querySnapshot<T extends IdentAny>(
                                 r(unsubscribe);
                             }
                         }
-
-                    }
+                    },
                 ),
                 (err: Error) => {
                     console.warn('querySnapshot fail:', getQueryPath(query as IQuery));

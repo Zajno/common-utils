@@ -65,7 +65,7 @@ export async function documentSnapshot<T extends IdentAny>(
                                 r(unsubscribe);
                             }
                         }
-                    }
+                    },
                 ),
                 (err: Error) => {
                     console.warn(`documentSnapshot fail: ${doc.path}`);

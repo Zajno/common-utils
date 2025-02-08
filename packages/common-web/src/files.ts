@@ -90,6 +90,6 @@ export function formatExtensions(list: (string | FileTypes)[]): string {
                     res.push(...FileSupportedExtensions[item]);
                 }
                 return res;
-            }, [] as string[])
+            }, [] as string[]),
         )).map(e => '.' + e).join(', ');
 }

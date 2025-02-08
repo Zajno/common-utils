@@ -1,6 +1,6 @@
 import { Disposable } from '@zajno/common/functions/disposer';
-import { Fields } from '@zajno/common/fields/index';
-import logger from '@zajno/common/logger/index';
+import { Fields } from '@zajno/common/fields';
+import logger from '@zajno/common/logger';
 import { DeferredGetter } from '@zajno/common/structures/promiseCache';
 import { SubscribersMapObservable } from './subscribersMap.js';
 import { PromiseCacheObservable } from './promiseCache.js';
@@ -108,7 +108,7 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
                     } else {
                         this._updateItem(key, item);
                     }
-                })
+                }),
             ).then(unsub => {
                 const strategy = firstDefined(this._observeStrategyOverrides[key], this._observeStrategy);
                 if (!strategy) {

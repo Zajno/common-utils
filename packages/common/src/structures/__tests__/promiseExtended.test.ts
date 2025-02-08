@@ -171,17 +171,17 @@ describe('PromiseExtended', () => {
 
         await testError(
             PromiseExtended.errored(new Error('test error')),
-            { error: 'test error', source: new Error('test error') }
+            { error: 'test error', source: new Error('test error') },
         );
 
         await testError(
             PromiseExtended.errored('test error'),
-            { error: 'test error', source: new Error('test error') }
+            { error: 'test error', source: new Error('test error') },
         );
 
         await testError(
             PromiseExtended.errored([new Error('test error')]),
-            { error: 'test error', source: [new Error('test error')] as unknown as Error }
+            { error: 'test error', source: [new Error('test error')] as unknown as Error },
         );
     });
 
@@ -234,7 +234,7 @@ describe('PromiseExtended', () => {
             await expect(
                 worker(input)
                     .onSuccess(_onSuccess)
-                    .onError(_onError)
+                    .onError(_onError),
             ).resolves.not.toThrow();
 
             if (typeof expected === 'number') {

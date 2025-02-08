@@ -21,7 +21,6 @@ export const ValidatorsRegExps = {
     creditCardNumber: /^\d+$/,
     expiryDateCard: /^\d+$/,
     cvv: /^\d+$/,
-    // eslint-disable-next-line no-useless-escape
     website: /^(https?:\/\/)?((\p{N}|\p{L})+((((-?(\p{N}|\p{L})+)+)?)\.))+\p{L}{2,}(:[0-9]+)?(\/.*)?$/iu,
     linkedin: /^(https?:\/\/)?([a-z]+\d*[a-z]*\.)?linkedin\.com\/.*$/i,
 };

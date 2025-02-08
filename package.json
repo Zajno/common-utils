@@ -9,15 +9,17 @@
         "build": "time npm run build:clean --workspaces --if-present",
         "lint": "time npm run lint --workspaces --if-present",
         "test": "time npm run test --workspaces --if-present",
-        "all": "time (npm run build && npm run lint && npm run test)",
+        "update-exports": "time npm run update-exports --workspaces --if-present",
+        "publish:local:all": "time npm run publish:local --workspaces --if-present",
+        "all": "time (npm run update-exports && npm run build && npm run lint && npm run test)",
         "fix-esm-paths": "fix-esm-import-path packages/*/src"
     },
     "devDependencies": {
-        "@types/node": "^20.16.10",
-        "@vitest/coverage-istanbul": "^2.1.1",
+        "@types/node": "^22.13.1",
+        "@vitest/coverage-istanbul": "^3.0.5",
         "fix-esm-import-path": "^1.10.1",
         "rimraf": "^6.0.1",
         "scripty": "^2.1.1",
-        "vitest": "^2.1.1"
+        "vitest": "^3.0.5"
     }
 }

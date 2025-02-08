@@ -1,8 +1,9 @@
 {
   "name": "@zajno/common-web",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Zajno's re-usable utilities for JS/TS projects for Web",
   "private": false,
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zajno/common-utils.git"
@@ -23,6 +24,7 @@
     "publish:from-dist": "scripty",
     "build:full": "scripty",
     "bundle": "scripty",
+    "update-exports": "scripty",
     "lint": "scripty",
     "test": "echo \"No tests yet...\"; exit 0"
   },
@@ -32,17 +34,17 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^20.16.10",
+    "@types/node": "^22.13.1",
     "@zajno/common": "*",
     "@zajno/eslint-config": "*",
     "cpy-cli": "^5.0.0",
-    "eslint": "^8.57.1",
+    "eslint": "^9.20.0",
     "rimraf": "^6.0.1",
-    "tslib": "^2.7.0",
-    "typescript": "^5.6.2"
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.3"
   },
   "peerDependencies": {
-    "@zajno/common": "^2.4.0",
+    "@zajno/common": "^2.5.0",
     "tslib": "^2.6"
   },
   "files": [
@@ -53,5 +55,10 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    "./*": "./src/*.ts",
+    "./breakpoints": "./src/breakpoints/index.ts",
+    "./storage": "./src/storage/index.ts"
   }
 }

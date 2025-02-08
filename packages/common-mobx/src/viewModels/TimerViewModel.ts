@@ -28,13 +28,13 @@ export class TimerViewModel extends Disposable {
 
         // subscribe & cleanup
         this.disposer.add(
-            this._timer.on(this._onTick)
+            this._timer.on(this._onTick),
         );
         this.disposer.add(
             this._timer.onFinished.on((data) => {
                 this._state.setValue(data);
                 this._enabled.setFalse();
-            })
+            }),
         );
         this.disposer.add(this._timer);
         this.disposer.add(() => {

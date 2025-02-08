@@ -1,11 +1,12 @@
 import FFT from 'firebase-functions-test';
-import type { ContextOptions } from 'firebase-functions-test/lib/main';
 import type { FunctionFactory } from '../../server/functions/index.js';
 import { AnyObject, ObjectOrPrimitive } from '@zajno/common/types/misc';
 
 const FFTest = FFT({ });
 
-export type EndpointTestContext = ContextOptions;
+export type EndpointTestContext = {
+    auth?: { uid: string };
+};
 export type EndpointTestFunction<T, TOut> = (data: Partial<T>, context?: EndpointTestContext) => Promise<TOut>;
 
 export function wrapEndpoint<A extends AnyObject, R extends AnyObject, C extends ObjectOrPrimitive>(fn: FunctionFactory<A, R, C>) {

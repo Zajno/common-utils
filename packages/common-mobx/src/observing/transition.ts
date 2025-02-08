@@ -1,6 +1,6 @@
 import { reaction } from 'mobx';
 import { IEvent, Event } from '@zajno/common/observing/event';
-import { ILogger, createLogger } from '@zajno/common/logger/index';
+import { ILogger, createLogger } from '@zajno/common/logger';
 import { DisposeFunction, IDisposable } from '@zajno/common/functions/disposer';
 import { Getter } from '@zajno/common/types/getter';
 import { Nullable } from '@zajno/common/types/misc';

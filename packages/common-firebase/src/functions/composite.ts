@@ -83,7 +83,7 @@ function specsToFunctions<T extends CompositeEndpointInfo>(this: void, info: T, 
             const innerSpec = p as (CompositeEndpointInfo & T[keyof T]);
             result[k] = specsToFunctions(
                 innerSpec,
-                innerEndpoint as unknown as FunctionDefinition<EndpointArg<typeof innerSpec>, EndpointResult<typeof innerSpec>>
+                innerEndpoint as unknown as FunctionDefinition<EndpointArg<typeof innerSpec>, EndpointResult<typeof innerSpec>>,
             ) as any;
         } else {
             result[k] = innerEndpoint as any;

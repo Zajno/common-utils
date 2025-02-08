@@ -10,7 +10,7 @@ import {
 import { createHttpsCallFunction } from './create.js';
 import { Middleware } from './middleware.js';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter.js';
-import { createLogger } from '@zajno/common/logger/index';
+import { createLogger } from '@zajno/common/logger';
 import { badRandomString } from '@zajno/common/math/calc';
 import { META_ARG_KEY, MetaHolder } from '../../functions/composite.js';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
@@ -86,7 +86,7 @@ export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive =
 
     // this overrides 'super' version because updates return type (can't use ThisType here)
     public mergeContext<C extends ([TContext] extends [never] ? never : ObjectOrPrimitive)>(
-        _marker?: C
+        _marker?: C,
     ): FunctionFactory<TArg, TResult, Partial<TContext & C>> {
         return this as unknown as FunctionFactory<TArg, TResult, Partial<TContext & C>>;
     }

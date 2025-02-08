@@ -32,7 +32,6 @@ describe('disposable', () => {
         const fn = result.dispose;
 
         {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             using _d = result;
         }
 
@@ -47,7 +46,6 @@ describe('disposable', () => {
         const fn = result.dispose;
 
         {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             using _d = result;
         }
 

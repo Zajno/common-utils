@@ -20,7 +20,6 @@ describe('createPromiseProxy', () => {
         const proxy = createPromiseProxy({ loader: () => setTimeoutAsync(10).then(() => obj) });
         proxy.foo = 'bar';
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         expect(() => { (proxy as any).bar(); }).toThrow();
 
         await expect(proxy.__promise).resolves.toBe(obj);
@@ -33,7 +32,6 @@ describe('createPromiseProxy', () => {
             // this key should be forbidden - uncomment to see TS error
             // __promise: null as Promise<any>,
             foo: null as string | null,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             bar(v: string) { this.foo = v; },
             faz: vi.fn() as () => void,
         };
@@ -69,7 +67,6 @@ describe('createPromiseProxy', () => {
     it('should accept a wrapper with additional fields or functions that will NOT be copied to the resolved object but still exist in proxy', async () => {
         const obj = {
             foo: null as string | null,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             bar(v: string) { this.foo = v; },
         };
 
@@ -88,7 +85,6 @@ describe('createPromiseProxy', () => {
         expect(disposeFn).toHaveBeenCalledTimes(1);
 
         expect(obj.foo).toBeNull();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect((obj as any).dispose).toBeUndefined();
 
         await expect(proxy.__promise).resolves.toBe(obj);
@@ -100,7 +96,6 @@ describe('createPromiseProxy', () => {
         expect(disposeFn).toHaveBeenCalledTimes(2);
 
         expect(obj.foo).toBe('bar');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect((obj as any).dispose).toBeUndefined();
     });
 });
