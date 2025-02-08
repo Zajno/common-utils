@@ -15,11 +15,11 @@
         "fix-esm-paths": "fix-esm-import-path packages/*/src"
     },
     "devDependencies": {
-        "@types/node": "^20.16.10",
-        "@vitest/coverage-istanbul": "^2.1.1",
+        "@types/node": "^22.13.1",
+        "@vitest/coverage-istanbul": "^3.0.5",
         "fix-esm-import-path": "^1.10.1",
         "rimraf": "^6.0.1",
         "scripty": "^2.1.1",
-        "vitest": "^2.1.1"
+        "vitest": "^3.0.5"
     }
 }
