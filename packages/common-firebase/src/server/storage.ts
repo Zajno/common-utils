@@ -52,6 +52,6 @@ export async function deleteAllFilesIn(targetBucket: BucketType, path: string) {
         files.map(async file => {
             const filePath = file.name;
             await targetBucket.file(filePath).delete();
-        })
+        }),
     );
 }

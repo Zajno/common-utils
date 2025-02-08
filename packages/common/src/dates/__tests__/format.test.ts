@@ -74,29 +74,29 @@ describe('Date Helpers - Format', () => {
 
         expect(DateHelpers.Format.Presets.use(
             DateHelpers.Format.Presets.FullDay_ShortDate,
-            new Date('2020-08-04T10:26:15.893Z')
+            new Date('2020-08-04T10:26:15.893Z'),
         )).toBe('Tuesday 04.08.2020');
 
         expect(DateHelpers.Format.Presets.use(
             DateHelpers.Format.Presets.ShortDate_FullTime,
-            new Date('2019-09-11T10:26:15.893Z')
+            new Date('2019-09-11T10:26:15.893Z'),
         )).toBe('11.09.2019 10.26.15');
 
         expect(DateHelpers.Format.Presets.use(
             DateHelpers.Format.Presets.FullDay_ShortDate,
             new Date('2020-12-20T01:31:59.893Z'),
-            false
+            false,
         )).toBe('Sunday 20.12.2020');
 
         expect(DateHelpers.Format.Presets.use(
             DateHelpers.Format.Presets.ShortDate_FullTime,
             new Date('2020-08-12T10:26:15.893Z'),
-            false
+            false,
         )).toBe('12.08.2020 10.26.15');
 
         expect(DateHelpers.Format.Presets.use(
             undefined as any,
-            new Date('2020-08-12T10:26:15.893Z')
+            new Date('2020-08-12T10:26:15.893Z'),
         )).toBeUndefined();
     });
 

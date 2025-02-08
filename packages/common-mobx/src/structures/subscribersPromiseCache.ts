@@ -108,7 +108,7 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
                     } else {
                         this._updateItem(key, item);
                     }
-                })
+                }),
             ).then(unsub => {
                 const strategy = firstDefined(this._observeStrategyOverrides[key], this._observeStrategy);
                 if (!strategy) {

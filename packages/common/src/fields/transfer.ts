@@ -52,7 +52,7 @@ export namespace transferFields {
             source,
             (f, v) => v !== undefined && source[f] !== compare[f],
             destination,
-            ...fields
+            ...fields,
         );
     }
 }
@@ -76,7 +76,7 @@ export function extractChangedFields<T>(
         source,
         (f, v) => v !== undefined && v !== image[f],
         res,
-        ...fields
+        ...fields,
     );
     return {
         transferred: count,

@@ -69,7 +69,7 @@ export class PromiseExtended<T, TCustomErrors extends Record<string, unknown> = 
         const err = typeof source === 'string' ? new Error(source) : source;
         const promise = new PromiseExtended<T, TErrors>(
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            Promise.reject(err)
+            Promise.reject(err),
         );
         return promise;
     }

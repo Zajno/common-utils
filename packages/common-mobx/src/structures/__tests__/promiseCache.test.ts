@@ -23,7 +23,7 @@ describe('PromiseCache observable', () => {
                 () => cache.getCurrent('1', false),
                 v => handler(v),
                 { fireImmediately: true },
-            )
+            ),
         );
 
         checkHandler(undefined);
@@ -62,7 +62,7 @@ describe('PromiseCache observable', () => {
                 () => cache.getCurrent('1', false)?.id,
                 v => handler(v),
                 { fireImmediately: true },
-            )
+            ),
         );
 
         checkHandler(undefined);
@@ -105,7 +105,7 @@ describe('PromiseCache observable', () => {
                 () => cache.getCurrent('1', false),
                 v => handler(v?.id),
                 { fireImmediately: true },
-            )
+            ),
         );
 
         checkHandler(undefined);
@@ -166,7 +166,7 @@ describe('PromiseCache observable', () => {
                 () => cache.getCurrent('1', false),
                 v => handler(v?.id),
                 { fireImmediately: true },
-            )
+            ),
         );
 
         checkHandler(undefined);

@@ -45,7 +45,7 @@ export class PromiseCache<T, K = string> {
     constructor(
         private readonly fetcher: (id: K) => Promise<T>,
         private readonly keyAdapter?: K extends string ? null : (k: K) => string,
-        private readonly keyParser?: K extends string ? null : (id: string) => K
+        private readonly keyParser?: K extends string ? null : (id: string) => K,
     ) {
         //
     }

@@ -65,19 +65,19 @@ describe('broken api', () => {
 
         it('throws not found – arg is null', async () => {
             await expect(
-                v1(null as any)
+                v1(null as any),
             ).rejects.toThrowError('Expected fields: input');
         });
 
         it('throws not found – arg is empty object', async () => {
             await expect(
-                v1({ })
+                v1({ }),
             ).rejects.toMatchObject(AppHttpError.InvalidArguments());
         });
 
         it('throws not found – arg is correct', async () => {
             await expect(
-                v1_foo(1)
+                v1_foo(1),
             ).rejects.toThrowError('Not found');
         });
 
@@ -95,7 +95,7 @@ describe('broken api', () => {
 
         it('correctly returns', async () => {
             await expect(
-                v2_foo(1)
+                v2_foo(1),
             ).resolves.toEqual(2);
         });
     });
@@ -111,7 +111,7 @@ describe('broken api', () => {
 
         it('detects empty middleware', async () => {
             await expect(
-                v3_foo(1)
+                v3_foo(1),
             ).rejects.toThrowError('the middleware did not call next');
         });
     });
@@ -130,7 +130,7 @@ describe('broken api', () => {
 
         it('detects empty middleware', async () => {
             await expect(
-                v4_foo(1)
+                v4_foo(1),
             ).resolves.toEqual(3);
         });
     });

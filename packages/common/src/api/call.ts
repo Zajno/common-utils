@@ -49,7 +49,7 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
     return async function callApi<T extends IEndpointInfo>(
         api: T,
         data: EndpointCallArgs<T>,
-        extra?: Extra<T> & TExtra
+        extra?: Extra<T> & TExtra,
     ) {
 
         type TOut = IEndpointInfo.ExtractOut<T>;

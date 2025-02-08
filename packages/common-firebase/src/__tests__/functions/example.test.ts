@@ -24,20 +24,20 @@ describe('Function API', () => {
 
     it('runs as composite', async () => {
         await expect(
-            ExampleFunc({ id: '123' }, ctx)
+            ExampleFunc({ id: '123' }, ctx),
         ).resolves.toMatchObject({ ok: false });
     });
 
     it('runs as composite with context', async () => {
         await expect(
-            ExampleFunc({ id: ctx.auth?.uid }, ctx)
+            ExampleFunc({ id: ctx.auth?.uid }, ctx),
         ).resolves.toMatchObject({ ok: true });
     });
 
     const ExampleAnonFunc = getNestedFunction(Endpoint, 'exampleAnon');
     it('runs anon (skipped parent middlewares)', async () => {
         await expect(
-            ExampleAnonFunc(123)
+            ExampleAnonFunc(123),
         ).resolves.toEqual('123');
     });
 
@@ -47,28 +47,28 @@ describe('Function API', () => {
     const ExampleDoubleNested = getNestedFunction(ExampleInner, 'double-nested');
 
     it('applies namespace middleware (use auth)', () => expect(
-        ExampleNestedFunc({ lol: 'x' })
+        ExampleNestedFunc({ lol: 'x' }),
     ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated));
 
     it('runs as composite – nested', async () => {
         await expect(
-            ExampleNestedFunc({ lol: 'x' }, ctx)
+            ExampleNestedFunc({ lol: 'x' }, ctx),
         ).resolves.toMatchObject({ kek: 6 });
         await expect(
-            ExampleNestedFunc({ lol: 'test' }, ctx)
+            ExampleNestedFunc({ lol: 'test' }, ctx),
         ).resolves.toMatchObject({ kek: 7 });
     });
 
     it('runs as composite – double nested', async () => {
         await expect(
-            ExampleDoubleNested({ in: 'x' }, ctx)
+            ExampleDoubleNested({ in: 'x' }, ctx),
         ).resolves.toMatchObject({ out: 'x_kek' });
     });
 
     const ExampleMiddlewareCheck = getNestedFunction(Endpoint, 'middlewaresCheck');
 
     it('correctly applies middlewares', () => expect(
-        ExampleMiddlewareCheck('lol', ctx)
+        ExampleMiddlewareCheck('lol', ctx),
     ).resolves.toEqual('lol_m0_m1_m2'));
 
     it('contains correct context', async () => {
@@ -99,11 +99,11 @@ describe('Function API', () => {
             const v2_0 = getNestedFunction(v2, 'zero');
 
             it('requires auth', () => expect(
-                v2_0('123')
+                v2_0('123'),
             ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated));
 
             it('results', () => expect(
-                v2_0('123', ctx)
+                v2_0('123', ctx),
             ).resolves.toEqual('123_m2'));
         });
 
@@ -111,7 +111,7 @@ describe('Function API', () => {
         describe('lvl 1', () => {
             const v2_h1 = getNestedFunction(v2_n1, 'h1');
             it('results (no auth)', () => expect(
-                v2_h1('123')
+                v2_h1('123'),
             ).resolves.toEqual('123_m2'));
         });
 
@@ -119,10 +119,10 @@ describe('Function API', () => {
             const v2_n2 = getNestedFunction(v2_n1, 'n2');
             const v2_h2 = getNestedFunction(v2_n2, 'h2');
             it('requires auth', () => expect(
-                v2_h2('123')
+                v2_h2('123'),
             ).rejects.toThrowError(AppHttpError.DefaultStrings.unauthenticated));
             it('results', () => expect(
-                v2_h2('123', ctx)
+                v2_h2('123', ctx),
             ).resolves.toEqual('123_m2'));
         });
 

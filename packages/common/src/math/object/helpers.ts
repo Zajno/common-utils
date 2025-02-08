@@ -27,7 +27,7 @@ export function doOps<T extends object, TOps extends IObjectOps<any>>(
     processor?: (ops: TOps, value: DeepReadonly<T[string & keyof T]>, key: string & keyof T) => T[keyof T] | null,
 ) {
     const res = { } as T;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     const p = processor || ((ops, val) => ops.clone(val));
     ops.forEach(op => {
         res[op.key] = p(op.ops, _getInnerValue(o, op.key), op.key);

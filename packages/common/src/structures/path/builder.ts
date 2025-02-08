@@ -174,7 +174,6 @@ export function construct<TArr extends BaseInput[]>(...inputs: TArr): CombineBui
         if (!options) {
             return options;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { addStart: _, addTrail: __, ...rest } = options;
         return rest;
     };

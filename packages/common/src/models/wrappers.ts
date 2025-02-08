@@ -31,9 +31,7 @@ export function inject<T, TModel extends IValueModel<T>>(model: TModel, source: 
 export function spyModel<T, TModel extends (IValueModel<T> & object)>(model: TModel, spySetter: (v: T) => void, spyGetter?: (v: T) => void) {
     const descriptor = Object.getOwnPropertyDescriptor(model, 'value');
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- bound later
     const valueSetter = descriptor?.set;
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- bound later
     const valueGetter = descriptor?.get;
 
     let _overrideValue: T = descriptor ? descriptor.value as T : model.value;
