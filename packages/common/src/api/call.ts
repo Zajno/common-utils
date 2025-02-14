@@ -6,7 +6,7 @@ import { LogTypes } from './logging.js';
 import { getPath } from './helpers.js';
 
 /** Request options to be used by call implementation (e.g. interceptor). Passed as separate object argument to the call method.  */
-type Extra<T> = {
+export type RequestExtra<T> = {
     headers?: IEndpointInfo.ExtractHeaders<T>;
     log?: LogTypes<IEndpointInfo.ExtractIn<T>, IEndpointInfo.ExtractOut<T>>;
     noLoader?: boolean;
@@ -42,6 +42,9 @@ type CallerOptions<TExtra extends object = Record<string, any>> = {
 
 export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<T> | IEndpointInfo.ExtractPath<T> | IEndpointInfo.ExtractQuery<T>;
 
+export type GenericApiCaller<TExtra extends object = Record<string, any>> = ReturnType<typeof buildApiCaller<TExtra>>;
+export type ApiCaller<TEndpoint extends IEndpointInfo, TExtra extends object = Record<string, any>> = (data: EndpointCallArgs<TEndpoint>, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>;
+
 export function buildApiCaller<TExtra extends object = Record<string, any>>(options: CallerOptions<TExtra>) {
 
     const { bodyValidation, request } = options;
@@ -49,7 +52,7 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
     return async function callApi<T extends IEndpointInfo>(
         api: T,
         data: EndpointCallArgs<T>,
-        extra?: Extra<T> & TExtra,
+        extra?: RequestExtra<T> & TExtra,
     ) {
 
         type TOut = IEndpointInfo.ExtractOut<T>;
