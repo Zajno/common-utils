@@ -1,5 +1,6 @@
 import { StatusCodes } from './statusCodes.js';
 
+/** Base DTO for getting a error response */
 export type ApiErrorResponse<TCause = never, TErrors = number | string> = {
     code?: TErrors,
     message?: string,
@@ -11,7 +12,7 @@ export namespace ApiErrorResponse {
     }
 }
 
-
+/** An Error to be thrown as an API error, and be caught */
 export class ApiError<
     TCause = unknown,
     TCodes extends number = StatusCodes,
@@ -33,7 +34,10 @@ export class ApiError<
         Object.setPrototypeOf(this, ApiError.prototype);
     }
 
-    public static fromResponse<TCodes extends number = StatusCodes, TErrors extends number | string = number | string>(status: TCodes, responseData: unknown) {
+    public static fromResponse<TCodes extends number = StatusCodes, TErrors extends number | string = number | string>(
+        status: TCodes,
+        responseData: unknown,
+    ) {
         const response = responseData as ApiErrorResponse<unknown, TErrors>;
         if (!response || response.code == null) {
             return new ApiError(

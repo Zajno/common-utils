@@ -21,26 +21,21 @@ export function buildApi<TApi extends ApiDefinition, TExtra extends object = Rec
     assert(!!api && typeof api === 'object', 'API definition must be an object');
     assert(!!caller && typeof caller === 'function', 'Caller must be a function');
 
-    if (api instanceof ApiEndpoint) {
+    if (ApiEndpoint.isEndpoint(api)) {
         return createEndpointCallable(api, caller as GenericApiCaller) as ApiRunner<typeof api, TExtra>;
     }
 
     return Object.entries(api).reduce((acc, [key, value]) => {
-        acc[key] = buildApi(value, caller);
+        const next = value as ApiDefinition;
+        acc[key] = buildApi(next, caller);
         return acc;
     }, {} as Record<string, ApiRunner<any, TExtra>>) as ApiRunner<TApi, TExtra>;
 }
 
 /** Partial application: binding an endpoint to callApi, so only input data and extra are passed to a newly created function. */
 export function createEndpointCallable<
-    TEndpoint extends ApiEndpoint<TIn, TOut, TPath, TQuery, TErrors, THeaders>,
+    TEndpoint extends ApiEndpoint,
     TCaller extends GenericApiCaller<TExtra>,
-    TIn extends object | null,
-    TOut,
-    TPath extends readonly string[],
-    TQuery extends object,
-    TErrors,
-    THeaders,
     TExtra extends object = Record<string, any>,
 >(endpoint: TEndpoint, caller: TCaller) {
     return (data: EndpointCallArgs<TEndpoint>, extra?: Parameters<TCaller>[2]) =>

@@ -3,7 +3,7 @@ import { buildApiCaller, RequestConfigDetails } from '../call.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
 
-describe('api/builder', () => {
+describe('api/v2/builder', () => {
 
     test('createEndpointCallable', async () => {
         const request = vi.fn();
@@ -17,7 +17,7 @@ describe('api/builder', () => {
             },
         });
 
-        const getEndpoint = ApiEndpoint.get<{ name: string }>();
+        const getEndpoint = ApiEndpoint.create().get<{ name: string }>();
         const caller = buildApi(getEndpoint, callerBase);
 
         expect(caller).toBeTruthy();
@@ -60,7 +60,7 @@ describe('api/builder', () => {
             },
         });
 
-        const Apis = { inner: ApiEndpoint.get<{ name: string }>() };
+        const Apis = { inner: ApiEndpoint.create().get<{ name: string }>() };
         const ApiCallers = buildApi(Apis, callerBase);
 
         expect(ApiCallers).toBeTruthy();

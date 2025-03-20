@@ -4,7 +4,7 @@ import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
 import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register.js';
 
-describe('api/call', () => {
+describe('api/v2/call', () => {
 
     test('constructs', async () => {
         const request = vi.fn();
@@ -21,9 +21,12 @@ describe('api/call', () => {
             },
         });
 
-        const getEndpoint = ApiEndpoint.get<{ name: string }>();
+        const endpointGet = ApiEndpoint.create().get<{ name: string }>();
 
-        await expect(caller(getEndpoint, null)).resolves.toEqual({ input: undefined });
+        expect(endpointGet.method).toBe('GET');
+        expect(endpointGet.displayName).toBeUndefined();
+
+        await expect(caller(endpointGet, null)).resolves.toEqual({ input: undefined });
 
         expect(request).toHaveBeenCalledWith({
             _log: 'res',
@@ -33,15 +36,21 @@ describe('api/call', () => {
             url: '/',
             data: undefined,
             headers: {},
-            _api: getEndpoint,
+            _api: endpointGet,
         });
         request.mockClear();
 
-        const endpoint = ApiEndpoint.post<{ token?: string }, { name: string }>('Get User')
+        const endpoint = ApiEndpoint.create('Get User')
+            .post<{ token?: string }, { name: string }>()
             .withPath(Path.build`/user/${'id'}`)
             .withQuery<{ full?: boolean }>('full')
             .withErrors<{ message: string }>()
             .withHeaders<{ 'x-token': string }>();
+
+        expect(endpoint.displayName).toBe('Get User');
+        expect(endpoint.method).toBe('POST');
+        expect(endpoint.queryKeys).toEqual(['full']);
+        expect(endpoint.isForm).toBeFalsy();
 
         await expect(caller(
             endpoint,
@@ -100,8 +109,11 @@ describe('api/call', () => {
         });
         request.mockClear();
 
-        const formEndpoint = ApiEndpoint.post<{ token: string }, null>()
+        const formEndpoint = ApiEndpoint.create()
+            .post<{ token: string }, null>()
             .asForm();
+
+        expect(formEndpoint.isForm).toBe(true);
 
         const preProcessor = vi.fn(data => data);
         registerPreProcessor(formEndpoint, preProcessor);
@@ -141,7 +153,8 @@ describe('api/call', () => {
 
         const base = 'api';
 
-        const endpoint = ApiEndpoint.post<{ email: string | null, password: string | null }, { token: string }>()
+        const endpoint = ApiEndpoint.create()
+            .post<{ email: string | null, password: string | null }, { token: string }>()
             .withPath([base, 'user']);
 
         await expect(caller(endpoint, { email: '123', password: '321' })).resolves.toEqual({ input: { email: '123', password: '321' } });
@@ -154,14 +167,16 @@ describe('api/call', () => {
             },
         });
 
-        const endpoint = ApiEndpoint.post<{ id: string }, { name: string }>()
+        const endpoint = ApiEndpoint.create()
+            .post<{ id: string }, { name: string }>()
             .withPath(Path.build`offers/${'id'}`);
 
         // TODO fix this:
         // @ ts-expect-error - id is missing
         caller(endpoint, { });
 
-        const endpoint2 = ApiEndpoint.post<null, string>()
+        const endpoint2 = ApiEndpoint.create()
+            .post<null, string>()
             .withQuery<{ id: string }>('id');
 
         // type QueryType = IEndpointInfo.ExtractQuery<typeof endpoint2>;
@@ -174,7 +189,8 @@ describe('api/call', () => {
         // @ts-expect-error - id is not a string/number
         caller(endpoint2, { id: true });
 
-        const endpoint3 = ApiEndpoint.post<null, string>()
+        const endpoint3 = ApiEndpoint.create()
+            .post<null, string>()
             .withQuery<{ id: string[], str?: string, num?: number }>('id', 'str', 'num');
 
 
@@ -192,7 +208,8 @@ describe('api/call', () => {
         const prefix = '/user/';
         interface Result { name: string, id: number }
 
-        const endpoint = ApiEndpoint.get<Result>()
+        const endpoint = ApiEndpoint.create()
+            .get<Result>()
             .withPath(prefix, Path.build`offers/${'id'}`);
 
         const outEx: IEndpointInfo.ExtractOut<typeof endpoint> = { name: '123', id: 123 };

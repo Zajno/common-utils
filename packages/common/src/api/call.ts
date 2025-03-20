@@ -69,7 +69,7 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
         const pathInputs: Record<string, string | number> = {};
         let queryStr: string = '';
 
-        const pathKeys = api.pathBuilder.args;
+        const pathKeys = api.path.args;
         if (resultInput && pathKeys?.length) {
             for (const key of pathKeys) {
                 pathInputs[key] = resultInput[key];
@@ -117,7 +117,7 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
             _extra: restExtra as TExtra,
         };
 
-        if (api.isForm) {
+        if ((api as unknown as IEndpointInfo.IForm).isForm) {
             config.headers['Content-Type'] = 'multipart/form-data';
         }
 

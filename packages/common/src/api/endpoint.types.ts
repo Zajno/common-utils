@@ -2,25 +2,23 @@ import { Path } from '../structures/path/index.js';
 import { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
 import { EndpointMethods } from './methods.js';
 
-export interface IEndpointInfo {
-    readonly method: EndpointMethods;
-    readonly isForm?: boolean;
-
-    readonly pathBuilder: Path.IBuilder;
-
-    readonly displayName?: string;
-    readonly errorProcessor?: (err?: any) => void;
-
-    readonly queryKeys?: string[];
-}
+export interface IEndpointInfo extends IEndpointInfo.Base,
+    IEndpointInfo.IPath<readonly string[]>,
+    IEndpointInfo.IErrors<any>,
+    IEndpointInfo.IQuery<AnyObject> { }
 
 export namespace IEndpointInfo {
+
+    export type Base = {
+        readonly method: EndpointMethods;
+        readonly displayName?: string;
+    };
 
     export interface IIn<TIn extends object | null> {
         readonly in?: TIn;
     }
 
-    export class IOut<TOut> {
+    export interface IOut<TOut> {
         readonly out?: TOut;
     }
 
@@ -45,6 +43,22 @@ export namespace IEndpointInfo {
     export interface IHeaders<THeaders> {
         readonly headers?: THeaders;
     }
+
+    /**
+     * Form flag extension for endpoint.
+     *
+     * TODO: store as content-type header?
+     */
+    export interface IForm {
+        /** Returns if endpoint is marked as form. */
+        readonly isForm: boolean;
+
+        /** Marks this endpoint as one has to be sent as form. */
+        asForm(): this;
+    }
+
+
+    // HELPERS & EXTRACTORS
 
     type Any = AnyObject;
     type Empty = EmptyObjectNullable;
