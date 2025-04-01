@@ -18,6 +18,7 @@
         "@faker-js/faker": "^9.6.0",
         "@types/node": "^22.13.16",
         "@vitest/coverage-istanbul": "^3.1.1",
+        "cpy-cli": "^5.0.0",
         "fast-check": "^3.23.2",
         "fix-esm-import-path": "^1.10.1",
         "jest-extended": "^4.0.2",
