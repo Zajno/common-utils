@@ -3,7 +3,7 @@ import { buildApiCaller, RequestConfigDetails } from '../call.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
 
-describe('api/v2/builder', () => {
+describe('api/builder', () => {
 
     test('createEndpointCallable', async () => {
         const request = vi.fn();

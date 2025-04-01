@@ -4,7 +4,7 @@ import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
 import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register.js';
 
-describe('api/v2/call', () => {
+describe('api/call', () => {
 
     test('constructs', async () => {
         const request = vi.fn();

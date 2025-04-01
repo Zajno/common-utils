@@ -3,6 +3,8 @@ import { EndpointMethods } from './methods.js';
 import type { Mutable } from '../types/misc.js';
 import type { IEndpointInfo } from './endpoint.types.js';
 
+/** @import { buildApiCaller } from "./call" */
+
 /** Not an ideal way to merge type because overlapping fields will be incorrectly overridden.
  *
  * Extractor types works okay unless there're no overlapping fields when extending endpoint type.
@@ -12,6 +14,13 @@ type Merge<T, K> = K & T;
 
 export type { IEndpointInfo };
 
+/**
+ * Defines REST API endpoint.
+ *
+ * Endpoint object can be used in a caller method (see {@link buildApiCaller}) to make a request.
+ *
+ * Basic definition {@link IEndpointInfo} which can be extended with additional properties and chaining mutation methods, see {@link IEndpointInfo.IForm} for example.
+*/
 export interface ApiEndpoint extends IEndpointInfo {
     /** Applies specified HTTP method */
     withMethod(method: EndpointMethods): this;

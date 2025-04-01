@@ -2,7 +2,7 @@ import { Path } from '../../structures/path/index.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { DefaultSettings, getFormattedDisplayName, getPath, getTemplate, setDefaults } from '../helpers.js';
 
-describe('api/v2/helpers', () => {
+describe('api/helpers', () => {
 
     const testSettings = {
         templateArgPrefix: '$',
@@ -12,6 +12,7 @@ describe('api/v2/helpers', () => {
     test('settings', () => {
         setDefaults(testSettings);
         expect(DefaultSettings).toEqual(testSettings);
+        expect(getPath(ApiEndpoint.create(), {}, true));
     });
 
     test('getPath', () => {

@@ -3,7 +3,7 @@ import { Path } from '../../structures/path/index.js';
 import { EndpointMethods } from '../methods.js';
 import { Mutable } from '../../types/misc.js';
 
-describe('api/v2/endpoint', () => {
+describe('api/endpoint', () => {
 
     function testOutput<T extends IEndpointInfo>(_endpoint: T, out: IEndpointInfo.ExtractOut<T>) {
         return out;
@@ -45,6 +45,7 @@ describe('api/v2/endpoint', () => {
         expect(ApiEndpoint.create().delete().method).toBe('DELETE');
         expect(ApiEndpoint.create().put().method).toBe('PUT');
         expect(ApiEndpoint.create().method).toBe('GET');
+        expect(ApiEndpoint.create().put().post().method).toBe('POST');
 
         expect(ApiEndpoint.create().withMethod(EndpointMethods.PUT).method).toBe('PUT');
 

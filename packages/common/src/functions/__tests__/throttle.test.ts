@@ -141,7 +141,7 @@ describe('throttle', () => {
         expect(resultProcessor).toHaveBeenCalledTimes(1);
         expect(resultProcessor).toHaveBeenCalledWith(expectedResult1);
 
-        expect(Promise.all(promises1)).resolves.toStrictEqual(expectedResult1.map((_, i) => ({ result: expectedResult1, index: i })));
+        await expect(Promise.all(promises1)).resolves.toStrictEqual(expectedResult1.map((_, i) => ({ result: expectedResult1, index: i })));
 
         loadMany.mockClear();
         resultProcessor.mockClear();
@@ -152,7 +152,7 @@ describe('throttle', () => {
         expect(resultProcessor).toHaveBeenCalledTimes(1);
         expect(resultProcessor).toHaveBeenCalledWith(expectedResult2);
 
-        expect(Promise.all(promises2)).resolves.toStrictEqual(expectedResult2.map((_, i) => ({ result: expectedResult2, index: i })));
+        await expect(Promise.all(promises2)).resolves.toStrictEqual(expectedResult2.map((_, i) => ({ result: expectedResult2, index: i })));
 
         loadMany.mockClear();
         resultProcessor.mockClear();
