@@ -34,18 +34,12 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^22.13.1",
     "@zajno/common": "*",
-    "@zajno/eslint-config": "*",
-    "cpy-cli": "^5.0.0",
-    "eslint": "^9.20.0",
-    "rimraf": "^6.0.1",
-    "tslib": "^2.8.1",
-    "typescript": "^5.7.3"
+    "@zajno/eslint-config": "*"
   },
   "peerDependencies": {
     "@zajno/common": "^2.5.0",
-    "tslib": "^2.6"
+    "tslib": "^2.8"
   },
   "files": [
     "*",
