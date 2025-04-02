@@ -51,6 +51,7 @@
   "exports": {
     "./*": "./src/*.ts",
     "./api": "./src/api/index.ts",
+    "./api/extensions": "./src/api/extensions/index.ts",
     "./async": "./src/async/index.ts",
     "./dates": "./src/dates/index.ts",
     "./fields": "./src/fields/index.ts",

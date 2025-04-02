@@ -2,6 +2,8 @@ import { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
 import { Path } from '../../structures/path/index.js';
 import { EndpointMethods } from '../methods.js';
 import { Mutable } from '../../types/misc.js';
+import { IEndpointInputForm } from '../extensions/form.js';
+import { IEndpointInputValidation } from '../extensions/validation.js';
 
 describe('api/endpoint', () => {
 
@@ -21,7 +23,6 @@ describe('api/endpoint', () => {
         expect(endpoint.displayName).toBe('Get User');
         expect(endpoint.method).toBe('POST');
         expect(endpoint.queryKeys).toEqual(['full']);
-        expect(endpoint.isForm).toBeFalsy();
 
         type TOut = IEndpointInfo.ExtractOut<typeof endpoint>;
         const out: TOut = { name: '123' };
@@ -36,10 +37,6 @@ describe('api/endpoint', () => {
         expect(endpoint.method).toBe('POST');
         expect(endpoint.displayName).toBe('Get User');
         expect(endpoint.queryKeys).toEqual(['full']);
-        expect(endpoint.isForm).toBeFalsy();
-
-        endpoint.asForm();
-        expect(endpoint.isForm).toBe(true);
 
         expect(ApiEndpoint.create().get().method).toBe('GET');
         expect(ApiEndpoint.create().delete().method).toBe('DELETE');
@@ -52,33 +49,64 @@ describe('api/endpoint', () => {
         expect(ApiEndpoint.create().delete().method).toBe('DELETE');
     });
 
-    it('extends', () => {
+    describe('extends', () => {
+        it('basic/form', () => {
+            const create = ApiEndpoint.create.extend(IEndpointInputForm.extender);
 
-        interface ICustomExtension {
-            readonly customField: string | undefined;
-            withCustomField(value: string): this;
-        }
+            const endpointExtended = create('Get User');
+            expect(endpointExtended.isForm).toBeFalsy();
 
-        const create = ApiEndpoint.create.extend<ICustomExtension>(base => {
-            const ext = {
-                customField: undefined,
-                withCustomField(this: Mutable<ICustomExtension>, value: string) {
-                    this.customField = value;
-                    return this;
-                },
-            } as ICustomExtension;
-            return Object.assign(base, ext);
+            endpointExtended.asForm();
+            expect(endpointExtended.isForm).toBe(true);
         });
 
-        const e1 = create();
-        e1.withCustomField('123');
+        it('basic/validation', () => {
+            const create = ApiEndpoint.create.extend(IEndpointInputValidation.extender);
 
-        const endpoint = create().post<{ id: string }, { name: string }>()
-            .withCustomField('123')
-            .withPath(Path.build`/user/${'id'}`)
-        ;
+            const endpointExtended = create('Get User')
+                .post<{ id: string }, { name: string }>();
 
-        expect(endpoint.customField).toBe('123');
+            expect(endpointExtended.validate).toBeUndefined();
+
+            endpointExtended.withValidation(input => {
+                type BanAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
+                const i: BanAny<typeof input.id, never, typeof input> = input;
+                // no-op usage of input.id to check its type is not 'any'
+                // eslint-disable-next-line no-console
+                console.log(i.id);
+            });
+
+        });
+
+        it('custom', () => {
+
+            interface ICustomExtension {
+                readonly customField: string | undefined;
+                withCustomField(value: string): this;
+            }
+
+            const create = ApiEndpoint.create.extend<ICustomExtension>(base => {
+                const ext = {
+                    customField: undefined,
+                    withCustomField(this: Mutable<ICustomExtension>, value: string) {
+                        this.customField = value;
+                        return this;
+                    },
+                } as ICustomExtension;
+                return Object.assign(base, ext);
+            });
+
+            const e1 = create();
+            e1.withCustomField('123');
+
+            const endpoint = create().post<{ id: string }, { name: string }>()
+                .withCustomField('123')
+                .withPath(Path.build`/user/${'id'}`)
+                ;
+
+            expect(endpoint.customField).toBe('123');
+            expect(endpoint.path.template(':', { addStart: true })).toBe('/user/:id');
+        });
     });
 
 });

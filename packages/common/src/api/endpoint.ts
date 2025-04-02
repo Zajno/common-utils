@@ -121,6 +121,8 @@ export namespace ApiEndpoint {
         extend<TExt>(extender: (base: T) => T & TExt): IBuilder<T & TExt>;
     }
 
+    export type IBuilderExtender<T> = <TBase extends ApiEndpoint>(base: TBase) => TBase & T;
+
     function createBuilder<TBase extends ApiEndpoint, T>(
         base: (displayName?: string) => TBase,
         extender: (base: TBase) => T,
@@ -148,16 +150,5 @@ export namespace ApiEndpoint {
         return res;
     }
 
-    export const create = createBuilder(createBase)
-        // form extension
-        .extend<IEndpointInfo.IForm>(base => {
-            const ext = {
-                isForm: false,
-                asForm(this: { isForm: boolean }) {
-                    this.isForm = true;
-                    return this;
-                },
-            } as IEndpointInfo.IForm;
-            return Object.assign(base, ext);
-        });
+    export const create = createBuilder(createBase);
 }

@@ -1,6 +1,6 @@
-import { Path } from '../structures/path/index.js';
-import { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
-import { EndpointMethods } from './methods.js';
+import type { Path } from '../structures/path/index.js';
+import type { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
+import type { EndpointMethods } from './methods.js';
 
 /**
  * Definition of an abstract REST API endpoint.
@@ -56,20 +56,6 @@ export namespace IEndpointInfo {
         /** Marker type for defining endpoint extra headers. */
         readonly headers?: THeaders;
     }
-
-    /**
-     * Form flag extension for endpoint.
-     *
-     * TODO: store as content-type header?
-     */
-    export interface IForm {
-        /** Returns if endpoint is marked as form. */
-        readonly isForm: boolean;
-
-        /** Marks this endpoint as one has to be sent as form. */
-        asForm(): this;
-    }
-
 
     // HELPERS & EXTRACTORS
 
