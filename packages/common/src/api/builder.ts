@@ -3,12 +3,16 @@ import type { ApiCaller, EndpointCallArgs, GenericApiCaller } from './call.js';
 import { ApiEndpoint } from './endpoint.js';
 import { assert } from '../functions/assert.js';
 
-type ApiDefinition = IEndpointInfo | {
+export interface IEndpointCaller<T extends IEndpointInfo, TExtra extends object = Record<string, any>> extends ApiCaller<T, TExtra> {
+    readonly Endpoint: T;
+}
+
+export type ApiDefinition = IEndpointInfo | {
     [key: string]: ApiDefinition;
 };
 
-type ApiRunner<T, TExtra extends Record<string, any>> = T extends IEndpointInfo
-    ? ApiCaller<T, TExtra>
+export type ApiRunner<T, TExtra extends Record<string, any>> = T extends IEndpointInfo
+    ? IEndpointCaller<T, TExtra>
     : T extends Record<string, any> ? {
         [K in keyof T]: ApiRunner<T[K], TExtra>;
     } : never;
@@ -38,6 +42,13 @@ export function createEndpointCallable<
     TCaller extends GenericApiCaller<TExtra>,
     TExtra extends object = Record<string, any>,
 >(endpoint: TEndpoint, caller: TCaller) {
-    return (data: EndpointCallArgs<TEndpoint>, extra?: Parameters<TCaller>[2]) =>
-        caller<TEndpoint>(endpoint, data, extra);
+    const name = `${endpoint.displayName || '?'}_${endpoint.method}_${endpoint.path.template()}`;
+
+    const fn = {
+        [name]: function (data: EndpointCallArgs<TEndpoint>, extra?: Parameters<TCaller>[2]) { return caller<TEndpoint>(endpoint, data, extra); },
+    }[name]; // this sets the name of the function
+
+    const result = fn as IEndpointCaller<TEndpoint, TExtra>;
+    Object.assign(result, { Endpoint: endpoint });
+    return result;
 }
