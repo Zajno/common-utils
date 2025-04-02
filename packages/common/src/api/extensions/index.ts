@@ -1,2 +1,2 @@
-export * from './form.js';
+export * from './contentType.js';
 export * from './validation.js';

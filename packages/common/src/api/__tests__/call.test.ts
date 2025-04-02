@@ -2,7 +2,7 @@ import { Path } from '../../structures/path/index.js';
 import { RequestConfigDetails, buildApiCaller } from '../call.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
-import { IEndpointInputForm } from '../extensions/form.js';
+import { IEndpointInputContentType } from '../extensions/contentType.js';
 import { IEndpointInputValidation } from '../extensions/validation.js';
 import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register.js';
 
@@ -231,7 +231,7 @@ describe('api/call', () => {
             };
             expect(config.headers).toEqual({});
             expect(result.headers).toEqual({});
-            IEndpointInputForm.tryApplyContentType(result._api, result.headers);
+            IEndpointInputContentType.tryApplyContentType(result._api, result.headers);
             expect(result.headers['Content-Type']).toBe('multipart/form-data');
             return result;
         });
@@ -246,8 +246,8 @@ describe('api/call', () => {
             },
         });
 
-        const endpoint = ApiEndpoint.create.extend(IEndpointInputForm.extender)()
-            .asForm()
+        const endpoint = ApiEndpoint.create.extend(IEndpointInputContentType.extender)()
+            .asMultipartForm()
             .post<{ id: string }, { name: string }>();
 
         await expect(caller(endpoint, { id: 123 })).resolves.toEqual({ input: { id: 123 } });

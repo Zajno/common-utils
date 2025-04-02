@@ -2,7 +2,7 @@ import { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
 import { Path } from '../../structures/path/index.js';
 import { EndpointMethods } from '../methods.js';
 import { Mutable } from '../../types/misc.js';
-import { IEndpointInputForm } from '../extensions/form.js';
+import { IEndpointInputContentType } from '../extensions/contentType.js';
 import { IEndpointInputValidation } from '../extensions/validation.js';
 
 describe('api/endpoint', () => {
@@ -50,14 +50,17 @@ describe('api/endpoint', () => {
     });
 
     describe('extends', () => {
-        it('basic/form', () => {
-            const create = ApiEndpoint.create.extend(IEndpointInputForm.extender);
+        it('basic/contentType', () => {
+            const create = ApiEndpoint.create.extend(IEndpointInputContentType.extender);
 
             const endpointExtended = create('Get User');
-            expect(endpointExtended.isForm).toBeFalsy();
+            expect(endpointExtended.contentType).toBeUndefined();
 
-            endpointExtended.asForm();
-            expect(endpointExtended.isForm).toBe(true);
+            endpointExtended.asUrlEncoded();
+            expect(endpointExtended.contentType).toBe('application/x-www-form-urlencoded');
+            expect(endpointExtended.withContentType('text/plain').contentType).toBe('text/plain');
+            expect(endpointExtended.asMultipartForm().contentType).toBe('multipart/form-data');
+            expect(endpointExtended.asJson().contentType).toBe('application/json');
         });
 
         it('basic/validation', () => {
