@@ -37,33 +37,24 @@
   "devDependencies": {
     "@firebase/app-types": "^0.9.3",
     "@google-cloud/pubsub": "^4.10.0",
-    "@types/node": "^22.13.1",
-    "@vitest/coverage-istanbul": "^3.0.5",
     "@zajno/common": "*",
     "@zajno/common-mobx": "*",
     "@zajno/eslint-config": "*",
-    "cpy-cli": "^5.0.0",
-    "eslint": "^9.20.0",
-    "firebase": "^11.3.0",
-    "firebase-admin": "^13.1.0",
-    "firebase-functions": "^6.3.1",
-    "firebase-functions-test": "^3.4.0",
-    "mobx": "^6.13.6",
-    "rimraf": "^6.0.1",
-    "tslib": "^2.8.1",
-    "typescript": "^5.7.3",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.5"
+    "firebase": "^11.6.0",
+    "firebase-admin": "^13.2.0",
+    "firebase-functions": "^6.3.2",
+    "firebase-functions-test": "^3.4.1",
+    "mobx": "^6.13.7"
   },
   "peerDependencies": {
     "@google-cloud/pubsub": "^4.10.0",
     "@zajno/common": "^2.5",
     "@zajno/common-mobx": "^1.5",
-    "firebase": "^11.3",
-    "firebase-admin": "^13.1.0",
-    "firebase-functions": "^6.3.1",
+    "firebase": "^11.6",
+    "firebase-admin": "^13.2.0",
+    "firebase-functions": "^6.3.2",
     "mobx": "^6.13",
-    "tslib": "^2.7"
+    "tslib": "^2.8"
   },
   "files": [
     "LICENSE",

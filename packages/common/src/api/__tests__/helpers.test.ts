@@ -12,10 +12,12 @@ describe('api/helpers', () => {
     test('settings', () => {
         setDefaults(testSettings);
         expect(DefaultSettings).toEqual(testSettings);
+        expect(getPath(ApiEndpoint.create(), {}, true));
     });
 
     test('getPath', () => {
-        const endpoint = ApiEndpoint.get()
+        const endpoint = ApiEndpoint.create()
+            .get()
             .withPath('user', Path.build`${'id'}`);
 
         expect(getTemplate(endpoint)).toEqual('/api/user/$id');
@@ -23,7 +25,7 @@ describe('api/helpers', () => {
         expect(getPath(endpoint, { id: 123 })).toEqual('/api/user/123');
 
         expect(getFormattedDisplayName(endpoint)).toEqual('/api/user/$id');
-        endpoint.displayName = 'get user';
+        (endpoint as any).displayName = 'get user';
         expect(getFormattedDisplayName(endpoint)).toEqual('[get user] /api/user/$id');
     });
 

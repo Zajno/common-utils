@@ -1,5 +1,18 @@
+/*
+
+This module is mostly an example of how an API error data structures may look like.
+
+It implies that API endpoints have a standardized data structure for errors, and that the error handling is done in a centralized way.
+
+`ApiErrorResponse` is a base DTO for errors in responses, can be a combination of an error code, message, and a cause.
+
+`ApiError` is an Error class that can be thrown and caught, and is basically a wrapper around the `ApiErrorResponse` DTO.
+
+*/
+
 import { StatusCodes } from './statusCodes.js';
 
+/** Base DTO for getting a error response */
 export type ApiErrorResponse<TCause = never, TErrors = number | string> = {
     code?: TErrors,
     message?: string,
@@ -11,7 +24,7 @@ export namespace ApiErrorResponse {
     }
 }
 
-
+/** An Error to be thrown as an API error, and be caught */
 export class ApiError<
     TCause = unknown,
     TCodes extends number = StatusCodes,
@@ -33,7 +46,10 @@ export class ApiError<
         Object.setPrototypeOf(this, ApiError.prototype);
     }
 
-    public static fromResponse<TCodes extends number = StatusCodes, TErrors extends number | string = number | string>(status: TCodes, responseData: unknown) {
+    public static fromResponse<TCodes extends number = StatusCodes, TErrors extends number | string = number | string>(
+        status: TCodes,
+        responseData: unknown,
+    ) {
         const response = responseData as ApiErrorResponse<unknown, TErrors>;
         if (!response || response.code == null) {
             return new ApiError(

@@ -13,12 +13,17 @@ export function setDefaults(settings: Partial<typeof DefaultSettings>) {
 type PrefixOptions = string | boolean;
 const getPrefix = (prefix: PrefixOptions) => typeof prefix === 'string' ? prefix : (prefix ? DefaultSettings.basePrefix : false);
 
-export function getPath<T extends IEndpointInfo>(endpoint: T, pathArgs: IEndpointInfo.ExtractPath<T>, prefix: string | boolean = true) {
-    return endpoint.pathBuilder.build(pathArgs || undefined, { addStart: getPrefix(prefix) });
+export function getPath<T extends IEndpointInfo.IPath<K>, K extends readonly string[]>(
+    endpoint: T,
+    pathArgs: IEndpointInfo.ExtractPath<T>,
+    prefix: string | boolean = true,
+) {
+    const path = endpoint.path as Path.IBuilder;
+    return path.build(pathArgs || undefined, { addStart: getPrefix(prefix) });
 }
 
 export function getTemplate<T extends IEndpointInfo>(endpoint: T, prefix: string | boolean = true) {
-    return endpoint.pathBuilder.template(DefaultSettings.templateArgPrefix, { addStart: getPrefix(prefix) });
+    return endpoint.path.template(DefaultSettings.templateArgPrefix, { addStart: getPrefix(prefix) });
 }
 
 export function getFormattedDisplayName(endpoint: IEndpointInfo) {

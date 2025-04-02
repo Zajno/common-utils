@@ -1,30 +1,40 @@
-import { Path } from '../structures/path/index.js';
-import { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
-import { EndpointMethods } from './methods.js';
+import type { Path } from '../structures/path/index.js';
+import type { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
+import type { EndpointMethods } from './methods.js';
 
-export interface IEndpointInfo {
-    readonly method: EndpointMethods;
-    readonly isForm?: boolean;
-
-    readonly pathBuilder: Path.IBuilder;
-
-    readonly displayName?: string;
-    readonly errorProcessor?: (err?: any) => void;
-
-    readonly queryKeys?: string[];
-}
+/**
+ * Definition of an abstract REST API endpoint.
+ */
+export interface IEndpointInfo extends IEndpointInfo.Base,
+    IEndpointInfo.IPath<readonly string[]>,
+    IEndpointInfo.IErrors<any>,
+    IEndpointInfo.IQuery<AnyObject> { }
 
 export namespace IEndpointInfo {
 
+    export type Base = {
+        /** HTTP method of the endpoint, defaults to `GET`. See {@link EndpointMethods}  */
+        readonly method: EndpointMethods;
+        /** Optional display name, for logging purposes. */
+        readonly displayName?: string;
+    };
+
     export interface IIn<TIn extends object | null> {
+        /** Marker for defining input type. */
         readonly in?: TIn;
     }
 
-    export class IOut<TOut> {
+    export interface IOut<TOut> {
+        /** Marker for defining output type. */
         readonly out?: TOut;
     }
 
     export interface IPath<TPath extends readonly string[]> {
+        /**
+         * Endpoint path, which can be static (just a string) or parametrized.
+         *
+         * See {@link Path}
+         */
         readonly path: Path.SwitchBuilder<TPath>;
     }
 
@@ -34,7 +44,7 @@ export namespace IEndpointInfo {
     export interface IQuery<TQuery extends object> {
         /** actual query keys to be used in argument object parsing */
         readonly queryKeys?: (string & keyof TQuery)[];
-        /** dummy marker object for better type determining */
+        /** Marker type for defining query shape. */
         readonly queryTemplate?: TQuery;
     }
 
@@ -43,8 +53,11 @@ export namespace IEndpointInfo {
     }
 
     export interface IHeaders<THeaders> {
+        /** Marker type for defining endpoint extra headers. */
         readonly headers?: THeaders;
     }
+
+    // HELPERS & EXTRACTORS
 
     type Any = AnyObject;
     type Empty = EmptyObjectNullable;

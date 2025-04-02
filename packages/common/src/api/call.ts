@@ -6,7 +6,7 @@ import { LogTypes } from './logging.js';
 import { getPath } from './helpers.js';
 
 /** Request options to be used by call implementation (e.g. interceptor). Passed as separate object argument to the call method.  */
-type Extra<T> = {
+export type RequestExtra<T> = {
     headers?: IEndpointInfo.ExtractHeaders<T>;
     log?: LogTypes<IEndpointInfo.ExtractIn<T>, IEndpointInfo.ExtractOut<T>>;
     noLoader?: boolean;
@@ -33,23 +33,47 @@ export type RequestConfigDetails<
 };
 
 type CallerOptions<TExtra extends object = Record<string, any>> = {
-    /** Additional hook before hading request config to implementation */
-    bodyValidation?: (api: IEndpointInfo, input: any) => Promise<void>;
-
     /** Request implementation */
     request: <TIn, TOut>(config: RequestConfigDetails<IEndpointInfo, TIn, TExtra>) => Promise<{ data: TOut }>;
+
+    hooks?: {
+        /**
+         * Called before config is created, to validate result input data.
+         * May throw to abort request. Use for input validation if needed.
+         */
+        beforeConfig?: <T extends IEndpointInfo = IEndpointInfo>(
+            api: T,
+            body: IEndpointInfo.ExtractIn<T>,
+            pathParams: IEndpointInfo.ExtractPath<T>,
+            queryParams: IEndpointInfo.ExtractQuery<T>,
+        ) => Promise<void> | void;
+
+        /**
+         * Called before request is sent.
+         * The config can be mutated or returned as updated object – in the latter case it will be merged into original config via `Object.assign`.
+         * This is useful for adding headers or modifying request data.
+         */
+        beforeRequest?: <
+            T extends IEndpointInfo = IEndpointInfo,
+            TIn = IEndpointInfo.ExtractIn<T>,
+            TExtra extends object = Record<string, any>
+        >(config: RequestConfigDetails<T, TIn, TExtra>) => Promise<void> | void | Promise<RequestConfigDetails<T, TIn, TExtra>> | RequestConfigDetails<T, TIn, TExtra>;
+    };
 };
 
 export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<T> | IEndpointInfo.ExtractPath<T> | IEndpointInfo.ExtractQuery<T>;
 
+export type GenericApiCaller<TExtra extends object = Record<string, any>> = ReturnType<typeof buildApiCaller<TExtra>>;
+export type ApiCaller<TEndpoint extends IEndpointInfo, TExtra extends object = Record<string, any>> = (data: EndpointCallArgs<TEndpoint>, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>;
+
 export function buildApiCaller<TExtra extends object = Record<string, any>>(options: CallerOptions<TExtra>) {
 
-    const { bodyValidation, request } = options;
+    const { request, hooks = {} } = options;
 
     return async function callApi<T extends IEndpointInfo>(
         api: T,
         data: EndpointCallArgs<T>,
-        extra?: Extra<T> & TExtra,
+        extra?: RequestExtra<T> & TExtra,
     ) {
 
         type TOut = IEndpointInfo.ExtractOut<T>;
@@ -64,9 +88,11 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
 
         const resultInput = data && { ...data } as TIn;
         const pathInputs: Record<string, string | number> = {};
+        const queryInputs: AnyObject = {};
         let queryStr: string = '';
 
-        const pathKeys = api.pathBuilder.args;
+        // extract path inputs from data
+        const pathKeys = api.path.args;
         if (resultInput && pathKeys?.length) {
             for (const key of pathKeys) {
                 pathInputs[key] = resultInput[key];
@@ -74,9 +100,9 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
             }
         }
 
+        // extract query inputs from data
         const queryKeysExpected = api.queryKeys;
         if (resultInput && queryKeysExpected?.length) {
-            const queryInputs: AnyObject = {};
             let empty = true;
             for (const key of queryKeysExpected) {
                 const v = resultInput[key];
@@ -87,14 +113,21 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
                 delete resultInput[key];
             }
 
+            // compile query string
             if (!empty) {
                 const params = new URLSearchParams(queryInputs);
                 queryStr = '?' + params.toString();
             }
         }
 
-        if (resultInput && bodyValidation) {
-            await bodyValidation(api, resultInput);
+        if (hooks.beforeConfig) {
+            // copy all inputs to avoid mutation
+            await hooks.beforeConfig(
+                api,
+                { ...resultInput },
+                { ...pathInputs } as IEndpointInfo.ExtractPath<T>,
+                { ...queryInputs } as IEndpointInfo.ExtractQuery<T>,
+            );
         }
 
         const sendingData = resultInput && Object.keys(resultInput).length > 0
@@ -114,8 +147,11 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
             _extra: restExtra as TExtra,
         };
 
-        if (api.isForm) {
-            config.headers['Content-Type'] = 'multipart/form-data';
+        if (hooks.beforeRequest) {
+            const result = await hooks.beforeRequest(config);
+            if (result && typeof result === 'object') {
+                Object.assign(config, result);
+            }
         }
 
         const response = await request(config) as { data: TOut };

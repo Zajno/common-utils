@@ -12,28 +12,28 @@ jobs:
   lint-build-test:
     if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./packages/common
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install packages
         run: npm i
 
       - name: Build
+        working-directory: ./packages/common
         run: npm run build
 
       - name: Lint
+        working-directory: ./packages/common
         run: npm run lint
 
       - name: Test
+        working-directory: ./packages/common
         run: npm run test
 
       - name: Coveralls
