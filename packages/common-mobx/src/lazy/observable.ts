@@ -1,4 +1,4 @@
-import { Lazy } from '@zajno/common/lazy/singleton';
+import { Lazy } from '@zajno/common/lazy';
 import { LazyPromise } from '@zajno/common/lazy/promise';
 import { observable, makeObservable, action } from 'mobx';
 import { ObservableTypes } from '../observing/types.js';

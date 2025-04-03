@@ -29,3 +29,18 @@ export interface ICountableModel {
     readonly selectedCount?: number;
     readonly isEmpty: boolean;
 }
+
+/** Lighter version of ES2015 Map with no constructor/symbols stuff. */
+export type IMapModel<K, V> = Pick<
+    Map<K, V>,
+    | 'clear'
+    | 'delete'
+    | 'get'
+    | 'has'
+    | 'set'
+    | 'size'
+    | 'entries'
+    | 'keys'
+    | 'values'
+    | 'forEach'
+>;

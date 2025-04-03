@@ -1,5 +1,7 @@
 import { observable, makeObservable, action } from 'mobx';
 import { PromiseCache } from '@zajno/common/structures/promiseCache';
+import { NumberModel } from '../viewModels/NumberModel.js';
+import { IMapModel, IValueModel } from '@zajno/common/models/types.js';
 
 export { DeferredGetter } from '@zajno/common/structures/promiseCache';
 
@@ -17,20 +19,14 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
 
         makeObservable<
             PromiseCacheObservable<T, K>,
-            '_itemsCache'
-                | '_itemsStatus'
-                | '_busyCount'
-                | 'setStatus'
-                | 'setPromise'
-                | 'onBeforeFetch'
-                | 'storeResult'
-                | 'onFetchComplete'
-                | '_set'
-                | 'clear'
+            | 'setStatus'
+            | 'setPromise'
+            | 'onBeforeFetch'
+            | 'storeResult'
+            | 'onFetchComplete'
+            | '_set'
+            | 'clear'
         >(this, {
-            _busyCount: observable,
-            _itemsCache: observable.shallow,
-            _itemsStatus: observable,
             setStatus: action,
             setPromise: action,
             onBeforeFetch: action,
@@ -46,6 +42,18 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
     useObserveItems(observeItems: boolean) {
         this._observeItems = observeItems;
         return this;
+    }
+
+    protected pure_createBusyCount(): IValueModel<number> {
+        return new NumberModel();
+    }
+
+    protected pure_createItemsCache(): IMapModel<string, T | null | undefined> {
+        return observable.map<string, T | null | undefined>(undefined, { deep: false });
+    }
+
+    protected pure_createItemsStatus(): IMapModel<string, boolean> {
+        return observable.map<string, boolean>();
     }
 
 

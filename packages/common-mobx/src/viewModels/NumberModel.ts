@@ -45,5 +45,3 @@ export class NumberModel implements INumberModel, IValueModel<number> {
     // @action
     decrement = (d = 1) => this.setValue(this._value - d);
 }
-
-export default NumberModel;

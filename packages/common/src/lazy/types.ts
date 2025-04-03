@@ -1,5 +1,5 @@
-import { IDisposable } from '../functions/disposer.js';
-import { IResetableModel } from '../models/types.js';
+import type { IDisposable } from '../functions/disposer.js';
+import type { IResetableModel } from '../models/types.js';
 
 export type ILazy<T> = IDisposable & IResetableModel & {
     readonly value: T;
