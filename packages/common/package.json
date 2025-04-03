@@ -56,6 +56,7 @@
     "./dates": "./src/dates/index.ts",
     "./fields": "./src/fields/index.ts",
     "./functions": "./src/functions/index.ts",
+    "./lazy": "./src/lazy/index.ts",
     "./localization": "./src/localization/index.ts",
     "./logger": "./src/logger/index.ts",
     "./math": "./src/math/index.ts",

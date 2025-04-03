@@ -34,10 +34,10 @@ export class LazyPromise<T> implements ILazyPromise<T> {
         return this._instance;
     }
 
-    public withExpire = (tracker: IExpireTracker | undefined) => {
+    public withExpire(tracker: IExpireTracker | undefined) {
         this._expireTracker = tracker;
         return this;
-    };
+    }
 
     protected ensureInstanceLoading() {
         if (this.busy === false && this._instance !== undefined && this._expireTracker?.isExpired) {
@@ -60,7 +60,7 @@ export class LazyPromise<T> implements ILazyPromise<T> {
         return res;
     }
 
-    public setInstance = (res: T | undefined) => {
+    public setInstance(res: T | undefined) {
         this._busy = false;
 
         // refresh promise so it won't keep old callbacks
@@ -75,13 +75,15 @@ export class LazyPromise<T> implements ILazyPromise<T> {
         }
 
         return res;
-    };
+    }
 
-    reset = () => {
+    reset() {
         this._busy = null;
         this._instance = this.initial;
         this._promise = undefined;
-    };
+    }
 
-    dispose = () => this.reset();
+    dispose() {
+        this.reset();
+    }
 }

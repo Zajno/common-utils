@@ -1,4 +1,4 @@
-import { Lazy } from '../singleton.js';
+import { Lazy } from '../lazy.js';
 import { LazyPromise } from '../promise.js';
 import { setTimeoutAsync } from '../../async/timeout.js';
 import { ExpireTracker } from '../../structures/expire.js';

@@ -1,5 +1,7 @@
 import { ThrottleProcessor } from '../functions/throttle.js';
 import { createLogger, ILogger } from '../logger/index.js';
+import { Model } from '../models/Model.js';
+import { IMapModel, IValueModel } from '../models/types.js';
 
 export type DeferredGetter<T> = {
     readonly current: T | null | undefined;
@@ -28,11 +30,12 @@ const BATCHING_DELAY = 200;
 */
 export class PromiseCache<T, K = string> {
 
-    protected _itemsCache: Record<string, T | null | undefined> = {};
-    protected _itemsStatus: Record<string, boolean> = {};
+    protected readonly _itemsCache: IMapModel<string, T | null | undefined>;
+    protected readonly _itemsStatus: IMapModel<string, boolean>;
+    protected readonly _busyCount: IValueModel<number>;
 
-    private _fetchCache: Record<string, Promise<T | null>> = {};
-    private _timestamps = new Map<string, number>();
+    private readonly _fetchCache: IMapModel<string, Promise<T | null>>;
+    private readonly _timestamps = new Map<string, number>();
 
     private _batch: ThrottleProcessor<K, T[]> | null = null;
     private _invalidationTimeMs: number | null = null;
@@ -40,17 +43,35 @@ export class PromiseCache<T, K = string> {
 
     private _logger: ILogger | null = null;
     private _version = 0;
-    protected _busyCount = 0;
 
     constructor(
         private readonly fetcher: (id: K) => Promise<T>,
         private readonly keyAdapter?: K extends string ? null : (k: K) => string,
         private readonly keyParser?: K extends string ? null : (id: string) => K,
     ) {
-        //
+        this._busyCount = this.pure_createBusyCount();
+        this._itemsCache = this.pure_createItemsCache();
+        this._itemsStatus = this.pure_createItemsStatus();
+        this._fetchCache = this.pure_createFetchCache();
     }
 
-    public get busyCount() { return this._busyCount; }
+    public get busyCount(): number { return this._busyCount.value; }
+
+    protected pure_createBusyCount(): IValueModel<number> {
+        return new Model(0);
+    }
+
+    protected pure_createItemsCache(): IMapModel<string, T | null | undefined> {
+        return new Map<string, T | null | undefined>();
+    }
+
+    protected pure_createItemsStatus(): IMapModel<string, boolean> {
+        return new Map<string, boolean>();
+    }
+
+    protected pure_createFetchCache(): IMapModel<string, Promise<T | null>> {
+        return new Map<string, Promise<T | null>>();
+    }
 
     private _pk(k: K): string {
         if (k == null) {
@@ -112,7 +133,7 @@ export class PromiseCache<T, K = string> {
 
     getIsBusy(id: K): boolean | undefined {
         const key = this._pk(id);
-        const res = this._itemsStatus[key];
+        const res = this._itemsStatus.get(key);
         if (res) {
             return res;
         }
@@ -124,7 +145,7 @@ export class PromiseCache<T, K = string> {
         const key = this._pk(id);
         const isInvalid = this.getIsInvalidated(key);
         // make sure current item is hooked here from the cache (required by observers)
-        const item = this._itemsCache[key];
+        const item = this._itemsCache.get(key);
         if (isInvalid) {
             this._logger?.log(key, 'item is invalidated');
         }
@@ -154,7 +175,7 @@ export class PromiseCache<T, K = string> {
             return Promise.resolve(item);
         }
 
-        let promise = this._fetchCache[key];
+        let promise = this._fetchCache.get(key);
         if (promise != null) {
             this._logger?.log(key, 'get: item resolved to <promise>');
             return promise;
@@ -183,7 +204,7 @@ export class PromiseCache<T, K = string> {
                 return res;
             }
 
-            if (this._fetchCache[key] != null) {
+            if (this._fetchCache.get(key) != null) {
                 this._logger?.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
                 this.storeResult(key, res);
@@ -210,29 +231,48 @@ export class PromiseCache<T, K = string> {
 
     hasKey(id: K) {
         const key = this._pk(id);
-        return this._itemsCache[key] !== undefined || this._itemsStatus[key] !== undefined;
+        return this._itemsCache.get(key) !== undefined || this._itemsStatus.get(key) !== undefined;
     }
 
-    keys() {
-        return Object.keys(this._itemsCache);
+    keys(iterate: true): MapIterator<string>;
+    keys(): string[];
+
+    keys(iterate: boolean = false) {
+        const iterator = this._itemsCache.keys();
+        return iterate
+            ? iterator
+            : Array.from(iterator);
     }
 
-    keysParsed() {
-        if (!this.keyParser) {
+    keysParsed(iterate: true): Generator<K> | null;
+    keysParsed(): K[] | null;
+
+    keysParsed(iterate: boolean = false) {
+        const kp = this.keyParser;
+        if (!kp) {
             return null;
         }
 
-        return this.keys().map(this.keyParser);
+        const keysIterator = this.keys(true);
+        if (!iterate) {
+            return Array.from(keysIterator, key => kp(key));
+        }
+
+        return (function* () {
+            for (const key of keysIterator) {
+                yield kp(key);
+            }
+        })();
     }
 
     clear() {
         ++this._version;
-        this._busyCount = 0;
+        this._busyCount.value = 0;
         this._batch?.clear();
 
-        this._itemsCache = {};
-        this._itemsStatus = {};
-        this._fetchCache = {};
+        this._itemsCache.clear();
+        this._itemsStatus.clear();
+        this._fetchCache.clear();
     }
 
     protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, busy: boolean | undefined) {
@@ -253,23 +293,23 @@ export class PromiseCache<T, K = string> {
     /** @override */
     protected setStatus(key: string, status: boolean) {
         this._logger?.log(key, 'status update:', status);
-        this._itemsStatus[key] = status;
+        this._itemsStatus.set(key, status);
     }
 
     /** @override */
     protected setPromise(key: string, promise: Promise<T | null>) {
-        this._fetchCache[key] = promise;
+        this._fetchCache.set(key, promise);
     }
 
     /** @override */
     protected storeResult(key: string, res: T | null) {
-        this._itemsCache[key] = res;
+        this._itemsCache.set(key, res);
         this._timestamps.set(key, Date.now());
     }
 
     /** @override */
     protected onBeforeFetch(_key: string) {
-        ++this._busyCount;
+        this._busyCount.value = this._busyCount.value + 1;
     }
 
     /** @override */
@@ -279,9 +319,9 @@ export class PromiseCache<T, K = string> {
 
     /** @override */
     protected onFetchComplete(key: string) {
-        --this._busyCount;
-        delete this._fetchCache[key];
-        this._itemsStatus[key] = false;
+        this._busyCount.value = this._busyCount.value - 1;
+        this._fetchCache.delete(key);
+        this._itemsStatus.set(key, false);
     }
 
     /** @pure */
@@ -309,10 +349,10 @@ export class PromiseCache<T, K = string> {
     }
 }
 
-function _setX<T>(key: string, obj: Record<string, T>, val: T) {
+function _setX<T>(key: string, map: IMapModel<string, T>, val: T) {
     if (val === undefined) {
-        delete obj[key];
+        map.delete(key);
     } else {
-        obj[key] = val;
+        map.set(key, val);
     }
 }

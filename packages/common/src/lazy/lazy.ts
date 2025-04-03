@@ -36,15 +36,15 @@ export class Lazy<T> implements ILazy<T> {
         return true;
     }
 
-    public withDisposer = (disposer: (prev: T) => void) => {
+    public withDisposer(disposer: (prev: T) => void) {
         this._disposer = disposer;
         return this;
-    };
+    }
 
-    public withExpire = (tracker: IExpireTracker | undefined) => {
+    public withExpire(tracker: IExpireTracker | undefined) {
         this._expireTracker = tracker;
         return this;
-    };
+    }
 
     private ensureInstance() {
         if (this.isValid) {

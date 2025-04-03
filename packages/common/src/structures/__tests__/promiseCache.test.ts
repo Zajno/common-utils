@@ -71,6 +71,7 @@ describe('PromiseCache', () => {
         expect(loaderFn).toHaveBeenCalledTimes(1);
 
         expect(cache.keys()).toStrictEqual(['123']);
+        expect(Array.from(cache.keys(true))).toStrictEqual(['123']);
         cache.invalidate(123);
         expect(cache.keys()).toStrictEqual([]);
 
@@ -111,6 +112,7 @@ describe('PromiseCache', () => {
 
         expect(cache.keys()).toStrictEqual(filler.map((_, i) => i.toString()));
         expect(cache.keysParsed()).toStrictEqual(filler.map((_, i) => i));
+        expect(Array.from(cache.keysParsed(true)!)).toStrictEqual(filler.map((_, i) => i));
 
         cache.invalidate(1);
 

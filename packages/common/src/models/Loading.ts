@@ -56,10 +56,10 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
         return withLoading(this, cb, exclusive);
     }
 
-    public reset = () => {
+    public reset() {
         this._firstInit = false;
         this._number.reset();
-    };
+    }
 
     public setValue(isLoading: boolean) {
         if (isLoading) {
