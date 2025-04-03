@@ -6,7 +6,7 @@ import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
 import { withLabel } from '@zajno/common/models/wrappers';
 import { Getter } from '@zajno/common/types/getter';
 import { Disposer, IDisposable } from '@zajno/common/functions/disposer';
-import NumberModel from './NumberModel.js';
+import { NumberModel } from './NumberModel.js';
 
 export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string | null>, IResetableModel, IDisposable {
     private _index: IValueModel<number> = new NumberModel();
@@ -54,7 +54,7 @@ export class Select<T = any> extends ValidatableModel<T> implements IValueModel<
 
     // @computed
     get items(): readonly T[] {
-        return Getter.getValue(this._items);
+        return Getter.toValue(this._items);
     }
 
     get value(): string | null { return this.selectedValue; }
