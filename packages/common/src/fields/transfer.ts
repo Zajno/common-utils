@@ -66,6 +66,7 @@ type ExtractChangedFieldsResult<T> = {
     result: Partial<T>;
 };
 
+// undefined fields are ignored
 export function extractChangedFields<T>(
     source: Partial<T>,
     image: T,

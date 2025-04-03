@@ -28,6 +28,7 @@ export async function forEachAsync<T>(target: ReadonlyArray<T>, cb: (v: T, index
     }
 }
 
+// The difference with Promise.all is that callbacks called sequentially
 export async function mapAsync<T, R>(target: ReadonlyArray<T>, cb: (v: T, index?: number, arr?: ReadonlyArray<T>) => Promise<R>): Promise<R[]> {
     const results: R[] = [];
     for (let i = 0; i < target.length; ++i) {

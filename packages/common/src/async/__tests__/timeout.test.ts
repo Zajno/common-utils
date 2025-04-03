@@ -1,5 +1,5 @@
 
-import { timeoutPromise } from '../timeout.js';
+import { timeoutPromise, setTimeoutAsync } from '../timeout.js';
 import { Event, oneTimeSubscription } from '../../observing/event.js';
 
 describe('Timeouts', () => {
@@ -70,5 +70,29 @@ describe('Timeouts', () => {
             expect(res.elapsed).toBeGreaterThanOrEqual(349);
             expect(res.elapsed).toBeLessThanOrEqual(410);
         });
+    });
+
+    it('setTimeoutAsync', async () => {
+
+        await expect(setTimeoutAsync(10)).resolves.not.toThrow();
+
+        let onCancel: (() => void) | undefined = undefined;
+        const p1 = setTimeoutAsync(10, cancel => {
+            onCancel = cancel;
+        });
+
+        expect(onCancel).not.toBeUndefined();
+        onCancel!();
+        await expect(p1).rejects.toThrow();
+        onCancel = undefined;
+
+        const p2 = setTimeoutAsync(10, cancel => {
+            onCancel = cancel;
+        });
+        await setTimeoutAsync(11);
+        expect(onCancel).not.toBeUndefined();
+        await expect(p2).resolves.not.toThrow();
+        onCancel!();
+        onCancel = undefined;
     });
 });
