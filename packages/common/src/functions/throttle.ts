@@ -1,4 +1,4 @@
-import { ManualPromise, createManualPromise } from '../async/misc.js';
+import { ManualPromise, createManualPromise } from '../async/manualPromise.js';
 import { createLogger, ILogger } from '../logger/index.js';
 import { random } from '../math/index.js';
 import { catchPromise } from './safe.js';

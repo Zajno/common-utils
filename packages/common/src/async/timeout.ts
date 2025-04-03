@@ -63,5 +63,6 @@ export function timeoutPromise<T>(p: Promise<T>, timeoutMs: number, waitForMinEl
 
 /** @deprecated Not Supported! Moved to `@zajno/common-web` package due to dependency on DOM's `requestAnimationFrame` */
 export function setTimeoutFramesAsync() {
+    /* istanbul ignore next -- @preserve */
     throw new Error('setTimeoutFramesAsync has been moved to "@zajno/common-web" because it depends on "window.requestAnimationFrame".');
 }

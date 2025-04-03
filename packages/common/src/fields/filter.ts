@@ -20,8 +20,3 @@ export function filterFields<T>(source: Partial<T>, ...fields: ((keyof T) | { ke
 
     return res;
 }
-
-export namespace filterFields {
-    export function Truethy<T>(): FieldFilter<T> { return (v) => !!v; }
-    export function NotNull<T>(): FieldFilter<T> { return v => v != null; }
-}
