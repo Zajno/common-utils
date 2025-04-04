@@ -1,13 +1,12 @@
 import {
     IErrorsLocalization,
-    ILocalizationDependency,
     ValidationErrorsFactory,
     ValidationErrorsStrings,
 } from './abstractions.js';
 import type { AnyObject } from '../types/misc.js';
 
 export class LocalizedValidationErrors<TStrings extends AnyObject, TErrors extends string | number>
-    implements IErrorsLocalization<TErrors>, ILocalizationDependency<TStrings> {
+    implements IErrorsLocalization<TErrors> {
 
     private _strings: ValidationErrorsStrings<TErrors> | null = null;
 

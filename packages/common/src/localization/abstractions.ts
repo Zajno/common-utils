@@ -8,9 +8,13 @@ export interface IErrorsLocalization<TErrors extends string | number> {
     readonly Errors: ValidationErrorsStrings<TErrors>
 }
 
-export interface ILocalizationDependency<TStrings extends AnyObject, TLocale extends string = any> {
-    updateLocale(strings: TStrings, locale?: TLocale): void;
-}
+export type StringsLoader<TStrings> = TStrings | (() => Promise<TStrings>);
+export type StringsDataSource<TLocale extends string, TStrings extends AnyObject> = Record<TLocale, StringsLoader<TStrings>>;
+
+export type LocaleStrings<TLocale extends string, TStrings extends AnyObject> = {
+    locale: TLocale;
+    strings: TStrings;
+};
 
 export type ValidationErrorsStrings<T extends string | number> = Partial<Record<T, string>>;
 
