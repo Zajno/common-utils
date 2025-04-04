@@ -1,3 +1,4 @@
+import { setTimeoutAsync } from '../../async/timeout.js';
 import { LocalizationManager } from '../LocalizationManager.js';
 
 describe('LocalizationManager', () => {
@@ -77,7 +78,10 @@ describe('LocalizationManager', () => {
         const manager = new LocalizationManager(dataSource, 'en' as Locales, EnStrings);
 
         await expect(manager.useLocale('unknown' as Locales)).rejects.toThrowError('LocalizationManager: No localization data for locale "unknown"');
+        expect(manager.Locale).toBe('en');
+
         await expect(manager.useLocale('de')).rejects.toThrowError('LocalizationManager: No localization data for locale "de"');
+        expect(manager.Locale).toBe('en');
     });
 
     it('throws on loader error', async () => {
@@ -92,6 +96,42 @@ describe('LocalizationManager', () => {
         );
 
         await expect(manager.useLocale('de')).rejects.toThrowError('LocalizationManager: Failed to load localization data for locale "de"');
+        expect(manager.Locale).toBe('en');
+        expect(manager.Current).toEqual(EnStrings);
     });
 
+    it('recovers from loader error w/ race condition', async () => {
+        const manager = new LocalizationManager(
+            {
+                ...dataSource,
+                'de': async () => {
+                    await setTimeoutAsync(10);
+                    throw new Error('Loader error');
+                },
+            },
+            'en' as Locales,
+        );
+
+        await expect(manager.firstInitialized).resolves.not.toThrow();
+        expect(manager.Locale).toBe('en');
+        expect(manager.Current).toEqual(EnStrings);
+
+        // starting loading of de locale which will fail
+        const p1 = manager.useLocale('de');
+        // immediately starting loading of ua locale which will succeed synchronously
+        const p2 = manager.useLocale('ua');
+
+        // check that ua locale is set immediately since it is sync
+        expect(manager.Locale).toBe('ua');
+
+        // wait for the de locale to finish loading and throw
+        await expect(p1).rejects.toThrow();
+
+        // check that ua locale was set successfully
+        await expect(p2).resolves.not.toThrow();
+
+        // check that locale is still ua
+        expect(manager.Locale).toBe('ua');
+        expect(manager.Current).toEqual(UaStrings);
+    });
 });

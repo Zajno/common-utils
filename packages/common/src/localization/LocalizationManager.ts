@@ -37,16 +37,26 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends An
             return Promise.resolve();
         }
 
-        // set locale immediately so it won't be updated twice in case instant second call
-        this._currentLocale = locale;
+        const prevLocale = this._currentLocale;
 
         const loader: StringsLoader<TStrings> | null = this._dataSource[locale];
         if (!loader) {
+            // just for throwing the same error
             return this.doUpdateStrings(locale, null);
         }
 
+        // set locale immediately so it won't be updated twice in case instant second call
+        this._currentLocale = locale;
+
+        // revert locale in case of error
+        const tryRevert = () => {
+            if (this._currentLocale === locale) {
+                this._currentLocale = prevLocale;
+            }
+        };
+
         if (typeof loader !== 'function') {
-            return this.doUpdateStrings(locale, loader);
+            return this.doUpdateStrings(locale, loader, tryRevert);
         }
 
         // async part is separated to make the method synchronous
@@ -55,18 +65,20 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends An
             try {
                 result = await loader();
             } catch (e) {
+                tryRevert();
                 throw new Error(
                     `LocalizationManager: Failed to load localization data for locale "${locale}"`,
                     { cause: e },
                 );
-            } finally {
-                this.doUpdateStrings(locale, result);
             }
+
+            await this.doUpdateStrings(locale, result, tryRevert);
         })();
     }
 
-    protected doUpdateStrings(locale: TLocaleType, strings: TStrings | null) {
+    protected doUpdateStrings(locale: TLocaleType, strings: TStrings | null, revert?: () => void): Promise<void> {
         if (!strings) {
+            revert?.();
             return Promise.reject(
                 new Error(`LocalizationManager: No localization data for locale "${locale}"`),
             );
