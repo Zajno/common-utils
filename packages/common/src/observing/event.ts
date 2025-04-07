@@ -78,17 +78,17 @@ export class Event<T = any> implements IEvent<T> {
 
         const errors: Error[] = [];
 
-        await forEachAsync(hh, async (cb: EventHandler<T>) => {
+        await forEachAsync(hh, async (cb: EventHandler<T>, index: number) => {
             try {
                 await cb(data);
             } catch (err) {
                 this.logError(data, cb, err);
                 if (err instanceof Error) {
-                    errors.push(err);
+                    errors[index] = err;
                 } else if (typeof err === 'string') {
-                    errors.push(new Error(err));
+                    errors[index] = new Error(err);
                 } else {
-                    errors.push(new Error(`Event handler thrown an exception: ${err as any}`));
+                    errors[index] = new Error(`Event handler thrown an exception: ${err as any}`);
                 }
             }
         });

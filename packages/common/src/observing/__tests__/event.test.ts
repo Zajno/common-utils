@@ -1,14 +1,15 @@
-import { Event, oneTimeSubscription } from '../observing/event.js';
-import { OneTimeLateEvent } from '../observing/event.late.js';
-import { setTimeoutAsync } from '../async/timeout.js';
-import { catchPromise } from '../functions/safe.js';
+import { Event, oneTimeSubscription } from '../event.js';
+import { setTimeoutAsync } from '../../async/timeout.js';
+import * as Logger from '../../logger/index.js';
 
 describe('Event', () => {
 
     it('calls handler', () => {
         const e = new Event<number>();
+
         const handler = vi.fn();
         e.on(handler);
+
         e.trigger(1);
         expect(handler).toHaveBeenCalledTimes(1);
         expect(handler).toHaveBeenCalledWith(1);
@@ -16,9 +17,12 @@ describe('Event', () => {
 
     it('unsusbcribes handler', () => {
         const e = new Event<number>();
+        expect(e.isEmpty).toBe(true);
         const handler = vi.fn();
         const unsubscribe = e.on(handler);
+        expect(e.isEmpty).toBe(false);
         unsubscribe();
+        expect(e.isEmpty).toBe(true);
         e.trigger(1);
         expect(handler).not.toHaveBeenCalled();
     });
@@ -77,7 +81,17 @@ describe('Event', () => {
         const handler1 = vi.fn();
 
         e.on(() => {
-            throw new Error('test');
+            throw new Error('test1');
+        });
+
+        e.on(() => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw 'test2';
+        });
+
+        e.on(() => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw 123;
         });
 
         e.on(async (arg) => {
@@ -85,7 +99,11 @@ describe('Event', () => {
             handler1(arg);
         });
 
-        await e.triggerAsync(123);
+        await expect(e.triggerAsync(123)).resolves.toEqual([
+            new Error('test1'),
+            new Error('test2'),
+            new Error('Event handler thrown an exception: 123'),
+        ]);
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler1).toHaveBeenCalledWith(123);
     });
@@ -119,55 +137,46 @@ describe('Event', () => {
         expect(handler2).toHaveBeenCalledTimes(1);
         expect(handler2).toHaveBeenCalledWith(2);
     });
-});
 
-describe('OneTimeLateEvent', () => {
+    it('with logger', () => {
+        const e = new Event<number>(false);
 
-    it('called only once', () => {
-        const e = new OneTimeLateEvent<number>();
-        const handler = vi.fn();
-        e.on(handler);
+        const handlerThrows = vi.fn(() => {
+            throw new Error('test');
+        });
+        e.on(handlerThrows);
+
+        const mockLogger = {
+            log: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+        } satisfies Logger.ILogger;
+
+        // test that `createLogger` was called
+        // mock `createLogger` so we can check arguments passed to it and we should return our mock logger
+        const createLoggerSpy = vi.spyOn(Logger, 'createLogger').mockReturnValue(mockLogger);
+        e.withLogger('test');
+        expect(createLoggerSpy).toHaveBeenCalledWith('[Event:test]');
+
+        e.withLogger(mockLogger);
+        expect((e as any)._logger).toBe(mockLogger);
+
+        // trigger the event and and check logger.error was called
         e.trigger(1);
+        expect(mockLogger.error).toHaveBeenCalledTimes(1);
+        expect(mockLogger.error).toHaveBeenCalledWith('[Event.number] Handler spy thrown an exception: ', new Error('test'));
+        expect(handlerThrows).toHaveBeenCalledTimes(1);
+        expect(handlerThrows).toHaveBeenCalledWith(1);
+        expect(handlerThrows).toHaveBeenCalledBefore(mockLogger.error);
+
+        mockLogger.error.mockReset();
+        handlerThrows.mockReset();
+
+        e.withLogger(null);
         e.trigger(2);
-        expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith(1);
-    });
+        expect(mockLogger.error).not.toHaveBeenCalled();
+        expect(handlerThrows).toHaveBeenCalledTimes(1);
+        expect(handlerThrows).toHaveBeenCalledWith(2);
 
-    it('called only once async', async () => {
-        const e = new OneTimeLateEvent<number>();
-        const handler = vi.fn();
-        e.on(handler);
-        catchPromise(e.triggerAsync(1));
-        catchPromise(e.triggerAsync(2));
-        await setTimeoutAsync(100);
-        expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith(1);
-    });
-
-    it('called immediately for late handler', () => {
-        const e = new OneTimeLateEvent<number>();
-        e.trigger(1);
-        const handler = vi.fn();
-        e.on(handler);
-        expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith(1);
-    });
-
-    it('callable after reset', () => {
-        const e = new OneTimeLateEvent<number>();
-        e.trigger(1);
-        const handler = vi.fn();
-        e.on(handler);
-
-        expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith(1);
-
-        handler.mockReset();
-
-        e.reset();
-        e.trigger(2);
-
-        expect(handler).toHaveBeenCalledTimes(1);
-        expect(handler).toHaveBeenCalledWith(2);
     });
 });
