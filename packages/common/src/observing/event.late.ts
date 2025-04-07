@@ -1,6 +1,14 @@
 import { catchPromise } from '../functions/safe.js';
 import { Event, EventHandler } from './event.js';
 
+/**
+ * One-time event that can be triggered only once, but listeners will be notified at the time of event or subscription, if it happens later.
+ *
+ * Useful for solving race conditions, when components initialization order is undetermined.
+ *
+ * Example usage: app initialization finished event, but some async components can subscribe later and be notified;
+ * So subscribers can be sure that the main initialization is finished.
+ */
 export class OneTimeLateEvent<T = any> extends Event<T> {
 
     private _triggeredWith: T | undefined = undefined;

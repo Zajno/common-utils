@@ -1,5 +1,5 @@
-import { AnyObject } from '../types/index.js';
-import * as Deep from '../types/deep.js';
+import { AnyObject } from '../index.js';
+import * as Deep from '../deep.js';
 
 describe('Deep Types', () => {
 

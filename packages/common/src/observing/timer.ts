@@ -9,6 +9,11 @@ export type TimerState = {
     now: number;
 };
 
+/**
+ * A timer wraps `setInterval` and provides a more convenient API.
+ * It will fire an event every `interval` milliseconds.
+ * It also may have duration which means it will stop when elapsed time is greater than or equal to the duration.
+ */
 export class Timer implements IDisposable, IEvent<TimerState> {
     private readonly _event = new Event<TimerState>();
     private readonly _onFinished = new Event<TimerState>();
