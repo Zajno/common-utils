@@ -17,26 +17,51 @@ describe('api/builder', () => {
             },
         });
 
-        const getEndpoint = ApiEndpoint.create().get<{ name: string }>();
-        const caller = buildApi(getEndpoint, callerBase);
+        {
+            const endpointGet = ApiEndpoint.create().get<{ name: string }>();
+            const caller = buildApi(endpointGet, callerBase);
 
-        expect(caller).toBeTruthy();
-        expect(typeof caller).toBe('function');
+            expect(caller).toBeTruthy();
+            expect(typeof caller).toBe('function');
 
-        const result = caller({ name: 'John' });
-        await expect(result).resolves.toEqual({ input: { name: 'John' } });
+            const result = caller();
+            await expect(result).resolves.toEqual({ input: undefined });
 
-        expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _noLoader: true,
-            _extra: {},
-            method: 'GET',
-            url: '/',
-            data: { name: 'John' },
-            headers: {},
-            _api: getEndpoint,
-        });
-        request.mockClear();
+            expect(request).toHaveBeenCalledWith({
+                _log: 'res',
+                _noLoader: true,
+                _extra: {},
+                method: 'GET',
+                url: '/',
+                data: undefined,
+                headers: {},
+                _api: endpointGet,
+            });
+            request.mockClear();
+        }
+
+        {
+            const endpointPost = ApiEndpoint.create().post<{ name: string }, null>();
+            const caller = buildApi(endpointPost, callerBase);
+
+            expect(caller).toBeTruthy();
+            expect(typeof caller).toBe('function');
+
+            const result = caller({ name: 'John' });
+            await expect(result).resolves.toEqual({ input: { name: 'John' } });
+
+            expect(request).toHaveBeenCalledWith({
+                _log: 'res',
+                _noLoader: false,
+                _extra: {},
+                method: 'POST',
+                url: '/',
+                data: { name: 'John' },
+                headers: {},
+                _api: endpointPost,
+            });
+            request.mockClear();
+        }
 
         // test with null-ish params
         await expect((async () => {
@@ -44,7 +69,7 @@ describe('api/builder', () => {
         })).rejects.toThrowError();
 
         await expect((async () => {
-            buildApi(getEndpoint, null as unknown as any);
+            buildApi(ApiEndpoint.create(), null as unknown as any);
         })).rejects.toThrowError();
     });
 
@@ -61,7 +86,7 @@ describe('api/builder', () => {
         });
 
         const Apis = {
-            inner: ApiEndpoint.create().get<{ name: string }>(),
+            inner: ApiEndpoint.create().post<{ name: string }, null>(),
             level2: {
                 level3: ApiEndpoint.create('get name').post<{ id: string }, { name: string }>(),
             },
@@ -78,9 +103,9 @@ describe('api/builder', () => {
 
         expect(request).toHaveBeenCalledWith({
             _log: 'res',
-            _noLoader: true,
+            _noLoader: false,
             _extra: {},
-            method: 'GET',
+            method: 'POST',
             url: '/',
             data: { name: 'John' },
             headers: {},

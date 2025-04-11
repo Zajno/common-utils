@@ -1,9 +1,9 @@
-import type { LengthArray, Nullable } from '../../types/misc.js';
+import type { EmptyObject, LengthArray, Nullable } from '../../types/misc.js';
 import type { CombineOptions } from './utils.js';
 
 export type ArgValue = string | number;
 
-export type ObjectBuilderArgs<TArgs extends string> = Record<TArgs, ArgValue>;
+export type ObjectBuilderArgs<TArgs extends string> = string extends TArgs ? EmptyObject : Record<TArgs, ArgValue>;
 export type BuilderArgs<TArgs extends string, L extends number = number> = LengthArray<ArgValue, L> | Record<TArgs, ArgValue>;
 export type TemplatePrefixing = Nullable<string | ((key: string, index: number) => string)>;
 
@@ -71,7 +71,7 @@ type ReadonlyArr<TArr extends ReadonlyArray<any>> = TArr extends ReadonlyArray<i
 
 export interface Builder<TArgs extends readonly string[]> extends BaseBuilder<ReadonlyArr<TArgs>, BuilderArgs<TArgs[number], TArgs['length']>> { }
 export interface StaticBuilder extends BaseBuilder<readonly [], EmptyBuilderArgs> { }
-export interface IBuilder extends BaseBuilder<readonly string[], BuilderArgs<string>> { }
+export interface IBuilder extends BaseBuilder<readonly string[], any> { }
 
 export type StaticInput = string // static one-component path
     | readonly string[]; // static multi-component path, will be joined with '/' (by default)
@@ -108,13 +108,13 @@ type CombineTwo<T1 extends BaseInput, T2 extends BaseInput> = Output<T1> extends
             : never)
     );
 
-export type CombineBuilders<T extends BaseInput[]> = T extends [infer T1 extends BaseInput, infer T2 extends BaseInput, ...infer Rest]
+export type CombineBuilders<T extends readonly BaseInput[]> = T extends readonly [infer T1 extends BaseInput, infer T2 extends BaseInput, ...infer Rest]
     ? (CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any> & BaseInput
-        ? (Rest extends BaseInput[]
-            ? CombineBuilders<[C, ...Rest]>
+        ? (Rest extends readonly BaseInput[]
+            ? CombineBuilders<readonly [C, ...Rest]>
             : never
         ) : never
-    ) : (T extends [infer T1]
+    ) : (T extends readonly [infer T1]
         ? Output<T1>
         : StaticBuilder
     );

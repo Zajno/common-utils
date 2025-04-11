@@ -6,7 +6,7 @@ import type { EndpointMethods } from './methods.js';
  * Definition of an abstract REST API endpoint.
  */
 export interface IEndpointInfo extends IEndpointInfo.Base,
-    IEndpointInfo.IPath<readonly string[]>,
+    IEndpointInfo.IPathAbstract,
     IEndpointInfo.IErrors<any>,
     IEndpointInfo.IQuery<AnyObject> { }
 
@@ -29,13 +29,25 @@ export namespace IEndpointInfo {
         readonly out?: TOut;
     }
 
-    export interface IPath<TPath extends readonly string[]> {
+    /**
+     * Helper interface for defining abstract path builder.
+     *
+     * `IPath<TPath>` should be assignable to `IPathAbstract`
+     */
+    export interface IPathAbstract {
+        /** Path builder with unknown args */
+        readonly path?: Path.IBuilder;
+    }
+
+    export interface IPath<TPath> {
         /**
          * Endpoint path, which can be static (just a string) or parametrized.
          *
          * See {@link Path}
          */
-        readonly path: Path.SwitchBuilder<TPath>;
+        readonly path: TPath extends readonly string[]
+            ? Path.SwitchBuilder<TPath>
+            : Path.StaticBuilder;
     }
 
     export type QueryKeysType = boolean | string | string[] | number | number[];
@@ -62,17 +74,24 @@ export namespace IEndpointInfo {
     type Any = AnyObject;
     type Empty = EmptyObjectNullable;
 
-    export type ExtractIn<T> = T extends IIn<infer TIn>
-        ? Coalesce<TIn>
-        : Empty;
+    export type ExtractIn<T, F = Empty> = T extends IIn<infer TIn>
+        ? Coalesce<TIn, F>
+        : F;
 
-    export type ExtractPath<T> = T extends IPath<infer TPath extends string[]>
-        ? (readonly [] extends TPath ? Empty : Path.ObjectBuilderArgs<TPath[number]>)
-        : Empty;
+    export type ExtractPath<T, F = Empty> = T extends IPath<infer TPath extends string[]>
+        ? (
+            readonly [] extends TPath
+                ? F
+                : readonly string[] extends TPath
+                    ? F
+                    : string extends TPath[number]
+                        ? F
+                        : Path.ObjectBuilderArgs<TPath[number]>
+        ) : F;
 
-    export type ExtractQuery<T> = T extends IQuery<infer TQuery extends QueryArgs>
+    export type ExtractQuery<T, F = Empty> = T extends IQuery<infer TQuery extends QueryArgs>
         ? TQuery
-        : Empty;
+        : F;
 
     export type ExtractOut<T> = T extends IOut<infer TOut>
         ? TOut

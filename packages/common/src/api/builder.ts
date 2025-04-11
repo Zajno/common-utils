@@ -2,10 +2,11 @@ import { IEndpointInfo } from './endpoint.types.js';
 import type { ApiCaller, EndpointCallArgs, GenericApiCaller } from './call.js';
 import { ApiEndpoint } from './endpoint.js';
 import { assert } from '../functions/assert.js';
+import { getTemplate } from './helpers.js';
 
-export interface IEndpointCaller<T extends IEndpointInfo, TExtra extends object = Record<string, any>> extends ApiCaller<T, TExtra> {
+export type IEndpointCaller<T extends IEndpointInfo, TExtra extends object = Record<string, any>> = ApiCaller<T, TExtra> & {
     readonly Endpoint: T;
-}
+};
 
 export type ApiDefinition = IEndpointInfo | {
     [key: string]: ApiDefinition;
@@ -30,19 +31,22 @@ export function buildApi<TApi extends ApiDefinition, TExtra extends object = Rec
     }
 
     return Object.entries(api).reduce((acc, [key, value]) => {
-        const next = value as ApiDefinition;
-        acc[key] = buildApi(next, caller);
+        const next = value;
+        if (next != null && typeof next === 'object') {
+            acc[key] = buildApi(next, caller);
+        }
         return acc;
     }, {} as Record<string, ApiRunner<any, TExtra>>) as ApiRunner<TApi, TExtra>;
 }
 
 /** Partial application: binding an endpoint to callApi, so only input data and extra are passed to a newly created function. */
 export function createEndpointCallable<
-    TEndpoint extends ApiEndpoint,
+    TEndpoint extends IEndpointInfo,
     TCaller extends GenericApiCaller<TExtra>,
     TExtra extends object = Record<string, any>,
 >(endpoint: TEndpoint, caller: TCaller) {
-    const name = `${endpoint.displayName || '?'}_${endpoint.method}_${endpoint.path.template()}`;
+    const path = getTemplate(endpoint)?.replaceAll('/', '_').replaceAll(':', '$');
+    const name = `${endpoint.displayName || '?'}_${endpoint.method}_${path}`;
 
     const fn = {
         [name]: function (data: EndpointCallArgs<TEndpoint>, extra?: Parameters<TCaller>[2]) { return caller<TEndpoint>(endpoint, data, extra); },

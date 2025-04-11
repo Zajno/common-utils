@@ -5,13 +5,6 @@ import type { IEndpointInfo } from './endpoint.types.js';
 
 /** @import { buildApiCaller } from "./call" */
 
-/** Not an ideal way to merge type because overlapping fields will be incorrectly overridden.
- *
- * Extractor types works okay unless there're no overlapping fields when extending endpoint type.
- *
- * That's a trade-off, because in case of `Omit` usage extractor type are still okay but chaining like with `asForm()` is broken. */
-type Merge<T, K> = K & T;
-
 export type { IEndpointInfo };
 
 /**
@@ -21,29 +14,29 @@ export type { IEndpointInfo };
  *
  * Basic definition {@link IEndpointInfo} which can be extended with additional properties and chaining mutation methods, see {@link IEndpointInfo.IForm} for example.
 */
-export interface ApiEndpoint extends IEndpointInfo {
+export interface ApiEndpoint extends IEndpointInfo.Base {
     /** Applies specified HTTP method */
     withMethod(method: EndpointMethods): this;
     /** Applies GET HTTP method and specifies output type */
-    get<TOut>(): Merge<this, IEndpointInfo.IOut<TOut>>;
+    get<TOut>(): this & IEndpointInfo.IOut<TOut>;
     /** Applies PUT HTTP method and specifies input and output types */
-    put<TIn extends object | null, TOut>(): Merge<this, IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>>;
+    put<TIn extends object | null, TOut>(): this & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
     /** Applies POST HTTP method and specifies input and output types */
-    post<TIn extends object | null, TOut>(): Merge<this, IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>>;
+    post<TIn extends object | null, TOut>(): this & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
     /** Applies DELETE HTTP method and specifies output type */
-    delete<TOut>(): Merge<this, IEndpointInfo.IOut<TOut>>;
+    delete<TOut>(): this & IEndpointInfo.IOut<TOut>;
 
     /** Applies a type based on {@link Path.IBuilder} type by accepting arguments for {@link Path.construct} function */
-    withPath<P extends Path.BaseInput[]>(...path: P): Merge<this, IEndpointInfo.IPath<Path.ExtractArgs<Path.CombineBuilders<P>>>>;
+    withPath<P extends readonly Path.BaseInput[]>(...path: P): this & IEndpointInfo.IPath<Path.ExtractArgs<Path.CombineBuilders<P>>>;
 
     /** Applies query type and also store query keys to make api caller be able to distinguish which keys should be ejected from request body. */
-    withQuery<TQ extends object>(...queryKeys: (string & keyof TQ)[]): Merge<this, IEndpointInfo.IQuery<TQ>>;
+    withQuery<TQ extends object>(...queryKeys: (string & keyof TQ)[]): this & IEndpointInfo.IQuery<TQ>;
 
     /** Applies error type, optionally stores error processor. */
-    withErrors<TErr>(errorProcessor?: (err: TErr) => void): Merge<this, IEndpointInfo.IErrors<TErr>>;
+    withErrors<TErr>(errorProcessor?: (err: TErr) => void): this & IEndpointInfo.IErrors<TErr>;
 
     /** Applies headers type. */
-    withHeaders<THeads>(_headersMarker?: THeads): Merge<this, IEndpointInfo.IHeaders<THeads>>;
+    withHeaders<THeads>(_headersMarker?: THeads): this & IEndpointInfo.IHeaders<THeads>;
 }
 
 export namespace ApiEndpoint {
@@ -51,14 +44,13 @@ export namespace ApiEndpoint {
     /** Since we don't use class anymore, we need another way to determine an object to be an Endpoint instance. */
     const ENDPOINT_OBJ_MARKER = '_ENDPOINT_OBJ_MARKER';
 
-    export function isEndpoint(obj: any): obj is ApiEndpoint {
-        return obj[ENDPOINT_OBJ_MARKER] === true;
+    export function isEndpoint(obj: any): obj is IEndpointInfo {
+        return obj && obj[ENDPOINT_OBJ_MARKER] === true && 'method' in obj;
     }
 
     function createBase(displayName?: string): ApiEndpoint {
 
         const data = {
-            path: Path.Empty,
             displayName,
             method: EndpointMethods.GET,
         };
@@ -90,10 +82,16 @@ export namespace ApiEndpoint {
                 return res as ApiEndpoint & IEndpointInfo.IOut<TOut>;
             },
 
-            withPath<P extends Path.BaseInput[]>(...path: P) {
-                const p = Path.construct(...path);
-                data.path = p;
-                return res as ApiEndpoint & IEndpointInfo.IPath<Path.ExtractArgs<Path.CombineBuilders<P>>>;
+            withPath<P extends readonly Path.BaseInput[]>(...p: P) {
+                const path = Path.construct(...p);
+                type TPath = IEndpointInfo.IPath<Path.ExtractArgs<Path.CombineBuilders<P>>>;
+
+                const pathPart = { path } as unknown as TPath;
+
+                return Object.assign(
+                    res,
+                    pathPart,
+                );
             },
 
             withQuery<TQ extends object>(...queryKeys: (string & keyof TQ)[]) {
@@ -151,4 +149,5 @@ export namespace ApiEndpoint {
     }
 
     export const create = createBuilder(createBase);
+
 }
