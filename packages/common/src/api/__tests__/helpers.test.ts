@@ -12,7 +12,11 @@ describe('api/helpers', () => {
     test('settings', () => {
         setDefaults(testSettings);
         expect(DefaultSettings).toEqual(testSettings);
-        expect(getPath(ApiEndpoint.create(), {}, true));
+        expect(getPath(ApiEndpoint.create().withPath(), {}, true)).toEqual('/api/');
+        expect(getPath(ApiEndpoint.create(), {}, true)).toEqual('/api/');
+
+        expect(getTemplate(ApiEndpoint.create())).toEqual('/api/');
+        expect(getTemplate(ApiEndpoint.create().withPath())).toEqual('/api/');
     });
 
     test('getPath', () => {

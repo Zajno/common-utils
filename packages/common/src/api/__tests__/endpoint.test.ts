@@ -4,6 +4,7 @@ import { EndpointMethods } from '../methods.js';
 import { Mutable } from '../../types/misc.js';
 import { IEndpointInputContentType } from '../extensions/contentType.js';
 import { IEndpointInputValidation } from '../extensions/validation.js';
+import { buildApiCaller } from '../call.js';
 
 describe('api/endpoint', () => {
 
@@ -79,6 +80,15 @@ describe('api/endpoint', () => {
                 console.log(i.id);
             });
 
+             buildApiCaller({
+                request: async () => null!,
+                hooks: {
+                    beforeConfig: async (api, body) => {
+                        // just type checking here
+                        await IEndpointInputValidation.tryValidate(api, body);
+                    },
+                },
+            });
         });
 
         it('custom', () => {

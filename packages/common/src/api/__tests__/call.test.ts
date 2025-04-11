@@ -1,5 +1,5 @@
 import { Path } from '../../structures/path/index.js';
-import { RequestConfigDetails, buildApiCaller } from '../call.js';
+import { EndpointCallArgs, RequestConfigDetails, buildApiCaller } from '../call.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
 import { IEndpointInputContentType } from '../extensions/contentType.js';
@@ -20,92 +20,118 @@ describe('api/call', () => {
             },
         });
 
-        const endpointGet = ApiEndpoint.create().get<{ name: string }>();
+        {
+            const endpointGet = ApiEndpoint.create().get<{ name: string }>();
 
-        expect(endpointGet.method).toBe('GET');
-        expect(endpointGet.displayName).toBeUndefined();
+            expect(endpointGet.method).toBe('GET');
+            expect(endpointGet.displayName).toBeUndefined();
 
-        await expect(caller(endpointGet, null)).resolves.toEqual({ input: undefined });
+            await expect(caller(endpointGet)).resolves.toEqual({ input: undefined });
 
-        expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _noLoader: true,
-            _extra: {},
-            method: 'GET',
-            url: '/',
-            data: undefined,
-            headers: {},
-            _api: endpointGet,
-        });
-        request.mockClear();
+            expect(request).toHaveBeenCalledWith({
+                _log: 'res',
+                _noLoader: true,
+                _extra: {},
+                method: 'GET',
+                url: '/',
+                data: undefined,
+                headers: {},
+                _api: endpointGet,
+            });
+            request.mockClear();
+        }
 
-        const endpoint = ApiEndpoint.create('Get User')
-            .post<{ token?: string }, { name: string }>()
-            .withPath(Path.build`/user/${'id'}`)
-            .withQuery<{ full?: boolean }>('full')
-            .withErrors<{ message: string }>()
-            .withHeaders<{ 'x-token': string }>();
+        {
+            const endpointPost = ApiEndpoint.create('yo').post<{ name: string }, null>();
 
-        expect(endpoint.displayName).toBe('Get User');
-        expect(endpoint.method).toBe('POST');
-        expect(endpoint.queryKeys).toEqual(['full']);
+            expect(endpointPost.method).toBe('POST');
+            expect(endpointPost.displayName).toBe('yo');
 
-        await expect(caller(
-            endpoint,
-            { id: '123' },
-            { headers: { 'x-token': '123' }, someRandomExtraField: 'extra' },
-        )).resolves.toEqual({ input: undefined });
+            await expect(caller(endpointPost, { name: 'hello' })).resolves.toEqual({ input: { name: 'hello' } });
 
-        expect(request).toHaveBeenCalledWith({
-            _extra: {
-                someRandomExtraField: 'extra',
-            },
-            _log: 'res',
-            _noLoader: false,
-            method: 'POST',
-            url: '/user/123',
-            data: undefined,
-            headers: { 'x-token': '123' },
-            _api: endpoint,
-        });
-        request.mockClear();
+            expect(request).toHaveBeenCalledWith({
+                _log: 'res',
+                _noLoader: false,
+                _extra: {},
+                method: 'POST',
+                url: '/',
+                data: { name: 'hello' },
+                headers: {},
+                _api: endpointPost,
+            });
+            request.mockClear();
+        }
 
-        await expect(caller(
-            endpoint,
-            { id: 312, full: true, token: 'hey' },
-            { log: 'full', noLoader: true },
-        )).resolves.toEqual({ input: { token: 'hey' } });
+        {
+            const endpoint = ApiEndpoint.create('Get User')
+                .post<{ token?: string }, { name: string }>()
+                .withPath(Path.build`/user/${'id'}`)
+                .withQuery<{ full?: boolean }>('full')
+                .withErrors<{ message: string }>()
+                .withHeaders<{ 'x-token': string }>();
 
-        expect(request).toHaveBeenCalledWith({
-            _log: 'full',
-            _extra: {},
-            _noLoader: true,
-            method: 'POST',
-            url: '/user/312?full=true',
-            data: { token: 'hey' },
-            headers: {},
-            _api: endpoint,
-        });
-        request.mockClear();
+            expect(endpoint.displayName).toBe('Get User');
+            expect(endpoint.method).toBe('POST');
+            expect(endpoint.queryKeys).toEqual(['full']);
+
+            await expect(caller(
+                endpoint,
+                { id: '123' },
+                { headers: { 'x-token': '123' }, someRandomExtraField: 'extra' },
+            )).resolves.toEqual({ input: undefined });
+
+            expect(request).toHaveBeenCalledWith({
+                _extra: {
+                    someRandomExtraField: 'extra',
+                },
+                _log: 'res',
+                _noLoader: false,
+                method: 'POST',
+                url: '/user/123',
+                data: undefined,
+                headers: { 'x-token': '123' },
+                _api: endpoint,
+            });
+            request.mockClear();
 
 
-        await expect(caller(
-            endpoint,
-            { id: 312, full: false, token: 'hey' },
-            { log: 'full', noLoader: true },
-        )).resolves.toEqual({ input: { token: 'hey' } });
+            await expect(caller(
+                endpoint,
+                { id: 312, full: true, token: 'hey' },
+                { log: 'full', noLoader: true },
+            )).resolves.toEqual({ input: { token: 'hey' } });
 
-        expect(request).toHaveBeenCalledWith({
-            _log: 'full',
-            _extra: {},
-            _noLoader: true,
-            method: 'POST',
-            url: '/user/312?full=false',
-            data: { token: 'hey' },
-            headers: {},
-            _api: endpoint,
-        });
-        request.mockClear();
+            expect(request).toHaveBeenCalledWith({
+                _log: 'full',
+                _extra: {},
+                _noLoader: true,
+                method: 'POST',
+                url: '/user/312?full=true',
+                data: { token: 'hey' },
+                headers: {},
+                _api: endpoint,
+            });
+            request.mockClear();
+
+
+            await expect(caller(
+                endpoint,
+                { id: 312, full: false, token: 'hey' },
+                { log: 'full', noLoader: true },
+            )).resolves.toEqual({ input: { token: 'hey' } });
+
+            expect(request).toHaveBeenCalledWith({
+                _log: 'full',
+                _extra: {},
+                _noLoader: true,
+                method: 'POST',
+                url: '/user/312?full=false',
+                data: { token: 'hey' },
+                headers: {},
+                _api: endpoint,
+            });
+            request.mockClear();
+        }
 
         const formEndpoint = ApiEndpoint.create()
             .post<{ token: string }, null>();
@@ -124,7 +150,7 @@ describe('api/call', () => {
             method: 'POST',
             url: '/',
             data: { token: '123' },
-            headers: { },
+            headers: {},
             _api: formEndpoint,
         });
         request.mockClear();
@@ -152,7 +178,20 @@ describe('api/call', () => {
             .post<{ email: string | null, password: string | null }, { token: string }>()
             .withPath([base, 'user']);
 
-        await expect(caller(endpoint, { email: '123', password: '321' })).resolves.toEqual({ input: { email: '123', password: '321' } });
+        const args: EndpointCallArgs<typeof endpoint> = { email: '123', password: null };
+
+        await expect(caller(endpoint, args)).resolves.toEqual({ input: args });
+
+        expect(request).toHaveBeenCalledWith({
+            _api: endpoint,
+            _extra: {},
+            _log: 'res',
+            _noLoader: false,
+            headers: {},
+            method: 'POST',
+            data: args,
+            url: '/api/user',
+        });
     });
 
     test('input type', () => {
@@ -163,34 +202,48 @@ describe('api/call', () => {
         });
 
         const endpoint = ApiEndpoint.create()
-            .post<{ id: string }, { name: string }>()
+            .post<null, { name: string }>()
             .withPath(Path.build`offers/${'id'}`);
 
-        // TODO fix this:
-        // @ ts-expect-error - id is missing
-        caller(endpoint, { });
+        // @ts-expect-error - id is missing
+        caller(endpoint, {});
 
         const endpoint2 = ApiEndpoint.create()
             .post<null, string>()
             .withQuery<{ id: string }>('id');
 
-        // type QueryType = IEndpointInfo.ExtractQuery<typeof endpoint2>;
-
-        // TODO fix this:
-        // @ ts-expect-error - id is missing when it's not optional
+        // @ts-expect-error - id is missing when it's not optional
         caller(endpoint2, null);
-        caller(endpoint2, { });
+        // @ts-expect-error - id is missing when it's not optional
+        caller(endpoint2, {});
 
         // @ts-expect-error - id is not a string/number
         caller(endpoint2, { id: true });
+
+        caller(endpoint2, { id: '123' });
 
         const endpoint3 = ApiEndpoint.create()
             .post<null, string>()
             .withQuery<{ id: string[], str?: string, num?: number }>('id', 'str', 'num');
 
-
         // no error here for missing optional fields
         caller(endpoint3, { id: ['123'] });
+
+        {
+            const e = ApiEndpoint.create()
+                .post<{ name: string }, null>()
+                .withPath(
+                    Path.build`${'id'}`
+                        .asOptional(),
+                );
+
+            // OK: accepts all args
+            caller(e, { name: '123', id: 123 });
+            // OK: accepts all but optional
+            caller(e, { name: '123' });
+            // @ts-expect-error ERROR: does not accept without required
+            caller(e, { id: 123 });
+        }
     });
 
     test('output type', () => {
@@ -208,7 +261,7 @@ describe('api/call', () => {
             .withPath(prefix, Path.build`offers/${'id'}`);
 
         const outEx: IEndpointInfo.ExtractOut<typeof endpoint> = { name: '123', id: 123 };
-        const _callE = () => caller(endpoint, null);
+        const _callE = () => caller(endpoint);
 
         // check that caller returns the same type as the endpoint declares
         function testOut(out: IEndpointInfo.ExtractOut<typeof endpoint>) {
@@ -250,7 +303,7 @@ describe('api/call', () => {
             .asMultipartForm()
             .post<{ id: string }, { name: string }>();
 
-        await expect(caller(endpoint, { id: 123 })).resolves.toEqual({ input: { id: 123 } });
+        await expect(caller(endpoint, { id: '123' })).resolves.toEqual({ input: { id: '123' } });
 
         expect(hook).toHaveBeenCalled();
 
@@ -260,7 +313,7 @@ describe('api/call', () => {
             _noLoader: false,
             method: 'POST',
             url: '/',
-            data: { id: 123 },
+            data: { id: '123' },
             _api: endpoint,
             headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -272,8 +325,8 @@ describe('api/call', () => {
 
             expect(api).toEqual(endpoint);
             expect(body).toEqual({ id: 123 });
-            expect(path).toEqual({ });
-            expect(query).toEqual({ });
+            expect(path).toEqual({});
+            expect(query).toEqual({});
 
             await IEndpointInputValidation.tryValidate(api, body);
         });
@@ -294,7 +347,7 @@ describe('api/call', () => {
         });
 
         const endpoint = ApiEndpoint.create.extend(IEndpointInputValidation.extender)()
-            .post<{ id: string }, { name: string }>()
+            .post<{ id: string | number }, { name: string }>()
             .withValidation(validation);
 
         await expect(caller(endpoint, { id: 123 })).resolves.toEqual({ input: { id: 123 } });

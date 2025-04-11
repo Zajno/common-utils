@@ -1,83 +1,28 @@
 import { PostProcessors, PreProcessors } from './register.js';
 import { AnyObject } from '../types/index.js';
 import { IEndpointInfo } from './endpoint.js';
-import { EndpointMethods } from './methods.js';
-import { LogTypes } from './logging.js';
 import { getPath } from './helpers.js';
+import type {
+    CallerOptions,
+    EndpointCallArgs,
+    GenericApiCaller,
+    RequestConfigDetails,
+    RequestExtra,
+} from './call.types.js';
 
-/** Request options to be used by call implementation (e.g. interceptor). Passed as separate object argument to the call method.  */
-export type RequestExtra<T> = {
-    headers?: IEndpointInfo.ExtractHeaders<T>;
-    log?: LogTypes<IEndpointInfo.ExtractIn<T>, IEndpointInfo.ExtractOut<T>>;
-    noLoader?: boolean;
-};
+export type * from './call.types.js';
 
-export type RequestConfig<TIn> = {
-    method: EndpointMethods | string & Record<never, never>;
-    url: string;
-    data: TIn | null | undefined;
-    headers: AnyObject;
-};
-
-/** Compiled request config object passed to `request` implementation */
-export type RequestConfigDetails<
-    T extends IEndpointInfo = IEndpointInfo,
-    TIn = IEndpointInfo.ExtractIn<T>,
-    TExtra extends object = Record<string, any>
-> = RequestConfig<TIn> & {
-    _api: T;
-    _noLoader?: boolean;
-    _log?: LogTypes;
-    /** Additional data passed to the request implementation */
-    _extra?: TExtra;
-};
-
-type CallerOptions<TExtra extends object = Record<string, any>> = {
-    /** Request implementation */
-    request: <TIn, TOut>(config: RequestConfigDetails<IEndpointInfo, TIn, TExtra>) => Promise<{ data: TOut }>;
-
-    hooks?: {
-        /**
-         * Called before config is created, to validate result input data.
-         * May throw to abort request. Use for input validation if needed.
-         */
-        beforeConfig?: <T extends IEndpointInfo = IEndpointInfo>(
-            api: T,
-            body: IEndpointInfo.ExtractIn<T>,
-            pathParams: IEndpointInfo.ExtractPath<T>,
-            queryParams: IEndpointInfo.ExtractQuery<T>,
-        ) => Promise<void> | void;
-
-        /**
-         * Called before request is sent.
-         * The config can be mutated or returned as updated object – in the latter case it will be merged into original config via `Object.assign`.
-         * This is useful for adding headers or modifying request data.
-         */
-        beforeRequest?: <
-            T extends IEndpointInfo = IEndpointInfo,
-            TIn = IEndpointInfo.ExtractIn<T>,
-            TExtra extends object = Record<string, any>
-        >(config: RequestConfigDetails<T, TIn, TExtra>) => Promise<void> | void | Promise<RequestConfigDetails<T, TIn, TExtra>> | RequestConfigDetails<T, TIn, TExtra>;
-    };
-};
-
-export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<T> | IEndpointInfo.ExtractPath<T> | IEndpointInfo.ExtractQuery<T>;
-
-export type GenericApiCaller<TExtra extends object = Record<string, any>> = ReturnType<typeof buildApiCaller<TExtra>>;
-export type ApiCaller<TEndpoint extends IEndpointInfo, TExtra extends object = Record<string, any>> = (data: EndpointCallArgs<TEndpoint>, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>;
-
-export function buildApiCaller<TExtra extends object = Record<string, any>>(options: CallerOptions<TExtra>) {
+export function buildApiCaller<TExtra extends object = Record<string, any>>(options: CallerOptions<TExtra>): GenericApiCaller<TExtra> {
 
     const { request, hooks = {} } = options;
 
     return async function callApi<T extends IEndpointInfo>(
         api: T,
-        data: EndpointCallArgs<T>,
+        data?: EndpointCallArgs<T> | null,
         extra?: RequestExtra<T> & TExtra,
     ) {
-
         type TOut = IEndpointInfo.ExtractOut<T>;
-        type TIn = IEndpointInfo.ExtractIn<T>;
+        type TIn = IEndpointInfo.ExtractIn<T, object>;
 
         const {
             headers,
@@ -86,13 +31,13 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
             ...restExtra
         } = extra || {};
 
-        const resultInput = data && { ...data } as TIn;
+        const resultInput = data && { ...data };
         const pathInputs: Record<string, string | number> = {};
         const queryInputs: AnyObject = {};
         let queryStr: string = '';
 
         // extract path inputs from data
-        const pathKeys = api.path.args;
+        const pathKeys = api.path?.args;
         if (resultInput && pathKeys?.length) {
             for (const key of pathKeys) {
                 pathInputs[key] = resultInput[key];
@@ -124,9 +69,9 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
             // copy all inputs to avoid mutation
             await hooks.beforeConfig(
                 api,
-                { ...resultInput },
-                { ...pathInputs } as IEndpointInfo.ExtractPath<T>,
-                { ...queryInputs } as IEndpointInfo.ExtractQuery<T>,
+                { ...resultInput } as IEndpointInfo.ExtractIn<T, object>,
+                { ...pathInputs } as IEndpointInfo.ExtractPath<T, object>,
+                { ...queryInputs } as IEndpointInfo.ExtractQuery<T, object>,
             );
         }
 

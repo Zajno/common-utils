@@ -61,6 +61,7 @@ export type PickNullable<T, K extends keyof T> = {
 };
 
 export type EmptyObjectNullable = (EmptyObject | null | undefined);
+export type IsNever<T, Y, N> = [T] extends [never] ? Y : N;
 export type Coalesce<T, TReplace = EmptyObjectNullable> = [T] extends [never] | [null] | [undefined]
     ? TReplace
     : T
