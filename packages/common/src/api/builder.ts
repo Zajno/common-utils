@@ -45,7 +45,7 @@ export function createEndpointCallable<
     TCaller extends GenericApiCaller<TExtra>,
     TExtra extends object = Record<string, any>,
 >(endpoint: TEndpoint, caller: TCaller) {
-    const path = getTemplate(endpoint)?.replaceAll('/', '_').replaceAll(':', '$');
+    const path = getTemplate(endpoint).replaceAll('/', '_').replaceAll(':', '$') || 'root';
     const name = `${endpoint.displayName || '?'}_${endpoint.method}_${path}`;
 
     const fn = {
