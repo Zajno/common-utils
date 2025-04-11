@@ -226,9 +226,24 @@ describe('api/call', () => {
             .post<null, string>()
             .withQuery<{ id: string[], str?: string, num?: number }>('id', 'str', 'num');
 
-
         // no error here for missing optional fields
         caller(endpoint3, { id: ['123'] });
+
+        {
+            const e = ApiEndpoint.create()
+                .post<{ name: string }, null>()
+                .withPath(
+                    Path.build`${'id'}`
+                        .asOptional(),
+                );
+
+            // OK: accepts all args
+            caller(e, { name: '123', id: 123 });
+            // OK: accepts all but optional
+            caller(e, { name: '123' });
+            // @ts-expect-error ERROR: does not accept without required
+            caller(e, { id: 123 });
+        }
     });
 
     test('output type', () => {

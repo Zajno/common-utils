@@ -52,6 +52,10 @@ describe('PathBuilder', () => {
         const e3 = construct(build`path/to`);
         // @ts-expect-error extraneous args
         expect(e3.build({ asd: 123 })).toBe('path/to');
+
+        // @ts-expect-error `asOptional` is not available on static builder
+        const e4 = e3.asOptional?.() ?? e3;
+        expect(e4.build({})).toBe('path/to');
     });
 
     test('should build path', () => {
@@ -138,7 +142,7 @@ describe('PathBuilder', () => {
             expect(example.build()).toBe('api/user');
 
             // @ts-expect-error missing args
-            expect(example.build({ })).toBe('api/user');
+            expect(example.build({})).toBe('api/user');
         });
 
         test('more types', () => {
@@ -155,6 +159,68 @@ describe('PathBuilder', () => {
 
             const d2 = build`${'version'}`.as<IBuilder>();
             expect(d2.args).toEqual(['version']);
+
+            { // check `asOptional`
+                const id = build`${'id'}`;
+
+                // ok case
+                const res0 = id.build({ id: 123 });
+                expect(res0).toBe('123');
+
+                // @ts-expect-error `id` is required
+                const res1 = id.build({});
+                expect(res1).toEqual('');
+
+                const optional = id.asOptional();
+                const res2 = optional.build({}); // ok, no error
+                expect(res2).toBe('');
+
+                optional.build({ id: undefined }); // ok, no error
+                optional.build({ id: null }); // ok, no error
+            }
+
+            { // check `asOptional` in pair with combiner/constructor
+                const id = construct('user', build`${'id'}`, build`${'type'}`);
+
+                // ok case
+                const res0 = id.build({ id: 123, type: 'full' });
+                expect(res0).toBe('user/123/full');
+
+                // @ts-expect-error `id` is required
+                const res1 = id.build({ type: 'full' });
+                expect(res1).toBe('user/full');
+
+                // @ts-expect-error `type` is required
+                const res11 = id.build({ id: 123 });
+                expect(res11).toBe('user/123');
+
+                const optional = id.asOptional();
+                const res2 = optional.build({}); // ok, no error
+                expect(res2).toBe('user');
+            }
+
+            { // check `asOptional` for combined
+                const id = construct(
+                    'user',
+                    build`${'id'}`,
+                    build`${'type'}`
+                        .asOptional(),
+                );
+
+                // ok: all accepted
+                const res0 = id.build({ id: 123, type: 'full' });
+                expect(res0).toBe('user/123/full');
+
+                // ok: skipping optional
+                const res1 = id.build({ id: 123 });
+                expect(res1).toBe('user/123');
+
+                // TODO: error: skipping NOT optional
+                let res2 = id.build({ type: '123' });
+                expect(res2).toBe('user/123');
+                res2 = id.build({ });
+                expect(res2).toBe('user');
+            }
         });
     });
 
@@ -239,11 +305,11 @@ describe('PathBuilder', () => {
                 .withBuildTransform({})
                 .withTemplateTransform({})
                 .withDefaults({ separator: '$#*@%T&*' })
-            ;
+                ;
 
             expect(transformed.build()).toBe('api/v1');
-            expect(transformed.build({ }, { separator: '1231234' })).toBe('api/v1');
-            expect(transformed.build({ }, { separator: '?', addStart: true, addTrail: true })).toBe('?api/v1?');
+            expect(transformed.build({}, { separator: '1231234' })).toBe('api/v1');
+            expect(transformed.build({}, { separator: '?', addStart: true, addTrail: true })).toBe('?api/v1?');
 
             expect(transformed.template()).toBe('api/v1');
             expect(transformed.template(':')).toBe('api/v1');

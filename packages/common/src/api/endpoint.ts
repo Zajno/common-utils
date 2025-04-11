@@ -27,7 +27,7 @@ export interface ApiEndpoint extends IEndpointInfo.Base {
     delete<TOut>(): this & IEndpointInfo.IOut<TOut>;
 
     /** Applies a type based on {@link Path.IBuilder} type by accepting arguments for {@link Path.construct} function */
-    withPath<P extends readonly Path.BaseInput[]>(...path: P): this & IEndpointInfo.IPath<Path.ExtractArgs<Path.CombineBuilders<P>>>;
+    withPath<P extends readonly Path.BaseInput[]>(...path: P): this & IEndpointInfo.IPath<Path.CombineBuilders<P>>;
 
     /** Applies query type and also store query keys to make api caller be able to distinguish which keys should be ejected from request body. */
     withQuery<TQ extends object>(...queryKeys: (string & keyof TQ)[]): this & IEndpointInfo.IQuery<TQ>;
@@ -84,13 +84,9 @@ export namespace ApiEndpoint {
 
             withPath<P extends readonly Path.BaseInput[]>(...p: P) {
                 const path = Path.construct(...p);
-                type TPath = IEndpointInfo.IPath<Path.ExtractArgs<Path.CombineBuilders<P>>>;
-
-                const pathPart = { path } as unknown as TPath;
-
                 return Object.assign(
                     res,
-                    pathPart,
+                    { path },
                 );
             },
 

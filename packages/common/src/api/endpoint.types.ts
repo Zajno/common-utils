@@ -39,15 +39,13 @@ export namespace IEndpointInfo {
         readonly path?: Path.IBuilder;
     }
 
-    export interface IPath<TPath> {
+    export interface IPath<TPath extends Path.IBuilder> {
         /**
          * Endpoint path, which can be static (just a string) or parametrized.
          *
          * See {@link Path}
          */
-        readonly path: TPath extends readonly string[]
-            ? Path.SwitchBuilder<TPath>
-            : Path.StaticBuilder;
+        readonly path: TPath;
     }
 
     export type QueryKeysType = boolean | string | string[] | number | number[];
@@ -78,16 +76,9 @@ export namespace IEndpointInfo {
         ? Coalesce<TIn, F>
         : F;
 
-    export type ExtractPath<T, F = Empty> = T extends IPath<infer TPath extends string[]>
-        ? (
-            readonly [] extends TPath
-                ? F
-                : readonly string[] extends TPath
-                    ? F
-                    : string extends TPath[number]
-                        ? F
-                        : Path.ObjectBuilderArgs<TPath[number]>
-        ) : F;
+    export type ExtractPath<T, F = Empty> = T extends IPath<infer TPath extends Path.IBuilder>
+        ? Path.ExtractObjectArgs<TPath, F>
+        : F;
 
     export type ExtractQuery<T, F = Empty> = T extends IQuery<infer TQuery extends QueryArgs>
         ? TQuery

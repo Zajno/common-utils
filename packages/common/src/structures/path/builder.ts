@@ -103,6 +103,7 @@ export function build<TArgs extends string[]>(
         template,
         args: params,
         as() { return this as any; },
+        asOptional() { return this as any; },
         withDefaults(defaults) {
             defaultOptions = defaults;
             return this;
@@ -120,7 +121,7 @@ export function build<TArgs extends string[]>(
     return result as SwitchBuilder<TArgs>;
 }
 
-const constructStatic = (input: StaticInput): StaticBuilder => {
+const constructStatic = (input: StaticInput): StaticBuilder & { asOptional?(): never; } => {
     let staticPath: string | undefined = undefined;
 
     /* istanbul ignore else  -- @preserve */
@@ -164,7 +165,7 @@ export function construct<TArr extends BaseInput[]>(...inputs: TArr): CombineBui
     };
 
     if (inputs.length === 1) {
-        return convertToOutput(inputs[0]) as CombineBuilders<TArr>;
+        return convertToOutput(inputs[0]) as unknown as CombineBuilders<TArr>;
     }
 
     const outputs = inputs.map(convertToOutput);
@@ -189,6 +190,7 @@ export function construct<TArr extends BaseInput[]>(...inputs: TArr): CombineBui
         },
         args,
         as() { return this as any; },
+        asOptional() { return this as any; },
         withDefaults(defaults: CombineOptions) {
             outputs.forEach(o => o.withDefaults(defaults));
             return this;

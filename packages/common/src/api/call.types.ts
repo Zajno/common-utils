@@ -1,3 +1,4 @@
+import type { Path } from '../structures/path/index.js';
 import type { AnyObject } from '../types/misc.js';
 import type { IEndpointInfo } from './endpoint.types.js';
 import type { LogTypes } from './logging.js';
@@ -64,7 +65,7 @@ export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<
     & IEndpointInfo.ExtractQuery<T, object>;
 
 type IEndpointNoArgs = IEndpointInfo.Base
-    & (IEndpointInfo.IPath<readonly string[]> | IEndpointInfo.IPathAbstract)
+    & (IEndpointInfo.IPath<Path.StaticBuilder> | IEndpointInfo.IPathAbstract)
     & IEndpointInfo.IIn<null>
     & IEndpointInfo.IQuery<Record<string, never>>;
 

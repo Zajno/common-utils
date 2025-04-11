@@ -3,10 +3,20 @@ import type { CombineOptions } from './utils.js';
 
 export type ArgValue = string | number;
 
-export type ObjectBuilderArgs<TArgs extends string> = string extends TArgs ? EmptyObject : Record<TArgs, ArgValue>;
+export type ObjectBuilderArgs<TArgs extends string, TOptional = false, TFallback = EmptyObject> = string extends TArgs
+    ? TFallback
+    : true extends TOptional
+        ? MakeOptional<Record<TArgs, ArgValue>>
+        : Record<TArgs, ArgValue>;
+
 export type BuilderArgs<TArgs extends string, L extends number = number> = LengthArray<ArgValue, L> | Record<TArgs, ArgValue>;
 export type TemplatePrefixing = Nullable<string | ((key: string, index: number) => string)>;
 
+type MakeOptional<T> = {
+    [P in keyof T]?: Nullable<T[P]>;
+};
+
+/** Internal, Don't use it directly */
 interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
     /**
      * Builds the path using provided args.
@@ -69,7 +79,19 @@ type EmptyBuilderArgs = [] | Record<PropertyKey, never>;
 
 type ReadonlyArr<TArr extends ReadonlyArray<any>> = TArr extends ReadonlyArray<infer T> ? ReadonlyArray<T> : never;
 
-export interface Builder<TArgs extends readonly string[]> extends BaseBuilder<ReadonlyArr<TArgs>, BuilderArgs<TArgs[number], TArgs['length']>> { }
+export interface Builder<TArgs extends readonly string[], TOptional = false> extends BaseBuilder<
+    ReadonlyArr<TArgs>,
+    true extends TOptional
+        ? MakeOptional<BuilderArgs<TArgs[number], TArgs['length']>>
+        : BuilderArgs<TArgs[number], TArgs['length']>
+> {
+    /** Marks input type for `build` to be `Partial`, so any/all arguments can be omitted.
+     *
+     * **Limitation**: will convert to optional ALL parameters if >=2 Builders combined via CombineBuilders
+    */
+    asOptional(): Builder<TArgs, true>;
+}
+
 export interface StaticBuilder extends BaseBuilder<readonly [], EmptyBuilderArgs> { }
 export interface IBuilder extends BaseBuilder<readonly string[], any> { }
 
@@ -80,8 +102,8 @@ export type BaseInput = StaticInput | BaseBuilder<any, any, any>;
 
 export type Output<TInput> = TInput extends StaticBuilder
     ? StaticBuilder
-    : (TInput extends Builder<infer TArgs>
-        ? Builder<TArgs>
+    : (TInput extends Builder<infer TArgs, infer TOptional>
+        ? Builder<TArgs, TOptional>
         : StaticBuilder
     );
 
@@ -95,21 +117,34 @@ export type SwitchBuilder<TArg extends readonly string[]> = [TArg] extends [neve
         )
     );
 
-export type ExtractArgs<T> = T extends Builder<infer TArgs> ? TArgs : readonly string[];
+export type ExtractArgs<T> = T extends Builder<infer TArgs>
+    ? TArgs
+    : readonly string[];
 
+export type ExtractObjectArgs<T, F = EmptyObject> = T extends Builder<infer TArgs, infer O>
+    ? ObjectBuilderArgs<TArgs[number], O, F>
+    : F;
+
+type LogicalOr<O1, O2> = true extends O1
+    ? true
+    : true extends O2
+        ? true
+        : false;
+
+// TODO: need to figure out how to combine 2 builders when 1 is optional and the other is not
 type CombineTwo<T1 extends BaseInput, T2 extends BaseInput> = Output<T1> extends StaticBuilder
     ? Output<T2>
     : (Output<T2> extends StaticBuilder
         ? Output<T1>
-        : (Output<T1> extends Builder<infer Arr1>
-            ? (Output<T2> extends Builder<infer Arr2>
-                ? Builder<[...Arr1, ...Arr2]>
+        : (Output<T1> extends Builder<infer Arr1, infer O1>
+            ? (Output<T2> extends Builder<infer Arr2, infer O2>
+                ? Builder<[...Arr1, ...Arr2], LogicalOr<O1, O2>>
                 : never)
             : never)
     );
 
 export type CombineBuilders<T extends readonly BaseInput[]> = T extends readonly [infer T1 extends BaseInput, infer T2 extends BaseInput, ...infer Rest]
-    ? (CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any> & BaseInput
+    ? (CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any, any> & BaseInput
         ? (Rest extends readonly BaseInput[]
             ? CombineBuilders<readonly [C, ...Rest]>
             : never
