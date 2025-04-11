@@ -66,13 +66,13 @@ export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<
 type IEndpointNoArgs = IEndpointInfo.Base
     & (IEndpointInfo.IPath<readonly string[]> | IEndpointInfo.IPathAbstract)
     & IEndpointInfo.IIn<null>
-    & IEndpointInfo.IQuery<AnyObject>;
+    & IEndpointInfo.IQuery<Record<string, never>>;
 
 export interface GenericApiCaller<TExtra extends object = Record<string, any>> {
     <T extends IEndpointInfo>(api: T, data: EndpointCallArgs<T>, extra?: RequestExtra<T> & TExtra): Promise<IEndpointInfo.ExtractOut<T>>;
-    <T extends IEndpointNoArgs>(api: T, data?: undefined, extra?: RequestExtra<T> & TExtra): Promise<IEndpointInfo.ExtractOut<T>>;
+    <T extends IEndpointNoArgs>(api: T, data?: null, extra?: RequestExtra<T> & TExtra): Promise<IEndpointInfo.ExtractOut<T>>;
 }
 
 export type ApiCaller<TEndpoint extends IEndpointInfo, TExtra extends object = Record<string, any>> = TEndpoint extends IEndpointNoArgs
-    ? (data?: undefined, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>
+    ? (data?: null, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>
     : (data: EndpointCallArgs<TEndpoint>, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>;

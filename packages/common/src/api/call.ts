@@ -18,7 +18,7 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
 
     return async function callApi<T extends IEndpointInfo>(
         api: T,
-        data?: EndpointCallArgs<T>,
+        data?: EndpointCallArgs<T> | null,
         extra?: RequestExtra<T> & TExtra,
     ) {
         type TOut = IEndpointInfo.ExtractOut<T>;
