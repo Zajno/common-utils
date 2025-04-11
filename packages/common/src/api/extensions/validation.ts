@@ -1,8 +1,9 @@
+import { AnyObject } from '../../types/misc.js';
 import type { ApiEndpoint } from '../endpoint.js';
 import type { IEndpointInfo } from '../endpoint.types.js';
 
 export interface IEndpointInputValidation {
-    readonly validate?: IEndpointInputValidation.Validator<IEndpointInfo.ExtractIn<this>>;
+    readonly validate?: IEndpointInputValidation.Validator<IEndpointInfo.ExtractIn<this, AnyObject>>;
 
     withValidation(validator: IEndpointInputValidation.Validator<IEndpointInfo.ExtractIn<this>>): this;
 }
@@ -26,7 +27,7 @@ export namespace IEndpointInputValidation {
         return 'validate' in api;
     }
 
-    export function tryValidate(api: IEndpointInfo, input: IEndpointInfo.ExtractIn<IEndpointInfo>) {
+    export function tryValidate(api: IEndpointInfo, input: AnyObject) {
         if (guard(api) && api.validate) {
             return api.validate(input);
         }
