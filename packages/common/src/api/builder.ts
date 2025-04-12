@@ -27,7 +27,7 @@ export function buildApi<TApi extends ApiDefinition, TExtra extends object = Rec
     assert(!!caller && typeof caller === 'function', 'Caller must be a function');
 
     if (ApiEndpoint.isEndpoint(api)) {
-        return createEndpointCallable(api, caller as GenericApiCaller) as ApiRunner<typeof api, TExtra>;
+        return createEndpointCallable(api, caller as GenericApiCaller) as ApiRunner<TApi, TExtra>;
     }
 
     return Object.entries(api).reduce((acc, [key, value]) => {

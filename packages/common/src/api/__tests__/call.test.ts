@@ -42,6 +42,18 @@ describe('api/call', () => {
         }
 
         {
+            const endpointPathOnly = ApiEndpoint.create().get<{ name: string }>()
+                .withPath(Path.build`${'id'}`);
+
+            caller(endpointPathOnly, { id: 123 });
+
+            // @ts-expect-error overload with data skipped doesn't work
+            caller(endpointPathOnly);
+
+            request.mockClear();
+        }
+
+        {
             const endpointPost = ApiEndpoint.create('yo').post<{ name: string }, null>();
 
             expect(endpointPost.method).toBe('POST');
@@ -261,7 +273,7 @@ describe('api/call', () => {
             .withPath(prefix, Path.build`offers/${'id'}`);
 
         const outEx: IEndpointInfo.ExtractOut<typeof endpoint> = { name: '123', id: 123 };
-        const _callE = () => caller(endpoint);
+        const _callE = () => caller(endpoint, { id: 123 });
 
         // check that caller returns the same type as the endpoint declares
         function testOut(out: IEndpointInfo.ExtractOut<typeof endpoint>) {

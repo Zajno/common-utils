@@ -1,4 +1,3 @@
-import type { Path } from '../structures/path/index.js';
 import type { AnyObject } from '../types/misc.js';
 import type { IEndpointInfo } from './endpoint.types.js';
 import type { LogTypes } from './logging.js';
@@ -60,20 +59,23 @@ export type CallerOptions<TExtra extends object = Record<string, any>> = {
     };
 };
 
-export type EndpointCallArgs<T extends IEndpointInfo> = IEndpointInfo.ExtractIn<T, object>
+type CombineInputs<T extends IEndpointInfo> =
+    & IEndpointInfo.ExtractIn<T, object>
     & IEndpointInfo.ExtractPath<T, object>
     & IEndpointInfo.ExtractQuery<T, object>;
 
-type IEndpointNoArgs = IEndpointInfo.Base
-    & (IEndpointInfo.IPath<Path.StaticBuilder> | IEndpointInfo.IPathAbstract)
-    & IEndpointInfo.IIn<null>
-    & IEndpointInfo.IQuery<Record<string, never>>;
+export type EndpointCallArgs<T extends IEndpointInfo> = object extends CombineInputs<T>
+    ? (null | undefined | object)
+    : CombineInputs<T>;
+
+type CallerParams<T extends IEndpointInfo, TExtra extends object> = object extends CombineInputs<T>
+    ? [data?: EndpointCallArgs<T>, extra?: RequestExtra<T> & TExtra]
+    : [data: EndpointCallArgs<T>, extra?: RequestExtra<T> & TExtra];
 
 export interface GenericApiCaller<TExtra extends object = Record<string, any>> {
-    <T extends IEndpointInfo>(api: T, data: EndpointCallArgs<T>, extra?: RequestExtra<T> & TExtra): Promise<IEndpointInfo.ExtractOut<T>>;
-    <T extends IEndpointNoArgs>(api: T, data?: null, extra?: RequestExtra<T> & TExtra): Promise<IEndpointInfo.ExtractOut<T>>;
+    <T extends IEndpointInfo>(api: T, ...[data, extra]: CallerParams<T, TExtra>): Promise<IEndpointInfo.ExtractOut<T>>;
 }
 
-export type ApiCaller<TEndpoint extends IEndpointInfo, TExtra extends object = Record<string, any>> = TEndpoint extends IEndpointNoArgs
-    ? (data?: null, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>
-    : (data: EndpointCallArgs<TEndpoint>, extra?: RequestExtra<TEndpoint> & TExtra) => Promise<IEndpointInfo.ExtractOut<TEndpoint>>;
+export interface ApiCaller<TEndpoint extends IEndpointInfo, TExtra extends object = Record<string, any>> {
+    (...[data, extra]: CallerParams<TEndpoint, TExtra>): Promise<IEndpointInfo.ExtractOut<TEndpoint>>
+};
