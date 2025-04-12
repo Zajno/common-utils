@@ -1,3 +1,4 @@
+import { Path } from '../../structures/path/index.js';
 import { buildApi } from '../builder.js';
 import { buildApiCaller, RequestConfigDetails } from '../call.js';
 import { ApiEndpoint } from '../endpoint.js';
@@ -90,6 +91,14 @@ describe('api/builder', () => {
             level2: {
                 level3: ApiEndpoint.create('get name').post<{ id: string }, { name: string }>(),
             },
+            types: {
+                pathOnly: ApiEndpoint.create().get<{ data: number }>()
+                    .withPath('test', Path.build`${'id'}`),
+                queryOnly: ApiEndpoint.create().get<{ data: number }>()
+                    .withPath('test')
+                    .withQuery<{ id: string | number }>('id'),
+                noArgs: ApiEndpoint.create().get<{ data: number }>().withPath('test'),
+            },
         };
         const ApiCallers = buildApi(Apis, callerBase);
 
@@ -131,6 +140,10 @@ describe('api/builder', () => {
             _api: Apis.level2.level3,
         });
         request.mockClear();
+
+        ApiCallers.types.pathOnly({ id: 123 });
+        ApiCallers.types.queryOnly({ id: 123 });
+        ApiCallers.types.noArgs();
     });
 
 });
