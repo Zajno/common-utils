@@ -1,5 +1,6 @@
 import type { Path } from '../structures/path/index.js';
-import type { AnyObject, Coalesce, EmptyObjectNullable } from '../types/misc.js';
+import { RemoveFunctionFields } from '../types/functions.js';
+import type { AnyObject, Coalesce, EmptyObjectNullable, Expand } from '../types/misc.js';
 import type { EndpointMethods } from './methods.js';
 
 /**
@@ -90,4 +91,19 @@ export namespace IEndpointInfo {
 
     export type ExtractErrors<T> = T extends IErrors<infer TErrors> ? TErrors : Any;
     export type ExtractHeaders<T> = T extends IHeaders<infer THeaders> ? THeaders : Any;
+
+    type MergeOmit<T, K> = Omit<T, keyof K> & K;
+
+    export type Finalized<T extends Base> = Expand<
+        Readonly<
+            RemoveFunctionFields<
+                & MergeOmit<T, IIn<ExtractIn<T, object | null>>>
+                & MergeOmit<T, IOut<ExtractOut<T>>>
+                & MergeOmit<T, IPath<T extends IPath<infer TPath> ? TPath : Path.IBuilder>>
+                & MergeOmit<T, IQuery<ExtractQuery<T, object>>>
+                & MergeOmit<T, IErrors<ExtractErrors<T>>>
+                & MergeOmit<T, IHeaders<ExtractHeaders<T>>>
+            >
+        >
+    >;
 }

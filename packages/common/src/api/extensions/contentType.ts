@@ -5,7 +5,7 @@ import type { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
  *
  */
 export interface IEndpointInputContentType {
-    /** Returns if endpoint is marked as form. */
+    /** Endpoint request content-type, if was specified. */
     readonly contentType?: string;
 
     /** Marks this endpoint with Content-Type header to be set as 'application/x-www-form-urlencoded'. */

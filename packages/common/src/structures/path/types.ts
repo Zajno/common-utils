@@ -1,23 +1,31 @@
-import type { EmptyObject, LengthArray, Nullable } from '../../types/misc.js';
+import type { EmptyObject, Expand, IsNever, LengthArray, Nullable } from '../../types/misc.js';
+import type {
+    ArgValue,
+    IsOptional,
+    ReadonlyArrayNormalized,
+    TemplateTransform,
+    ToOptionalArray,
+    ToRequired,
+    ToRequiredArray,
+    TransformMap,
+} from './types.helpers.js';
 import type { CombineOptions } from './utils.js';
 
-export type ArgValue = string | number;
 
-export type ObjectBuilderArgs<TArgs extends string, TOptional = false, TFallback = EmptyObject> = string extends TArgs
+export type ObjectBuilderArgs<TArgs extends string, TFallback = EmptyObject> = string extends TArgs
     ? TFallback
-    : true extends TOptional
-        ? MakeOptional<Record<TArgs, ArgValue>>
-        : Record<TArgs, ArgValue>;
+    : ArgRecord<TArgs>;
 
-export type BuilderArgs<TArgs extends string, L extends number = number> = LengthArray<ArgValue, L> | Record<TArgs, ArgValue>;
-export type TemplatePrefixing = Nullable<string | ((key: string, index: number) => string)>;
+export type BuilderArgs<TArgs extends string, L extends number = number> = LengthArray<ArgValue | null, L> | ArgRecord<TArgs>;
 
-type MakeOptional<T> = {
-    [P in keyof T]?: Nullable<T[P]>;
-};
+export type ArgRecord<T extends string> = Expand<{
+    [K in T as true extends IsOptional<K> ? never : K]: ArgValue;
+} & {
+    [K in T as true extends IsOptional<K> ? ToRequired<K> : never]?: ArgValue | null;
+}>;
 
 /** Internal, Don't use it directly */
-interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
+interface BaseBuilder<A extends readonly string[], B> {
     /**
      * Builds the path using provided args.
      *
@@ -33,15 +41,16 @@ interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
     /**
      * Template builder that will build the path using args names but also can:
      * - keep args as they were in the template
-     * - add a prefix for each key in case `prefix` is provided as string
-     * - format each key in case `prefix` is provided as function
+     * - add a prefix for each key in case `transform` is provided as string
+     * - format each key in case `transform` is provided as function
+     * - append prefix/suffix/optional suffix for each key in case `transform` is provided as object
      *
      * For now it's recommended to cache the result, internally it doesn't care about it.
      */
-    template: (prefix?: P, options?: CombineOptions) => string;
+    template: (transform?: Nullable<TemplateTransform>, options?: CombineOptions) => string;
 
     /** args as they were in the template */
-    readonly args: A;
+    readonly args: ReadonlyArrayNormalized<ToRequiredArray<A>>;
 
     /**
      * Types helper method to easily cast all kinds of builders to generic IBuilder or others.
@@ -71,25 +80,18 @@ interface BaseBuilder<A extends readonly string[], B, P = TemplatePrefixing> {
     withTemplateTransform: (transforms: TransformMap<A>) => this;
 }
 
-export type TransformMap<A extends readonly string[]> = {
-    [K in A[number]]?: (v: ArgValue) => string;
-};
-
 type EmptyBuilderArgs = [] | Record<PropertyKey, never>;
 
-type ReadonlyArr<TArr extends ReadonlyArray<any>> = TArr extends ReadonlyArray<infer T> ? ReadonlyArray<T> : never;
 
-export interface Builder<TArgs extends readonly string[], TOptional = false> extends BaseBuilder<
-    ReadonlyArr<TArgs>,
-    true extends TOptional
-        ? MakeOptional<BuilderArgs<TArgs[number], TArgs['length']>>
-        : BuilderArgs<TArgs[number], TArgs['length']>
+export interface Builder<TArgs extends readonly string[]> extends BaseBuilder<
+    ReadonlyArrayNormalized<TArgs>,
+    BuilderArgs<TArgs[number], TArgs['length']>
 > {
     /** Marks input type for `build` to be `Partial`, so any/all arguments can be omitted.
      *
      * **Limitation**: will convert to optional ALL parameters if >=2 Builders combined via CombineBuilders
     */
-    asOptional(): Builder<TArgs, true>;
+    asOptional(): Builder<ToOptionalArray<TArgs>>;
 }
 
 export interface StaticBuilder extends BaseBuilder<readonly [], EmptyBuilderArgs> { }
@@ -98,53 +100,53 @@ export interface IBuilder extends BaseBuilder<readonly string[], any> { }
 export type StaticInput = string // static one-component path
     | readonly string[]; // static multi-component path, will be joined with '/' (by default)
 
-export type BaseInput = StaticInput | BaseBuilder<any, any, any>;
+export type BaseInput = StaticInput | BaseBuilder<any, any>;
 
-export type Output<TInput> = TInput extends StaticBuilder
-    ? StaticBuilder
-    : (TInput extends Builder<infer TArgs, infer TOptional>
-        ? Builder<TArgs, TOptional>
-        : StaticBuilder
-    );
-
-export type SwitchBuilder<TArg extends readonly string[]> = [TArg] extends [never]
-    ? StaticBuilder
-    : ([] extends TArg
+export type SwitchBuilder<TArg extends readonly string[]> = IsNever<
+    TArg,
+    StaticBuilder,
+    [] extends TArg
         ? StaticBuilder
         : (readonly string[] extends TArg
             ? IBuilder
             : Builder<TArg>
         )
-    );
+>;
 
 export type ExtractArgs<T> = T extends Builder<infer TArgs>
-    ? TArgs
+    ? ToRequiredArray<TArgs>
     : readonly string[];
 
-export type ExtractObjectArgs<T, F = EmptyObject> = T extends Builder<infer TArgs, infer O>
-    ? ObjectBuilderArgs<TArgs[number], O, F>
+export type ExtractObjectArgs<T, F = EmptyObject> = T extends Builder<infer TArgs>
+    ? ObjectBuilderArgs<TArgs[number], F>
     : F;
 
-type LogicalOr<O1, O2> = true extends O1
-    ? true
-    : true extends O2
-        ? true
-        : false;
+/** Normalizes builder, makes sure dynamic args are inferrable. If input is not a builder (i.e. StaticInput), return StaticBuilder */
+type Output<TInput> = TInput extends StaticBuilder
+    ? StaticBuilder // already static builder
+    : (TInput extends Builder<infer TArgs> // already builder with args
+        ? Builder<TArgs>
+        : (TInput extends StaticInput
+            ? DynamicStringToBuilder<TInput> // convert string to builder
+            : StaticBuilder // unknown input, return static builder
+        )
+    );
 
 // TODO: need to figure out how to combine 2 builders when 1 is optional and the other is not
+/** Turns two inputs into one builder, merging static and dynamic args */
 type CombineTwo<T1 extends BaseInput, T2 extends BaseInput> = Output<T1> extends StaticBuilder
     ? Output<T2>
     : (Output<T2> extends StaticBuilder
         ? Output<T1>
-        : (Output<T1> extends Builder<infer Arr1, infer O1>
-            ? (Output<T2> extends Builder<infer Arr2, infer O2>
-                ? Builder<[...Arr1, ...Arr2], LogicalOr<O1, O2>>
+        : (Output<T1> extends Builder<infer Arr1>
+            ? (Output<T2> extends Builder<infer Arr2>
+                ? Builder<[...Arr1, ...Arr2]>
                 : never)
             : never)
     );
 
 export type CombineBuilders<T extends readonly BaseInput[]> = T extends readonly [infer T1 extends BaseInput, infer T2 extends BaseInput, ...infer Rest]
-    ? (CombineTwo<T1, T2> extends infer C extends BaseBuilder<any, any, any> & BaseInput
+    ? (CombineTwo<T1, T2> extends infer C extends BaseBuilder<infer _A extends readonly string[], any> & BaseInput
         ? (Rest extends readonly BaseInput[]
             ? CombineBuilders<readonly [C, ...Rest]>
             : never
@@ -153,3 +155,28 @@ export type CombineBuilders<T extends readonly BaseInput[]> = T extends readonly
         ? Output<T1>
         : StaticBuilder
     );
+
+type Splitter<T extends string> = T extends `${infer Head extends string}/${infer Rest}`
+    ? [Head, ...Splitter<Rest>]
+    : [T];
+
+type ExtractDynamic<T extends string> = T extends `:${infer Arg}`
+    ? [Arg]
+    : T;
+
+type SkipStaticParts<T extends readonly string[]> = T extends readonly [infer Head extends string, ...infer Rest extends readonly string[]]
+    ? ExtractDynamic<Head> extends [infer Arg]
+        ? [Arg, ...SkipStaticParts<Rest>]
+        : SkipStaticParts<Rest>
+    : [];
+
+type ExtractDynamicParts<T extends StaticInput> = T extends readonly string[]
+    ? SkipStaticParts<T>
+    : (T extends string
+        ? SkipStaticParts<Splitter<T>>
+        : []
+    );
+
+type DynamicStringToBuilder<T extends StaticInput> = [] extends ExtractDynamicParts<T>
+    ? StaticBuilder
+    : Builder<ExtractDynamicParts<T>>;

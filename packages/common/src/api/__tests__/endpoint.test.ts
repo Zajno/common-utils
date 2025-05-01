@@ -19,7 +19,8 @@ describe('api/endpoint', () => {
             .withPath(Path.build`/user/${'id'}`)
             .withQuery<{ full?: boolean }>('full')
             .withErrors<{ message: string }>()
-            .withHeaders({ 'x-token': '123' });
+            .withHeaders({ 'x-token': '123' })
+            .finalize();
 
         expect(endpoint.displayName).toBe('Get User');
         expect(endpoint.method).toBe('POST');
@@ -119,6 +120,11 @@ describe('api/endpoint', () => {
 
             expect(endpoint.customField).toBe('123');
             expect(endpoint.path.template(':', { addStart: true })).toBe('/user/:id');
+
+            const finalized = endpoint.finalize();
+            expect((finalized as unknown as typeof endpoint).withCustomField).toBeUndefined();
+            expect(finalized.customField).toBe('123');
+            expect(finalized.path.template(':', { addStart: true })).toBe('/user/:id');
         });
     });
 

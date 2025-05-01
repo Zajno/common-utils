@@ -1,5 +1,5 @@
 import { Path } from '../../structures/path/index.js';
-import { buildApi } from '../builder.js';
+import { buildApi, remapApisStructure } from '../builder.js';
 import { buildApiCaller, RequestConfigDetails } from '../call.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
@@ -146,4 +146,34 @@ describe('api/builder', () => {
         ApiCallers.types.noArgs();
     });
 
+
+    test('remapApisStructure', () => {
+        const Apis = {
+            inner: ApiEndpoint.create().post<{ name: string }, null>(),
+            level2: {
+                level3: ApiEndpoint.create('get name').post<{ id: string }, { name: string }>(),
+            },
+            types: {
+                pathOnly: ApiEndpoint.create().get<{ data: number }>()
+                    .withPath('test', Path.build`${'id'}`),
+                queryOnly: ApiEndpoint.create().get<{ data: number }>()
+                    .withPath('test')
+                    .withQuery<{ id: string | number }>('id'),
+                noArgs: ApiEndpoint.create().get<{ data: number }>().withPath('test'),
+            },
+        };
+
+        const remapped = remapApisStructure(Apis, api => `[${api.displayName || '?'}] ${api.path?.template(':') || '/'}`);
+        expect(remapped).toEqual({
+            inner: '[?] /',
+            level2: {
+                level3: '[get name] /',
+            },
+            types: {
+                pathOnly: '[?] test/:id',
+                queryOnly: '[?] test',
+                noArgs: '[?] test',
+            },
+        });
+    });
 });

@@ -2,7 +2,7 @@ import { Path } from '../structures/path/index.js';
 import { IEndpointInfo } from './endpoint.js';
 
 export const DefaultSettings = {
-    templateArgPrefix: ':' satisfies Path.TemplatePrefixing,
+    templateArgPrefix: ':' satisfies Path.TemplateTransform,
     basePrefix: '/',
 };
 
@@ -23,7 +23,7 @@ export function getPath<T extends IEndpointInfo.Base & IEndpointInfo.IPathAbstra
     return path.build(pathArgs || undefined, { addStart: getPrefix(prefix) });
 }
 
-export function getTemplate<T extends IEndpointInfo>(endpoint: T, prefix: string | boolean = true) {
+export function getTemplate<T extends IEndpointInfo>(endpoint: T, prefix: PrefixOptions = true) {
     const path = endpoint.path ?? (Path.Empty as Path.IBuilder);
 
     return path.template(DefaultSettings.templateArgPrefix, { addStart: getPrefix(prefix) });
