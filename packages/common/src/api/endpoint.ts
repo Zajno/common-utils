@@ -37,6 +37,9 @@ export interface ApiEndpoint extends IEndpointInfo.Base {
 
     /** Applies headers type. */
     withHeaders<THeads>(_headersMarker?: THeads): this & IEndpointInfo.IHeaders<THeads>;
+
+    /** Helper chain method for finalizing the type. Can make some runtime optimizations as well. */
+    finalize(): IEndpointInfo.Finalized<this>;
 }
 
 export namespace ApiEndpoint {
@@ -97,11 +100,22 @@ export namespace ApiEndpoint {
 
             withErrors<TErr>(errorProcessor?: (err: TErr) => void) {
                 (data as Mutable<IEndpointInfo.IErrors<TErr>>).errorProcessor = errorProcessor;
-                return res;
+                return res as ApiEndpoint & IEndpointInfo.IErrors<TErr>;
             },
 
-            withHeaders() {
-                return res;
+            withHeaders<THeaders>() {
+                return res as ApiEndpoint & IEndpointInfo.IHeaders<THeaders>;
+            },
+
+            finalize() {
+                const finalized = {} as any;
+                Object.entries(res).forEach(([key, value]) => {
+                    if (value != null && typeof value !== 'function') {
+                        finalized[key] = value;
+                    }
+                });
+                Object.freeze(finalized);
+                return finalized;
             },
         };
 

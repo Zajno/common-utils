@@ -21,7 +21,9 @@ describe('api/call', () => {
         });
 
         {
-            const endpointGet = ApiEndpoint.create().get<{ name: string }>();
+            const endpointGet = ApiEndpoint.create()
+                .get<{ name: string }>()
+                .finalize();
 
             expect(endpointGet.method).toBe('GET');
             expect(endpointGet.displayName).toBeUndefined();
@@ -43,7 +45,8 @@ describe('api/call', () => {
 
         {
             const endpointPathOnly = ApiEndpoint.create().get<{ name: string }>()
-                .withPath(Path.build`${'id'}`);
+                .withPath(Path.build`${'id'}`)
+                .finalize();
 
             caller(endpointPathOnly, { id: 123 });
 
@@ -54,7 +57,9 @@ describe('api/call', () => {
         }
 
         {
-            const endpointPost = ApiEndpoint.create('yo').post<{ name: string }, null>();
+            const endpointPost = ApiEndpoint.create('yo')
+                .post<{ name: string }, null>()
+                .finalize();
 
             expect(endpointPost.method).toBe('POST');
             expect(endpointPost.displayName).toBe('yo');
@@ -80,7 +85,8 @@ describe('api/call', () => {
                 .withPath(Path.build`/user/${'id'}`)
                 .withQuery<{ full?: boolean }>('full')
                 .withErrors<{ message: string }>()
-                .withHeaders<{ 'x-token': string }>();
+                .withHeaders<{ 'x-token': string }>()
+                .finalize();
 
             expect(endpoint.displayName).toBe('Get User');
             expect(endpoint.method).toBe('POST');
@@ -188,7 +194,8 @@ describe('api/call', () => {
 
         const endpoint = ApiEndpoint.create()
             .post<{ email: string | null, password: string | null }, { token: string }>()
-            .withPath([base, 'user']);
+            .withPath([base, 'user'])
+            .finalize();
 
         const args: EndpointCallArgs<typeof endpoint> = { email: '123', password: null };
 
