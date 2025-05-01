@@ -36,12 +36,12 @@
   "dependencies": {},
   "devDependencies": {
     "@firebase/app-types": "^0.9.3",
-    "@google-cloud/pubsub": "^4.10.0",
+    "@google-cloud/pubsub": "^4.11.0",
     "@zajno/common": "*",
     "@zajno/common-mobx": "*",
     "@zajno/eslint-config": "*",
-    "firebase": "^11.6.0",
-    "firebase-admin": "^13.2.0",
+    "firebase": "^11.6.1",
+    "firebase-admin": "^13.3.0",
     "firebase-functions": "^6.3.2",
     "firebase-functions-test": "^3.4.1",
     "mobx": "^6.13.7"
