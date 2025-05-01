@@ -12,6 +12,27 @@ export type ApiDefinition = IEndpointInfo | {
     [key: string]: ApiDefinition;
 };
 
+export type ApiRemapped<T extends ApiDefinition, TResult> = T extends IEndpointInfo
+    ? TResult
+    : T extends Record<string, any> ? {
+        [K in keyof T]: ApiRemapped<T[K], TResult>;
+    } : never;
+
+/** Converts each endpoint in a nested structure to something via transformer */
+export function remapApisStructure<TApi extends ApiDefinition, TResult>(root: TApi, transformer: (api: IEndpointInfo) => TResult): ApiRemapped<TApi, TResult> {
+    if (ApiEndpoint.isEndpoint(root)) {
+        return transformer(root) as ApiRemapped<TApi, TResult>;
+    }
+
+    return Object.entries(root).reduce((acc, [key, value]) => {
+        const next = value;
+        if (next != null && typeof next === 'object') {
+            acc[key] = remapApisStructure(next, transformer);
+        }
+        return acc;
+    }, {} as Record<string, ApiRemapped<any, TResult>>) as ApiRemapped<TApi, TResult>;
+}
+
 export type ApiRunner<T, TExtra extends Record<string, any>> = T extends IEndpointInfo
     ? IEndpointCaller<T, TExtra>
     : T extends Record<string, any> ? {
@@ -26,17 +47,10 @@ export function buildApi<TApi extends ApiDefinition, TExtra extends object = Rec
     assert(!!api && typeof api === 'object', 'API definition must be an object');
     assert(!!caller && typeof caller === 'function', 'Caller must be a function');
 
-    if (ApiEndpoint.isEndpoint(api)) {
-        return createEndpointCallable(api, caller as GenericApiCaller) as ApiRunner<TApi, TExtra>;
-    }
-
-    return Object.entries(api).reduce((acc, [key, value]) => {
-        const next = value;
-        if (next != null && typeof next === 'object') {
-            acc[key] = buildApi(next, caller);
-        }
-        return acc;
-    }, {} as Record<string, ApiRunner<any, TExtra>>) as ApiRunner<TApi, TExtra>;
+    return remapApisStructure(
+        api,
+        e => createEndpointCallable(e, caller as GenericApiCaller),
+    ) as unknown as ApiRunner<TApi, TExtra>;
 }
 
 /** Partial application: binding an endpoint to callApi, so only input data and extra are passed to a newly created function. */
