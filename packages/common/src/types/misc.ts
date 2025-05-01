@@ -66,3 +66,6 @@ export type Coalesce<T, TReplace = EmptyObjectNullable> = [T] extends [never] | 
     ? TReplace
     : T
 ;
+
+/** Intellisense helper to show type unions/intersections as a whole type */
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
