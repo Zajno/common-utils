@@ -7,3 +7,5 @@ export * from './config.js';
 export { buildApiCaller } from './call.js';
 export { buildApi, createEndpointCallable } from './builder.js';
 export { LogTypes } from './logging.js';
+export * from './hooks.js';
+export * from './interceptor.js';
