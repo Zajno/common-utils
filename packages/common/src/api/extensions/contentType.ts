@@ -1,4 +1,5 @@
 import type { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
+import { CallerHooks } from '../hooks.js';
 
 /**
  * Request Content-Type extension for endpoint.
@@ -8,16 +9,16 @@ export interface IEndpointInputContentType {
     /** Endpoint request content-type, if was specified. */
     readonly contentType?: string;
 
-    /** Marks this endpoint with Content-Type header to be set as 'application/x-www-form-urlencoded'. */
+    /** Marks this endpoint with Content-Type request header to be set as 'application/x-www-form-urlencoded'. */
     asUrlEncoded(): this;
 
-    /** Marks this endpoint with Content-Type header to be set as 'multipart/form-data'. */
+    /** Marks this endpoint with Content-Type request header to be set as 'multipart/form-data'. */
     asMultipartForm(): this;
 
-    /** Marks this endpoint with Content-Type header to be set as 'application/json'. */
+    /** Marks this endpoint with Content-Type request header to be set as 'application/json'. */
     asJson(): this;
 
-    /** Marks this endpoint with Content-Type header to be set as passed value. */
+    /** Marks this endpoint with Content-Type request header to be set as passed value. */
     withContentType(contentType: string): this;
 }
 
@@ -53,5 +54,14 @@ export namespace IEndpointInputContentType {
         if (guard(api) && api.contentType) {
             headers['Content-Type'] = api.contentType;
         }
+    }
+
+    export function createHooks(): CallerHooks<object> {
+        return {
+            beforeRequest: (config) => {
+                config.headers = config.headers || {};
+                tryApplyContentType(config._meta.api, config.headers);
+            },
+        };
     }
 }
