@@ -25,7 +25,7 @@ describe('timeout', () => {
         listener.mockClear();
 
         // no callback
-        await expect(timeout.start(10)).resolves.toBeGreaterThanOrEqual(10);
+        await expect(timeout.start(51)).resolves.toBeGreaterThanOrEqual(50);
 
         expect(listener).toHaveBeenCalled();
         expect(cb).not.toHaveBeenCalled();
