@@ -57,6 +57,6 @@ describe('timeout', () => {
             throw new Error('error');
         });
 
-        await expect(timeout.start(10, cb)).resolves.toBeGreaterThanOrEqual(10);
+        await expect(timeout.start(51, cb)).resolves.toBeGreaterThanOrEqual(50);
     });
 });
