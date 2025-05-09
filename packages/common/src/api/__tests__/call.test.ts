@@ -1,10 +1,9 @@
 import { Path } from '../../structures/path/index.js';
-import { EndpointCallArgs, RequestConfigDetails, buildApiCaller } from '../call.js';
+import { RequestMeta } from '../call.config.js';
+import { EndpointCallArgs, IRequestConfig, buildApiCaller } from '../call.js';
+import { EndpointsPathsConfig } from '../config.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
-import { IEndpointInputContentType } from '../extensions/contentType.js';
-import { IEndpointInputValidation } from '../extensions/validation.js';
-import { cleanupProcessors, registerPostProcessor, registerPreProcessor } from '../register.js';
 
 describe('api/call', () => {
 
@@ -14,7 +13,7 @@ describe('api/call', () => {
         type ExtraParams = { someRandomExtraField?: string };
 
         const caller = buildApiCaller<ExtraParams>({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 request(input);
                 return { status: 200, data: { input: input.data } as TOut };
             },
@@ -31,14 +30,11 @@ describe('api/call', () => {
             await expect(caller(endpointGet)).resolves.toEqual({ input: undefined });
 
             expect(request).toHaveBeenCalledWith({
-                _log: 'res',
-                _noLoader: true,
-                _extra: {},
+                _meta: expect.any(RequestMeta),
                 method: 'GET',
                 url: '/',
                 data: undefined,
                 headers: {},
-                _api: endpointGet,
             });
             request.mockClear();
         }
@@ -67,14 +63,11 @@ describe('api/call', () => {
             await expect(caller(endpointPost, { name: 'hello' })).resolves.toEqual({ input: { name: 'hello' } });
 
             expect(request).toHaveBeenCalledWith({
-                _log: 'res',
-                _noLoader: false,
-                _extra: {},
+                _meta: expect.any(RequestMeta),
                 method: 'POST',
                 url: '/',
                 data: { name: 'hello' },
                 headers: {},
-                _api: endpointPost,
             });
             request.mockClear();
         }
@@ -99,16 +92,17 @@ describe('api/call', () => {
             )).resolves.toEqual({ input: undefined });
 
             expect(request).toHaveBeenCalledWith({
-                _extra: {
-                    someRandomExtraField: 'extra',
-                },
-                _log: 'res',
-                _noLoader: false,
+                _meta: new RequestMeta(
+                    endpoint,
+                    new EndpointsPathsConfig(),
+                    'res',
+                    false,
+                    { someRandomExtraField: 'extra' },
+                ),
                 method: 'POST',
                 url: '/user/123',
                 data: undefined,
                 headers: { 'x-token': '123' },
-                _api: endpoint,
             });
             request.mockClear();
 
@@ -120,14 +114,17 @@ describe('api/call', () => {
             )).resolves.toEqual({ input: { token: 'hey' } });
 
             expect(request).toHaveBeenCalledWith({
-                _log: 'full',
-                _extra: {},
-                _noLoader: true,
+                _meta: new RequestMeta(
+                    endpoint,
+                    new EndpointsPathsConfig(),
+                    'full',
+                    true,
+                    {},
+                ),
                 method: 'POST',
                 url: '/user/312?full=true',
                 data: { token: 'hey' },
                 headers: {},
-                _api: endpoint,
             });
             request.mockClear();
 
@@ -139,14 +136,17 @@ describe('api/call', () => {
             )).resolves.toEqual({ input: { token: 'hey' } });
 
             expect(request).toHaveBeenCalledWith({
-                _log: 'full',
-                _extra: {},
-                _noLoader: true,
+                _meta: new RequestMeta(
+                    endpoint,
+                    new EndpointsPathsConfig(),
+                    'full',
+                    true,
+                    {},
+                ),
                 method: 'POST',
                 url: '/user/312?full=false',
                 data: { token: 'hey' },
                 headers: {},
-                _api: endpoint,
             });
             request.mockClear();
         }
@@ -154,29 +154,21 @@ describe('api/call', () => {
         const formEndpoint = ApiEndpoint.create()
             .post<{ token: string }, null>();
 
-        const preProcessor = vi.fn(data => data);
-        registerPreProcessor(formEndpoint, preProcessor);
-
-        const postProcessor = vi.fn(data => data);
-        registerPostProcessor(formEndpoint, postProcessor);
-
         await expect(caller(formEndpoint, { token: '123' })).resolves.toEqual({ input: { token: '123' } });
         expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _extra: {},
-            _noLoader: false,
+            _meta: new RequestMeta(
+                formEndpoint,
+                new EndpointsPathsConfig(),
+                'res',
+                false,
+                {},
+            ),
             method: 'POST',
             url: '/',
             data: { token: '123' },
             headers: {},
-            _api: formEndpoint,
         });
         request.mockClear();
-
-        expect(preProcessor).toHaveBeenCalledWith({ token: '123' });
-        expect(postProcessor).toHaveBeenCalledWith({ input: { token: '123' } });
-
-        cleanupProcessors();
     });
 
     test('post endpoint with static path', async () => {
@@ -184,7 +176,7 @@ describe('api/call', () => {
         const request = vi.fn();
 
         const caller = buildApiCaller({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 request(input);
                 return { status: 200, data: { input: input.data } as TOut };
             },
@@ -202,20 +194,17 @@ describe('api/call', () => {
         await expect(caller(endpoint, args)).resolves.toEqual({ input: args });
 
         expect(request).toHaveBeenCalledWith({
-            _api: endpoint,
-            _extra: {},
-            _log: 'res',
-            _noLoader: false,
-            headers: {},
+            _meta: expect.any(RequestMeta),
             method: 'POST',
-            data: args,
             url: '/api/user',
+            data: args,
+            headers: {},
         });
     });
 
     test('input type', () => {
         const caller = buildApiCaller({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 return { status: 200, data: { input: input.data } as TOut };
             },
         });
@@ -267,7 +256,7 @@ describe('api/call', () => {
 
     test('output type', () => {
         const caller = buildApiCaller({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 return { status: 200, data: { input: input.data } as TOut };
             },
         });
@@ -291,116 +280,45 @@ describe('api/call', () => {
         testOut(outReal);
     });
 
-    test('hooks/beforeRequest | form', async () => {
-        const request = vi.fn();
-        const hook = vi.fn(config => {
-            // clone config to test it will be correctly merged afterwards
-            const result = {
-                ...config,
-                headers: {
-                    ...config.headers,
-                },
-            };
-            expect(config.headers).toEqual({});
-            expect(result.headers).toEqual({});
-            IEndpointInputContentType.tryApplyContentType(result._api, result.headers);
-            expect(result.headers['Content-Type']).toBe('multipart/form-data');
-            return result;
+    test('path config', async () => {
+        const Config = new EndpointsPathsConfig({
+            templateArgPrefix: '$',
+            basePrefix: '/api/',
         });
 
+        const request = vi.fn();
         const caller = buildApiCaller({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 request(input);
                 return { status: 200, data: { input: input.data } as TOut };
             },
-            hooks: {
-                beforeRequest: hook,
-            },
+            config: Config,
         });
 
-        const endpoint = ApiEndpoint.create.extend(IEndpointInputContentType.extender)()
-            .asMultipartForm()
-            .post<{ id: string }, { name: string }>();
+        const endpoint = ApiEndpoint.create()
+            .get<string>()
+            .withPath('user/:id/status');
 
-        await expect(caller(endpoint, { id: '123' })).resolves.toEqual({ input: { id: '123' } });
+        await expect(caller(endpoint, { id: 123 })).resolves.toEqual({ input: undefined });
 
-        expect(hook).toHaveBeenCalled();
+        expect(Config.getPath(endpoint, { id: 123 }, true)).toBe('/api/user/123/status');
+        expect(Config.getTemplate(endpoint, true)).toBe('/api/user/$id/status');
 
         expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _extra: {},
-            _noLoader: false,
-            method: 'POST',
-            url: '/',
-            data: { id: '123' },
-            _api: endpoint,
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-    });
-
-    test('hooks/beforeConfig | validation', async () => {
-        const request = vi.fn();
-        const hook = vi.fn(async (api, body, path, query) => {
-
-            expect(api).toEqual(endpoint);
-            expect(body).toEqual({ id: 123 });
-            expect(path).toEqual({});
-            expect(query).toEqual({});
-
-            await IEndpointInputValidation.tryValidate(api, body);
-        });
-
-        const validation = vi.fn((body) => {
-            expect(body).toEqual({ id: 123 });
-            return body;
-        });
-
-        const caller = buildApiCaller({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
-                request(input);
-                return { status: 200, data: { input: input.data } as TOut };
-            },
-            hooks: {
-                beforeConfig: hook,
-            },
-        });
-
-        const endpoint = ApiEndpoint.create.extend(IEndpointInputValidation.extender)()
-            .post<{ id: string | number }, { name: string }>()
-            .withValidation(validation);
-
-        await expect(caller(endpoint, { id: 123 })).resolves.toEqual({ input: { id: 123 } });
-
-        expect(hook).toHaveBeenCalled();
-        expect(validation).toHaveBeenCalledWith({ id: 123 });
-
-        expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _extra: {},
-            _noLoader: false,
-            method: 'POST',
-            url: '/',
-            data: { id: 123 },
+            _meta: new RequestMeta(
+                endpoint,
+                new EndpointsPathsConfig({
+                    templateArgPrefix: '$',
+                    basePrefix: '/api/',
+                }),
+                'res',
+                true,
+                {},
+            ),
+            method: 'GET',
+            url: '/api/user/123/status',
+            data: undefined,
             headers: {},
-            _api: endpoint,
         });
-
-        hook.mockClear();
-        request.mockClear();
-
-        // Test validation error
-
-        const validation2 = vi.fn((body) => {
-            expect(body).toEqual({ id: 123 });
-            throw new Error('Validation error');
-        });
-
-        endpoint.withValidation(validation2);
-
-        await expect(caller(endpoint, { id: 123 })).rejects.toThrow('Validation error');
-
-        expect(validation2).toHaveBeenCalledWith({ id: 123 });
-        expect(hook).toHaveBeenCalled();
-        expect(request).not.toHaveBeenCalled();
     });
 });

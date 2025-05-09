@@ -1,6 +1,7 @@
 import { AnyObject } from '../../types/misc.js';
 import type { ApiEndpoint } from '../endpoint.js';
 import type { IEndpointInfo } from '../endpoint.types.js';
+import { CallerHooks } from '../hooks.js';
 
 export interface IEndpointInputValidation {
     readonly validate?: IEndpointInputValidation.Validator<IEndpointInfo.ExtractIn<this, AnyObject>>;
@@ -31,5 +32,13 @@ export namespace IEndpointInputValidation {
         if (guard(api) && api.validate) {
             return api.validate(input);
         }
+    }
+
+    export function createHooks(): CallerHooks<object> {
+        return {
+            beforeConfig: (api, body) => {
+                return tryValidate(api, body);
+            },
+        };
     }
 }

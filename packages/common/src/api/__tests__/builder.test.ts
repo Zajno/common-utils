@@ -1,6 +1,8 @@
 import { Path } from '../../structures/path/index.js';
 import { buildApi, remapApisStructure } from '../builder.js';
-import { buildApiCaller, RequestConfigDetails } from '../call.js';
+import { RequestMeta } from '../call.config.js';
+import { buildApiCaller, IRequestConfig } from '../call.js';
+import { EndpointsPathsConfig } from '../config.js';
 import { ApiEndpoint } from '../endpoint.js';
 import { IEndpointInfo } from '../endpoint.types.js';
 
@@ -12,7 +14,7 @@ describe('api/builder', () => {
         type ExtraParams = { someRandomExtraField?: string };
 
         const callerBase = buildApiCaller<ExtraParams>({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 request(input);
                 return { status: 200, data: { input: input.data } as TOut };
             },
@@ -29,14 +31,17 @@ describe('api/builder', () => {
             await expect(result).resolves.toEqual({ input: undefined });
 
             expect(request).toHaveBeenCalledWith({
-                _log: 'res',
-                _noLoader: true,
-                _extra: {},
+                _meta: new RequestMeta(
+                    endpointGet,
+                    new EndpointsPathsConfig(),
+                    'res',
+                    true,
+                    {},
+                ),
                 method: 'GET',
                 url: '/',
                 data: undefined,
                 headers: {},
-                _api: endpointGet,
             });
             request.mockClear();
         }
@@ -52,14 +57,11 @@ describe('api/builder', () => {
             await expect(result).resolves.toEqual({ input: { name: 'John' } });
 
             expect(request).toHaveBeenCalledWith({
-                _log: 'res',
-                _noLoader: false,
-                _extra: {},
+                _meta: expect.any(RequestMeta),
                 method: 'POST',
                 url: '/',
                 data: { name: 'John' },
                 headers: {},
-                _api: endpointPost,
             });
             request.mockClear();
         }
@@ -79,9 +81,11 @@ describe('api/builder', () => {
 
         type ExtraParams = { someRandomExtraField?: string };
 
+        let lastRequestConfigCalled: IRequestConfig<IEndpointInfo, any> | null = null;
         const callerBase = buildApiCaller<ExtraParams>({
-            request: async <TIn, TOut>(input: RequestConfigDetails<IEndpointInfo, TIn>) => {
+            request: async <TIn, TOut>(input: IRequestConfig<IEndpointInfo, TIn>) => {
                 request(input);
+                lastRequestConfigCalled = input;
                 return { status: 200, data: { input: input.data } as TOut };
             },
         });
@@ -107,37 +111,40 @@ describe('api/builder', () => {
 
         // call 1
         expect(ApiCallers.inner.Endpoint).toBe(Apis.inner);
+        expect(ApiCallers.inner.Endpoint === Apis.inner).toBeTrue();
         const result1 = ApiCallers.inner({ name: 'John' });
         await expect(result1).resolves.toEqual({ input: { name: 'John' } });
 
         expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _noLoader: false,
-            _extra: {},
+            _meta: new RequestMeta(Apis.inner),
             method: 'POST',
             url: '/',
             data: { name: 'John' },
             headers: {},
-            _api: Apis.inner,
         });
+
+        expect(lastRequestConfigCalled).not.toBeNull();
+        expect(lastRequestConfigCalled!._meta.api === Apis.inner).toBeTrue();
+
+        lastRequestConfigCalled = null;
         request.mockClear();
 
         // call 2
         expect(ApiCallers.level2.level3.Endpoint).toBe(Apis.level2.level3);
+        expect(ApiCallers.level2.level3.Endpoint === Apis.level2.level3).toBeTrue();
         expect(typeof ApiCallers.level2.level3).toBe('function');
 
         const result2 = ApiCallers.level2.level3({ id: '123' });
         await expect(result2).resolves.toEqual({ input: { id: '123' } });
 
         expect(request).toHaveBeenCalledWith({
-            _log: 'res',
-            _noLoader: false,
-            _extra: {},
+            _meta: new RequestMeta(
+                Apis.level2.level3,
+            ),
             method: 'POST',
             url: '/',
             data: { id: '123' },
             headers: {},
-            _api: Apis.level2.level3,
         });
         request.mockClear();
 

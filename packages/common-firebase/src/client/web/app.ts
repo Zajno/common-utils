@@ -1,4 +1,4 @@
-import { createLogger } from '@zajno/common/logger';
+import { createLogger } from '@zajno/common/logger/shared';
 import { FirebaseSettings, IFirebaseApp } from '../abstractions/app.js';
 import { initializeApp, FirebaseApp as FirebaseAppType, deleteApp } from 'firebase/app';
 import { Lazy } from '@zajno/common/lazy';

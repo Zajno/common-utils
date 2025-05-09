@@ -3,26 +3,13 @@ import { ConsoleLogger } from './console.js';
 import { batchLoggers } from './batch.js';
 import { LoggerModes, LoggersManager } from './manager.js';
 
-export type { ILogger, LoggerFunction };
+export type { ILogger, LoggerFunction, LoggerModes };
 export { NamedLogger } from './named.js';
 export { ConsoleLogger, batchLoggers };
+export { LoggersManager };
 
-const manager = new LoggersManager();
-
-export function createLogger(name: string | undefined, mode: undefined | LoggerModes = undefined): ILogger {
-    return manager.create(name, mode);
-}
-
-export function detachLogger(instance: ILogger, terminate = false) {
-    return manager.detach(instance, terminate);
-}
-
-export function setMode(mode: LoggerModes | null | undefined) {
-    manager.setMode(mode);
-}
-
-export function getMode() { return manager.mode; }
-
-const logger: ILogger = createLogger(undefined, false);
-
-export default logger;
+/** Shared logger instance used internally in this library.
+ *
+ * For internal default loggers to be enabled and working, don't forget to set the mode to this instance.
+*/
+export * as SharedLogger from './shared.js';

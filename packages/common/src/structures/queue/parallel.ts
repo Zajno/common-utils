@@ -1,4 +1,4 @@
-import { createLogger, ILogger } from '../../logger/index.js';
+import { createLogger, ILogger } from '../../logger/shared.js';
 import { Event } from '../../observing/event.js';
 import { OneTimeLateEvent } from '../../observing/event.late.js';
 

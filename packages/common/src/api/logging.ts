@@ -1,6 +1,6 @@
 import { ILogger } from '../logger/abstractions.js';
 import type { Nullable } from '../types/index.js';
-import type { RequestConfigDetails } from './call.js';
+import type { IRequestConfig } from './call.js';
 import { EndpointMethods } from './methods.js';
 
 /** Describes the way a request is logged.
@@ -50,7 +50,7 @@ export namespace LogTypes {
      *
      * See the other overload for more details.
     */
-    export function logCall(logger: ILogger, cfg: RequestConfigDetails, dir: 'req'): void;
+    export function logCall(logger: ILogger, cfg: IRequestConfig, dir: 'req'): void;
 
     /**
      * An example implementation for logging logic (overload for a request with data).
@@ -60,14 +60,14 @@ export namespace LogTypes {
      * * Formats the data if a custom formatter is provided.
      * * Logs the data via specified logger.
     */
-    export function logCall(logger: ILogger, cfg: RequestConfigDetails, dir: 'res', data: unknown): void;
+    export function logCall(logger: ILogger, cfg: IRequestConfig, dir: 'res', data: unknown): void;
 
-    export function logCall(logger: ILogger, cfg: RequestConfigDetails, dir: LogTypes.Dir, data?: unknown) {
-        if (!cfg._api || (dir === 'req' && cfg._api.method === EndpointMethods.GET && cfg.data == null)) {
+    export function logCall(logger: ILogger, cfg: IRequestConfig, dir: LogTypes.Dir, data?: unknown) {
+        if (!cfg._meta.api || (dir === 'req' && cfg._meta.api.method === EndpointMethods.GET && cfg.data == null)) {
             return;
         }
 
-        const info = LogTypes.getIsEnabled(cfg._log, dir);
+        const info = LogTypes.getIsEnabled(cfg._meta.log, dir);
         if (!info.enabled) {
             return;
         }
@@ -80,7 +80,7 @@ export namespace LogTypes {
             ? 'REQ ====>'
             : 'RES <====';
 
-        logger.log(prefix, cfg._api.method, cfg.url, dataLogged);
+        logger.log(prefix, cfg._meta.api.method, cfg.url, dataLogged);
     }
 
 

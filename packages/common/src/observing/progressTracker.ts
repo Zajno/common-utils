@@ -1,6 +1,6 @@
 import * as DateHelpers from '../dates/index.js';
 import * as MathHelpers from '../math/index.js';
-import logger, { ILogger } from '../logger/index.js';
+import logger, { type ILogger } from '../logger/shared.js';
 import { Event } from './event.js';
 
 export class ProgressTracker {

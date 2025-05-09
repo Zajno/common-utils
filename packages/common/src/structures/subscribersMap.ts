@@ -1,4 +1,4 @@
-import { createLogger, ILogger } from '../logger/index.js';
+import { createLogger, ILogger } from '../logger/shared.js';
 import { combineDisposers, IDisposable } from '../functions/disposer.js';
 import { catchPromise } from '../functions/safe.js';
 

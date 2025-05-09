@@ -1,4 +1,4 @@
-import logger from '../logger/index.js';
+import logger from '../logger/shared.js';
 
 export interface IDisposable {
     dispose(): void;

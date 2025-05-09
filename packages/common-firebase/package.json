@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "private": false,
   "type": "module",
@@ -48,7 +48,7 @@
   },
   "peerDependencies": {
     "@google-cloud/pubsub": "^4.10.0",
-    "@zajno/common": "^2.6.2",
+    "@zajno/common": "^2.7",
     "@zajno/common-mobx": "^1.5",
     "firebase": "^11.6",
     "firebase-admin": "^13.2.0",

@@ -1,4 +1,4 @@
-import { createLogger } from '@zajno/common/logger';
+import { createLogger } from '@zajno/common/logger/shared';
 import { FirebaseApp, createFirebaseLazy, logger as rootLogger } from './app.js';
 import {
     getStorage,

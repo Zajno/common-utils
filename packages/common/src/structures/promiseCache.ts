@@ -1,5 +1,5 @@
 import { ThrottleProcessor } from '../functions/throttle.js';
-import { createLogger, ILogger } from '../logger/index.js';
+import { createLogger, ILogger } from '../logger/shared.js';
 import { Model } from '../models/Model.js';
 import { IMapModel, IValueModel } from '../models/types.js';
 

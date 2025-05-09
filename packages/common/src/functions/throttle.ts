@@ -1,5 +1,5 @@
 import { ManualPromise, createManualPromise } from '../async/manualPromise.js';
-import { createLogger, ILogger } from '../logger/index.js';
+import { createLogger, ILogger } from '../logger/shared.js';
 import { random } from '../math/index.js';
 import { catchPromise } from './safe.js';
 

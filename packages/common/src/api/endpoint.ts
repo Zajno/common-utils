@@ -159,5 +159,4 @@ export namespace ApiEndpoint {
     }
 
     export const create = createBuilder(createBase);
-
 }

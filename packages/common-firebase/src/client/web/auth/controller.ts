@@ -10,7 +10,7 @@ import {
     FirebaseError,
 } from '../../abstractions/auth.js';
 import { makeObservable, observable, runInAction } from 'mobx';
-import { createLogger } from '@zajno/common/logger';
+import { createLogger } from '@zajno/common/logger/shared';
 import { Event } from '@zajno/common/observing/event';
 import { transferFields } from '@zajno/common/fields/transfer';
 import { prepareEmail } from '@zajno/common/validation/emails';

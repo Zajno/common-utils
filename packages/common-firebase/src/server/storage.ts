@@ -1,5 +1,5 @@
 import { createLazy } from '@zajno/common/lazy/light';
-import logger from '@zajno/common/logger';
+import logger from '@zajno/common/logger/shared';
 import { AppConfig } from '../config.js';
 import Admin from './admin.js';
 import type { storage as Storage } from 'firebase-admin';

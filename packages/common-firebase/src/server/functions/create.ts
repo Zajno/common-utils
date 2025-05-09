@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { EndpointContext, EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface.js';
-import logger from '@zajno/common/logger';
+import logger from '@zajno/common/logger/shared';
 import { GlobalRuntimeOptions } from './globalSettings.js';
 
 type PromiseOrT<T> = PromiseLike<T> | T;

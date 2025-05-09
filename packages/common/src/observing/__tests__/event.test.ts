@@ -154,7 +154,7 @@ describe('Event', () => {
 
         // test that `createLogger` was called
         // mock `createLogger` so we can check arguments passed to it and we should return our mock logger
-        const createLoggerSpy = vi.spyOn(Logger, 'createLogger').mockReturnValue(mockLogger);
+        const createLoggerSpy = vi.spyOn(Logger.SharedLogger, 'createLogger').mockReturnValue(mockLogger);
         e.withLogger('test');
         expect(createLoggerSpy).toHaveBeenCalledWith('[Event:test]');
 

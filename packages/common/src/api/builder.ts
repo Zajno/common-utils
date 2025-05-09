@@ -2,7 +2,6 @@ import { IEndpointInfo } from './endpoint.types.js';
 import type { ApiCaller, EndpointCallArgs, GenericApiCaller } from './call.js';
 import { ApiEndpoint } from './endpoint.js';
 import { assert } from '../functions/assert.js';
-import { getTemplate } from './helpers.js';
 
 export type IEndpointCaller<T extends IEndpointInfo, TExtra extends object = Record<string, any>> = ApiCaller<T, TExtra> & {
     readonly Endpoint: T;
@@ -59,7 +58,7 @@ export function createEndpointCallable<
     TCaller extends GenericApiCaller<TExtra>,
     TExtra extends object = Record<string, any>,
 >(endpoint: TEndpoint, caller: TCaller) {
-    const path = getTemplate(endpoint).replaceAll('/', '_').replaceAll(':', '$') || 'root';
+    const path = caller.config.getTemplate(endpoint).replaceAll('/', '_').replaceAll(':', '$') || 'root';
     const name = `${endpoint.displayName || '?'}_${endpoint.method}_${path}`;
 
     const fn = {
@@ -67,6 +66,11 @@ export function createEndpointCallable<
     }[name]; // this sets the name of the function
 
     const result = fn as IEndpointCaller<TEndpoint, TExtra>;
-    Object.assign(result, { Endpoint: endpoint });
+
+    // Defining as getter to make readonly according to the interface
+    Object.defineProperty(result, 'Endpoint', {
+        get: () => endpoint,
+    });
+
     return result;
 }

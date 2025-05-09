@@ -106,4 +106,21 @@ export class LoggersManager {
             }
         }
     }
+
+    public expose() {
+        const createLogger = this.create.bind(this);
+        const detachLogger = this.detach.bind(this);
+        const setMode = this.setMode.bind(this);
+        const getMode = () => this.mode;
+
+        const logger: ILogger = createLogger(undefined, false);
+
+        return {
+            createLogger,
+            detachLogger,
+            setMode,
+            getMode,
+            logger,
+        };
+    }
 }
