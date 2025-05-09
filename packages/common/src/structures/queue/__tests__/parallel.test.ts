@@ -1,7 +1,7 @@
 import 'jest-extended';
 import { ParallelQueue } from '../parallel.js';
 import { setTimeoutAsync, timeoutPromise } from '../../../async/timeout.js';
-import { setMode } from '../../../logger/index.js';
+import { setMode } from '../../../logger/shared.js';
 import { oneTimeSubscription } from '../../../observing/event.js';
 
 const createLoader = (amount = 100) => vi.fn(() => setTimeoutAsync(amount));

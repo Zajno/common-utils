@@ -1,6 +1,6 @@
 import type { Predicate } from '../types/index.js';
 import { forEachAsync } from '../async/arrays.js';
-import { ILogger, createLogger } from '../logger/index.js';
+import { ILogger, createLogger } from '../logger/shared.js';
 import { catchPromise } from '../functions/safe.js';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
