@@ -169,9 +169,6 @@ describe('api/call', () => {
             headers: {},
         });
         request.mockClear();
-
-        // expect(preProcessor).toHaveBeenCalledWith({ token: '123' });
-        // expect(postProcessor).toHaveBeenCalledWith({ input: { token: '123' } });
     });
 
     test('post endpoint with static path', async () => {

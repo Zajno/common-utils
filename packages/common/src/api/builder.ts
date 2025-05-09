@@ -66,8 +66,11 @@ export function createEndpointCallable<
     }[name]; // this sets the name of the function
 
     const result = fn as IEndpointCaller<TEndpoint, TExtra>;
+
+    // Defining as getter to make readonly according to the interface
     Object.defineProperty(result, 'Endpoint', {
         get: () => endpoint,
     });
+
     return result;
 }
