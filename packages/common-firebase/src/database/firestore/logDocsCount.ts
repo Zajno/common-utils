@@ -1,4 +1,4 @@
-import logger from '@zajno/common/logger';
+import logger from '@zajno/common/logger/shared';
 import {
     IDocumentReference,
     IQuery,

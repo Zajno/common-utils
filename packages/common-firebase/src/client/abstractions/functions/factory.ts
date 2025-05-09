@@ -1,4 +1,4 @@
-import { ILogger, createLogger } from '@zajno/common/logger';
+import { ILogger, createLogger } from '@zajno/common/logger/shared';
 import { Event, IEvent } from '@zajno/common/observing/event';
 
 import type { IFunctionWorker, IFunctionDefinition, IFunctionDefinitionInfo, IFunctionsError } from './types.js';

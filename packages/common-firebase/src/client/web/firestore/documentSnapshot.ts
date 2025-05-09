@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import type { IdentAny } from '@zajno/common/types/ident';
-import logger from '@zajno/common/logger';
+import logger from '@zajno/common/logger/shared';
 import {
     DocumentReference,
     DocumentSnapshot,
