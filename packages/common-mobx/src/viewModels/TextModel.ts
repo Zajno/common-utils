@@ -1,6 +1,5 @@
 import { observable, makeObservable, reaction, action } from 'mobx';
 import type { IValueModel, IResetableModel, IValueModelReadonly, IFocusableModel } from '@zajno/common/models/types';
-import logger from '@zajno/common/logger/shared';
 import { Getter } from '@zajno/common/types/getter';
 import { ValidatableModel } from './Validatable.js';
 import { Nullable } from '@zajno/common/types';
@@ -81,13 +80,13 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
         this.setValue(val);
     }
 
-    public readonly setValue = (value: Nullable<string>) => {
+    public readonly setValue = (value: Nullable<string>, ignoreReadonly = false) => {
         if (!this._valueObserving) {
             this._value.setValue(value);
 
             this.validateOnChangeIfNeeded();
-        } else {
-            logger.warn('[TextInputVM] Setting value is not allowed when value is observing');
+        } else if (!ignoreReadonly) {
+            throw new Error('[TextInputVM] Setting value is not allowed when value is observing');
         }
     };
 
@@ -137,12 +136,12 @@ export class TextInputVM extends ValidatableModel<string> implements IValueModel
 /** Creates a reaction for migrating a value from getter to setter, with optional delay. */
 function FromGetter(getter: Getter<Nullable<string>>, setter: (val: Nullable<string>) => void, autorunDelay?: Nullable<number>, noAutorun?: Nullable<boolean>) {
     if (noAutorun || typeof getter !== 'function') {
-        setter(Getter.getValue(getter));
+        setter(Getter.toValue(getter));
         return null;
     }
 
     return reaction(
-        () => Getter.getValue(getter),
+        Getter.toFn(getter),
         setter,
         {
             delay: autorunDelay ?? undefined,

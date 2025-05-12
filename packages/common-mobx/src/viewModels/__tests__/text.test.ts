@@ -76,7 +76,11 @@ describe('TextViewModel', () => {
 
             expect(vmAsync.value).toBe('test3');
 
-            vmAsync.value = 'test4'; // should be ignored
+            expect(() => {
+                vmAsync.value = 'test4'; // should be ignored and throw error
+            }).toThrowError('[TextInputVM] Setting value is not allowed when value is observing');
+            expect(vmAsync.value).toBe('test3');
+            vmAsync.setValue('test4', true); // should be ignored and NOT throw error
             expect(vmAsync.value).toBe('test3');
         });
 
