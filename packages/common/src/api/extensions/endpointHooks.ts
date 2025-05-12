@@ -1,5 +1,5 @@
 import type { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
-import { CallerHooks } from '../hooks.js';
+import type { CallerHooks } from '../hooks.js';
 
 /**
  * Caller hooks on endpoint level.

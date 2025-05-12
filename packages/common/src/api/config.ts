@@ -1,5 +1,6 @@
+import { transferFields } from '../fields/transfer.js';
 import { Path } from '../structures/path/index.js';
-import type { Nullable } from '../types/misc.js';
+import type { Mutable, Nullable } from '../types/misc.js';
 import type { IEndpointInfo } from './endpoint.js';
 
 export interface IEndpointsPathsConfig {
@@ -13,14 +14,29 @@ type PrefixOptions = string | boolean;
 
 export class EndpointsPathsConfig implements IEndpointsPathsConfig {
 
-    public readonly templateArgPrefix: Path.TemplateTransform = ':';
-    public readonly basePrefix: string = '/';
+    protected readonly _value: Mutable<IEndpointsPathsConfig> = {
+        templateArgPrefix: ':',
+        basePrefix: '/',
+    };
 
-    constructor(settings?: IEndpointsPathsConfig) {
+    /** Creates a new instance of config. Follows the other instance if it's instanceof `EndpointsPathsConfig`. */
+    constructor(settings?: IEndpointsPathsConfig | EndpointsPathsConfig) {
         if (settings) {
-            this.templateArgPrefix = settings.templateArgPrefix ?? this.templateArgPrefix;
-            this.basePrefix = settings.basePrefix ?? this.basePrefix;
+            if (settings instanceof EndpointsPathsConfig) {
+                this._value = settings._value;
+            } else {
+                this.updateValues(settings);
+            }
         }
+    }
+
+    public get templateArgPrefix(): Path.TemplateTransform { return this._value.templateArgPrefix; }
+    public get basePrefix(): string { return this._value.basePrefix; }
+
+    public expose(): IEndpointsPathsConfig {
+        return {
+            ...this._value,
+        };
     }
 
     public getPath<T extends IEndpointInfo.Base & IEndpointInfo.IPathAbstract>(
@@ -59,6 +75,22 @@ export class EndpointsPathsConfig implements IEndpointsPathsConfig {
         return typeof prefix === 'string'
             ? prefix
             : (prefix ? this.basePrefix : false);
+    }
+
+    protected updateValues(settings: Partial<IEndpointsPathsConfig>) {
+        transferFields.defined(
+            settings,
+            this._value,
+            'templateArgPrefix',
+            'basePrefix',
+        );
+    }
+}
+
+export class EndpointsPathsConfigMutable extends EndpointsPathsConfig {
+    public update(settings: Partial<IEndpointsPathsConfig>) {
+        this.updateValues(settings);
+        return this;
     }
 }
 

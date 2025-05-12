@@ -12,7 +12,7 @@ describe('api/helpers', () => {
     const Helper = new EndpointsPathsConfig(testSettings);
 
     test('settings', () => {
-        expect({ ...Helper }).toEqual(testSettings);
+        expect(Helper.expose()).toEqual(testSettings);
         expect(Helper.getPath(ApiEndpoint.create().withPath(), {}, true)).toEqual('/api/');
         expect(Helper.getPath(ApiEndpoint.create(), {}, true)).toEqual('/api/');
 
