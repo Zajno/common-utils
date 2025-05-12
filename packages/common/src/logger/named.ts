@@ -1,4 +1,4 @@
-import { ILogger, ILoggerSwitchable, LoggerFunction } from './abstractions.js';
+import { ILogger, ILoggerSwitchable, LoggerFunction } from './types.js';
 
 export const EMPTY_FUNCTION = () => { /* no-op */ };
 

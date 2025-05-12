@@ -1,7 +1,7 @@
 import type { Predicate } from '../types/index.js';
 import { forEachAsync } from '../async/arrays.js';
-import { ILogger, createLogger } from '../logger/shared.js';
 import { catchPromise } from '../functions/safe.js';
+import { Loggable } from '../logger/loggable.js';
 
 export type EventHandler<T = any> = (data?: T) => void | Promise<void>;
 type Unsubscribe = () => void;
@@ -11,31 +11,13 @@ export interface IEvent<T = any> {
     off(handler: EventHandler<T>): void;
 }
 
-export class Event<T = any> implements IEvent<T> {
+export class Event<T = any> extends Loggable implements IEvent<T> {
     private _handlers: EventHandler<T>[] = [];
-    private _logger: ILogger | null = null;
-
-    constructor(withDefaultLogger = true) {
-        if (withDefaultLogger) {
-            this.withLogger('');
-        }
-    }
 
     public get isEmpty() { return this._handlers.length === 0; }
 
-    public withLogger(logger?: ILogger | null): this;
-    public withLogger(name?: string | null): this;
-
-    public withLogger(loggerOrName: ILogger | string | null | undefined) {
-        if (loggerOrName == null) {
-            this._logger = null;
-            return this;
-        }
-
-        this._logger = typeof loggerOrName === 'string'
-            ? createLogger(`[Event:${loggerOrName || '?'}]`)
-            : loggerOrName;
-        return this;
+    protected getLoggerName(name: string | undefined): string {
+        return `[Event:${name || '?'}]`;
     }
 
     /** Clears handlers list */
@@ -101,7 +83,7 @@ export class Event<T = any> implements IEvent<T> {
     }
 
     private logError(data: T | null | undefined, cb: EventHandler<T>, err: unknown) {
-        this._logger?.error(`[Event.${typeof data}] Handler ${cb.name} thrown an exception: `, err);
+        this.logger?.error(`type:${typeof data} Handler ${cb.name} thrown an exception: `, err);
     }
 }
 

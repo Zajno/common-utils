@@ -1,23 +1,26 @@
-import { createLogger, ILogger } from '../logger/shared.js';
 import { combineDisposers, IDisposable } from '../functions/disposer.js';
 import { catchPromise } from '../functions/safe.js';
+import { Loggable } from '../logger/loggable.js';
 
 type Unsub = () => void;
 
-export class SubscribersMap implements IDisposable {
+export class SubscribersMap extends Loggable implements IDisposable {
     /** Unsubscribers map: key => unsub fn */
     private readonly _map = new Map<string, () => void>();
     /** Timeouts map: key => timeout handle */
     private readonly _timeouts = new Map<string, any>();
 
-    private readonly _logger: ILogger;
     protected _count = 0;
 
     constructor(readonly subscribe: null | ((key: string) => Promise<Unsub[]>), readonly name?: string) {
-        this._logger = createLogger(`[Observers:${this.name || '?'}]`);
+        super();
     }
 
     public get count() { return this._count; }
+
+    protected getLoggerName(name: string | undefined): string {
+        return `[Observers:${name || '?'}]`;
+    }
 
     public getIsObserving(key: string) {
         return this._map.has(key);
@@ -34,7 +37,7 @@ export class SubscribersMap implements IDisposable {
         }
 
         if (enable) {
-            this._logger.log('Adding observer for key =', key, clearAfter ? `, clearAfter = ${clearAfter}` : '');
+            this.logger?.log('Adding observer for key =', key, clearAfter ? `, clearAfter = ${clearAfter}` : '');
 
             // this marker will help to determine whether unsubscribe was requested while we were in process of subscribing
             let disabled = false;
@@ -57,7 +60,7 @@ export class SubscribersMap implements IDisposable {
                 this.refreshTimeout(key, true, clearAfter);
             }
         } else {
-            this._logger.log('Removing observer for key =', key);
+            this.logger?.log('Removing observer for key =', key);
             this.refreshTimeout(key, false);
             const unsub = this._map.get(key);
             this._map.delete(key);
@@ -80,7 +83,7 @@ export class SubscribersMap implements IDisposable {
 
         if (enable && timeout) {
             const t = setTimeout(
-                () => catchPromise(this.enable(key, false), err => this._logger?.error('Unexpected error:', err)),
+                () => catchPromise(this.enable(key, false), err => this.logger?.error('Unexpected error:', err)),
                 timeout,
             );
             this._timeouts.set(key, t);

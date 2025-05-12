@@ -1,12 +1,12 @@
 import 'jest-extended';
 import { ParallelQueue } from '../parallel.js';
 import { setTimeoutAsync, timeoutPromise } from '../../../async/timeout.js';
-import { setMode } from '../../../logger/shared.js';
 import { oneTimeSubscription } from '../../../observing/event.js';
+import { LoggersManager } from '../../../logger/manager.js';
 
 const createLoader = (amount = 100) => vi.fn(() => setTimeoutAsync(amount));
 
-setMode('console');
+const { createLogger } = new LoggersManager().expose();
 
 describe('ParallelQueue', () => {
     it('runs', async () => {
@@ -60,7 +60,7 @@ describe('ParallelQueue', () => {
 
     it('correctly fires events with scattered priorities', async () => {
         const q = new ParallelQueue()
-            .withLogger('test 2')
+            .setLoggerFactory(createLogger, 'test 2')
         ;
 
         const dummyFn = createLoader(0);

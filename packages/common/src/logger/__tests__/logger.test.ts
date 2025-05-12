@@ -1,11 +1,11 @@
-import { batchLoggers, ILogger, SharedLogger } from '../index.js';
+import { batchLoggers, ILogger, LoggersManager } from '../index.js';
 import { faker } from '@faker-js/faker';
 import fc from 'fast-check';
 import { MockInstance } from 'vitest';
 import { toArbitrary } from '../../../utils/tests/main.js';
 
 const CONSOLE = console;
-const { default: logger, getMode, setMode, createLogger } = SharedLogger;
+const { logger, getMode, setMode, createLogger } = new LoggersManager().expose();
 
 describe('#logger-tests', () => {
 

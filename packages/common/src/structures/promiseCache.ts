@@ -1,5 +1,5 @@
 import { ThrottleProcessor } from '../functions/throttle.js';
-import { createLogger, ILogger } from '../logger/shared.js';
+import { Loggable } from '../logger/loggable.js';
 import { Model } from '../models/Model.js';
 import { IMapModel, IValueModel } from '../models/types.js';
 
@@ -28,7 +28,7 @@ const BATCHING_DELAY = 200;
  *  - batching of fetches.
  *  - auto-invalidation of cached items.
 */
-export class PromiseCache<T, K = string> {
+export class PromiseCache<T, K = string> extends Loggable {
 
     protected readonly _itemsCache: IMapModel<string, T | null | undefined>;
     protected readonly _itemsStatus: IMapModel<string, boolean>;
@@ -41,7 +41,6 @@ export class PromiseCache<T, K = string> {
     private _invalidationTimeMs: number | null = null;
     private _keepInstanceDuringInvalidation = false;
 
-    private _logger: ILogger | null = null;
     private _version = 0;
 
     constructor(
@@ -49,6 +48,8 @@ export class PromiseCache<T, K = string> {
         private readonly keyAdapter?: K extends string ? null : (k: K) => string,
         private readonly keyParser?: K extends string ? null : (id: string) => K,
     ) {
+        super();
+
         this._busyCount = this.pure_createBusyCount();
         this._itemsCache = this.pure_createItemsCache();
         this._itemsStatus = this.pure_createItemsStatus();
@@ -89,13 +90,8 @@ export class PromiseCache<T, K = string> {
         return this.keyAdapter(k);
     }
 
-    useLogger(nameOrLogger?: string | ILogger) {
-        if (nameOrLogger != null && typeof nameOrLogger !== 'string') {
-            this._logger = nameOrLogger;
-        } else {
-            this._logger = createLogger(`[PromiseCache:${nameOrLogger || '?'}]`);
-        }
-        return this;
+    protected getLoggerName(name: string | undefined): string {
+        return `[PromiseCache:${name || '?'}]`;
     }
 
     /**
@@ -147,7 +143,7 @@ export class PromiseCache<T, K = string> {
         // make sure current item is hooked here from the cache (required by observers)
         const item = this._itemsCache.get(key);
         if (isInvalid) {
-            this._logger?.log(key, 'item is invalidated');
+            this.logger?.log(key, 'item is invalidated');
         }
         return {
             item: (isInvalid && !this._keepInstanceDuringInvalidation) ? undefined : item,
@@ -162,7 +158,7 @@ export class PromiseCache<T, K = string> {
             // spin fetch
             this.get(id);
         }
-        this._logger?.log(key, 'getCurrent: returns', item);
+        this.logger?.log(key, 'getCurrent: returns', item);
         return item;
     }
 
@@ -171,13 +167,13 @@ export class PromiseCache<T, K = string> {
 
         // return cached item if it's not invalidated
         if (item !== undefined && !isInvalid) {
-            this._logger?.log(key, 'get: item resolved to', item, isInvalid ? '(invalidated)' : '');
+            this.logger?.log(key, 'get: item resolved to', item, isInvalid ? '(invalidated)' : '');
             return Promise.resolve(item);
         }
 
         let promise = this._fetchCache.get(key);
         if (promise != null) {
-            this._logger?.log(key, 'get: item resolved to <promise>');
+            this.logger?.log(key, 'get: item resolved to <promise>');
             return promise;
         }
 
@@ -205,7 +201,7 @@ export class PromiseCache<T, K = string> {
             }
 
             if (this._fetchCache.get(key) != null) {
-                this._logger?.log(key, 'item\'s <promise> resolved to', res);
+                this.logger?.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
                 this.storeResult(key, res);
             }
@@ -214,7 +210,7 @@ export class PromiseCache<T, K = string> {
             if (isInSameVersion) {
                 this.onFetchComplete(key);
             } else {
-                this._logger?.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
+                this.logger?.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
             }
         }
     };
@@ -292,7 +288,7 @@ export class PromiseCache<T, K = string> {
 
     /** @override */
     protected setStatus(key: string, status: boolean) {
-        this._logger?.log(key, 'status update:', status);
+        this.logger?.log(key, 'status update:', status);
         this._itemsStatus.set(key, status);
     }
 
@@ -327,7 +323,7 @@ export class PromiseCache<T, K = string> {
     /** @pure */
     protected async tryFetchInBatch(id: K): Promise<T | null> {
         const fetchWrap = () => this.fetcher(id).catch(err => {
-            this._logger?.warn('fetcher failed', id, err);
+            this.logger?.warn('fetcher failed', id, err);
             return null;
         });
 
@@ -337,7 +333,7 @@ export class PromiseCache<T, K = string> {
 
         const res = await this._batch.push(id)
             .catch(err => {
-                this._logger?.warn('batch fetch failed', id, err);
+                this.logger?.warn('batch fetch failed', id, err);
                 return null;
             });
         if (!res || !res.result || res.result[res.index] === undefined) {

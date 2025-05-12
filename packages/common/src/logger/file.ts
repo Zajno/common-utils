@@ -4,7 +4,7 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Util from 'util';
 
-import { ILogger } from './abstractions.js';
+import { ILogger } from './types.js';
 
 export class FileLoggerNode implements ILogger {
     private readonly _buffer: string[] = [];

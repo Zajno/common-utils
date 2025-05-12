@@ -1,6 +1,6 @@
-import * as DateHelpers from '../dates/index.js';
-import * as MathHelpers from '../math/index.js';
-import logger, { type ILogger } from '../logger/shared.js';
+import { decomposeMs } from '../dates/decompose.js';
+import { type ILogger } from '../logger/index.js';
+import { arrayAverage } from '../math/arrays.js';
 import { Event } from './event.js';
 
 export class ProgressTracker {
@@ -18,18 +18,12 @@ export class ProgressTracker {
 
     private readonly _changed = new Event<{ completed: number, total: number, currentProgress: number, totalElapsedMs: number, totalEstimatedMs: number }>();
 
-    constructor(readonly log: boolean | ILogger = true) { }
+    constructor(readonly logger?: ILogger) { }
 
     public get changed() { return this._changed.expose(); }
     public get total() { return this._total; }
     public get completed() { return this._completed; }
     public get current() { return this._currentProgress; }
-
-    private get logger() {
-        return this.log === true
-            ? logger
-            : (this.log || null);
-    }
 
     public setTotal(total: number) {
         this._total = total;
@@ -60,17 +54,17 @@ export class ProgressTracker {
 
         this._currentProgress = Math.floor(completed / (total || 100) * 100);
         const itemsLeft = total - completed;
-        const leftProgressTime = itemsLeft * (MathHelpers.arrayAverage(this._deltas, true) || 1000);
+        const leftProgressTime = itemsLeft * (arrayAverage(this._deltas, true) || 1000);
 
         this._lastTimestamp = Date.now();
 
         const totalElapsedMs = this._lastTimestamp - this._firstTimestamp;
 
-        if (this.log) {
+        if (this.logger) {
             const totalElapsed = msToString(totalElapsedMs);
             const totalEstimated = msToString(leftProgressTime);
 
-            this.logger!.log(`Progress: ${completed}/${total} ${totalElapsed}/${totalEstimated} => ${this._currentProgress}%`);
+            this.logger.log(`Progress: ${completed}/${total} ${totalElapsed}/${totalEstimated} => ${this._currentProgress}%`);
         }
 
         this._changed.trigger({
@@ -84,7 +78,7 @@ export class ProgressTracker {
 }
 
 function msToString(this: void, ms: number) {
-    const decs = DateHelpers.decomposeMs(ms, 'second', 'minute', 'hour');
+    const decs = decomposeMs(ms, 'second', 'minute', 'hour');
     const nf = (n: number) => n.toString().padStart(2, '0');
     return `${nf(decs.hour)}:${nf(decs.minute)}:${nf(decs.second)}`;
 }

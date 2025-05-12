@@ -1,17 +1,16 @@
-import { Getter } from '../types/index.js';
-import logger from '../logger/shared.js';
-import { ILogger } from '../logger/abstractions.js';
+import { Getter, type Nullable } from '../types/index.js';
+import { ILogger } from '../logger/types.js';
 
 type AssertFn = (condition: boolean, error: Getter<string | Error>, objectToLog?: Getter<any>) => asserts condition;
 
-export function createAssert(logger: ILogger): AssertFn {
+export function createAssert(logger?: Nullable<ILogger>): AssertFn {
     return function assert(condition: boolean, error: Getter<string | Error>, objectToLog?: Getter<any>): asserts condition {
         if (condition) {
             return;
         }
 
         const e = Getter.toValue(error);
-        if (objectToLog) {
+        if (objectToLog && logger) {
             logger.error('Assertion failed:', e, Getter.toValue(objectToLog));
         }
 
@@ -23,4 +22,4 @@ export function createAssert(logger: ILogger): AssertFn {
     };
 }
 
-export const assert: AssertFn = createAssert(logger);
+export const assert: AssertFn = createAssert();

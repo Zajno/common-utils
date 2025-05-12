@@ -1,14 +1,7 @@
 import { Getter } from '../types/getter.js';
-import { ILogger } from './abstractions.js';
+import type { ILogger, LoggerModes } from './types.js';
 import { CONSOLE } from './console.js';
 import { ProxyLogger } from './proxy.js';
-
-// TBD Introduce more logger types ?
-export type LoggerTypes = 'console';
-
-export type LoggerModes = LoggerTypes // default JS logger types
-    | false // disabled
-    | Getter<ILogger>; // custom instance or factory
 
 export class LoggersManager {
     private readonly _managed = new Set<ProxyLogger>();

@@ -1,4 +1,4 @@
-import { ILogger } from './abstractions.js';
+import { ILogger } from './types.js';
 
 export function batchLoggers(...loggers: ILogger[]): ILogger {
     return {

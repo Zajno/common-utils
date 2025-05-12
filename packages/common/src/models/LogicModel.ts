@@ -1,7 +1,7 @@
 import { ExclusiveLoadingError, LoadingModel, withLoading } from './Loading.js';
 import { Getter, Nullable } from '../types/index.js';
 import { PromiseExtended } from '../structures/promiseExtended.js';
-import { createLogger, ILogger } from '../logger/shared.js';
+import { Loggable } from '../logger/loggable.js';
 
 export type ActionRunOptions = {
     /** Action name, required for logging and joining. */
@@ -28,20 +28,22 @@ export type ActionRunOptions = {
 };
 
 
-export class LogicModel {
+export class LogicModel extends Loggable {
 
     protected readonly _loading: LoadingModel;
 
     public get isLoading(): boolean { return this._loading.isLoading; }
 
-    protected logger: ILogger;
-
     private readonly _namedRunners = new Map<string, Promise<unknown>>();
     private readonly _runningActionNames = new Set<string>();
 
-    constructor(name?: string, useFirstInit = true) {
-        this.logger = createLogger(`[${name || this.constructor.name}]`);
+    constructor(useFirstInit = true) {
+        super();
         this._loading = this.pureConstructLoadingModel(useFirstInit);
+    }
+
+    protected getLoggerName(name?: string) {
+        return `[${name || this.constructor.name}]`;
     }
 
     protected pureConstructLoadingModel(useFirstInit: boolean): LoadingModel {
@@ -52,7 +54,7 @@ export class LogicModel {
         const started = Date.now();
         const name = options.name;
         if (name && !options.noLogs) {
-            this.logger.log(`runAction "${name}" started...`);
+            this.logger?.log(`runAction "${name}" started...`);
         }
 
         const runner = async () => {
@@ -64,12 +66,12 @@ export class LogicModel {
                 if (existingRunner != null) {
                     if (join === 'cancel') {
                         if (!options.noLogs) {
-                            this.logger.warn(`runAction "${name}" has been skipped because another instance of it is in progress`);
+                            this.logger?.warn(`runAction "${name}" has been skipped because another instance of it is in progress`);
                         }
                         return undefined;
                     } else if (join === 'merge') {
                         if (!options.noLogs) {
-                            this.logger.log(`runAction "${name}" merging with existing instance...`);
+                            this.logger?.log(`runAction "${name}" merging with existing instance...`);
                         }
                         return existingRunner as ReturnType<typeof worker>;
                     }
@@ -91,7 +93,7 @@ export class LogicModel {
                                 throw new ExclusiveLoadingError(message, storedName);
                             }
 
-                            this.logger.warn(message);
+                            this.logger?.warn(message);
                             return undefined;
                         }
                         result = resultWithLoading.result;
@@ -100,7 +102,7 @@ export class LogicModel {
                     }
 
                     if (name && !options.noLogs) {
-                        this.logger.log(`runAction "${storedName}" succeed in ${Date.now() - started}ms`);
+                        this.logger?.log(`runAction "${storedName}" succeed in ${Date.now() - started}ms`);
                     }
                     return result;
                 } finally {
@@ -123,7 +125,7 @@ export class LogicModel {
 
         return ActionResult.expectExclusive(PromiseExtended.run(runner))
             .onError(data => {
-                this.logger.error(...formatError({
+                this.logger?.error(...formatError({
                     name,
                     err: data.source,
                     errorCtx,

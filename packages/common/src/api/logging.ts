@@ -1,4 +1,4 @@
-import { ILogger } from '../logger/abstractions.js';
+import { ILogger } from '../logger/types.js';
 import type { Nullable } from '../types/index.js';
 import type { IRequestConfig } from './call.js';
 import { EndpointMethods } from './methods.js';

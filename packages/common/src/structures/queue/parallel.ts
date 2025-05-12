@@ -1,4 +1,4 @@
-import { createLogger, ILogger } from '../../logger/shared.js';
+import { Loggable } from '../../logger/loggable.js';
 import { Event } from '../../observing/event.js';
 import { OneTimeLateEvent } from '../../observing/event.late.js';
 
@@ -6,15 +6,13 @@ export type QueueItem = () => void | Promise<void>;
 
 type Queue = QueueItem[];
 
-export class ParallelQueue {
+export class ParallelQueue extends Loggable {
 
     private readonly _queues: Record<number, Queue> = { };
 
     private _inProgress: boolean | null = null;
     private _currentIndex = 0;
     private _maxIndex = 0;
-
-    private _logger: ILogger | null = null;
 
     private readonly _beforePriorityRun = new Event<number>();
     private readonly _afterPriorityRun = new Event<number>();
@@ -28,9 +26,8 @@ export class ParallelQueue {
 
     public get finished() { return this._finished.expose(); }
 
-    public withLogger(name?: string) {
-        this._logger = createLogger(`[Queue:${name || '?'}]`);
-        return this;
+    protected getLoggerName(name: string | undefined): string {
+        return `[Queue:${name || '?'}]`;
     }
 
     /** @returns A callback that will try to cancel queued item */
@@ -77,7 +74,7 @@ export class ParallelQueue {
         try {
             await this.tryStartQueue();
         } catch (err) {
-            this._logger?.warn('Failed to process queue:', err);
+            this.logger?.warn('Failed to process queue:', err);
             return false;
         }
 
@@ -105,11 +102,11 @@ export class ParallelQueue {
 
         while ((current = this._queues[this._currentIndex])?.length) {
             if (iterations++ > MAX_ATTEMPTS) {
-                this._logger?.warn('Tried to purge queue for priority =', this._currentIndex, 'for too many times of', MAX_ATTEMPTS, '; totalItems =', totalItems, '; skipping.');
+                this.logger?.warn('Tried to purge queue for priority =', this._currentIndex, 'for too many times of', MAX_ATTEMPTS, '; totalItems =', totalItems, '; skipping.');
                 break;
             }
 
-            this._logger?.log('Processing priority =', this._currentIndex, '; count =', current.length);
+            this.logger?.log('Processing priority =', this._currentIndex, '; count =', current.length);
 
             const items = current.slice();
             current.length = 0;
@@ -119,7 +116,7 @@ export class ParallelQueue {
         }
 
         if (!current?.length && iterations === 0) {
-            this._logger?.log('Skipping priority =', this._currentIndex, '; no items');
+            this.logger?.log('Skipping priority =', this._currentIndex, '; no items');
         }
 
         await this._afterPriorityRun.triggerAsync(this._currentIndex);
@@ -128,7 +125,7 @@ export class ParallelQueue {
         if (next > this._maxIndex) {
             // looks like we've finished!
             this._inProgress = false;
-            this._logger?.log('Finished processing at index =', this._currentIndex);
+            this.logger?.log('Finished processing at index =', this._currentIndex);
             this._finished.trigger();
             return;
         }
@@ -141,8 +138,8 @@ export class ParallelQueue {
         try {
             await l();
         } catch (err) {
-            this._logger?.warn('Failed to process queue item at priority =', priority, ' at index =', index || '?');
-            this._logger?.error(err);
+            this.logger?.warn('Failed to process queue item at priority =', priority, ' at index =', index || '?');
+            this.logger?.error(err);
         }
     };
 }

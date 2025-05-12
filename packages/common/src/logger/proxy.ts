@@ -1,4 +1,4 @@
-import { ILogger } from './abstractions.js';
+import { ILogger } from './types.js';
 import { EMPTY_FUNCTION, NamedLogger } from './named.js';
 
 export const EMPTY_LOGGER: ILogger = {
