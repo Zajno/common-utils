@@ -157,7 +157,7 @@ describe('Event', () => {
         const createLogger = vi.fn<Logger.ILoggerFactory>((_name, _mode) => mockLogger);
         e.setLoggerFactory(createLogger, 'test');
 
-        expect(createLogger).toHaveBeenCalledWith('[Event:test]', undefined);
+        expect(createLogger).toHaveBeenCalledWith('[Event:test]');
 
         e.setLogger(mockLogger);
         expect((e as any)._logger).toBe(mockLogger);
