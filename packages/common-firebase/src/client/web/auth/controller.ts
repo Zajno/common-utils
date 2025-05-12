@@ -10,7 +10,6 @@ import {
     FirebaseError,
 } from '../../abstractions/auth.js';
 import { makeObservable, observable, runInAction } from 'mobx';
-import { createLogger } from '@zajno/common/logger/shared';
 import { Event } from '@zajno/common/observing/event';
 import { transferFields } from '@zajno/common/fields/transfer';
 import { prepareEmail } from '@zajno/common/validation/emails';
@@ -41,8 +40,6 @@ import { truthy } from '@zajno/common/types/arrays';
 import { assert } from '@zajno/common/functions/assert';
 
 export type { IAuthController };
-
-export const logger = createLogger('[Auth]');
 
 const AuthProviderIdKey = 'auth:providerid';
 const UserSignInEmailStorageKey = 'auth:signin:email';
@@ -106,7 +103,9 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
     protected abstract get Storage(): IStorage;
 
-    get logger() { return logger; }
+    protected getLoggerName(): string {
+        return '[Auth]';
+    }
 
     protected async processAuthUser() {
         const authUser = Auth.value.currentUser;
@@ -126,7 +125,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
         const result = this.createAuthUser(authUser) as AuthUserWithProviders<TUser>;
 
-        logger.log('Initializing with user:', result?.email, '; provider =', provider, '; uid =', result?.uid);
+        this.logger?.log('Initializing with user:', result?.email, '; provider =', provider, '; uid =', result?.uid);
 
         if (result) {
             const methods = result.email && await this.getEmailAuthMethod(result.email);
@@ -143,7 +142,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
             const createPassword = this.needsCreatePassword;
             const resetPassword = provider === AuthProviders.EmailLink && (await this.Storage.getValue(PasswordResetRequestedKey)) === 'true';
             if (createPassword || resetPassword) {
-                logger.log('Setting _setPasswordMode = true createPassword =', createPassword, 'resetPassword =', resetPassword);
+                this.logger?.log('Setting _setPasswordMode = true createPassword =', createPassword, 'resetPassword =', resetPassword);
                 this._setPasswordMode.setTrue();
             }
         }
@@ -176,7 +175,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
     }
 
     protected setNextProvider(p: AuthProviders) {
-        logger.log('next provider =>', p);
+        this.logger?.log('next provider =>', p);
         this._nextProvider = p;
     }
 
@@ -209,7 +208,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
         const results = this.convertAuthMethods(methods);
 
         if (results.length === 0) {
-            logger.log('No auth methods for email', email, '; existing are:', methods);
+            this.logger?.log('No auth methods for email', email, '; existing are:', methods);
         }
 
         return results;
@@ -226,7 +225,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
     protected async sendMagicLinkRequest(email: string, reason: MagicLinkRequestReasons, _displayName?: string) {
         email = prepareEmail(email);
-        logger.log('sendMagicLinkRequest', email, reason);
+        this.logger?.log('sendMagicLinkRequest', email, reason);
 
         // don't use Promise.all here - it crashes Expo
         await this.Storage.setValue(UserSignInEmailStorageKey, email);
@@ -241,13 +240,13 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
         const url = this.locationUrl;
         try {
             if (!isSignInWithEmailLink(Auth.value, url)) {
-                logger.log('Current path is not sign in link:', url);
+                this.logger?.log('Current path is not sign in link:', url);
                 return { error: 'invalidLink' };
             }
 
             email = prepareEmail(email);
             if (!email) {
-                logger.log('User was not performing a sign in');
+                this.logger?.log('User was not performing a sign in');
                 return { error: 'noemail' };
             }
 
@@ -255,7 +254,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
             await signInWithEmailLink(Auth.value, email, url);
 
             const reason = await this.Storage.getValue(MagicLinkReasonKey) as MagicLinkRequestReasons;
-            this.logger.log('processEmailLink reason =', reason);
+            this.logger?.log('processEmailLink reason =', reason);
             if (reason === MagicLinkRequestReasons.PasswordReset) {
                 await this.Storage.setValue(PasswordResetRequestedKey, 'true');
                 this._setPasswordMode.setTrue();
@@ -264,14 +263,14 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
             await this.Storage.removeValue(MagicLinkReasonKey);
             await this.Storage.removeValue(UserSignInEmailStorageKey);
 
-            this.logger.log('processEmailLink succeed with reason =', reason);
+            this.logger?.log('processEmailLink succeed with reason =', reason);
             this._magicLinkSucceeded.trigger(reason);
 
             return { result: true };
 
         } catch (err) {
             this.setNextProvider(AuthProviders.None);
-            logger.error('Failed to perform a sign in for user:', email, '; Error:', err);
+            this.logger?.error('Failed to perform a sign in for user:', email, '; Error:', err);
             return {
                 error: err as Error,
                 email,
@@ -294,7 +293,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
     async createAccountForEmailAndPassword(email: string, password: string): Promise<void> {
         const e = prepareEmail(email);
-        logger.log('Creating an account for ', e);
+        this.logger?.log('Creating an account for ', e);
         try {
             this.setNextProvider(AuthProviders.EmailAndPassword);
             await createUserWithEmailAndPassword(Auth.value, e, password);
@@ -312,7 +311,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
         try {
             await updatePassword(authUser, password);
-            logger.log('password updated successfully!!');
+            this.logger?.log('password updated successfully!!');
             assert(!!this._authUser, 'AuthUser is not initialized (unexpected)');
             this._authUser.providers = await this.getEmailAuthMethod(authUser.email);
             this._setPasswordMode.setFalse();
@@ -321,18 +320,18 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
             return { result: true };
         } catch (err) {
             const e = err as FirebaseError;
-            logger.log('failed to update password:', e.code);
+            this.logger?.log('failed to update password:', e.code);
             if (e.code === 'auth/requires-recent-login') {
                 const rawAuthUser = Auth.value.currentUser;
                 const userEmail = rawAuthUser?.email;
                 if (oldPassword && rawAuthUser && userEmail) {
                     const cred = EmailAuthProvider.credential(userEmail, oldPassword);
                     try {
-                        logger.log('re-authenticating with email/password for', userEmail);
+                        this.logger?.log('re-authenticating with email/password for', userEmail);
                         await reauthenticateWithCredential(rawAuthUser, cred);
                     } catch (err2) {
                         const e2 = err2 as FirebaseError;
-                        logger.log('failed to re-authenticate, ERROR:', err2);
+                        this.logger?.log('failed to re-authenticate, ERROR:', err2);
                         return {
                             result: false,
                             error: e2.code === 'auth/wrong-password'
@@ -367,23 +366,23 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
             const result = await this.doGoogleSignIn();
             if (!result) {
-                logger.warn('Google SignIn: no result (probably canceled)');
+                this.logger?.warn('Google SignIn: no result (probably canceled)');
                 this.setNextProvider(AuthProviders.None);
                 return false;
             }
 
-            logger.log('Google: Successfully signed in with user', result.user.email);
+            this.logger?.log('Google: Successfully signed in with user', result.user.email);
 
             return true;
         } catch (err) {
             this.setNextProvider(AuthProviders.None);
             const e = err as FirebaseError & { email: string };
             if (e.code == '-3' || (e.message && e.message.includes('error -3'))) {
-                logger.log('Cancel sign in with google');
+                this.logger?.log('Cancel sign in with google');
                 return false;
             }
 
-            logger.warn('Google Sign in error:', e.message, err);
+            this.logger?.warn('Google Sign in error:', e.message, err);
 
             // Handle Errors here.
             const errorCode: string = e.code;
@@ -418,7 +417,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
     }
 
     async signOut() {
-        logger.log('Signing out...');
+        this.logger?.log('Signing out...');
         await this._initializing.useLoading(async () => {
             try {
                 this._setPasswordMode.setFalse();
@@ -432,7 +431,7 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
 
                 await signOut(Auth.value);
             } catch (err) {
-                logger.warn('Failed to sign out!');
+                this.logger?.warn('Failed to sign out!');
                 // eslint-disable-next-line no-console
                 console.error(err);
                 throw err;
@@ -471,6 +470,6 @@ export abstract class AuthControllerBase<TUser extends AuthUser = AuthUser> exte
             this._authUser.photoURL = user.photoURL;
             this._authUser.displayName = user.displayName;
         });
-        logger.log('AuthUser profile updated:', this._authUser);
+        this.logger?.log('AuthUser profile updated:', this._authUser);
     }
 }

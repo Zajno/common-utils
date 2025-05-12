@@ -1,4 +1,4 @@
-import { ILogger, createLogger } from '@zajno/common/logger/shared';
+import { Loggable } from '@zajno/common/logger';
 import { Event, IEvent } from '@zajno/common/observing/event';
 
 import type { IFunctionWorker, IFunctionDefinition, IFunctionDefinitionInfo, IFunctionsError } from './types.js';
@@ -18,18 +18,24 @@ export interface IFirebaseFunctionsProvider {
     createCallable<TArg, TResult>(definition: IFunctionDefinition<TArg, TResult>): FunctionType<TArg, TResult>;
 }
 
-export class FunctionFactory<TArg, TResult> implements IFunctionWorker<TArg, TResult> {
+export class FunctionFactory<TArg, TResult> extends Loggable implements IFunctionWorker<TArg, TResult> {
 
-    private readonly logger: ILogger;
     private _meta: any = null;
 
-    constructor(readonly functions: IFirebaseFunctionsProvider, readonly Definition: IFunctionDefinition<TArg, TResult>) {
-        this.logger = createLogger(`[${Definition.CallableName}]`);
+    constructor(
+        readonly functions: IFirebaseFunctionsProvider,
+        readonly Definition: IFunctionDefinition<TArg, TResult>,
+    ) {
+        super();
 
         _onFactoryCreated.trigger({
             definition: Definition,
             addMeta: meta => this.addMeta(meta),
         });
+    }
+
+    protected getLoggerName(): string {
+        return `[${this.Definition.CallableName}]`;
     }
 
     addMeta<TMeta>(meta?: TMeta) {
@@ -42,12 +48,12 @@ export class FunctionFactory<TArg, TResult> implements IFunctionWorker<TArg, TRe
         try {
             const fn = this.functions.createCallable(this.Definition);
             const processedArgs = await this.Definition.ArgProcessor(arg);
-            this.logger.log('Executing with args:', processedArgs, ...(this._meta ? ['with meta:', this._meta] : []));
+            this.logger?.log('Executing with args:', processedArgs, ...(this._meta ? ['with meta:', this._meta] : []));
 
             if (this._meta != null) {
                 const existing = processedArgs[META_ARG_KEY];
                 if (existing != null) {
-                    this.logger.warn(`Skipping adding metadata because field "${META_ARG_KEY}" is occupied already:`, existing);
+                    this.logger?.warn(`Skipping adding metadata because field "${META_ARG_KEY}" is occupied already:`, existing);
                 } else {
                     Object.assign(processedArgs, { [META_ARG_KEY]: this._meta });
                 }
@@ -57,12 +63,12 @@ export class FunctionFactory<TArg, TResult> implements IFunctionWorker<TArg, TRe
 
             const data = await this.Definition.ResultProcessor(res.data);
 
-            this.logger.log('Succeed with result in', Date.now() - start, 'ms =>', data);
+            this.logger?.log('Succeed with result in', Date.now() - start, 'ms =>', data);
 
             return data;
         } catch (err) {
             const e = err as IFunctionsError;
-            this.logger.warn(
+            this.logger?.warn(
                 'Failed with error after',
                 Date.now() - start,
                 'ms, see details below.',

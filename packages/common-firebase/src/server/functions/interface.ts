@@ -9,7 +9,7 @@ export type EndpointContext<T = never> = BaseFunctionContext & {
     data?: T;
     readonly requestPath: string;
     readonly requestId: string;
-    readonly logger: ILogger;
+    readonly logger?: ILogger;
     readonly endpoint: IEndpointRuntimeInfo;
     readonly meta?: any;
 };

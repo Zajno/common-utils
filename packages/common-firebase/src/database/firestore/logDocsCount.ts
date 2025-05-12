@@ -1,26 +1,22 @@
-import logger from '@zajno/common/logger/shared';
+import { FirestoreLogging } from './logging.js';
 import {
     IDocumentReference,
     IQuery,
     IQuerySnapshot,
 } from './types.js';
 
-
 let docsCounter = 0;
-let LOG_DOCS_COUNT = true;
 
-export function enableQueriesLogging(v: boolean) { LOG_DOCS_COUNT = v; }
-
-export const logDocCount = (doc: IDocumentReference, sub: boolean) => LOG_DOCS_COUNT && logger.log(
-    '[Firestore] ===> documentSnapshot',
+export const logDocCount = (doc: IDocumentReference, sub: boolean) => FirestoreLogging.logger?.log(
+    '===> documentSnapshot',
     sub ? '(SUB)' : '',
     ++docsCounter,
     doc.path,
 );
 
 let queryCounter = 0;
-export const logQueryCount = (q: IQuery, s: IQuerySnapshot, sub: boolean, name?: string) => LOG_DOCS_COUNT && logger.log(
-    '[Firestore] ===> querySnapshot',
+export const logQueryCount = (q: IQuery, s: IQuerySnapshot, sub: boolean, name?: string) => FirestoreLogging.logger?.log(
+    '===> querySnapshot',
     sub ? '(SUB)' : '',
     s.size,
     (queryCounter += s.size),
