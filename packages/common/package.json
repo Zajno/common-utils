@@ -59,6 +59,8 @@
     "./lazy": "./src/lazy/index.ts",
     "./localization": "./src/localization/index.ts",
     "./logger": "./src/logger/index.ts",
+    "./logger/buffered": "./src/logger/buffered/index.ts",
+    "./logger/buffered/file": "./src/logger/buffered/file/index.ts",
     "./math": "./src/math/index.ts",
     "./math/object": "./src/math/object/index.ts",
     "./storage": "./src/storage/index.ts",

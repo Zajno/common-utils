@@ -25,15 +25,15 @@ export abstract class NamedLogger implements ILogger, ILoggerSwitchable {
 
         this.log = this._name
             ? (...args) => this.implementation.log(this._name, ...args)
-            : this.implementation.log;
+            : this.implementation.log.bind(this.implementation);
 
         this.warn = this._name
             ? (...args) => this.implementation.warn(this._name, ...args)
-            : this.implementation.warn;
+            : this.implementation.warn.bind(this.implementation);
 
         this.error = this._name
             ? (...args) => this.implementation.error(this._name, ...args)
-            : this.implementation.error;
+            : this.implementation.error.bind(this.implementation);
 
         return this;
     }

@@ -4,7 +4,6 @@ import fc from 'fast-check';
 import { MockInstance } from 'vitest';
 import { toArbitrary } from '../../../utils/tests/main.js';
 import { CONSOLE, ConsoleLogger } from '../console.js';
-import { BufferedLogger } from '../buffered.js';
 import { EMPTY_FUNCTION, EMPTY_LOGGER } from '../empty.js';
 
 const { logger, getMode, setMode, createLogger } = new LoggersManager().expose();
@@ -270,65 +269,6 @@ describe('#logger-tests', () => {
     expect(consoleMocks.error).toHaveBeenCalledWith('test', 'error');
 
     clearMocks(consoleMocks);
-  });
-
-  test('console / buffered', () => {
-    const mock = createCustomLogger();
-
-    const buffered = new BufferedLogger('test', mock)
-      .withMaxBufferSize(2);
-
-    expect(buffered.dump).toEqual([]);
-    expect(buffered.entries).toEqual(0);
-    expect(buffered.maxBufferSize).toEqual(2);
-
-    buffered.log('log1');
-    expect(buffered.dump).toEqual(['\t--->', 'log1']);
-    expect(buffered.entries).toEqual(1);
-
-    expect(mock.log).not.toHaveBeenCalled();
-    expect(mock.warn).not.toHaveBeenCalled();
-    expect(mock.error).not.toHaveBeenCalled();
-
-    buffered.log('log2');
-    expect(mock.log).toHaveBeenCalledWith('test', '\t--->', 'log1', '\t--->', 'log2');
-    expect(mock.warn).not.toHaveBeenCalled();
-    expect(mock.error).not.toHaveBeenCalled();
-    mock.log.mockClear();
-
-    buffered.warn('warn1');
-    expect(mock.log).not.toHaveBeenCalled();
-    expect(mock.warn).not.toHaveBeenCalled();
-    expect(mock.error).not.toHaveBeenCalled();
-    buffered.log('log3');
-    expect(mock.log).not.toHaveBeenCalled();
-    expect(mock.warn).toHaveBeenCalledWith('test', '\t---> [WARN]', 'warn1', '\t--->', 'log3');
-    expect(mock.error).not.toHaveBeenCalled();
-
-    mock.warn.mockClear();
-
-    buffered.error('error1');
-    expect(mock.log).not.toHaveBeenCalled();
-    expect(mock.warn).not.toHaveBeenCalled();
-    expect(mock.error).not.toHaveBeenCalled();
-    buffered.warn('warn2');
-    expect(mock.log).not.toHaveBeenCalled();
-    expect(mock.warn).not.toHaveBeenCalled();
-    expect(mock.error).toHaveBeenCalledWith('test', '\t---> [ERROR]', 'error1', '\t---> [WARN]', 'warn2');
-
-    mock.error.mockClear();
-
-    buffered.log('log4');
-    expect(mock.log).not.toHaveBeenCalled();
-
-    expect(buffered.entries).toEqual(1);
-    expect(buffered.dump).toEqual(['\t--->', 'log4']);
-
-    buffered.dispose();
-
-    expect(mock.log).toHaveBeenCalledWith('test', '\t--->', 'log4');
-    expect(buffered.entries).toEqual(0);
-    expect(buffered.dump).toEqual([]);
   });
 
   test('manager / attach + detach', () => {

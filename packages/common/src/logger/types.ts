@@ -13,6 +13,15 @@ export interface ILoggerSwitchable {
     disable(): void;
 }
 
+export type LogLevelTypes = keyof ILogger;
+
+export const LogLevels = {
+    log: 1,
+    warn: 2,
+    error: 3,
+} as const satisfies Record<LogLevelTypes, number>;
+export type LogLevelValues = typeof LogLevels[LogLevelTypes];
+
 // TBD Introduce more logger types ?
 export type LoggerTypes = 'console';
 
