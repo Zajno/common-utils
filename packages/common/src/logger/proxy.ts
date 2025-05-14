@@ -1,11 +1,6 @@
-import { ILogger } from './types.js';
-import { EMPTY_FUNCTION, NamedLogger } from './named.js';
-
-export const EMPTY_LOGGER: ILogger = {
-    log: EMPTY_FUNCTION,
-    warn: EMPTY_FUNCTION,
-    error: EMPTY_FUNCTION,
-};
+import type { ILogger } from './types.js';
+import { NamedLogger } from './named.js';
+import { EMPTY_LOGGER } from './empty.js';
 
 export class ProxyLogger extends NamedLogger {
 
