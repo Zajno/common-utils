@@ -1,7 +1,7 @@
 import { createLazy } from '@zajno/common/lazy/light';
 import Admin from './admin.js';
 import type { storage as Storage } from 'firebase-admin';
-import { LoggerProvider } from '@zajno/common/logger/loggable.js';
+import { LoggerProvider } from '@zajno/common/logger';
 
 export type StorageType = Storage.Storage;
 export type BucketType = ReturnType<StorageType['bucket']>;

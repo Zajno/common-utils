@@ -13,7 +13,7 @@ import {
     IFirebaseStorage,
     ProgressListener,
 } from '../abstractions/storage/index.js';
-import { Loggable } from '@zajno/common/logger/loggable.js';
+import { Loggable } from '@zajno/common/logger';
 
 export const FirebaseStorageRaw = createFirebaseLazy(() => {
     const storageInstance = getStorage(FirebaseApp.Current);

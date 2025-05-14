@@ -30,45 +30,19 @@ export class Loggable {
             return this.setLogger(null);
         }
 
-        const [originalName, ...rest] = args;
-        const res = factory(
-            this.getLoggerName(originalName),
-            ...rest,
-        );
+        const res = this._createLogger(factory, ...args);
         return this.setLogger(res);
     }
 
     protected getLoggerName(name: string | undefined) {
         return name ? `[${name}]` : '';
     }
-}
 
-/** Logger instance holder, for re-usability */
-export class LoggerProvider extends Loggable {
-
-    private _factory: ILoggerFactory | null = null;
-
-    constructor(nameFormatter?: (name: string | undefined) => string, logger?: ILogger) {
-        super(logger);
-        if (nameFormatter) {
-            this.getLoggerName = nameFormatter;
-        }
-    }
-
-    public get logger(): ILogger | null {
-        return super.logger;
-    }
-
-    public get factory(): ILoggerFactory | null {
-        return this._factory;
-    }
-
-    public setLoggerFactory(factory: ILoggerFactory | null, ...args: Parameters<ILoggerFactory>): this {
-        this._factory = factory;
-        return super.setLoggerFactory(factory, ...args);
-    }
-
-    public createLogger(...args: Parameters<ILoggerFactory>) {
-        return this._factory?.(...args) ?? null;
+    protected _createLogger(factory: ILoggerFactory, ...args: Parameters<ILoggerFactory>) {
+        const [originalName, ...rest] = args;
+        return factory(
+            this.getLoggerName(originalName),
+            ...rest,
+        );
     }
 }

@@ -45,12 +45,14 @@ export namespace LogTypes {
         return { enabled: false };
     }
 
+    type PartialRequestConfig = Pick<IRequestConfig, '_meta' | 'data' | 'url'>;
+
     /**
      * An example implementation for logging logic (overload for a request with no data).
      *
      * See the other overload for more details.
     */
-    export function logCall(logger: ILogger, cfg: IRequestConfig, dir: 'req'): void;
+    export function logCall(logger: ILogger, cfg: PartialRequestConfig, dir: 'req'): void;
 
     /**
      * An example implementation for logging logic (overload for a request with data).
@@ -60,9 +62,9 @@ export namespace LogTypes {
      * * Formats the data if a custom formatter is provided.
      * * Logs the data via specified logger.
     */
-    export function logCall(logger: ILogger, cfg: IRequestConfig, dir: 'res', data: unknown): void;
+    export function logCall(logger: ILogger, cfg: PartialRequestConfig, dir: 'res', responseData: unknown): void;
 
-    export function logCall(logger: ILogger, cfg: IRequestConfig, dir: LogTypes.Dir, data?: unknown) {
+    export function logCall(logger: ILogger, cfg: PartialRequestConfig, dir: LogTypes.Dir, responseData?: unknown) {
         if (!cfg._meta.api || (dir === 'req' && cfg._meta.api.method === EndpointMethods.GET && cfg.data == null)) {
             return;
         }
@@ -73,8 +75,8 @@ export namespace LogTypes {
         }
 
         const dataLogged = info.formatter
-            ? info.formatter(data ?? cfg.data)
-            : (data ?? cfg.data);
+            ? info.formatter(responseData ?? cfg.data)
+            : (responseData ?? cfg.data);
 
         const prefix = dir === 'req'
             ? 'REQ ====>'
@@ -82,6 +84,4 @@ export namespace LogTypes {
 
         logger.log(prefix, cfg._meta.api.method, cfg.url, dataLogged);
     }
-
-
 }

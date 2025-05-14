@@ -1,5 +1,4 @@
-import { LoggerProvider } from '@zajno/common/logger/loggable.js';
-import { ILoggerFactory } from '@zajno/common/logger/types.js';
+import { LoggerProvider, type ILoggerFactory } from '@zajno/common/logger';
 
 export const FirestoreLogging = new LoggerProvider();
 

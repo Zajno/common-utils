@@ -13,7 +13,7 @@ import { tryConvertToHttpError } from '../utils/LogicErrorAdapter.js';
 import { badRandomString } from '@zajno/common/math/calc';
 import { META_ARG_KEY, MetaHolder } from '../../functions/composite.js';
 import { ObjectOrPrimitive } from '@zajno/common/types/misc';
-import { LoggerProvider } from '@zajno/common/logger/loggable.js';
+import { LoggerProvider } from '@zajno/common/logger';
 
 export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive = never>
     extends Middleware<TArg, TResult, TContext>
