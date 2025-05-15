@@ -33,7 +33,7 @@ const NoOp = () => { /* no-op */ };
 export class FirebaseStorage extends Loggable implements IFirebaseStorage {
 
     // TODO Add cache
-    async getFileDownloadUlr(refPath: string): Promise<string | null> {
+    async getFileDownloadUrl(refPath: string): Promise<string | null> {
         try {
             const ref = getRef(FirebaseStorageRaw.value, refPath);
             const url = await getDownloadURL(ref);
