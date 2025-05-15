@@ -1,4 +1,7 @@
-import logger from '../logger/shared.js';
+import { Loggable } from '../logger/loggable.js';
+import { ILogger } from '../logger/types.js';
+import { Getter } from '../types/getter.js';
+import { Nullable } from '../types/misc.js';
 
 export interface IDisposable {
     dispose(): void;
@@ -10,21 +13,10 @@ export interface DisposeFunction {
     (): void;
 }
 
-export class Disposer {
+export class Disposer extends Loggable {
 
     private readonly _disposers: DisposeFunction[] = [];
     private readonly _map = new Map<string, DisposeFunction>();
-
-    private _loggerName: string | null = null;
-
-    constructor(loggerName: string | null = null) {
-        this._loggerName = loggerName;
-    }
-
-    public setLoggerName(loggerName: string) {
-        this._loggerName = loggerName;
-        return this;
-    }
 
     public add(d: DisposeFunction | IDisposable, id?: string) {
         if (!d) {
@@ -63,9 +55,9 @@ export class Disposer {
     }
 
     public dispose(log = false) {
-        if (log) {
-            logger.log(
-                `[Disposer:${this._loggerName || '<unknown>'}] Disposing ${this._disposers.length} items including named ones:`,
+        if (log && this.logger) {
+            this.logger.log(
+                `Disposing ${this._disposers.length} items including named ones:`,
                 Array.from(this._map.entries()).map(e => e[0]),
             );
         }
@@ -83,19 +75,20 @@ export function combineDisposers(...items: DisposeFunction[]): DisposeFunction {
     return () => items.forEach(i => i());
 }
 
-export class Disposable implements IDisposable {
+export class Disposable extends Loggable implements IDisposable {
 
-    protected readonly disposer: Disposer;
+    protected readonly disposer = new Disposer();
     protected _isDisposed = false;
-
-    constructor(loggerName: string | null = null) {
-        this.disposer = new Disposer(loggerName);
-    }
 
     public dispose = () => {
         this._isDisposed = true;
         this.disposer.dispose();
     };
+
+    public setLogger(logger?: Getter<Nullable<ILogger>>): this {
+        this.disposer.setLogger(logger);
+        return super.setLogger(logger);
+    }
 }
 
 export function isDisposable(v: unknown): v is IDisposable {

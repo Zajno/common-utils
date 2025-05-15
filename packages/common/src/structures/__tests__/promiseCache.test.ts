@@ -1,10 +1,12 @@
 
 import { setTimeoutAsync } from '../../async/timeout.js';
-import { ILogger } from '../../logger/index.js';
+import { ILogger, LoggersManager } from '../../logger/index.js';
 import { random } from '../../math/index.js';
 import { DeferredGetter, PromiseCache } from '../promiseCache.js';
 
 describe('PromiseCache', () => {
+
+    const { createLogger } = new LoggersManager().expose();
 
     it('Empty Deferred Getter', async () => {
         expect(DeferredGetter.Empty.current).toBeNull();
@@ -136,7 +138,7 @@ describe('PromiseCache', () => {
             id => id.toString(),
             id => +id,
         )
-            .useLogger('')
+            .setLoggerFactory(createLogger, '')
             .useBatching(async _ids => {
                 await setTimeoutAsync(100);
                 throw new Error('Batch fetch failed');
@@ -184,7 +186,7 @@ describe('PromiseCache', () => {
             error: vi.fn(),
             warn: vi.fn(),
         };
-        cache.useLogger(logger);
+        cache.setLogger(logger);
 
         const filler = new Array<number>(5).fill(0, 0, 5);
 
@@ -265,7 +267,7 @@ describe('PromiseCache', () => {
             },
             id => id.toString(),
             id => +id,
-        ).useLogger('test');
+        ).setLoggerFactory(createLogger, 'test');
 
         expect(cache.hasKey(1)).toBe(false);
 

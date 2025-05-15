@@ -16,12 +16,11 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
 
     const {
         request,
-        config: endpointsConfigSource,
         hooks: hooksSource = {},
     } = options;
 
     const hooks = CallerHooks.merge(hooksSource);
-    const endpointsConfig = new EndpointsPathsConfig(endpointsConfigSource);
+    const pathConfig = new EndpointsPathsConfig(options?.config);
 
     const caller = async function callApi<T extends IEndpointInfo>(
         api: T,
@@ -31,7 +30,7 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
         type TOut = IEndpointInfo.ExtractOut<T>;
 
         const { config, resultInput, pathInputs, queryInputs } = createConfig(
-            endpointsConfig,
+            pathConfig,
             api,
             data,
             extra,
@@ -63,7 +62,11 @@ export function buildApiCaller<TExtra extends object = Record<string, any>>(opti
         return response?.data;
     };
 
-    return Object.assign(caller, {
-        config: endpointsConfig,
-    });
+    return Object.defineProperty(
+        caller as GenericApiCaller<TExtra>,
+        'config',
+        {
+            get: () => pathConfig,
+        },
+    );
 }

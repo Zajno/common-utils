@@ -1,11 +1,12 @@
-import { batchLoggers, ILogger, SharedLogger } from '../index.js';
+import { batchLoggers, ILogger, LoggerFunction, LoggersManager } from '../index.js';
 import { faker } from '@faker-js/faker';
 import fc from 'fast-check';
 import { MockInstance } from 'vitest';
 import { toArbitrary } from '../../../utils/tests/main.js';
+import { CONSOLE, ConsoleLogger } from '../console.js';
+import { EMPTY_FUNCTION, EMPTY_LOGGER } from '../empty.js';
 
-const CONSOLE = console;
-const { default: logger, getMode, setMode, createLogger } = SharedLogger;
+const { logger, getMode, setMode, createLogger } = new LoggersManager().expose();
 
 describe('#logger-tests', () => {
 
@@ -13,15 +14,14 @@ describe('#logger-tests', () => {
     log: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-  });
+  } satisfies ILogger);
 
-  const EmptyImpl = () => null;
+  const createConsoleMocks = () => ({
+    log: vi.spyOn(CONSOLE, 'log').mockImplementation(EMPTY_FUNCTION),
+    warn: vi.spyOn(CONSOLE, 'warn').mockImplementation(EMPTY_FUNCTION),
+    error: vi.spyOn(CONSOLE, 'error').mockImplementation(EMPTY_FUNCTION),
+  } satisfies Record<keyof ILogger, MockInstance<LoggerFunction>>);
 
-  const createConsoleMocks = (): Record<keyof ILogger, MockInstance> => ({
-    log: vi.spyOn(CONSOLE, 'log').mockImplementation(EmptyImpl),
-    warn: vi.spyOn(CONSOLE, 'warn').mockImplementation(EmptyImpl),
-    error: vi.spyOn(CONSOLE, 'error').mockImplementation(EmptyImpl),
-  });
   const loggerMethods = Object.keys(createCustomLogger()) as (keyof ILogger)[];
   const clearMocks = (mocks: ReturnType<typeof createConsoleMocks>) => loggerMethods.forEach(m => mocks[m].mockClear());
 
@@ -41,8 +41,8 @@ describe('#logger-tests', () => {
 
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
-      });
+      numRuns: loggerMethods.length,
+    });
 
     clearMocks(consoleMocks);
   });
@@ -74,7 +74,7 @@ describe('#logger-tests', () => {
         expect(getMode()).toBe(false);
         expect(consoleMocks[methodName]).not.toHaveBeenCalled();
         ++iteration;
-    }), {
+      }), {
       numRuns: loggerMethods.length * 2,
     });
 
@@ -100,8 +100,8 @@ describe('#logger-tests', () => {
         expect(spyLogger).not.toHaveBeenCalled();
         ++iteration;
       }), {
-        numRuns: loggerMethods.length * 2,
-      });
+      numRuns: loggerMethods.length * 2,
+    });
   });
 
   it('use logger with \'console\' mode', () => {
@@ -125,8 +125,8 @@ describe('#logger-tests', () => {
 
         ++iteration;
       }), {
-        numRuns: loggerMethods.length * 2,
-      });
+      numRuns: loggerMethods.length * 2,
+    });
 
     clearMocks(consoleMocks);
   });
@@ -159,8 +159,8 @@ describe('#logger-tests', () => {
         impl.mockClear();
         ++iteration;
       }), {
-        numRuns: loggerMethods.length * 2,
-      });
+      numRuns: loggerMethods.length * 2,
+    });
   });
 
   it('use logger with override mode #override', () => {
@@ -194,8 +194,8 @@ describe('#logger-tests', () => {
 
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
-      });
+      numRuns: loggerMethods.length,
+    });
 
     expect(getMode()).toBe('console');
     clearMocks(consoleMocks);
@@ -230,12 +230,13 @@ describe('#logger-tests', () => {
 
         ++iteration;
       }), {
-        numRuns: loggerMethods.length,
-      });
+      numRuns: loggerMethods.length,
+    });
 
     expect(getMode()).toBe(false);
     clearMocks(consoleMocks);
 
+    expect(batchLoggers(null, undefined)).toStrictEqual(EMPTY_LOGGER);
   });
 
   it('correctly initializes if created with empty name after mode is set #after', () => {
@@ -250,6 +251,97 @@ describe('#logger-tests', () => {
 
     expect(customLogger.log).toHaveBeenCalledWith('test');
     clearMocks(customLogger);
+  });
+
+  test('console / base', () => {
+    const consoleMocks = createConsoleMocks();
+
+    const base = new ConsoleLogger('test');
+    base.enable();
+
+    base.log('log');
+    expect(consoleMocks.log).toHaveBeenCalledWith('test', 'log');
+
+    base.warn('warn');
+    expect(consoleMocks.warn).toHaveBeenCalledWith('test', 'warn');
+
+    base.error('error');
+    expect(consoleMocks.error).toHaveBeenCalledWith('test', 'error');
+
+    clearMocks(consoleMocks);
+  });
+
+  test('manager / attach + detach', () => {
+    const mock = createCustomLogger();
+
+    const manager = new LoggersManager();
+
+    const logger = manager.attach(mock);
+    expect(manager.recognize(mock)).toBeNull();
+    expect(manager.recognize(logger)).toBe(logger);
+    expect(manager.mode).toBe(false);
+
+    manager.setMode('console');
+    expect(manager.mode).toBe('console');
+    expect(logger.isEnabled).toBe(true);
+
+    manager.setMode(false);
+    expect(manager.mode).toBe(false);
+    expect(logger.isEnabled).toBe(false);
+
+    expect((logger as any)._logger).toBe(mock);
+
+    expect(manager.detach(mock)).toBe(false);
+
+    expect(manager.detach(logger)).toBe(true);
+    expect(manager.recognize(logger)).toBeNull();
+    expect(logger.isEnabled).toBe(false);
+
+    manager.setMode('console');
+    expect(logger.isEnabled).toBe(false);
+
+    const logger2 = manager.attach(mock);
+    expect(logger2.isEnabled).toBe(true);
+    expect(manager.detach(logger2, true)).toBe(true);
+    expect(logger2.isEnabled).toBe(false);
+  });
+
+  test('manager / destinations', () => {
+    const mockMode = createCustomLogger();
+    const mockDest = createCustomLogger();
+
+    const manager = new LoggersManager();
+    manager.setMode(mockMode);
+    expect(manager.mode).toBe(mockMode);
+
+    const removeDest = manager.addDestination(mockDest, 'dest');
+    expect((manager as any)._destinations).toHaveLength(1);
+
+    const logger = manager.create('test');
+    logger.log('log');
+
+    expect(mockMode.log).toHaveBeenCalledWith('test', 'log');
+    expect(mockDest.log).toHaveBeenCalledWith('dest', 'test', 'log');
+
+    mockMode.log.mockClear();
+    mockDest.log.mockClear();
+
+    removeDest();
+    expect((manager as any)._destinations).toHaveLength(0);
+    expect(manager.mode).toBe(mockMode);
+
+    logger.log('log2');
+    expect(mockMode.log).toHaveBeenCalledWith('test', 'log2');
+    expect(mockDest.log).not.toHaveBeenCalled();
+
+    mockMode.log.mockClear();
+    mockDest.log.mockClear();
+
+    manager.setMode(() => null!);
+    logger.log('log3');
+
+    expect(mockMode.log).not.toHaveBeenCalled();
+    expect(mockDest.log).not.toHaveBeenCalled();
   });
 
 });

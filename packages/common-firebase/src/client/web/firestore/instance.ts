@@ -1,4 +1,4 @@
-import { FirebaseApp, createFirebaseLazy, logger } from '../app.js';
+import { FirebaseApp, createFirebaseLazy } from '../app.js';
 import {
     FirestoreSettings,
     initializeFirestore,
@@ -10,7 +10,7 @@ export const Firestore = createFirebaseLazy(() => {
         if (FirebaseApp.Settings) {
             const settings: FirestoreSettings = { ...FirebaseApp.Settings.firestore };
             if (settings.host) {
-                logger.log('Firestore will use emulator: ', settings.host);
+                FirebaseApp.logger?.log('Firestore will use emulator: ', settings.host);
                 settings.ssl = false;
             }
 
@@ -21,7 +21,7 @@ export const Firestore = createFirebaseLazy(() => {
         const db = getFirestore(FirebaseApp.Current);
         return db;
     } catch (err) {
-        logger.error('Failed to create Firestore:', err);
+        FirebaseApp.logger?.error('Failed to create Firestore:', err);
         return null!; // TODO better re-throw?
     }
 });

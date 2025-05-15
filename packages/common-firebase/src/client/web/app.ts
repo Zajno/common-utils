@@ -1,18 +1,29 @@
-import { createLogger } from '@zajno/common/logger/shared';
 import { FirebaseSettings, IFirebaseApp } from '../abstractions/app.js';
 import { initializeApp, FirebaseApp as FirebaseAppType, deleteApp } from 'firebase/app';
 import { Lazy } from '@zajno/common/lazy';
 import { assert } from '@zajno/common/functions/assert';
+import { LoggerProvider, type ILoggerFactory } from '@zajno/common/logger';
 
 let _instance: FirebaseAppType | null = null;
 let _settings: FirebaseSettings | null = null;
 
-export const logger = createLogger('[Firebase]');
+const Logger = new LoggerProvider();
 
-export function initializeFirebase(settings: FirebaseSettings) {
+export function setLoggerFactory(loggerFactory: ILoggerFactory | undefined | null) {
+    if (loggerFactory) {
+        Logger.setLoggerFactory(loggerFactory, '[Firebase]');
+    }
+}
+
+export function initializeFirebase(
+    settings: FirebaseSettings,
+    loggerFactory?: ILoggerFactory,
+) {
     if (!settings.config) {
         throw new Error('Firebase config should be present in "settings.config".');
     }
+
+    setLoggerFactory(loggerFactory);
 
     _settings = Object.assign({ ...FirebaseSettings.Empty }, settings);
     _settings.config = { ...settings.config };
@@ -22,21 +33,25 @@ export function initializeFirebase(settings: FirebaseSettings) {
 
 function createApp() {
     if (_instance || !_settings) {
-        logger.warn('Skipped creating the second instance of the app');
+        Logger.logger?.warn('Skipped creating the second instance of the app');
         return;
     }
 
-    logger.log('Loading... API KEY =', _settings.config.apiKey);
-    logger.log('Settings:', _settings);
+    Logger.logger?.log('Loading... API KEY =', _settings.config.apiKey);
+    Logger.logger?.log('Settings:', _settings);
 
     // Initialize Firebase
     _instance = initializeApp(_settings.config);
 
-    logger.log('Initialized successfully');
+    Logger.logger?.log('Initialized successfully');
 }
 
 
 export const FirebaseApp: IFirebaseApp<FirebaseAppType> = {
+    get logger() {
+        return Logger.logger;
+    },
+
     get Current() {
         assert(!!_instance, 'Firebase app is not initialized');
         return _instance;

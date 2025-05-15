@@ -1,4 +1,4 @@
-import { FirebaseApp, createFirebaseLazy, logger } from './app.js';
+import { FirebaseApp, createFirebaseLazy } from './app.js';
 import {
     getDatabase,
     connectDatabaseEmulator,
@@ -11,7 +11,7 @@ export const RealtimeDatabase = createFirebaseLazy(() => {
 
     if (emulator?.url) {
         const { hostname, port } = new URL(emulator.url);
-        logger.log('Firebase Realtime Database will use emulator:', emulator.url, '=>', hostname, port);
+        FirebaseApp.logger?.log('Firebase Realtime Database will use emulator:', emulator.url, '=>', hostname, port);
         connectDatabaseEmulator(rtdb, hostname, +port);
     }
 

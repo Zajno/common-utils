@@ -10,7 +10,7 @@ const eventKeys = hookKeys.map(k => `intercept${k.charAt(0).toUpperCase() + k.sl
 /**
  * Experimental. Creates linked caller hooks and interception events.
  *
- * Use hooks to recieve events and events to subscribe to them externally.
+ * Use hooks to inject into caller and events to subscribe to them externally.
  */
 export function createInterceptor<TExtra extends object = object>() {
 

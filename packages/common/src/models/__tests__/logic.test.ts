@@ -1,11 +1,20 @@
 import { setTimeoutAsync } from '../../async/timeout.js';
+import { LoggersManager } from '../../logger/manager.js';
 import { LogicModel } from '../LogicModel.js';
 
 describe('LogicModel', () => {
 
     test('constructs', () => {
 
-        class Controller extends LogicModel { }
+        const { createLogger } = new LoggersManager().expose();
+
+        class Controller extends LogicModel {
+
+            constructor(name?: string, useFirstInit = true) {
+                super(useFirstInit);
+                this.setLogger(createLogger(this.getLoggerName(name)));
+            }
+        }
 
         const c1 = new Controller();
         expect(c1.isLoading).toBeTruthy(); // useFirstInit = true by default

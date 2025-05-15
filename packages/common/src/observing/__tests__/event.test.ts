@@ -139,7 +139,7 @@ describe('Event', () => {
     });
 
     it('with logger', () => {
-        const e = new Event<number>(false);
+        const e = new Event<number>();
 
         const handlerThrows = vi.fn(() => {
             throw new Error('test');
@@ -154,17 +154,18 @@ describe('Event', () => {
 
         // test that `createLogger` was called
         // mock `createLogger` so we can check arguments passed to it and we should return our mock logger
-        const createLoggerSpy = vi.spyOn(Logger.SharedLogger, 'createLogger').mockReturnValue(mockLogger);
-        e.withLogger('test');
-        expect(createLoggerSpy).toHaveBeenCalledWith('[Event:test]');
+        const createLogger = vi.fn<Logger.ILoggerFactory>((_name, _mode) => mockLogger);
+        e.setLoggerFactory(createLogger, 'test');
 
-        e.withLogger(mockLogger);
+        expect(createLogger).toHaveBeenCalledWith('[Event:test]');
+
+        e.setLogger(mockLogger);
         expect((e as any)._logger).toBe(mockLogger);
 
         // trigger the event and and check logger.error was called
         e.trigger(1);
         expect(mockLogger.error).toHaveBeenCalledTimes(1);
-        expect(mockLogger.error).toHaveBeenCalledWith('[Event.number] Handler spy thrown an exception: ', new Error('test'));
+        expect(mockLogger.error).toHaveBeenCalledWith('type:number Handler spy thrown an exception: ', new Error('test'));
         expect(handlerThrows).toHaveBeenCalledTimes(1);
         expect(handlerThrows).toHaveBeenCalledWith(1);
         expect(handlerThrows).toHaveBeenCalledBefore(mockLogger.error);
@@ -172,7 +173,7 @@ describe('Event', () => {
         mockLogger.error.mockReset();
         handlerThrows.mockReset();
 
-        e.withLogger(null);
+        e.setLogger(null);
         e.trigger(2);
         expect(mockLogger.error).not.toHaveBeenCalled();
         expect(handlerThrows).toHaveBeenCalledTimes(1);

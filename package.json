@@ -11,7 +11,7 @@
         "test": "time npm run test --workspaces --if-present",
         "update-exports": "time npm run update-exports --workspaces --if-present",
         "publish:local:all": "time npm run publish:local --workspaces --if-present",
-        "all": "time (npm run update-exports && npm run build && npm run lint && npm run test)",
+        "all": "time (npm i && npm run update-exports && npm run build && npm run lint && npm run test)",
         "fix-esm-paths": "fix-esm-import-path packages/*/src"
     },
     "devDependencies": {

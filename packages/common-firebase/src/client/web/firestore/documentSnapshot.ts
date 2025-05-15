@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import type { IdentAny } from '@zajno/common/types/ident';
-import logger from '@zajno/common/logger/shared';
 import {
     DocumentReference,
     DocumentSnapshot,
@@ -10,6 +9,7 @@ import {
 import {
     DocumentSnapshotCallback,
     logDocCount,
+    FirestoreLogging,
     UnsubscribeSnapshot,
 } from '../../../database/firestore/index.js';
 import { wrapAsync } from '@zajno/common/functions/safe';
@@ -57,7 +57,7 @@ export async function documentSnapshot<T extends IdentAny>(
                             const item = convertSnapshot(snapshot);
                             await cb(item);
                         } catch (error) {
-                            logger.error('ERROR IN DOCUMENT SNAPSHOT: ', 'PATH = ', (snapshot.ref.path) || '<path>', error);
+                            FirestoreLogging.logger?.error('ERROR IN DOCUMENT SNAPSHOT: ', 'PATH = ', (snapshot.ref.path) || '<path>', error);
                         } finally {
                             if (resolve) {
                                 const r = resolve;
@@ -86,7 +86,7 @@ export async function documentSnapshot<T extends IdentAny>(
 
             return convertSnapshot(snapshot);
         } catch (error) {
-            logger.error('ERROR IN DOCUMENT SNAPSHOT: ', 'PATH = ', (doc.path) || '<path>', error);
+            FirestoreLogging.logger?.error('ERROR IN DOCUMENT SNAPSHOT: ', 'PATH = ', (doc.path) || '<path>', error);
             return undefined;
         }
     }

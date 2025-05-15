@@ -1,17 +1,17 @@
 import { ManualPromise, createManualPromise } from '../async/manualPromise.js';
-import { createLogger, ILogger } from '../logger/shared.js';
+import { Loggable, type ILogger } from '../logger/index.js';
 import { random } from '../math/index.js';
+import { Getter } from '../types/getter.js';
 import { catchPromise } from './safe.js';
 
 type Callback<T> = () => (T | Promise<T>);
 
 /** Runs a callback after a timeout, ignoring all consecutive calls until the first is processed.  */
-export class ThrottleAction<T = any> {
+export class ThrottleAction<T = any> extends Loggable {
 
     private _timeoutRef: ReturnType<typeof setTimeout> | null = null;
     private _postponedCb: Callback<T> | null = null;
     private _locked: number | false = false;
-    private _logger: ILogger | null = null;
 
     /**
      * In case previous action has started processing but not finished yet, and the following one is going to start,
@@ -21,19 +21,12 @@ export class ThrottleAction<T = any> {
 
     private _currentRun: ManualPromise<T | undefined> | null = null;
 
-    constructor(public timeout = 1000) { }
+    constructor(public timeout = 1000) {
+        super();
+    }
 
     public useParallelRuns() {
         this._allowParallelRuns = true;
-        return this;
-    }
-
-    public useLogger(logger: ILogger | string | null) {
-        if (typeof logger === 'string') {
-            this._logger = createLogger(logger);
-        } else {
-            this._logger = logger;
-        }
         return this;
     }
 
@@ -79,7 +72,7 @@ export class ThrottleAction<T = any> {
             // This is probably OK since the running call should cover the current one.
             // TODO Maybe just don't start timeout if the lock is set?
             // The reason for not doing that 👆 is there's still a valid case when previous is still working but it's legit to start a new one (e.g. some state has changed already)
-            this._logger?.warn('[ThrottleAction] THROTTLE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
+            this.logger?.warn('[ThrottleAction] THROTTLE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
         } else if (cb) {
             let result: T | undefined = undefined;
             const lockId = random(1, 1_000_000);
@@ -122,8 +115,8 @@ export class ThrottleProcessor<TSubject, TResult = any> {
             .useParallelRuns();
     }
 
-    public useLogger(logger: ILogger | string | null) {
-        this._action.useLogger(logger);
+    public setLogger(logger: Getter<ILogger>) {
+        this._action.setLogger(logger);
         return this;
     }
 

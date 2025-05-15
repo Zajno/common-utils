@@ -1,11 +1,11 @@
 import { reaction } from 'mobx';
 import { IEvent, Event } from '@zajno/common/observing/event';
-import { ILogger, createLogger } from '@zajno/common/logger/shared';
 import { DisposeFunction, IDisposable } from '@zajno/common/functions/disposer';
 import { Getter } from '@zajno/common/types/getter';
 import { Nullable } from '@zajno/common/types/misc';
+import { Loggable } from '@zajno/common/logger';
 
-export class TransitionObserver<T> implements IDisposable {
+export class TransitionObserver<T> extends Loggable implements IDisposable {
 
     private _event: Nullable<Event<T>>;
     private _getter: null | (() => T) = null;
@@ -23,9 +23,8 @@ export class TransitionObserver<T> implements IDisposable {
     private _promise: Nullable<Promise<Nullable<T>>>;
     private _promiseReject: Nullable<((err?: any) => any)>;
 
-    private logger: Nullable<ILogger>;
-
     constructor(getter?: () => T) {
+        super();
         if (getter) {
             this.observe(getter);
         }
@@ -34,7 +33,7 @@ export class TransitionObserver<T> implements IDisposable {
     public get event(): IEvent<T> {
         // lazy created just to save up some memory in case it's not needed
         if (!this._event) {
-            this._event = new Event<T>(false).withLogger(this.logger);
+            this._event = new Event<T>().setLogger(this.logger);
         }
         return this._event;
     }
@@ -134,14 +133,6 @@ export class TransitionObserver<T> implements IDisposable {
         return new TransitionObserver<T>(this._getter)
             .from(this._to!)
             .to(this._from!);
-    }
-
-    enableLogging(name: string | ILogger) {
-        this.logger = typeof name === 'string'
-            ? createLogger(name, name ? undefined : false)
-            : name;
-
-        return this;
     }
 
     dispose = () => {

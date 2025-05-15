@@ -50,8 +50,8 @@ export type CallerOptions<TExtra extends object = Record<string, any>> = {
     /** Request implementation */
     request: <TIn, TOut>(config: IRequestConfig<IEndpointInfo, TIn, TExtra>) => Promise<CallerResponse<TOut>>;
 
-    /** Endpoints paths config */
-    config?: IEndpointsPathsConfig;
+    /** Endpoints paths config shared with all calls. In case of class instance passed, will be used as is so can be mutated outside. */
+    config?: IEndpointsPathsConfig | EndpointsPathsConfig;
 
     /** Optional hooks for pre- or post-processing request */
     hooks?: CallerHooks<TExtra> | CallerHooks<TExtra>[];

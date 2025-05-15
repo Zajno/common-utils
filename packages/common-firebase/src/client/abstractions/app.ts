@@ -1,3 +1,4 @@
+import { ILogger } from '@zajno/common/logger';
 import type { FirebaseConfig } from '../../config.js';
 
 const EmptyAppSettings = {
@@ -26,6 +27,8 @@ export namespace FirebaseSettings {
 export interface IFirebaseApp<TApp> {
     readonly Current: TApp;
     readonly Settings: Readonly<FirebaseSettings>;
+
+    readonly logger: ILogger | null;
 
     destroy(): void;
 }

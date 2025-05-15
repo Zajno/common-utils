@@ -1,6 +1,5 @@
 import { Disposable } from '@zajno/common/functions/disposer';
 import { Fields } from '@zajno/common/fields';
-import logger from '@zajno/common/logger/shared';
 import { DeferredGetter } from '@zajno/common/structures/promiseCache';
 import { SubscribersMapObservable } from './subscribersMap.js';
 import { PromiseCacheObservable } from './promiseCache.js';
@@ -80,7 +79,7 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
                 if (observingStartedPromise) {
                     observingStartedPromise(promise);
                 }
-                promise.catch((err: Error) => logger.error('[ObservingCache] Error on starting observe', key, strategy, err));
+                promise.catch((err: Error) => this.logger?.error('[ObservingCache] Error on starting observe', key, strategy, err));
             }
         }
 

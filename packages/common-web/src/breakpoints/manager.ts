@@ -1,12 +1,10 @@
 import { BreakpointData, ICurrentBreakpointInfo } from './types.js';
 import { Event } from '@zajno/common/observing/event';
-import { createLogger } from '@zajno/common/logger/shared';
 import { assert } from '@zajno/common/functions/assert';
 import { calcRem } from './rem.js';
+import { Loggable } from '@zajno/common/logger';
 
-const logger = createLogger('[Breakpoints]');
-
-export class BreakpointsManager<TType extends string = string, TMeta = any> implements ICurrentBreakpointInfo<TType, TMeta> {
+export class BreakpointsManager<TType extends string = string, TMeta = any> extends Loggable implements ICurrentBreakpointInfo<TType, TMeta> {
 
     private readonly _remChanged = new Event<number>();
     private readonly _breakpointChanged = new Event<BreakpointData<TType, TMeta>>();
@@ -56,7 +54,7 @@ export class BreakpointsManager<TType extends string = string, TMeta = any> impl
 
         const rem = calcRem(width, height, bp);
 
-        logger.log('Current breakpoint:', `[${width}x${height}]`, bp, '; rem =', rem);
+        this.logger?.log('Current breakpoint:', `[${width}x${height}]`, bp, '; rem =', rem);
 
         if (!this._state.currentBreakpoint || this._state.currentBreakpoint.id !== bp.id) {
             this._state.currentBreakpoint = bp;
@@ -67,5 +65,9 @@ export class BreakpointsManager<TType extends string = string, TMeta = any> impl
             this._state.currentRem = rem;
             this._remChanged.trigger(rem);
         }
+    }
+
+    protected getLoggerName(name: string | undefined): string {
+        return `[Breakpoints${name ? (':' + name) : ''}]`;
     }
 }

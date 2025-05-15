@@ -1,131 +1,117 @@
 import type { pubsub, CloudFunction } from 'firebase-functions/v1';
-import type { PubSub as CloudPubSub, ClientConfig } from '@google-cloud/pubsub';
-import logger, { createLogger, ILogger } from '@zajno/common/logger/shared';
+import type { ClientConfig } from '@google-cloud/pubsub';
 import { Event } from '@zajno/common/observing/event';
 import { LazyPromise } from '@zajno/common/lazy/promise';
-import { createLazy } from '@zajno/common/lazy/light';
-import { AppConfig } from '../../config.js';
+import { AnyObject } from '@zajno/common/types/misc';
+import { LoggerProvider, type ILoggerFactory } from '@zajno/common/logger';
+import { createLazy } from '@zajno/common/lazy';
 import { EndpointSettings } from '../../functions/interface.js';
 import { createTopicListener } from '../functions/index.js';
-import { AnyObject } from '@zajno/common/types/misc';
 
 export namespace PubSub {
-    const topicCloudFunctions: Record<string, CloudFunction<pubsub.Message>> = { };
-    let isCloudFunctionsInitialized: boolean = false;
 
-    const Config: ClientConfig = {
-        projectId: AppConfig.value?.appId,
-    };
-
-    const InstanceLazy = createLazy<CloudPubSub>(() => {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { PubSub } = require('@google-cloud/pubsub') as { PubSub: typeof CloudPubSub };
-        return new PubSub(Config);
-    });
-
-    // const Instance = new CloudPubSub({ projectId: AppConfig.value?.appId });
-
+    export type Config = Pick<ClientConfig, 'projectId'>;
     type ErrorHandlerFn = (e: Error) => void;
-    let ErrorHandler: ErrorHandlerFn | null = null;
 
-    export function useErrorHandler(handler: ErrorHandlerFn) {
-        ErrorHandler = handler;
-    }
+    export class Manager {
 
-    let STRICT_PUBLISH_MODE = true;
+        private readonly _logging = new LoggerProvider();
+        private STRICT_PUBLISH_MODE = true;
+        private isCloudFunctionsInitialized: boolean = false;
+        private ErrorHandler: ErrorHandlerFn | null = null;
 
-    export function setStrictPublishMode(strictMode: boolean) {
-        STRICT_PUBLISH_MODE = strictMode;
-    }
+        private topicCloudFunctions: Record<string, CloudFunction<pubsub.Message>> = {};
 
-    export const getCloudFunctions = () => {
-        isCloudFunctionsInitialized = true;
+        private readonly _instanceLoader = new LazyPromise(async () => {
+            const { PubSub } = await import('@google-cloud/pubsub');
+            return new PubSub(this.config);
+        });
 
-        return topicCloudFunctions;
-    };
+        constructor(private readonly config: Config) { }
 
-    export function preloadLibrary(config?: ClientConfig) {
-        if (config) {
-            if (InstanceLazy.hasValue) {
-                logger.warn('Will not apply PubSub ClientConfig because library instance has been created already. config =', config);
-            } else {
-                Object.assign(Config, config);
-            }
-        }
-        return InstanceLazy.value;
-    }
-
-    export class Topic<TData extends AnyObject> {
-        private readonly _handler = new Event<TData>();
-
-        private readonly _logger: ILogger;
-        private _registration: LazyPromise<void> | null = null;
-
-        constructor(private readonly name: string, private readonly options: EndpointSettings | null = null) {
-            this._logger = createLogger(`[PubsubTopic:${name}]`);
-
-            this.init();
-        }
-
-        public get handler() { return this._handler.expose(); }
-
-        public addRegistration(lazyLoader: () => Promise<void>) {
-            this._registration = new LazyPromise(lazyLoader);
+        public setLoggerFactory(factory: ILoggerFactory) {
+            this._logging.setLoggerFactory(factory, '[PubSub]');
             return this;
         }
 
-        private init = () => {
-            if (isCloudFunctionsInitialized) {
-                this._logger.warn(`Topics has been exported already so publishing to this one (${this.name}) will be no-op`);
-                return;
-            }
+        public setStrictPublishMode(strictMode: boolean) {
+            this.STRICT_PUBLISH_MODE = strictMode;
+            return this;
+        }
 
-            this.registerEndpoint();
-        };
+        public setErrorHandler(handler: ErrorHandlerFn) {
+            this.ErrorHandler = handler;
+            return this;
+        }
 
-        private registerEndpoint = () => {
-            const cloudFunction = createTopicListener(this.name, async (message, _) => {
-                const data = message.json as TData;
+        public exportCloudFunctions() {
+            this.isCloudFunctionsInitialized = true;
 
-                if (this._registration) {
-                    await this._registration.promise;
+            return this.topicCloudFunctions;
+        }
+
+        public createTopic<TData extends AnyObject>(name: string, options?: EndpointSettings | null) {
+            const logger = createLazy(() => this._logging.createLogger(`[PubSubTopic:${name}]`));
+            const _handler = new Event<TData>();
+            let _registration: LazyPromise<void> | null = null;
+
+            if (this.isCloudFunctionsInitialized) {
+                logger.value?.warn(`Topics has been exported already so publishing to this one (${name}) will be no-op`);
+            } else {
+                const cloudFunction = createTopicListener(name, async (message, _) => {
+                    const data = message.json as TData;
+
+                    if (_registration) {
+                        await _registration.promise;
+                    }
+
+                    let errors: Error[];
+
+                    try {
+                        errors = await _handler.triggerAsync(data) as any[];
+                    } catch (e) {
+                        logger.value?.error('Failed to execute trigger, error: ', e);
+                        errors = [e as Error];
+                    }
+
+                    if (errors?.length && this.ErrorHandler != null) {
+                        errors.forEach((error) => {
+                            this.ErrorHandler?.(error);
+                        });
+                    }
+                }, options || {});
+
+                if (!cloudFunction) {
+                    logger.value?.warn('PubSub topic handler was not created. Adding function to firebase canceled');
+                    return null;
                 }
 
-                let errors: Error[];
+                this.topicCloudFunctions[name] = cloudFunction;
+            }
+
+            const publish = async (data: TData) => {
+                if (this.STRICT_PUBLISH_MODE && !this.topicCloudFunctions[name]) {
+                    throw new Error('Trigger unsettled callback. Trigger canceled');
+                }
+
+                const pubsub = await this._instanceLoader.promise;
+                const topic = pubsub.topic(name);
 
                 try {
-                    errors = await this._handler.triggerAsync(data) as any[];
+                    await topic.publishMessage({ json: data });
                 } catch (e) {
-                    this._logger.error('Failed to execute trigger, error: ', e);
-                    errors = [e as Error];
+                    logger.value?.error('Failed to publish error ', e);
                 }
+            };
 
-                if (errors?.length && ErrorHandler != null) {
-                    errors.forEach((error) => {
-                        ErrorHandler?.(error);
-                    });
-                }
-            }, this.options || { });
-
-            if (!cloudFunction) {
-                this._logger.warn('PubSub topic handler was not created. Adding function to firebase canceled');
-                return null;
-            }
-
-            topicCloudFunctions[this.name] = cloudFunction;
-        };
-
-        async publish(data: TData) {
-            if (STRICT_PUBLISH_MODE && !topicCloudFunctions[this.name]) {
-                throw new Error('Trigger unsettled callback. Trigger canceled');
-            }
-            const topic = InstanceLazy.value.topic(this.name);
-
-            try {
-                await topic.publishMessage({ json: data });
-            } catch (e) {
-                this._logger.error('Failed to publish error ', e);
-            }
+            return {
+                get handler() { return _handler.expose(); },
+                addRegistration(lazyLoader: () => Promise<void>) {
+                    _registration = new LazyPromise(lazyLoader);
+                    return this;
+                },
+                publish,
+            };
         }
     }
 }
