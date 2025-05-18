@@ -1,4 +1,4 @@
-import { Nullable } from '../../types/misc.js';
+import type { Nullable } from '../../types/misc.js';
 
 export function indexTrim(str: string | null | undefined, ch: string) {
     if (!str || str === ch || !ch) {

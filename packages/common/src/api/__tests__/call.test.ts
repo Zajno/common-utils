@@ -1,9 +1,9 @@
 import { Path } from '../../structures/path/index.js';
 import { RequestMeta } from '../call.config.js';
-import { EndpointCallArgs, IRequestConfig, buildApiCaller } from '../call.js';
+import { type EndpointCallArgs, type IRequestConfig, buildApiCaller } from '../call.js';
 import { EndpointsPathsConfig } from '../config.js';
 import { ApiEndpoint } from '../endpoint.js';
-import { IEndpointInfo } from '../endpoint.types.js';
+import { type IEndpointInfo } from '../endpoint.types.js';
 
 describe('api/call', () => {
 

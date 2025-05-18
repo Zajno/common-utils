@@ -1,5 +1,6 @@
 export * from './ValidationErrors.js';
-export * from './types.js';
+export * from './validationError.js';
+export type * from './types.js';
 export * from './validators.js';
 export * from './wrappers.js';
 export * from './helpers.js';

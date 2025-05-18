@@ -1,7 +1,7 @@
 import { ThrottleProcessor } from '../functions/throttle.js';
 import { Loggable } from '../logger/loggable.js';
 import { Model } from '../models/Model.js';
-import { IMapModel, IValueModel } from '../models/types.js';
+import type { IMapModel, IValueModel } from '../models/types.js';
 
 export type DeferredGetter<T> = {
     readonly current: T | null | undefined;

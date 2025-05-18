@@ -1,4 +1,4 @@
-import { Comparator, Getter, Nullable, Predicate } from '../types/index.js';
+import { Comparator, Getter, type Nullable, type Predicate } from '../types/index.js';
 import { random } from './calc.js';
 
 /** type-safe `Array.isArray` wrapper  */

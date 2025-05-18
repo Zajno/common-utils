@@ -1,7 +1,7 @@
 import { SkipCondition, SkipOptions } from '../../fields/skip.js';
-import { AnyObject, DeepPartial, DeepReadonly, Predicate } from '../../types/index.js';
+import type { AnyObject, DeepPartial, DeepReadonly, Predicate } from '../../types/index.js';
 import { _getValue } from './helpers.js';
-import { IObjectOps, NumKey } from './types.js';
+import type { IObjectOps, NumKey } from './types.js';
 
 type Keys<T extends AnyObject> = NumKey<T>[];
 

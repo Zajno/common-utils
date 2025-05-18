@@ -1,14 +1,14 @@
 import { someAsync } from '../async/arrays.js';
-import { AnyObject } from '../types/index.js';
+import type { AnyObject } from '../types/index.js';
 import { ValidationErrors } from './ValidationErrors.js';
-import {
+import type {
     ValidationConfig,
-    ValidationError,
     ValidationResults,
     ValidationVoid,
     ValidatorFunction,
     ValidatorFunctionAsync,
 } from './types.js';
+import { ValidationError } from './validationError.js';
 
 export function createShouldBeEqualTo<T = string>(getter: () => T): ValidatorFunction<T> {
     return (val: T) => getter() === val ? ValidationErrors.None : ValidationErrors.ShouldBeEqualTo;

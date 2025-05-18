@@ -1,6 +1,6 @@
-import { IDisposable } from '../functions/disposer.js';
-import { Nullable } from '../types/misc.js';
-import { Event, EventHandler, IEvent } from './event.js';
+import type { IDisposable } from '../functions/disposer.js';
+import type { Nullable } from '../types/misc.js';
+import { Event, type EventHandler, type IEvent } from './event.js';
 
 export type TimerState = {
     timer: Timer;

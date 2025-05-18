@@ -1,5 +1,5 @@
 import { Getter } from '../types/getter.js';
-import { Nullable } from '../types/misc.js';
+import type { Nullable } from '../types/misc.js';
 import type { ILogger, ILoggerFactory } from './types.js';
 
 /** Helper base class for storing and using a logger instance. */

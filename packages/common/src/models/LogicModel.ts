@@ -1,5 +1,5 @@
 import { ExclusiveLoadingError, LoadingModel, withLoading } from './Loading.js';
-import { Getter, Nullable } from '../types/index.js';
+import { Getter, type Nullable } from '../types/index.js';
 import { PromiseExtended } from '../structures/promiseExtended.js';
 import { Loggable } from '../logger/loggable.js';
 

@@ -1,4 +1,4 @@
-import { AnyObject } from '../../types/misc.js';
+import { type AnyObject } from '../../types/misc.js';
 import type { ApiEndpoint } from '../endpoint.js';
 import type { IEndpointInfo } from '../endpoint.types.js';
 import { CallerHooks } from '../hooks.js';

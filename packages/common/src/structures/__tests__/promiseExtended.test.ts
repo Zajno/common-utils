@@ -1,5 +1,5 @@
 import { setTimeoutAsync } from '../../async/timeout.js';
-import { Nullable } from '../../types/index.js';
+import { type Nullable } from '../../types/index.js';
 import { PromiseExtended } from '../promiseExtended.js';
 
 describe('PromiseExtended', () => {

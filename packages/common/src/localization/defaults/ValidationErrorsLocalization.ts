@@ -1,5 +1,5 @@
-import { ValidationErrorsStrings } from '../abstractions.js';
-import { StringsShape } from './defaultShape.js';
+import { type ValidationErrorsStrings } from '../abstractions.js';
+import { type StringsShape } from './defaultShape.js';
 import { LocalizedValidationErrors } from '../LocalizedValidationErrors.js';
 import { ValidationErrors } from '../../validation/ValidationErrors.js';
 

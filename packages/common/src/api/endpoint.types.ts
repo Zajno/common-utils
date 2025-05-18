@@ -1,5 +1,5 @@
 import type { Path } from '../structures/path/index.js';
-import { RemoveFunctionFields } from '../types/functions.js';
+import { type RemoveFunctionFields } from '../types/functions.js';
 import type { AnyObject, Coalesce, EmptyObjectNullable, Expand } from '../types/misc.js';
 import type { EndpointMethods } from './methods.js';
 

@@ -1,8 +1,8 @@
-import { AnyObject } from '../../types/index.js';
-import { DeepReadonly } from '../../types/deep.js';
+import type { AnyObject } from '../../types/index.js';
+import type { DeepReadonly } from '../../types/deep.js';
 import { _getInnerValue, doOps } from './helpers.js';
 import { CompositeObjectOps } from './ops.composite.js';
-import { AbsOptions, IObjectMath, MathPair, MathPairsMap, RoundOptions } from './types.js';
+import type { AbsOptions, IObjectMath, MathPair, MathPairsMap, RoundOptions } from './types.js';
 
 
 export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps<T> implements IObjectMath<T> {
