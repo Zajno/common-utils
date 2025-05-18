@@ -1,7 +1,7 @@
 import { observable, makeObservable, action } from 'mobx';
 import { PromiseCache } from '@zajno/common/structures/promiseCache';
 import { NumberModel } from '../viewModels/NumberModel.js';
-import { IMapModel, IValueModel } from '@zajno/common/models/types.js';
+import type { IMapModel, IValueModel } from '@zajno/common/models/types.js';
 
 export { DeferredGetter } from '@zajno/common/structures/promiseCache';
 

@@ -1,5 +1,5 @@
 import { Disposable } from '@zajno/common/functions/disposer';
-import { Fields } from '@zajno/common/fields';
+import type { Fields } from '@zajno/common/fields';
 import { DeferredGetter } from '@zajno/common/structures/promiseCache';
 import { SubscribersMapObservable } from './subscribersMap.js';
 import { PromiseCacheObservable } from './promiseCache.js';

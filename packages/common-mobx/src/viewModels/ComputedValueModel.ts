@@ -1,7 +1,7 @@
 import type { IValueModelReadonly } from '@zajno/common/models/types';
 import { computed, makeObservable, reaction } from 'mobx';
 import { ValueModel } from './ValueModel.js';
-import { IDisposable, tryDispose } from '@zajno/common/functions/disposer';
+import { type IDisposable, tryDispose } from '@zajno/common/functions/disposer';
 
 export class ComputedValueModel<T> implements IValueModelReadonly<T> {
     constructor(private readonly _getter: () => T) {

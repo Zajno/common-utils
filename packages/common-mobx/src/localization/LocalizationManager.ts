@@ -1,6 +1,6 @@
 import { observable, makeObservable, action } from 'mobx';
 import type { AnyObject } from '@zajno/common/types';
-import { LocalizationManager as _LocalizationManager, StringsDataSource } from '@zajno/common/localization';
+import { LocalizationManager as _LocalizationManager, type StringsDataSource } from '@zajno/common/localization';
 
 export class LocalizationManager<TLocaleType extends string, TStrings extends AnyObject> extends _LocalizationManager<TLocaleType, TStrings> {
     constructor(
