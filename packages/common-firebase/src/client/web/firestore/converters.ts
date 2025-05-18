@@ -1,7 +1,7 @@
-import { IdentAny } from '@zajno/common/types/ident';
-import { UpdateDiff } from '../../../database/types.js';
-import { Timestamp, FirestoreDataConverter, DocumentSnapshot, serverTimestamp } from 'firebase/firestore';
-import { TypedKeys } from '@zajno/common/types';
+import type { IdentAny } from '@zajno/common/types/ident';
+import type { UpdateDiff } from '../../../database/types.js';
+import { Timestamp, type FirestoreDataConverter, DocumentSnapshot, serverTimestamp } from 'firebase/firestore';
+import type { TypedKeys } from '@zajno/common/types';
 import { setFieldValue } from '../../../database/firestore/helpers.js';
 
 

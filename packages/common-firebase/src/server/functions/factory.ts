@@ -1,18 +1,18 @@
-import { IFunctionDefinition } from '../../functions/index.js';
+import type { IFunctionDefinition } from '../../functions/index.js';
 import {
-    EndpointFunction,
-    EndpointContext,
+    type EndpointFunction,
+    type EndpointContext,
+    type NextFunction,
+    type BaseFunctionContext,
+    type FirebaseEndpointRunnable,
     IFirebaseFunction,
-    NextFunction,
-    BaseFunctionContext,
-    FirebaseEndpointRunnable,
 } from './interface.js';
 import { createHttpsCallFunction } from './create.js';
 import { Middleware } from './middleware.js';
 import { tryConvertToHttpError } from '../utils/LogicErrorAdapter.js';
 import { badRandomString } from '@zajno/common/math/calc';
-import { META_ARG_KEY, MetaHolder } from '../../functions/composite.js';
-import { ObjectOrPrimitive } from '@zajno/common/types/misc';
+import { META_ARG_KEY, type MetaHolder } from '../../functions/composite.js';
+import type { ObjectOrPrimitive } from '@zajno/common/types/misc';
 import { LoggerProvider } from '@zajno/common/logger';
 
 export class FunctionFactory<TArg, TResult, TContext extends ObjectOrPrimitive = never>

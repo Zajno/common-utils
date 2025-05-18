@@ -1,4 +1,4 @@
-import {
+import type {
     EndpointContext,
     HandlerContext,
     EndpointHandler,
@@ -7,7 +7,7 @@ import {
     NextFunction,
 } from './interface.js';
 import AppHttpError from '../utils/AppHttpError.js';
-import { ObjectOrPrimitive } from '@zajno/common/types/misc';
+import type { ObjectOrPrimitive } from '@zajno/common/types/misc';
 import { truthy } from '@zajno/common/types/arrays';
 import { assert } from '@zajno/common/functions/assert';
 

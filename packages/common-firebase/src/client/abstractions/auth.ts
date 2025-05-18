@@ -1,4 +1,4 @@
-import { IEvent } from '@zajno/common/observing/event';
+import type { IEvent } from '@zajno/common/observing/event';
 
 export type AuthUser = {
     uid: string,

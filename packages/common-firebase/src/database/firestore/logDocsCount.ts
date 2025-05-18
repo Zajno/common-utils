@@ -1,5 +1,5 @@
 import { FirestoreLogging } from './logging.js';
-import {
+import type {
     IDocumentReference,
     IQuery,
     IQuerySnapshot,

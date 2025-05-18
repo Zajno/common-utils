@@ -3,7 +3,7 @@ import type { IFunctionDefinition } from '../../functions/index.js';
 import type { EndpointContext, EndpointFunction, EndpointHandler } from './interface.js';
 import { Middleware as MiddlewareClass } from './middleware.js';
 import type { MiddlewaresMap } from './composite.js';
-import { ObjectOrPrimitive } from '@zajno/common/types';
+import type { ObjectOrPrimitive } from '@zajno/common/types';
 
 export namespace SpecTo {
     export function Handler<A, R, F extends EndpointHandler<A, R, C>, C extends ObjectOrPrimitive = never>(_spec: IFunctionDefinition<A, R>, func: F, _context?: C) {

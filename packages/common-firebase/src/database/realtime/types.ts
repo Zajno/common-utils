@@ -1,5 +1,5 @@
 
-import { UnsubscribeSnapshot } from '../types.js';
+import type { UnsubscribeSnapshot } from '../types.js';
 
 // Super simple duck types for RTDB helpers
 

@@ -1,5 +1,5 @@
 import { Loggable } from '@zajno/common/logger';
-import { Event, IEvent } from '@zajno/common/observing/event';
+import { Event, type IEvent } from '@zajno/common/observing/event';
 
 import type { IFunctionWorker, IFunctionDefinition, IFunctionDefinitionInfo, IFunctionsError } from './types.js';
 import type { FunctionType } from '../../../functions/interface.js';

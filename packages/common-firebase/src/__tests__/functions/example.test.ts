@@ -1,5 +1,5 @@
 import * as Example from '../../examples/compositeFunctionExample.js';
-import { EndpointTestContext, getNestedFunction, wrapEndpoint } from './config.js';
+import { type EndpointTestContext, getNestedFunction, wrapEndpoint } from './config.js';
 import AppHttpError from '../../server/utils/AppHttpError.js';
 
 

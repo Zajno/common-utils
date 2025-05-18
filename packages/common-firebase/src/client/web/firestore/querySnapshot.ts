@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
-import { IdentAny } from '@zajno/common/types/ident';
+import type { IdentAny } from '@zajno/common/types/ident';
 import {
     getQueryPath,
-    IQuery,
+    type IQuery,
     logQueryCount,
-    UnsubscribeSnapshot,
-    QuerySnapshotCallback,
+    type UnsubscribeSnapshot,
+    type QuerySnapshotCallback,
 } from '../../../database/firestore/index.js';
 import {
     DocumentSnapshot,
@@ -16,7 +15,7 @@ import {
 } from 'firebase/firestore';
 import { truthy } from '@zajno/common/types/arrays';
 import { wrapAsync } from '@zajno/common/functions/safe';
-import { Nullable } from '@zajno/common/types';
+import type { Nullable } from '@zajno/common/types';
 
 export type QuerySnapshotConverterCallback<T> = (items: DocumentSnapshot<T>[]) => T[];
 
@@ -82,7 +81,9 @@ export async function querySnapshot<T extends IdentAny>(
                     },
                 ),
                 (err: Error) => {
+                    // eslint-disable-next-line no-console
                     console.warn('querySnapshot fail:', getQueryPath(query as IQuery));
+                    // eslint-disable-next-line no-console
                     console.error(err);
                     if (unsubscribe) {
                         unsubscribe();

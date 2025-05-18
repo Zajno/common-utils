@@ -1,19 +1,19 @@
 import {
-    IAuthController,
-    AuthUser,
-    AuthUserWithProviders,
+    type IAuthController,
+    type AuthUser,
+    type AuthUserWithProviders,
     AuthProviders,
     MagicLinkRequestReasons,
-    AuthResult,
+    type AuthResult,
     AuthErrors,
-    AuthUserUpdate,
-    FirebaseError,
+    type AuthUserUpdate,
+    type FirebaseError,
 } from '../../abstractions/auth.js';
 import { makeObservable, observable, runInAction } from 'mobx';
 import { Event } from '@zajno/common/observing/event';
 import { transferFields } from '@zajno/common/fields/transfer';
 import { prepareEmail } from '@zajno/common/validation/emails';
-import { IStorage } from '@zajno/common/storage';
+import type { IStorage } from '@zajno/common/storage';
 import { Disposable } from '@zajno/common/functions/disposer';
 import { FlagModel } from '@zajno/common-mobx/viewModels';
 import { LoadingModel } from '@zajno/common-mobx/viewModels/LoadingModel';
@@ -30,7 +30,7 @@ import {
     updatePassword,
     reauthenticateWithCredential,
     linkWithCredential,
-    User,
+    type User,
     signInWithPopup,
     signOut,
     updateProfile,
