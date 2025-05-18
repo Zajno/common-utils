@@ -11,8 +11,12 @@ describe('PathBuilder', () => {
         expect(combineUrls({ noTrim: true }, 'api', 'v1')).toBe('api/v1');
         expect(combineUrls({ noTrim: true }, 'api/', 'v1')).toBe('api//v1');
         expect(combineUrls({ noTrim: true }, 'api/', '/v1')).toBe('api///v1');
+        expect(combineUrls({ addStart: true })).toBe('/');
+        expect(combineUrls({ addStart: true }, '')).toBe('/');
         expect(combineUrls({ addStart: true }, 'api', 'v1')).toBe('/api/v1');
         expect(combineUrls({ addTrail: true }, 'api', 'v1')).toBe('api/v1/');
+        expect(combineUrls({ addStart: true, addTrail: true })).toBe('/');
+        expect(combineUrls({ addStart: true, addTrail: true }, '')).toBe('/');
         expect(combineUrls({ addStart: true, addTrail: true }, 'api', 'v1')).toBe('/api/v1/');
     });
 

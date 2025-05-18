@@ -64,6 +64,11 @@ export function combineUrls(...parts: Nullable<string | CombineOptions>[]) {
 
     let result = _parts.join(separator);
 
+    // edge case: for empty result if both start/end separators requested – add only one
+    if (!result && (options?.addStart === true || options?.addTrail === true)) {
+        return separator;
+    }
+
     if (options?.addTrail) {
         const char = typeof options.addTrail === 'string'
             ? options.addTrail
