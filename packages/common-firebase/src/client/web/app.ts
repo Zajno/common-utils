@@ -1,5 +1,5 @@
-import { FirebaseSettings, IFirebaseApp } from '../abstractions/app.js';
-import { initializeApp, FirebaseApp as FirebaseAppType, deleteApp } from 'firebase/app';
+import { FirebaseSettings, type IFirebaseApp } from '../abstractions/app.js';
+import { initializeApp, type FirebaseApp as FirebaseAppType, deleteApp } from 'firebase/app';
 import { Lazy } from '@zajno/common/lazy';
 import { assert } from '@zajno/common/functions/assert';
 import { LoggerProvider, type ILoggerFactory } from '@zajno/common/logger';

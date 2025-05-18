@@ -1,6 +1,6 @@
-import { Mock } from 'vitest';
-import { buildApiCaller, IRequestConfig } from '../call.js';
-import { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
+import { type Mock } from 'vitest';
+import { buildApiCaller, type IRequestConfig } from '../call.js';
+import { ApiEndpoint, type IEndpointInfo } from '../endpoint.js';
 import { IEndpointInputContentType } from '../extensions/contentType.js';
 import { IEndpointHooks } from '../extensions/endpointHooks.js';
 import { IEndpointInputValidation } from '../extensions/validation.js';

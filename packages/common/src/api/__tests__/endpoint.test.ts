@@ -1,7 +1,7 @@
-import { ApiEndpoint, IEndpointInfo } from '../endpoint.js';
+import { ApiEndpoint, type IEndpointInfo } from '../endpoint.js';
 import { Path } from '../../structures/path/index.js';
 import { EndpointMethods } from '../methods.js';
-import { Mutable } from '../../types/misc.js';
+import { type Mutable } from '../../types/misc.js';
 import { IEndpointInputContentType } from '../extensions/contentType.js';
 import { IEndpointInputValidation } from '../extensions/validation.js';
 import { buildApiCaller } from '../call.js';

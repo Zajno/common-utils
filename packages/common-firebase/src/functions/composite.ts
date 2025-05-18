@@ -1,5 +1,5 @@
 import { FunctionDefinition } from './definition.js';
-import { EndpointSettings, IFunctionDefinition } from './interface.js';
+import type { EndpointSettings, IFunctionDefinition } from './interface.js';
 
 export const META_ARG_KEY = '__meta';
 export type MetaHolder = Partial<Record<typeof META_ARG_KEY, any>>;

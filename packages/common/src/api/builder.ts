@@ -1,4 +1,4 @@
-import { IEndpointInfo } from './endpoint.types.js';
+import { type IEndpointInfo } from './endpoint.types.js';
 import type { ApiCaller, EndpointCallArgs, GenericApiCaller } from './call.js';
 import { ApiEndpoint } from './endpoint.js';
 import { assert } from '../functions/assert.js';

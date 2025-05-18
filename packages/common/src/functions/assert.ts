@@ -1,5 +1,5 @@
 import { Getter, type Nullable } from '../types/index.js';
-import { ILogger } from '../logger/types.js';
+import { type ILogger } from '../logger/types.js';
 
 type AssertFn = (condition: boolean, error: Getter<string | Error>, objectToLog?: Getter<any>) => asserts condition;
 

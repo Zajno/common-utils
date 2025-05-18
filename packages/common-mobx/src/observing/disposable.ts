@@ -1,4 +1,4 @@
-import { ISymbolDisposable } from '@zajno/common/functions/disposer';
+import type { ISymbolDisposable } from '@zajno/common/functions/disposer';
 import { reaction, autorun } from 'mobx';
 
 type FnOverride<T extends (...args: any[]) => any> = (...args: Parameters<T>) => ISymbolDisposable;

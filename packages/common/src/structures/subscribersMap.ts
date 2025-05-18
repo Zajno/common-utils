@@ -1,4 +1,4 @@
-import { combineDisposers, IDisposable } from '../functions/disposer.js';
+import { combineDisposers, type IDisposable } from '../functions/disposer.js';
 import { catchPromise } from '../functions/safe.js';
 import { Loggable } from '../logger/loggable.js';
 

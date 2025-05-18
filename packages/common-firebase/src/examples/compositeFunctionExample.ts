@@ -1,5 +1,5 @@
 import { createCompositionExport, FunctionComposite, spec } from '../functions/composite.js';
-import { ContextTo, EndpointContext, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions/index.js';
+import { ContextTo, type EndpointContext, FunctionCompositeFactory, IFirebaseFunction, SpecTo } from '../server/functions/index.js';
 import { Middleware } from '../server/functions/middleware.js';
 import AppHttpError from '../server/utils/AppHttpError.js';
 import { useAsyncInitLoader } from '../server/functions/loader.js';

@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions/v1';
-import { EndpointContext, EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface.js';
+import type { EndpointContext, EndpointFunction, EndpointHandler, FirebaseEndpointRunnable } from './interface.js';
 import { GlobalRuntimeOptions } from './globalSettings.js';
 
 type PromiseOrT<T> = PromiseLike<T> | T;

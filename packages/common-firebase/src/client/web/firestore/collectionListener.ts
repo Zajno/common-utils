@@ -1,9 +1,9 @@
 import { action, makeObservable, observable, ObservableMap, runInAction } from 'mobx';
-import { IDisposable, Disposer } from '@zajno/common/functions/disposer';
+import { type IDisposable, Disposer } from '@zajno/common/functions/disposer';
 import { Event } from '@zajno/common/observing/event';
-import { IdentAny } from '@zajno/common/types/ident';
+import type { IdentAny } from '@zajno/common/types/ident';
 import { Query } from 'firebase/firestore';
-import { QuerySnapshotCallback } from '../../../database/types.js';
+import type { QuerySnapshotCallback } from '../../../database/types.js';
 import { querySnapshot } from './querySnapshot.js';
 import { assert } from '@zajno/common/functions/assert';
 

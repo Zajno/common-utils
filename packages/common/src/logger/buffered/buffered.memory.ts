@@ -1,5 +1,5 @@
-import { LogLevelValues } from '../types.js';
-import { BaseBufferedLogger, LogEntry } from './base.js';
+import type { LogLevelValues } from '../types.js';
+import { BaseBufferedLogger, type LogEntry } from './base.js';
 
 const Prefixes: Record<LogLevelValues, string> = {
     [1]: '[LOG]',

@@ -1,7 +1,7 @@
-import { batchLoggers, ILogger, LoggerFunction, LoggersManager } from '../index.js';
+import { batchLoggers, type ILogger, type LoggerFunction, LoggersManager } from '../index.js';
 import { faker } from '@faker-js/faker';
 import fc from 'fast-check';
-import { MockInstance } from 'vitest';
+import type { MockInstance } from 'vitest';
 import { toArbitrary } from '../../../utils/tests/main.js';
 import { CONSOLE, ConsoleLogger } from '../console.js';
 import { EMPTY_FUNCTION, EMPTY_LOGGER } from '../empty.js';

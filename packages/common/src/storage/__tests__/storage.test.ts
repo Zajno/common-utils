@@ -1,4 +1,4 @@
-import { Storages, IStorageSync, IStorage } from '../index.js';
+import { Storages, type IStorageSync, type IStorage } from '../index.js';
 
 describe('storage', () => {
     it('should convert storage to async storage', async () => {

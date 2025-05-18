@@ -1,7 +1,7 @@
-import { AnyObject, StringKeys } from '../../types/index.js';
-import { DeepReadonly } from '../../types/deep.js';
+import type { AnyObject, StringKeys } from '../../types/index.js';
+import type { DeepReadonly } from '../../types/deep.js';
+import type { IObjectOps, OpsPair, OpsPairsMap } from './types.js';
 import { _getInnerValue, doOps } from './helpers.js';
-import { IObjectOps, OpsPair, OpsPairsMap } from './types.js';
 
 export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
     readonly Empty: Readonly<T>;

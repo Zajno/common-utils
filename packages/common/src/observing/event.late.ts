@@ -1,5 +1,5 @@
 import { catchPromise } from '../functions/safe.js';
-import { Event, EventHandler } from './event.js';
+import { Event, type EventHandler } from './event.js';
 
 /**
  * One-time event that can be triggered only once, but listeners will be notified at the time of event or subscription, if it happens later.

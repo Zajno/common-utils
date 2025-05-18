@@ -7,13 +7,13 @@ import {
     onSnapshot,
 } from 'firebase/firestore';
 import {
-    DocumentSnapshotCallback,
+    type DocumentSnapshotCallback,
     logDocCount,
     FirestoreLogging,
-    UnsubscribeSnapshot,
+    type UnsubscribeSnapshot,
 } from '../../../database/firestore/index.js';
 import { wrapAsync } from '@zajno/common/functions/safe';
-import { Nullable } from '@zajno/common/types';
+import type { Nullable } from '@zajno/common/types';
 
 export type DocumentSnapshotConverterCallback<T> = (item: DocumentSnapshot<T>) => T;
 

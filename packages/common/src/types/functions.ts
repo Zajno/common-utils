@@ -1,4 +1,4 @@
-import { AnyFunction } from './misc.js';
+import type { AnyFunction } from './misc.js';
 
 export type TypedFn<A extends unknown[], R> = (...args: A) => R;
 

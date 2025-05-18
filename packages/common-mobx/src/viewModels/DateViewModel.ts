@@ -1,4 +1,4 @@
-import { Nullable } from '@zajno/common/types';
+import type { Nullable } from '@zajno/common/types';
 import { CommonModel } from './CommonModel.js';
 
 export class DateViewModel extends CommonModel<Date | null> {

@@ -1,10 +1,10 @@
 import { Path } from '../../structures/path/index.js';
 import { buildApi, remapApisStructure } from '../builder.js';
 import { RequestMeta } from '../call.config.js';
-import { buildApiCaller, IRequestConfig } from '../call.js';
+import { buildApiCaller, type IRequestConfig } from '../call.js';
 import { EndpointsPathsConfig } from '../config.js';
 import { ApiEndpoint } from '../endpoint.js';
-import { IEndpointInfo } from '../endpoint.types.js';
+import { type IEndpointInfo } from '../endpoint.types.js';
 
 describe('api/builder', () => {
 

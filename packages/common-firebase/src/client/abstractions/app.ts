@@ -1,4 +1,4 @@
-import { ILogger } from '@zajno/common/logger';
+import type { ILogger } from '@zajno/common/logger';
 import type { FirebaseConfig } from '../../config.js';
 
 const EmptyAppSettings = {

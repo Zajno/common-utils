@@ -1,7 +1,7 @@
 import { Loggable } from '../logger/loggable.js';
-import { ILogger } from '../logger/types.js';
+import type { ILogger } from '../logger/types.js';
 import { Getter } from '../types/getter.js';
-import { Nullable } from '../types/misc.js';
+import type { Nullable } from '../types/misc.js';
 
 export interface IDisposable {
     dispose(): void;

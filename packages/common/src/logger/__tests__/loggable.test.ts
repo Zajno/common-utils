@@ -1,5 +1,5 @@
 import { Loggable } from '../loggable.js';
-import { ILogger, ILoggerFactory } from '../types.js';
+import type { ILogger, ILoggerFactory } from '../types.js';
 
 describe('Loggable', () => {
 

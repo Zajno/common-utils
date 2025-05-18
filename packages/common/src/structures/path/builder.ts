@@ -7,7 +7,7 @@ import type {
     TemplateTransform,
     TransformMap,
 } from './types.helpers.js';
-import {
+import type {
     BaseInput,
     Builder,
     BuilderArgs,

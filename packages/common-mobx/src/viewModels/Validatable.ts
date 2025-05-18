@@ -5,15 +5,15 @@ import {
     runInAction,
 } from 'mobx';
 import {
-    ValidatorFunction,
-    ValidatorFunctionAsync,
+    type ValidatorFunction,
+    type ValidatorFunctionAsync,
     ValidationErrors,
     ValidationError,
-    ValidationVoid,
+    type ValidationVoid,
 } from '@zajno/common/validation';
 import type { ValidationThrower } from '@zajno/common/validation/throwers';
-import { Nullable } from '@zajno/common/types/misc';
-import { IValueModel } from '@zajno/common/models/types';
+import type { Nullable } from '@zajno/common/types/misc';
+import type { IValueModel } from '@zajno/common/models/types';
 import { extendObjectWithFocusable } from './extensions.js';
 
 export type ValueValidator<T, TErrors = ValidationErrors> = ValidatorFunction<T, TErrors> | ValidatorFunctionAsync<T, TErrors>;

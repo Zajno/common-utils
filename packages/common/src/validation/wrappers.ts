@@ -1,5 +1,5 @@
 import { throwNotOk } from './helpers.js';
-import { ValidatorFunction } from './types.js';
+import type { ValidatorFunction } from './types.js';
 import { ValidationErrors } from './ValidationErrors.js';
 import { Validators } from './validators.js';
 

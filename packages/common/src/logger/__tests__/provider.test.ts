@@ -1,5 +1,5 @@
 import { LoggerProvider } from '../provider.js';
-import { ILogger } from '../types.js';
+import type { ILogger } from '../types.js';
 
 describe('LoggerProvider', () => {
 

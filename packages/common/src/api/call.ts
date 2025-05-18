@@ -1,4 +1,4 @@
-import { IEndpointInfo } from './endpoint.js';
+import { type IEndpointInfo } from './endpoint.js';
 import type {
     CallerOptions,
     CallerResponse,

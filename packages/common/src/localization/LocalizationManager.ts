@@ -1,6 +1,6 @@
 import type { ILocalization, LocaleStrings, StringsDataSource, StringsLoader } from './abstractions.js';
 import type { AnyObject } from '../types/misc.js';
-import { Event } from '../observing/event.js';
+import { Event, type EventHandler } from '../observing/event.js';
 
 export class LocalizationManager<TLocaleType extends string, TStrings extends AnyObject> implements ILocalization<TStrings> {
     // initial value is intentionally a nonsense to be updated on first useLocale call
@@ -74,6 +74,16 @@ export class LocalizationManager<TLocaleType extends string, TStrings extends An
 
             await this.doUpdateStrings(locale, result, tryRevert);
         })();
+    }
+
+    /**
+     * Subscribes `handler` to `this.localUpdated` event and also calls it immeditately.
+     *
+     * @returns unsubscribe function
+     */
+    public synchronizeLocale(handler: EventHandler<LocaleStrings<TLocaleType, TStrings>>) {
+        handler({ locale: this.Locale, strings: this.Current });
+        return this.localeUpdated.on(handler);
     }
 
     protected doUpdateStrings(locale: TLocaleType, strings: TStrings | null, revert?: () => void): Promise<void> {

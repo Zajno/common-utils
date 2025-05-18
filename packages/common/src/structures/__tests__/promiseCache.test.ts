@@ -1,6 +1,6 @@
 
 import { setTimeoutAsync } from '../../async/timeout.js';
-import { ILogger, LoggersManager } from '../../logger/index.js';
+import { type ILogger, LoggersManager } from '../../logger/index.js';
 import { random } from '../../math/index.js';
 import { DeferredGetter, PromiseCache } from '../promiseCache.js';
 

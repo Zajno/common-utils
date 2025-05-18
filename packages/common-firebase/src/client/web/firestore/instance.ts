@@ -1,6 +1,6 @@
 import { FirebaseApp, createFirebaseLazy } from '../app.js';
 import {
-    FirestoreSettings,
+    type FirestoreSettings,
     initializeFirestore,
     getFirestore,
 } from 'firebase/firestore';

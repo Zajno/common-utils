@@ -1,4 +1,4 @@
-import { AnyObject } from '../index.js';
+import type { AnyObject } from '../index.js';
 import * as Deep from '../deep.js';
 
 describe('Deep Types', () => {

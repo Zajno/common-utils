@@ -1,4 +1,4 @@
-import { ILogger } from './types.js';
+import type { ILogger } from './types.js';
 import { NamedLogger } from './named.js';
 
 export const CONSOLE: ILogger = console;

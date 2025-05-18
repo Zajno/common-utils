@@ -1,4 +1,4 @@
-import { AnyObject } from '../types/misc.js';
+import { type AnyObject } from '../types/misc.js';
 import type { EndpointCallArgs, IRequestConfig, IRequestMeta, RequestExtra } from './call.types.js';
 import { EndpointsPathsConfig } from './config.js';
 import type { IEndpointInfo } from './endpoint.types.js';

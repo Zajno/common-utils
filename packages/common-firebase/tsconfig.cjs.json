@@ -4,6 +4,7 @@
         "noEmit": false,
         "module": "CommonJS",
         "moduleResolution": "node",
+        "verbatimModuleSyntax": false,
         "outDir": "dist/cjs",
     },
     "include": [

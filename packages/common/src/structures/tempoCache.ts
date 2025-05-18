@@ -1,5 +1,5 @@
 import type { ILazy, ILazyPromise } from '../lazy/types.js';
-import { IResetableModel } from '../models/types.js';
+import type { IResetableModel } from '../models/types.js';
 import { ExpireTracker } from './expire.js';
 
 /**

@@ -10,8 +10,8 @@ import {
 import type { UploadTask } from 'firebase/storage';
 import {
     formatDate,
-    IFirebaseStorage,
-    ProgressListener,
+    type IFirebaseStorage,
+    type ProgressListener,
 } from '../abstractions/storage/index.js';
 import { Loggable } from '@zajno/common/logger';
 

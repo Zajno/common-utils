@@ -1,4 +1,10 @@
-import { EndpointContext, FunctionCompositeFactory, NextFunction, SpecTo, useAsyncInitCompositionLoader } from '../../server/functions/index.js';
+import {
+    type EndpointContext,
+    type NextFunction,
+    FunctionCompositeFactory,
+    SpecTo,
+    useAsyncInitCompositionLoader,
+} from '../../server/functions/index.js';
 import { createCompositionExport, FunctionComposite, spec } from '../../functions/composite.js';
 import AppHttpError from '../../server/utils/AppHttpError.js';
 import { getNestedFunction, wrapEndpoint } from './config.js';

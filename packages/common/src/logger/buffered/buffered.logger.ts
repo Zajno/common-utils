@@ -1,6 +1,6 @@
 import { clamp } from '../../math/calc.js';
-import { LogLevels, LogLevelValues, type ILogger, type LoggerFunction } from '../types.js';
-import { BaseBufferedLogger, LogEntry } from './base.js';
+import { LogLevels, type LogLevelValues, type ILogger, type LoggerFunction } from '../types.js';
+import { BaseBufferedLogger, type LogEntry } from './base.js';
 
 const Prefixes: Record<LogLevelValues, string> = {
     [1]: '\n\t--->',

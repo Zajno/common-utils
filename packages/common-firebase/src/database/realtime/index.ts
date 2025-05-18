@@ -1,5 +1,3 @@
-import { DocumentSnapshotCallback, UnsubscribeSnapshot } from '../types.js';
-
-export type { DocumentSnapshotCallback, UnsubscribeSnapshot };
+export type { DocumentSnapshotCallback, UnsubscribeSnapshot } from '../types.js';
 
 export { getData } from './getData.js';

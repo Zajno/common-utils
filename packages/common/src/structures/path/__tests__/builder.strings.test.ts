@@ -1,4 +1,4 @@
-import { build, construct, IBuilder } from '../builder.js';
+import { build, construct, type IBuilder } from '../builder.js';
 import { normalizeInput } from '../builder.helpers.js';
 
 test('helpers', () => {

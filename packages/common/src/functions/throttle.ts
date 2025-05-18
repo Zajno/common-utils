@@ -1,4 +1,4 @@
-import { ManualPromise, createManualPromise } from '../async/manualPromise.js';
+import { type ManualPromise, createManualPromise } from '../async/manualPromise.js';
 import { Loggable, type ILogger } from '../logger/index.js';
 import { random } from '../math/index.js';
 import { Getter } from '../types/getter.js';

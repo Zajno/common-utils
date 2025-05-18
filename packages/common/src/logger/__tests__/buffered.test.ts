@@ -1,6 +1,6 @@
 import { BufferedLogger } from '../buffered/buffered.logger.js';
 import { BufferedMemoryLogger } from '../buffered/buffered.memory.js';
-import { ILogger } from '../types.js';
+import type { ILogger } from '../types.js';
 
 describe('logger / buffered', () => {
     const createCustomLogger = () => ({

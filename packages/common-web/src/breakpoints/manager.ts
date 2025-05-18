@@ -1,4 +1,4 @@
-import { BreakpointData, ICurrentBreakpointInfo } from './types.js';
+import type { BreakpointData, ICurrentBreakpointInfo } from './types.js';
 import { Event } from '@zajno/common/observing/event';
 import { assert } from '@zajno/common/functions/assert';
 import { calcRem } from './rem.js';
