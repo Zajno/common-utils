@@ -1,3 +1,4 @@
+import { EMPTY_LOGGER } from '../empty.js';
 import { Loggable } from '../loggable.js';
 import type { ILogger, ILoggerFactory } from '../types.js';
 
@@ -9,12 +10,14 @@ describe('Loggable', () => {
         error: vi.fn(),
     } satisfies ILogger);
 
-    type LoggableInternal = Loggable & { logger: ILogger | null };
+    // expose protected stuff
+    type LoggableInternal = Loggable & { logger: ILogger | null, hasLogger: boolean };
 
     test('works', () => {
         {
             const loggable = new Loggable() as LoggableInternal;
-            expect(loggable.logger).toBeNull();
+            expect(loggable.logger).toBe(EMPTY_LOGGER);
+            expect(loggable.hasLogger).toBeFalse();
         }
 
         const mock = createMock('mock');
@@ -22,13 +25,15 @@ describe('Loggable', () => {
         expect(loggable.logger).toBe(mock);
 
         loggable.setLogger(null);
-        expect(loggable.logger).toBeNull();
+        expect(loggable.logger).toBe(EMPTY_LOGGER);
+        expect(loggable.hasLogger).toBeFalse();
 
         loggable.setLogger(() => mock);
         expect(loggable.logger).toBe(mock);
 
         loggable.setLogger(() => null);
-        expect(loggable.logger).toBeNull();
+        expect(loggable.logger).toBe(EMPTY_LOGGER);
+        expect(loggable.hasLogger).toBeFalse();
 
         const factory = vi.fn(() => mock);
         loggable.setLoggerFactory(factory, 'mock');
@@ -46,7 +51,8 @@ describe('Loggable', () => {
         factory.mockClear();
 
         loggable.setLoggerFactory(null, 'mock');
-        expect(loggable.logger).toBeNull();
+        expect(loggable.logger).toBe(EMPTY_LOGGER);
+        expect(loggable.hasLogger).toBeFalse();
         expect(factory).not.toHaveBeenCalled();
     });
 });

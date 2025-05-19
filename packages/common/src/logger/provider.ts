@@ -15,7 +15,7 @@ export class LoggerProvider extends Loggable {
     }
 
     // changing visibility to public
-    public get logger(): ILogger | null {
+    public get logger(): ILogger {
         return super.logger;
     }
 
