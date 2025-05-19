@@ -72,7 +72,7 @@ export class ThrottleAction<T = any> extends Loggable {
             // This is probably OK since the running call should cover the current one.
             // TODO Maybe just don't start timeout if the lock is set?
             // The reason for not doing that 👆 is there's still a valid case when previous is still working but it's legit to start a new one (e.g. some state has changed already)
-            this.logger?.warn('[ThrottleAction] THROTTLE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
+            this.logger.warn('[ThrottleAction] THROTTLE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
         } else if (cb) {
             let result: T | undefined = undefined;
             const lockId = random(1, 1_000_000);

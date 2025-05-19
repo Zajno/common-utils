@@ -74,7 +74,7 @@ export class ParallelQueue extends Loggable {
         try {
             await this.tryStartQueue();
         } catch (err) {
-            this.logger?.warn('Failed to process queue:', err);
+            this.logger.warn('Failed to process queue:', err);
             return false;
         }
 
@@ -102,11 +102,11 @@ export class ParallelQueue extends Loggable {
 
         while ((current = this._queues[this._currentIndex])?.length) {
             if (iterations++ > MAX_ATTEMPTS) {
-                this.logger?.warn('Tried to purge queue for priority =', this._currentIndex, 'for too many times of', MAX_ATTEMPTS, '; totalItems =', totalItems, '; skipping.');
+                this.logger.warn('Tried to purge queue for priority =', this._currentIndex, 'for too many times of', MAX_ATTEMPTS, '; totalItems =', totalItems, '; skipping.');
                 break;
             }
 
-            this.logger?.log('Processing priority =', this._currentIndex, '; count =', current.length);
+            this.logger.log('Processing priority =', this._currentIndex, '; count =', current.length);
 
             const items = current.slice();
             current.length = 0;
@@ -116,7 +116,7 @@ export class ParallelQueue extends Loggable {
         }
 
         if (!current?.length && iterations === 0) {
-            this.logger?.log('Skipping priority =', this._currentIndex, '; no items');
+            this.logger.log('Skipping priority =', this._currentIndex, '; no items');
         }
 
         await this._afterPriorityRun.triggerAsync(this._currentIndex);
@@ -125,7 +125,7 @@ export class ParallelQueue extends Loggable {
         if (next > this._maxIndex) {
             // looks like we've finished!
             this._inProgress = false;
-            this.logger?.log('Finished processing at index =', this._currentIndex);
+            this.logger.log('Finished processing at index =', this._currentIndex);
             this._finished.trigger();
             return;
         }
@@ -138,8 +138,8 @@ export class ParallelQueue extends Loggable {
         try {
             await l();
         } catch (err) {
-            this.logger?.warn('Failed to process queue item at priority =', priority, ' at index =', index || '?');
-            this.logger?.error(err);
+            this.logger.warn('Failed to process queue item at priority =', priority, ' at index =', index || '?');
+            this.logger.error(err);
         }
     };
 }
