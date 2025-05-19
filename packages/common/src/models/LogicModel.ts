@@ -54,7 +54,7 @@ export class LogicModel extends Loggable {
         const started = Date.now();
         const name = options.name;
         if (name && !options.noLogs) {
-            this.logger?.log(`runAction "${name}" started...`);
+            this.logger.log(`runAction "${name}" started...`);
         }
 
         const runner = async () => {
@@ -66,12 +66,12 @@ export class LogicModel extends Loggable {
                 if (existingRunner != null) {
                     if (join === 'cancel') {
                         if (!options.noLogs) {
-                            this.logger?.warn(`runAction "${name}" has been skipped because another instance of it is in progress`);
+                            this.logger.warn(`runAction "${name}" has been skipped because another instance of it is in progress`);
                         }
                         return undefined;
                     } else if (join === 'merge') {
                         if (!options.noLogs) {
-                            this.logger?.log(`runAction "${name}" merging with existing instance...`);
+                            this.logger.log(`runAction "${name}" merging with existing instance...`);
                         }
                         return existingRunner as ReturnType<typeof worker>;
                     }
@@ -93,7 +93,7 @@ export class LogicModel extends Loggable {
                                 throw new ExclusiveLoadingError(message, storedName);
                             }
 
-                            this.logger?.warn(message);
+                            this.logger.warn(message);
                             return undefined;
                         }
                         result = resultWithLoading.result;
@@ -102,7 +102,7 @@ export class LogicModel extends Loggable {
                     }
 
                     if (name && !options.noLogs) {
-                        this.logger?.log(`runAction "${storedName}" succeed in ${Date.now() - started}ms`);
+                        this.logger.log(`runAction "${storedName}" succeed in ${Date.now() - started}ms`);
                     }
                     return result;
                 } finally {
@@ -125,7 +125,7 @@ export class LogicModel extends Loggable {
 
         return ActionResult.expectExclusive(PromiseExtended.run(runner))
             .onError(data => {
-                this.logger?.error(...formatError({
+                this.logger.error(...formatError({
                     name,
                     err: data.source,
                     errorCtx,

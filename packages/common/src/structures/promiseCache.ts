@@ -143,7 +143,7 @@ export class PromiseCache<T, K = string> extends Loggable {
         // make sure current item is hooked here from the cache (required by observers)
         const item = this._itemsCache.get(key);
         if (isInvalid) {
-            this.logger?.log(key, 'item is invalidated');
+            this.logger.log(key, 'item is invalidated');
         }
         return {
             item: (isInvalid && !this._keepInstanceDuringInvalidation) ? undefined : item,
@@ -158,7 +158,7 @@ export class PromiseCache<T, K = string> extends Loggable {
             // spin fetch
             this.get(id);
         }
-        this.logger?.log(key, 'getCurrent: returns', item);
+        this.logger.log(key, 'getCurrent: returns', item);
         return item;
     }
 
@@ -167,13 +167,13 @@ export class PromiseCache<T, K = string> extends Loggable {
 
         // return cached item if it's not invalidated
         if (item !== undefined && !isInvalid) {
-            this.logger?.log(key, 'get: item resolved to', item, isInvalid ? '(invalidated)' : '');
+            this.logger.log(key, 'get: item resolved to', item, isInvalid ? '(invalidated)' : '');
             return Promise.resolve(item);
         }
 
         let promise = this._fetchCache.get(key);
         if (promise != null) {
-            this.logger?.log(key, 'get: item resolved to <promise>');
+            this.logger.log(key, 'get: item resolved to <promise>');
             return promise;
         }
 
@@ -201,7 +201,7 @@ export class PromiseCache<T, K = string> extends Loggable {
             }
 
             if (this._fetchCache.get(key) != null) {
-                this.logger?.log(key, 'item\'s <promise> resolved to', res);
+                this.logger.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
                 this.storeResult(key, res);
             }
@@ -210,7 +210,7 @@ export class PromiseCache<T, K = string> extends Loggable {
             if (isInSameVersion) {
                 this.onFetchComplete(key);
             } else {
-                this.logger?.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
+                this.logger.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
             }
         }
     };
@@ -288,7 +288,7 @@ export class PromiseCache<T, K = string> extends Loggable {
 
     /** @override */
     protected setStatus(key: string, status: boolean) {
-        this.logger?.log(key, 'status update:', status);
+        this.logger.log(key, 'status update:', status);
         this._itemsStatus.set(key, status);
     }
 
@@ -323,7 +323,7 @@ export class PromiseCache<T, K = string> extends Loggable {
     /** @pure */
     protected async tryFetchInBatch(id: K): Promise<T | null> {
         const fetchWrap = () => this.fetcher(id).catch(err => {
-            this.logger?.warn('fetcher failed', id, err);
+            this.logger.warn('fetcher failed', id, err);
             return null;
         });
 
@@ -333,7 +333,7 @@ export class PromiseCache<T, K = string> extends Loggable {
 
         const res = await this._batch.push(id)
             .catch(err => {
-                this.logger?.warn('batch fetch failed', id, err);
+                this.logger.warn('batch fetch failed', id, err);
                 return null;
             });
         if (!res || !res.result || res.result[res.index] === undefined) {

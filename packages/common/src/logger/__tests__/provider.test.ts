@@ -1,14 +1,16 @@
+import { EMPTY_LOGGER } from '../empty.js';
 import { LoggerProvider } from '../provider.js';
 import type { ILogger } from '../types.js';
 
 describe('LoggerProvider', () => {
 
-    type LoggerProviderInternal = LoggerProvider & { getLoggerName(name: string | undefined): string };
+    type LoggerProviderInternal = LoggerProvider & { getLoggerName(name: string | undefined): string; hasLogger: boolean; };
 
     test('works', () => {
         {
-            const loggable = new LoggerProvider();
-            expect(loggable.logger).toBeNull();
+            const loggable = new LoggerProvider() as LoggerProviderInternal;
+            expect(loggable.logger).toBe(EMPTY_LOGGER);
+            expect(loggable.hasLogger).toBeFalse();
             expect(loggable.factory).toBeNull();
         }
 

@@ -121,7 +121,7 @@ export class TransitionObserver<T> extends Loggable implements IDisposable {
                 });
                 this.forceCheck();
             });
-            this.logger?.log('started a new promise...');
+            this.logger.log('started a new promise...');
         }
         return this._promise;
     }
@@ -137,7 +137,7 @@ export class TransitionObserver<T> extends Loggable implements IDisposable {
     }
 
     dispose = () => {
-        this.logger?.log(' disposing... ');
+        this.logger.log(' disposing... ');
         if (this._disposer) {
             this._disposer();
             this._disposer = undefined;
@@ -168,7 +168,7 @@ export class TransitionObserver<T> extends Loggable implements IDisposable {
             trigger = true;
         }
 
-        this.logger?.log('Checked value:', v, ' ==> will trigger:', trigger);
+        this.logger.log('Checked value:', v, ' ==> will trigger:', trigger);
 
         this._prev = v;
 

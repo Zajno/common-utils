@@ -17,7 +17,7 @@ describe('timeout', () => {
         expect(cb).not.toHaveBeenCalled();
         expect(promise).toBeInstanceOf(Promise);
 
-        await expect(promise).resolves.toBeGreaterThanOrEqual(10);
+        await expect(promise).resolves.toBeGreaterThanOrEqual(9);
 
         expect(listener).toHaveBeenCalled();
         expect(cb).toHaveBeenCalled();

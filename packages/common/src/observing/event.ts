@@ -83,7 +83,7 @@ export class Event<T = any> extends Loggable implements IEvent<T> {
     }
 
     private logError(data: T | null | undefined, cb: EventHandler<T>, err: unknown) {
-        this.logger?.error(`type:${typeof data} Handler ${cb.name} thrown an exception: `, err);
+        this.logger.error(`type:${typeof data} Handler ${cb.name} thrown an exception: `, err);
     }
 }
 

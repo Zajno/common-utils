@@ -3,9 +3,9 @@ import type { Getter } from '../types/getter.js';
 export type LoggerFunction = (...args: any[]) => void;
 
 export interface ILogger {
-    log: LoggerFunction;
-    warn: LoggerFunction;
-    error: LoggerFunction;
+    readonly log: LoggerFunction;
+    readonly warn: LoggerFunction;
+    readonly error: LoggerFunction;
 }
 
 export interface ILoggerSwitchable {
