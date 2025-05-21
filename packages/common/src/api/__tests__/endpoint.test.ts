@@ -43,10 +43,12 @@ describe('api/endpoint', () => {
         expect(ApiEndpoint.create().get().method).toBe('GET');
         expect(ApiEndpoint.create().delete().method).toBe('DELETE');
         expect(ApiEndpoint.create().put().method).toBe('PUT');
+        expect(ApiEndpoint.create().patch().method).toBe('PATCH');
         expect(ApiEndpoint.create().method).toBe('GET');
         expect(ApiEndpoint.create().put().post().method).toBe('POST');
 
         expect(ApiEndpoint.create().withMethod(EndpointMethods.PUT).method).toBe('PUT');
+        expect(ApiEndpoint.create().withMethod(EndpointMethods.OPTIONS).method).toBe('OPTIONS');
 
         expect(ApiEndpoint.create().delete().method).toBe('DELETE');
     });
