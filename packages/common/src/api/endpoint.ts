@@ -21,6 +21,8 @@ export interface ApiEndpoint extends IEndpointInfo.Base {
     get<TOut>(): this & IEndpointInfo.IOut<TOut>;
     /** Applies PUT HTTP method and specifies input and output types */
     put<TIn extends object | null, TOut>(): this & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
+    /** Applies PATCH HTTP method and specifies input and output types */
+    patch<TIn extends object | null, TOut>(): this & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
     /** Applies POST HTTP method and specifies input and output types */
     post<TIn extends object | null, TOut>(): this & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
     /** Applies DELETE HTTP method and specifies output type */
@@ -74,6 +76,10 @@ export namespace ApiEndpoint {
             },
             put<TIn extends object | null, TOut>() {
                 data.method = EndpointMethods.PUT;
+                return res as ApiEndpoint & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
+            },
+            patch<TIn extends object | null, TOut>() {
+                data.method = EndpointMethods.PATCH;
                 return res as ApiEndpoint & IEndpointInfo.IIn<TIn> & IEndpointInfo.IOut<TOut>;
             },
             post<TIn extends object | null, TOut>() {
