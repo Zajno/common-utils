@@ -7,7 +7,7 @@ interface ICtor<T extends IDisposable = IDisposable> {
     new(id?: number): T;
 }
 
-interface StaticSingleton<TClass extends IDisposable> extends ICtor<TClass> {
+export interface StaticSingleton<TClass extends IDisposable> extends ICtor<TClass> {
     readonly ID: number;
     readonly HasInstance: boolean;
     Destroy(): void;
