@@ -39,6 +39,10 @@ export class Disposer extends Loggable {
         }
     }
 
+    public addMany(...d: (DisposeFunction | IDisposable)[]) {
+        d.forEach(dd => this.add(dd));
+    }
+
     public execute(id: string) {
         const d = this._map.get(id);
         if (!d) {
