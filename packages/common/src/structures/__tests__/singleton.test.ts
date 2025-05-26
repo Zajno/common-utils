@@ -1,6 +1,6 @@
 import { describe, test, vi } from 'vitest';
 import { createSingleton } from '../singleton.js';
-import type { DisposeFunction, IDisposable } from '../../functions/disposer.js';
+import { Disposable, type DisposeFunction, type IDisposable } from '../../functions/disposer.js';
 import * as Math from '../../math/calc.js';
 import type { IValueModel } from '../../models/types.js';
 
@@ -68,5 +68,56 @@ describe('createSingleton', () => {
         expect(Singleton2.Instance).not.toBe(instance);
 
         randomSpy.mockRestore();
+    });
+
+    test('extension', () => {
+
+        const baseCtorMarker = vi.fn();
+
+        class Base extends Disposable {
+            constructor() {
+                super();
+                baseCtorMarker();
+            }
+            public get baseField() {
+                return 'base_field';
+            }
+        }
+        const BaseSingleton = createSingleton(Base);
+
+        // basically like this one can extend only static fields
+        class TestBad extends BaseSingleton { }
+
+        expect(TestBad.Instance).toBeInstanceOf(Base);
+        expect(TestBad.Instance.baseField).toBe('base_field');
+
+        expect(baseCtorMarker).toHaveBeenCalledTimes(1);
+        baseCtorMarker.mockClear();
+
+        // a way to trully extend the singleton
+
+        class TestGood extends BaseSingleton.BaseClass {
+            public readonly newField = 'new_field';
+            public get baseField(): string {
+                return 'overridden_base_field';
+            }
+        }
+
+        const Singleton = BaseSingleton.Extend(TestGood);
+
+        Singleton.Destroy(); // cleanup previous instance
+
+        expect(Singleton.HasInstance).toBeFalse();
+        expect(BaseSingleton.HasInstance).toBeFalse();
+
+        expect(Singleton.Instance).toBeInstanceOf(Base);
+        expect(Singleton.Instance).toBeInstanceOf(TestGood);
+        expect(Singleton.Instance.baseField).toBe('overridden_base_field');
+        expect(Singleton.Instance.newField).toBe('new_field');
+
+        // should not affect the original singleton, and they are sharing the same instance
+        expect(BaseSingleton.Instance).toStrictEqual(Singleton.Instance);
+
+        expect(baseCtorMarker).toHaveBeenCalledTimes(1);
     });
 });
