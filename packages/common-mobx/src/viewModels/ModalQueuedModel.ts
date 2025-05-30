@@ -3,7 +3,7 @@ import { ModalViewModel } from './ModalModel.js';
 export class ModalQueuedViewModel<T> extends ModalViewModel<T> {
     private _queue: T[] = [];
 
-    open(data: T): void {
+    private _doOpen(data: T) {
         this._queue.push(data);
 
         if (!this.isOpened) {
@@ -11,14 +11,32 @@ export class ModalQueuedViewModel<T> extends ModalViewModel<T> {
         }
     }
 
-    close = (): void => {
+    private _doClose() {
         if (!this._queue.length) {
-          super.close();
-          return;
+            super.close();
+            return;
         }
 
         this._queue.shift();
         super.close();
         super.open(this._queue[0]);
+    }
+
+    open(data: T, onOpenCb?: () => Promise<void>): void {
+        if (onOpenCb) {
+            onOpenCb().then(() => this._doOpen(data));
+            return;
+        }
+
+        this._doOpen(data);
+    }
+
+    close = (onCloseCb?: () => Promise<void>): void => {
+        if (onCloseCb) {
+            onCloseCb().then(() => this._doClose());
+            return;
+        }
+
+        this._doClose();
     };
 }
