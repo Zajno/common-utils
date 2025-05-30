@@ -12,7 +12,7 @@ export class ModalQueuedViewModel<T> extends ModalViewModel<T> {
     }
 
     close = (): void => {
-        if (this._queue?.length === 0) {
+        if (!this._queue.length) {
           super.close();
           return;
         }
