@@ -13,3 +13,4 @@ export * from './SelectModel.js';
 export * from './MultiSelectModel.js';
 
 export * from './ModalModel.js';
+export * from './ModalQueuedModel.js';
