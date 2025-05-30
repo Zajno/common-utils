@@ -11,7 +11,7 @@ export class ModalViewModel<T> {
         this._data.setValue(data);
     }
 
-    public close = () => {
+    public close(): void {
         this._data.setValue(null);
     };
 }
