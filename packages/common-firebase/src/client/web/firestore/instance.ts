@@ -17,9 +17,14 @@ export const Firestore = createFirebaseLazy(() => {
             initializeFirestore(FirebaseApp.Current, settings);
         }
 
-        // logger.log('creating Firestore... for app = ', FirebaseApp.Current.options.projectId);
-        const db = getFirestore(FirebaseApp.Current);
-        return db;
+        const databaseId = FirebaseApp.Settings?.config?.firestoreDatabaseId || undefined;
+
+        FirebaseApp.logger?.log('creating Firestore... for app = ', FirebaseApp.Current.options.projectId, '; databaseId = ', databaseId);
+        if (databaseId) {
+            return getFirestore(FirebaseApp.Current, databaseId);
+        }
+
+        return getFirestore(FirebaseApp.Current);
     } catch (err) {
         FirebaseApp.logger?.error('Failed to create Firestore:', err);
         return null!; // TODO better re-throw?
