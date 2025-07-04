@@ -1,5 +1,5 @@
 import { SkipCondition, SkipOptions } from '../../fields/skip.js';
-import type { AnyObject, DeepPartial, DeepReadonly, Predicate } from '../../types/index.js';
+import type { AnyObject, DeepPartial, DeepReadonly, Nullable, Predicate } from '../../types/index.js';
 import { _getValue } from './helpers.js';
 import type { IObjectOps, NumKey } from './types.js';
 
@@ -28,7 +28,7 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         return result;
     }
 
-    clone(o: DeepReadonly<T>): T {
+    clone(o: Nullable<DeepReadonly<T>>): T {
         const result = this.getEmpty();
         if (o != null) {
             this.keys.forEach(key => {
@@ -42,15 +42,15 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         return result;
     }
 
-    isEmpty(o: DeepReadonly<T>) {
+    isEmpty(o: Nullable<DeepReadonly<T>>) {
         return !o || this.keys.every(key => !_getValue(o, key));
     }
 
-    isValid(o: DeepReadonly<T>) {
-        return o && (this._validator ? this._validator(o) : !this.isEmpty(o));
+    isValid(o: Nullable<DeepReadonly<T>>) {
+        return !o ? false : (this._validator ? this._validator(o) : !this.isEmpty(o));
     }
 
-    isEquals(a: DeepReadonly<T>, b: DeepReadonly<T>) {
+    isEquals(a: Nullable<DeepReadonly<T>>, b: Nullable<DeepReadonly<T>>) {
         if (!a && !b) {
             return true;
         }
@@ -60,11 +60,11 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         return this.keys.every(key => _getValue(a, key) === _getValue(b, key));
     }
 
-    strip(v: DeepReadonly<T>, condition: SkipCondition<T, NumKey<T>> = true): DeepPartial<T> {
+    strip(v: Nullable<DeepReadonly<T>>, condition: SkipCondition<T, NumKey<T>> = true): DeepPartial<T> {
         const res = { } as DeepPartial<T>;
         this.keys.forEach(key => {
             const val = _getValue(v, key);
-            if (SkipCondition.shouldSkip(condition, key, val)) {
+            if (val === undefined || SkipCondition.shouldSkip(condition, key, val)) {
                 return;
             }
             const kk = key as keyof DeepPartial<T>;
@@ -74,7 +74,7 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         return res;
     }
 
-    toStringData(v: DeepReadonly<T>, labels: Readonly<Record<Keys<T>[number], string>>, strip: SkipOptions = false): [number, string][] {
+    toStringData(v: Nullable<DeepReadonly<T>>, labels: Readonly<Record<Keys<T>[number], string>>, strip: SkipOptions = false): [number, string][] {
         if (!v) {
             return [];
         }
@@ -94,7 +94,7 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         return results;
     }
 
-    assign(to: T, other: DeepReadonly<T>): void {
+    assign(to: T, other: Nullable<DeepReadonly<T>>): void {
         this.keys.forEach(key => {
             const val = _getValue(other, key);
             if (val !== undefined) {

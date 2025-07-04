@@ -1,13 +1,14 @@
 import type { DeepReadonly, DeepReadonlyPartial } from '../../types/deep.js';
+import type { Nullable } from '../../types/misc.js';
 import type { BasePair, IObjectOps, NumKey } from './types.js';
 
-export function _getValue<T extends object, TKey extends NumKey<T> = NumKey<T>>(o: DeepReadonlyPartial<T>, key: TKey): T[TKey] | null {
-    return (!o || !key) ? null : (o as T)[key];
+export function _getValue<T extends object, TKey extends NumKey<T> = NumKey<T>>(o: Nullable<DeepReadonlyPartial<T>>, key: TKey): T[TKey] | undefined {
+    return (!o || !key) ? undefined : (o as T)[key];
 }
 
-export function _getInnerValue<T extends object, TKey extends string & keyof T>(o: DeepReadonly<T>, key: TKey): DeepReadonly<T[TKey]>;
-export function _getInnerValue<T extends object, TKey extends string & keyof T>(o: DeepReadonly<T> | number, key: TKey): DeepReadonly<T[TKey]> | number;
-export function _getInnerValue<T extends object, TKey extends keyof DeepReadonly<T>>(o: DeepReadonly<T> | number, key: TKey): DeepReadonly<T>[TKey] | number | null {
+export function _getInnerValue<T extends object, TKey extends string & keyof T>(o: Nullable<DeepReadonly<T>>, key: TKey): DeepReadonly<T[TKey]>;
+export function _getInnerValue<T extends object, TKey extends string & keyof T>(o: Nullable<DeepReadonly<T> | number>, key: TKey): DeepReadonly<T[TKey]> | number;
+export function _getInnerValue<T extends object, TKey extends keyof DeepReadonly<T>>(o: Nullable<DeepReadonly<T> | number>, key: TKey): DeepReadonly<T>[TKey] | number | null {
     if (typeof o === 'number') {
         return o;
     }
@@ -23,7 +24,7 @@ export function _getInnerValue<T extends object, TKey extends keyof DeepReadonly
 export function doOps<T extends object, TOps extends IObjectOps<any>>(
     this: void,
     ops: BasePair<T, string & keyof T, TOps>[],
-    o: DeepReadonly<T>,
+    o: Nullable<DeepReadonly<T>>,
     processor?: (ops: TOps, value: DeepReadonly<T[string & keyof T]>, key: string & keyof T) => T[keyof T] | null,
 ) {
     const res = { } as T;

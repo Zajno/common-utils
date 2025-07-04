@@ -1,4 +1,4 @@
-import type { TypedKeys } from '../../types/index.js';
+import type { Nullable, TypedKeys } from '../../types/index.js';
 import type { DeepReadonly, DeepReadonlyPartial } from '../../types/deep.js';
 import { _getValue } from './helpers.js';
 import { ObjectOps } from './ops.js';
@@ -10,7 +10,7 @@ const DELETE: DELETE_TYPE = 'delete';
 
 export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjectMath<T> {
 
-    getTotal(o: DeepReadonlyPartial<T>) {
+    getTotal(o: Nullable<DeepReadonlyPartial<T>>) {
         let sum = 0;
         if (o) {
             this.keys.forEach(key => {
@@ -21,7 +21,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return sum;
     }
 
-    contains(base: DeepReadonly<T>, target: DeepReadonly<T>) {
+    contains(base: Nullable<DeepReadonly<T>>, target: Nullable<DeepReadonly<T>>) {
         return this.keys.every(key => {
             const baseVal = _getValue(base, key) as number || 0;
             const targetVal = _getValue(target, key) as number || 0;
@@ -29,13 +29,13 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         });
     }
 
-    inverse(o: DeepReadonly<T>): T {
+    inverse(o: Nullable<DeepReadonly<T>>): T {
         return this.multiply(o, -1);
     }
 
-    div(o1: DeepReadonly<T>, o2: number): T;
-    div(o1: DeepReadonly<T>, o2: DeepReadonly<T>): number;
-    div(o1: DeepReadonly<T>, o2: DeepReadonly<T> | number): T | number | null {
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<number>): T;
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): number;
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): T | number {
         if (!o1 || !o2) {
             return 0;
         }
@@ -64,10 +64,10 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
                 min = c;
             }
         });
-        return min;
+        return min ?? 0;
     }
 
-    process(o: DeepReadonly<T>, processor: (val: number, key: NumKey<T>) => number | DELETE_TYPE): T | null {
+    process(o: Nullable<DeepReadonly<T>>, processor: (val: number, key: NumKey<T>) => number | DELETE_TYPE): T | null {
         if (!o) {
             return null;
         }
@@ -86,7 +86,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return res;
     }
 
-    abs(c: DeepReadonly<T>, stripNegatives: AbsOptions = false): T | null {
+    abs(c: Nullable<DeepReadonly<T>>, stripNegatives: AbsOptions = false): T | null {
         return this.process(c, (val) => {
             if (val == null || val >= 0) {
                 return val;
@@ -107,7 +107,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
     }
 
 
-    round(c: DeepReadonly<T>, method: RoundOptions = 'round') {
+    round(c: Nullable<DeepReadonly<T>>, method: RoundOptions = 'round') {
         return this.process(c, (val) => {
             switch (method) {
                 case 'round':
@@ -122,7 +122,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         });
     }
 
-    calc(c1: DeepReadonly<T>, c2: DeepReadonly<T> | number, operator: (n: number, n2: number) => number) {
+    calc(c1: Nullable<DeepReadonly<T>>, c2: Nullable<DeepReadonly<T> | number>, operator: (n: number, n2: number) => number) {
         const result = this.clone(c1);
         this.keys.forEach(k => {
             const l = _getValue(c1, k) as number;
@@ -134,15 +134,15 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return result;
     }
 
-    add(c1: DeepReadonly<T>, c2: DeepReadonly<T> | number) {
+    add(c1: Nullable<DeepReadonly<T>>, c2: Nullable<DeepReadonly<T> | number>) {
         return this.calc(c1, c2, (n1, n2) => (n1 || 0) + (n2 || 0));
     }
 
-    subtract(base: DeepReadonly<T>, amount: DeepReadonly<T> | number) {
+    subtract(base: Nullable<DeepReadonly<T>>, amount: Nullable<DeepReadonly<T> | number>) {
         return this.calc(base, amount, (n1, n2) => (n1 || 0) - (n2 || 0));
     }
 
-    multiply(c1: DeepReadonly<T>, c2: DeepReadonly<T> | number) {
+    multiply(c1: Nullable<DeepReadonly<T>>, c2: Nullable<DeepReadonly<T> | number>) {
         return this.calc(c1, c2, (n1, n2) => (n1 || 0) * (n2 || 0));
     }
 }

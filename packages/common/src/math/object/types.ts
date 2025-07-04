@@ -1,4 +1,9 @@
-import type { AnyObject, DeepReadonly, TypedKeys } from '../../types/index.js';
+import type {
+    AnyObject,
+    DeepReadonly,
+    Nullable,
+    TypedKeys,
+} from '../../types/index.js';
 
 export type NumKey<T extends AnyObject> = TypedKeys<T, number>;
 
@@ -10,25 +15,25 @@ export type DELETE_TYPE = 'delete';
 export interface IObjectOps<T extends AnyObject> {
     readonly Empty: Readonly<T>;
 
-    isEmpty(o: DeepReadonly<T>): boolean;
+    isEmpty(o: Nullable<DeepReadonly<T>>): boolean;
     getEmpty(): T;
-    clone(o: DeepReadonly<T>): T;
-    isValid(o: DeepReadonly<T>): boolean;
-    isEquals(a: DeepReadonly<T>, b: DeepReadonly<T>): boolean;
-    assign(to: T, other: DeepReadonly<T>): void;
+    clone(o: Nullable<DeepReadonly<T>>): T;
+    isValid(o: Nullable<DeepReadonly<T>>): boolean;
+    isEquals(a: Nullable<DeepReadonly<T>>, b: Nullable<DeepReadonly<T>>): boolean;
+    assign(to: T, other: Nullable<DeepReadonly<T>>): void;
 }
 
 export interface IObjectMath<T extends AnyObject> extends IObjectOps<T> {
-    contains(base: DeepReadonly<T>, target: DeepReadonly<T>): boolean;
-    inverse(o: DeepReadonly<T>): T;
+    contains(base: Nullable<DeepReadonly<T>>, target: Nullable<DeepReadonly<T>>): boolean;
+    inverse(o: Nullable<DeepReadonly<T>>): T;
 
-    abs(o: DeepReadonly<T>, options?: AbsOptions): T | null;
-    round(o: DeepReadonly<T>, options?: RoundOptions): T | null;
+    abs(o: Nullable<DeepReadonly<T>>, options?: AbsOptions): T | null;
+    round(o: Nullable<DeepReadonly<T>>, options?: RoundOptions): T | null;
 
-    add(o1: DeepReadonly<T>, o2: DeepReadonly<T>): T;
-    subtract(base: DeepReadonly<T>, amount: DeepReadonly<T> | number): T;
-    multiply(o1: DeepReadonly<T>, o2: DeepReadonly<T> | number): T;
-    div(o1: DeepReadonly<T>, o2: DeepReadonly<T> | number): number;
+    add(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): T;
+    subtract(base: Nullable<DeepReadonly<T>>, amount: Nullable<DeepReadonly<T> | number>): T;
+    multiply(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): T;
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): number;
 }
 
 export type BasePair<T extends AnyObject, TKey extends string & keyof T = string & keyof T, TOps extends IObjectOps<T[TKey]> = IObjectOps<T[TKey]>> = { key: TKey, ops: TOps };

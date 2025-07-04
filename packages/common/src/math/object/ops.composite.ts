@@ -1,4 +1,4 @@
-import type { AnyObject, StringKeys } from '../../types/index.js';
+import type { AnyObject, Nullable, StringKeys } from '../../types/index.js';
 import type { DeepReadonly } from '../../types/deep.js';
 import type { IObjectOps, OpsPair, OpsPairsMap } from './types.js';
 import { _getInnerValue, doOps } from './helpers.js';
@@ -22,23 +22,23 @@ export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
         this.Empty = this.getEmpty();
     }
 
-    isEmpty(o: DeepReadonly<T>): boolean {
+    isEmpty(o: Nullable<DeepReadonly<T>>): boolean {
         return !o || this._ops.every(op => op.ops.isEmpty(_getInnerValue(o, op.key)));
     }
 
     getEmpty(): T {
-        return doOps(this._ops, { } as DeepReadonly<T>, ops => ops.getEmpty());
+        return doOps(this._ops, null, ops => ops.getEmpty());
     }
 
-    clone(o: DeepReadonly<T>): T {
+    clone(o: Nullable<DeepReadonly<T>>): T {
         return doOps(this._ops, o);
     }
 
-    isValid(o: DeepReadonly<T>): boolean {
+    isValid(o: Nullable<DeepReadonly<T>>): boolean {
         return o != null && this._ops.every(op => op.ops.isValid(_getInnerValue(o, op.key)));
     }
 
-    isEquals(a: DeepReadonly<T>, b: DeepReadonly<T>): boolean {
+    isEquals(a: Nullable<DeepReadonly<T>>, b: Nullable<DeepReadonly<T>>): boolean {
         if (!a && !b) {
             return true;
         }
@@ -51,7 +51,7 @@ export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
         ));
     }
 
-    assign(to: T, other: DeepReadonly<T>): void {
+    assign(to: T, other: Nullable<DeepReadonly<T>>): void {
         this._ops.forEach(pair => {
             const val = _getInnerValue(other, pair.key);
             if (val !== undefined) {

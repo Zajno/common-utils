@@ -1,4 +1,4 @@
-import type { AnyObject } from '../../types/index.js';
+import type { AnyObject, Nullable } from '../../types/index.js';
 import type { DeepReadonly } from '../../types/deep.js';
 import { _getInnerValue, doOps } from './helpers.js';
 import { CompositeObjectOps } from './ops.composite.js';
@@ -17,7 +17,7 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
             }));
     }
 
-    contains(base: DeepReadonly<T>, target: DeepReadonly<T>): boolean {
+    contains(base: Nullable<DeepReadonly<T>>, target: Nullable<DeepReadonly<T>>): boolean {
         if (!base || !target) {
             return false;
         }
@@ -29,19 +29,19 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
         });
     }
 
-    inverse(o: DeepReadonly<T>): T {
+    inverse(o: Nullable<DeepReadonly<T>>): T {
         return doOps(this._math, o, (ops, val) => ops.inverse(val));
     }
 
-    abs(o: DeepReadonly<T>, options?: AbsOptions): T | null {
+    abs(o: Nullable<DeepReadonly<T>>, options?: AbsOptions): T | null {
         return doOps(this._math, o, (ops, val) => ops.abs(val, options));
     }
 
-    round(o: DeepReadonly<T>, options?: RoundOptions): T {
+    round(o: Nullable<DeepReadonly<T>>, options?: RoundOptions): T {
         return doOps(this._math, o, (ops, val) => ops.round(val, options));
     }
 
-    add(o1: DeepReadonly<T>, o2: DeepReadonly<T>): T {
+    add(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): T {
         if (this.isEmpty(o1) && this.isEmpty(o2)) {
             return this.getEmpty();
         }
@@ -49,7 +49,7 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
         return doOps(this._math, o1, (ops, val, key) => ops.add(val, _getInnerValue(o2, key)));
     }
 
-    subtract(base: DeepReadonly<T>, amount: number | DeepReadonly<T>): T {
+    subtract(base: Nullable<DeepReadonly<T>>, amount: number | Nullable<DeepReadonly<T>>): T {
         return doOps(
             this._math,
             base,
@@ -60,7 +60,7 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
         );
     }
 
-    multiply(o1: DeepReadonly<T>, o2: number | DeepReadonly<T>): T {
+    multiply(o1: Nullable<DeepReadonly<T>>, o2: number | Nullable<DeepReadonly<T>>): T {
         return doOps(
             this._math,
             o1,
@@ -71,12 +71,12 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
         );
     }
 
-    div(o1: DeepReadonly<T>, o2: number | DeepReadonly<T>): number {
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<number | DeepReadonly<T>>): number {
         if (this.isEmpty(o1)) {
             return 0;
         }
 
-        const checkRight = <K extends AnyObject>(val: number | K, getIsEmpty: (k: K) => boolean) => {
+        const checkRight = <K extends AnyObject>(val: Nullable<number | K>, getIsEmpty: (k: Nullable<K>) => boolean) => {
             return typeof val === 'number' && val === 0 || typeof val !== 'number' && getIsEmpty(val);
         };
 
