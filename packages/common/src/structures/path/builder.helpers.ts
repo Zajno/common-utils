@@ -14,7 +14,7 @@ import type {
     StaticBuilder,
     StaticInput,
 } from './types.js';
-import { CombineOptions, combineUrls } from './utils.js';
+import { CombineOptions, combineUrls } from './utils/combineUrls.js';
 
 
 export const staticFactory = (strings: readonly string[]): StaticBuilder => {

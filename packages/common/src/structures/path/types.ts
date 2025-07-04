@@ -9,7 +9,7 @@ import type {
     ToRequiredArray,
     TransformMap,
 } from './types.helpers.js';
-import type { CombineOptions } from './utils.js';
+import type { CombineOptions } from './utils/combineUrls.js';
 
 
 export type ObjectBuilderArgs<TArgs extends string, TFallback = EmptyObject> = string extends TArgs
