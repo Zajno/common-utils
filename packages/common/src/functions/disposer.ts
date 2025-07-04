@@ -58,6 +58,7 @@ export class Disposer extends Loggable {
         d();
     }
 
+    /** Executes stored diposers in reverse order. */
     public dispose(log = false) {
         if (log && this.logger) {
             this.logger.log(
@@ -83,6 +84,13 @@ export class Disposable extends Loggable implements IDisposable {
 
     protected readonly disposer = new Disposer();
     protected _isDisposed = false;
+
+    constructor(logger?: ILogger) {
+        super(logger);
+        if (logger) {
+            this.disposer.setLogger(logger);
+        }
+    }
 
     public dispose = () => {
         this._isDisposed = true;

@@ -10,7 +10,7 @@ export class Loggable {
 
     constructor(logger?: ILogger) {
         if (logger) {
-            this.setLogger(logger);
+            this._logger = logger;
         }
     }
 
