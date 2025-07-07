@@ -1,16 +1,5 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
-    "cSpell.words": [
-        "Asyncify",
-        "Autorun",
-        "Awaitify",
-        "chunkify",
-        "datex",
-        "Firestore",
-        "Pluggable",
-        "scripty",
-        "timespan"
-    ],
     "typescript.preferences.quoteStyle": "single",
     "javascript.preferences.quoteStyle": "single",
     "files.insertFinalNewline": true,
