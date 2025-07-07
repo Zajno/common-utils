@@ -14,7 +14,7 @@ import type {
     CombineBuilders,
     SwitchBuilder,
 } from './types.js';
-import { CombineOptions, combineUrls } from './utils.js';
+import { CombineOptions, combineUrls } from './utils/combineUrls.js';
 
 export type * from './types.js';
 export type { TemplateTransform } from './types.helpers.js';

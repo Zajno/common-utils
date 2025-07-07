@@ -1,5 +1,5 @@
 import { build, construct, Empty, type IBuilder } from '../builder.js';
-import { combineUrls } from '../utils.js';
+import { combineUrls } from '../utils/combineUrls.js';
 
 describe('PathBuilder', () => {
 

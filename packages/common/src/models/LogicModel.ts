@@ -7,7 +7,7 @@ export type ActionRunOptions = {
     /** Action name, required for logging and joining. */
     name?: string;
 
-    /** If set to truthy, will not start an action if another is still in progress.
+    /** If set to truthy, will not start this action if another is still in progress.
      * Additionally, if set to 'throw', will throw an error. Otherwise, will return undefined.
      *
      * Note: if a current action runs in an exclusive mode, but the next one is not, the next one will still be allowed.

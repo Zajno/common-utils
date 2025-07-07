@@ -2,13 +2,16 @@
 export type Predicate<T> = (value: T) => boolean;
 
 /** Type for extracting only string keys from T (skips number & symbol keys) */
-export type StringKeys<T extends AnyObject> = {
-    [K in keyof T]: K extends string ? K : never;
-}[keyof T];
+export type StringKeys<T extends AnyObject> = Exclude<
+    {
+        [K in keyof T]: K extends string ? K : never;
+    }[keyof T],
+    undefined | null
+>;
 
 /** Type for extracting string keys of type `T` values of each are of certain type `K` */
 export type TypedKeys<T extends AnyObject, K> = {
-    [P in StringKeys<T>]: T[P] extends K ? P : never;
+    [P in StringKeys<T>]: T[P] extends (K | undefined) ? P : never;
 }[StringKeys<T>];
 
 /** Type for extraction only keys, values of which are functions with certain args and return result */
@@ -28,15 +31,15 @@ export type Mutable<T> = {
 
 // Source: https://stackoverflow.com/a/74801694
 export type LengthArray<
-        T,
-        N extends number,
-        R extends T[] = []
-    > = number extends N
-        ? T[]
-        : (R['length'] extends N
-            ? R
-            : LengthArray<T, N, [T, ...R]>
-        );
+    T,
+    N extends number,
+    R extends T[] = []
+> = number extends N
+    ? T[]
+    : (R['length'] extends N
+        ? R
+        : LengthArray<T, N, [T, ...R]>
+    );
 
 export type EmptyArray = [] & { length: 0 };
 export type NonEmptyArray<T = any> = T[] & { 0: T; };
@@ -65,7 +68,7 @@ export type IsNever<T, Y, N> = [T] extends [never] ? Y : N;
 export type Coalesce<T, TReplace = EmptyObjectNullable> = [T] extends [never] | [null] | [undefined]
     ? TReplace
     : T
-;
+    ;
 
 /** Intellisense helper to show type unions/intersections as a whole type */
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;

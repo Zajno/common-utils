@@ -11,12 +11,18 @@ export class BufferedMemoryLogger extends BaseBufferedLogger {
 
     protected _memory: string[] = [];
     private _timestamps: boolean = false;
+    private _maxMemorySize: number = 0;
 
     private _argFormatter = formatArg;
     private _argsJoiner = (args: string[]): string => args.filter(Boolean).join(' ');
 
     constructor(name: string) {
         super(name);
+    }
+
+    withMaxMemorySize(size: number) {
+        this._maxMemorySize = size;
+        return this;
     }
 
     setArgsJoiner(joiner: (args: string[]) => string) {
@@ -62,7 +68,12 @@ export class BufferedMemoryLogger extends BaseBufferedLogger {
 
     protected doFlush(buffer: LogEntry[]): void {
         for (const [level, args, timestamp] of buffer) {
-            this._memory.push(this.combineLine(level, args, timestamp));
+            const line = this.combineLine(level, args, timestamp);
+            this._memory.push(line);
+        }
+
+        if (this._maxMemorySize > 0 && this._memory.length > this._maxMemorySize) {
+            this._memory.splice(0, this._memory.length - this._maxMemorySize);
         }
     }
 
@@ -79,8 +90,12 @@ export class BufferedMemoryLogger extends BaseBufferedLogger {
     }
 }
 
-function formatArg(arg: any) {
+function formatArg(arg: any): string {
     if (typeof arg === 'object') {
+        if (arg instanceof Error) {
+            return `${arg.name}: ${arg.message}\n${arg.stack || ''}`;
+        }
+
         return JSON.stringify(arg);
     }
     return String(arg);

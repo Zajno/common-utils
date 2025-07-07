@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common",
-  "version": "2.7.6",
+  "version": "2.7.7",
   "description": "Zajno's re-usable utilities for JS/TS projects",
   "private": false,
   "type": "module",
@@ -65,6 +65,7 @@
     "./math/object": "./src/math/object/index.ts",
     "./storage": "./src/storage/index.ts",
     "./structures/path": "./src/structures/path/index.ts",
+    "./structures/path/utils": "./src/structures/path/utils/index.ts",
     "./types": "./src/types/index.ts",
     "./validation": "./src/validation/index.ts"
   }
