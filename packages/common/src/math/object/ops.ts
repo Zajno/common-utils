@@ -34,7 +34,7 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
             this.keys.forEach(key => {
                 const kk = key as string & NumKey<T> & keyof DeepReadonly<T>;
                 const v = o[kk] as T[NumKey<T>];
-                if (v !== undefined) {
+                if (v != null) {
                     result[key] = v;
                 }
             });
@@ -94,13 +94,15 @@ export class ObjectOps<T extends AnyObject> implements IObjectOps<T> {
         return results;
     }
 
-    assign(to: T, other: Nullable<DeepReadonly<T>>): void {
+    assign(to: T, other: Nullable<DeepReadonly<T>>): T {
         this.keys.forEach(key => {
             const val = _getValue(other, key);
             if (val !== undefined) {
                 to[key] = val as any;
             }
         });
+
+        return to;
     }
 
 }
