@@ -26,10 +26,10 @@ export class LazyPromiseObservable<T> extends LazyPromise<T> {
 
         makeObservable<
             LazyPromise<T>,
-            '_instance' | '_busy' | 'ensureInstanceLoading' | 'onResolved'
+            '_instance' | '_isLoading' | 'ensureInstanceLoading' | 'onResolved'
         >(this, {
             _instance: ObservableTypes.toDecorator(observableType),
-            _busy: observable,
+            _isLoading: observable,
             setInstance: action,
             ensureInstanceLoading: action,
             onResolved: action,

@@ -58,16 +58,16 @@ describe('ObservingCache works with', () => {
 
             const deferred = Cache.get(KEY);
 
-            expect(deferred.busy).toBeUndefined();
+            expect(deferred.isLoading).toBeUndefined();
             expect(deferred.current).toBeUndefined();
-            expect(deferred.busy).toBeTruthy();
+            expect(deferred.isLoading).toBeTruthy();
 
             const expectedItem = toJS(Database[KEY]);
 
             await expect(deferred.promise).resolves.toStrictEqual(expectedItem);
 
             expect(deferred.current).toStrictEqual(expectedItem);
-            expect(deferred.busy).toBeFalsy();
+            expect(deferred.isLoading).toBeFalsy();
 
             expect(unsubFn).toHaveBeenCalledTimes(1);
 
@@ -94,16 +94,16 @@ describe('ObservingCache works with', () => {
 
             const deferred = Cache.get(KEY);
 
-            expect(deferred.busy).toBeUndefined();
+            expect(deferred.isLoading).toBeUndefined();
             expect(deferred.current).toBeUndefined();
-            expect(deferred.busy).toBeTruthy();
+            expect(deferred.isLoading).toBeTruthy();
 
             const expectedItem = toJS(Database[KEY]);
 
             await expect(deferred.promise).resolves.toStrictEqual(expectedItem);
 
             expect(deferred.current).toStrictEqual(expectedItem);
-            expect(deferred.busy).toBeFalsy();
+            expect(deferred.isLoading).toBeFalsy();
 
             expect(unsubFn).not.toHaveBeenCalled();
 
