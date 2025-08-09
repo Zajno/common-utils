@@ -1,10 +1,12 @@
+import { tryDispose, type IDisposable } from '../functions/disposer.js';
+import type { IResetableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazyPromise } from './types.js';
 
-export class LazyPromise<T> implements ILazyPromise<T> {
+export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResetableModel {
 
     private _instance: T | undefined = undefined;
-    private _busy: boolean | null = null;
+    private _isLoading: boolean | null = null;
 
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
@@ -16,8 +18,8 @@ export class LazyPromise<T> implements ILazyPromise<T> {
         this._instance = initial;
     }
 
-    get busy() { return this._busy; }
-    get hasValue() { return this._busy === false; }
+    get isLoading() { return this._isLoading; }
+    get hasValue() { return this._isLoading === false; }
 
     get promise() {
         this.ensureInstanceLoading();
@@ -40,20 +42,20 @@ export class LazyPromise<T> implements ILazyPromise<T> {
     }
 
     protected ensureInstanceLoading() {
-        if (this.busy === false && this._instance !== undefined && this._expireTracker?.isExpired) {
+        if (this.isLoading === false && this._instance !== undefined && this._expireTracker?.isExpired) {
             // do not reset the instance, just make sure it will be reloaded
-            this._busy = null;
+            this._isLoading = null;
         }
 
-        if (this._busy === null) {
-            this._busy = true;
+        if (this._isLoading === null) {
+            this._isLoading = true;
             this._promise = this._factory().then(this.onResolved.bind(this));
         }
     }
 
     protected onResolved(res: T) {
         // case: during the promise `setInstance` was called
-        if (!this._busy && this._instance !== undefined) {
+        if (!this._isLoading && this._instance !== undefined) {
             return this._instance;
         }
         this.setInstance(res);
@@ -61,7 +63,7 @@ export class LazyPromise<T> implements ILazyPromise<T> {
     }
 
     public setInstance(res: T | undefined) {
-        this._busy = false;
+        this._isLoading = false;
 
         // refresh promise so it won't keep old callbacks
         // + make sure it's resolved with the freshest value
@@ -78,9 +80,22 @@ export class LazyPromise<T> implements ILazyPromise<T> {
     }
 
     reset() {
-        this._busy = null;
+        this._isLoading = null;
+
+        const wasDisposed = tryDispose(this._instance);
+
         this._instance = this.initial;
+
+        const p = this._promise;
         this._promise = undefined;
+
+        // check if loading is still in progress
+        // need to dispose abandoned value
+        if (p && !wasDisposed) {
+            p.then(value => {
+                tryDispose(value);
+            });
+        }
     }
 
     dispose() {

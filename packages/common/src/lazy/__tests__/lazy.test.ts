@@ -14,11 +14,14 @@ describe('Lazy', () => {
 
         l.reset();
         expect(l.hasValue).toBeFalse();
+        expect(l.currentValue).toBeUndefined();
+        expect(l.currentValue).toBeUndefined(); // second time still undefined
 
         l.prewarm();
 
         expect(l.hasValue).toBeTrue();
         expect(l.value).toBe(VAL);
+        expect(l.currentValue).toBe(VAL);
     });
 
     test('with expire', async () => {
@@ -43,6 +46,47 @@ describe('Lazy', () => {
         expect(l.value).toBe(incrementor);
         expect(incrementor).toBe(2);
     });
+
+    it('disposes', () => {
+        {
+            const l = new Lazy(() => 42);
+            expect(l.value).toBe(42);
+            expect(l.hasValue).toBeTrue();
+            l.dispose();
+            expect(l.hasValue).toBeFalse();
+        }
+
+        {
+            const disposer = vi.fn();
+            const l = new Lazy(() => 42)
+                .withDisposer(disposer);
+
+            expect(l.value).toBe(42);
+            expect(l.hasValue).toBeTrue();
+
+            l.dispose();
+            expect(l.hasValue).toBeFalse();
+            expect(disposer).toHaveBeenCalledTimes(1);
+        }
+
+        {
+            const disposer = vi.fn();
+
+            const l = new Lazy(() => ({
+                value: 42,
+                dispose() {
+                    disposer();
+                },
+            }));
+
+            expect(l.value.value).toBe(42);
+            expect(l.hasValue).toBeTrue();
+
+            l.dispose();
+            expect(l.hasValue).toBeFalse();
+            expect(disposer).toHaveBeenCalledTimes(1);
+        }
+    });
 });
 
 describe('LazyPromise', () => {
@@ -52,16 +96,18 @@ describe('LazyPromise', () => {
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
         expect(l.hasValue).toBeFalse();
-        expect(l.busy).toBeNull();
+        expect(l.currentValue).toBeUndefined();
+        expect(l.isLoading).toBeNull();
 
         expect(l.value).toBeUndefined();
-        expect(l.busy).toBeTrue();
+        expect(l.isLoading).toBeTrue();
 
         await expect(l.promise).resolves.not.toThrow();
 
         expect(l.hasValue).toBeTrue();
-        expect(l.busy).toBeFalse();
+        expect(l.isLoading).toBeFalse();
         expect(l.value).toBe(VAL);
+        expect(l.currentValue).toBe(VAL);
 
         l.dispose();
         expect(l.hasValue).toBeFalse();
@@ -72,10 +118,10 @@ describe('LazyPromise', () => {
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
         expect(l.hasValue).toBeFalse();
-        expect(l.busy).toBeNull();
+        expect(l.isLoading).toBeNull();
 
         expect(l.value).toBeUndefined();
-        expect(l.busy).toBeTrue();
+        expect(l.isLoading).toBeTrue();
 
         // loading started when accessed `value` above
         const p = l.promise;
@@ -102,17 +148,17 @@ describe('LazyPromise', () => {
             .withExpire(expire);
 
         expect(l.hasValue).toBeFalse();
-        expect(l.busy).toBeFalsy();
+        expect(l.isLoading).toBeFalsy();
 
         expect(l.value).toBeUndefined();
-        expect(l.busy).toBeTrue();
+        expect(l.isLoading).toBeTrue();
 
         const next = incrementor + 1;
         await expect(l.promise).resolves.toBe(next);
         expect(incrementor).toBe(next);
 
         expect(l.hasValue).toBeTrue();
-        expect(l.busy).toBeFalse();
+        expect(l.isLoading).toBeFalse();
         expect(l.value).toBe(1);
         expect(expire.isExpired).toBeFalse();
         expect(expire.remainingMs).toBeLessThanOrEqual(10);
@@ -135,5 +181,26 @@ describe('LazyPromise', () => {
         expect(incrementor).toBe(3);
         expect(expire.isExpired).toBeFalse();
         expect(l.value).toBe(3);
+    });
+
+    it('disposes', async () => {
+        const disposer = vi.fn();
+
+        const l = new LazyPromise(async () => ({
+            value: 42,
+            dispose() {
+                disposer();
+            },
+        }));
+
+        await l.promise;
+
+        expect(l.value).toBeDefined();
+        expect(l.value.value).toBe(42);
+        expect(l.hasValue).toBeTrue();
+
+        l.dispose();
+        expect(l.hasValue).toBeFalse();
+        expect(disposer).toHaveBeenCalledTimes(1);
     });
 });
