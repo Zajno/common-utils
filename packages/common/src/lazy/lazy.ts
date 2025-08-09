@@ -1,7 +1,9 @@
+import { tryDispose, type IDisposable } from '../functions/disposer.js';
+import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazy } from './types.js';
 
-export class Lazy<T> implements ILazy<T> {
+export class Lazy<T> implements ILazy<T>, IDisposable, IResettableModel {
 
     protected _instance: T | undefined = undefined;
     private _expireTracker: IExpireTracker | undefined;
@@ -71,8 +73,12 @@ export class Lazy<T> implements ILazy<T> {
     }
 
     reset() {
-        if (this.hasValue && this._instance && this._disposer) {
-            this._disposer(this._instance);
+        if (this.hasValue && this._instance) {
+            if (this._disposer) {
+                this._disposer(this._instance);
+            } else {
+                tryDispose(this._instance);
+            }
         }
         this.setInstance(undefined);
     }

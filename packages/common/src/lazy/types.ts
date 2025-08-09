@@ -1,14 +1,21 @@
-import type { IDisposable } from '../functions/disposer.js';
-import type { IResetableModel } from '../models/types.js';
 
-export type ILazy<T> = IDisposable & IResetableModel & {
+/** Represents a lazily loaded value. */
+export interface ILazy<T> {
+    /** Returns current value. If not loaded, loading is triggered. */
     readonly value: T;
+
+    /** Returns whether has current value. Loading is not triggered. */
     readonly hasValue: boolean;
-    /** should not call the factory or change the value either way */
+
+    /** Returns current value or undefined if not present. Loading is not triggered. */
     readonly currentValue: T | undefined;
 };
 
-export type ILazyPromise<T> = ILazy<T> & {
-    readonly busy: boolean | null;
+/** Represents a lazily asynchronously loaded value. */
+export interface ILazyPromise<T> extends ILazy<T> {
+    /** Returns true if loading is in progress, false if loading is completed, null if loading was not initiated. Loading is not triggered. */
+    readonly isLoading: boolean | null;
+
+    /** Returns the promise for the current value. If not loaded, loading is triggered. */
     readonly promise: Promise<T>;
 };

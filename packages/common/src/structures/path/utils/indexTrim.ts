@@ -1,7 +1,15 @@
 
-export function indexTrim(str: string | null | undefined, ch: string) {
-    if (!str || str === ch || !ch) {
-        return '';
+export type TrimChar<T extends string, C extends string> = [T] extends undefined
+    ? ''
+    : T extends `${C}${infer R}`
+        ? TrimChar<R, C>
+        : T extends `${infer R}${C}`
+            ? TrimChar<R, C>
+            : T;
+
+export function indexTrim<T extends string, C extends string>(str: T | null | undefined, ch: C): TrimChar<T, C> {
+    if (!str || !ch || str as string === ch as string) {
+        return '' as TrimChar<T, C>;
     }
 
     let start = 0, end = str.length;
@@ -12,7 +20,7 @@ export function indexTrim(str: string | null | undefined, ch: string) {
     while (end > start && str[end - 1] === ch)
         --end;
 
-    return (start > 0 || end < str.length)
+    return ((start > 0 || end < str.length)
         ? str.substring(start, end)
-        : str;
+        : str) as TrimChar<T, C>;
 }

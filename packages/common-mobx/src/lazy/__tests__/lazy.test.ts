@@ -32,10 +32,10 @@ describe('LazyPromise', () => {
         const l = new LazyPromiseObservable(() => setTimeoutAsync(200).then(() => VAL));
 
         expect(l.hasValue).toBe(false);
-        expect(l.busy).toBeNull();
+        expect(l.isLoading).toBeNull();
 
         expect(l.value).toBeUndefined();
-        expect(l.busy).toBe(true);
+        expect(l.isLoading).toBe(true);
         expect(l.promise).not.toBeNull();
 
         const listener = vi.fn().mockImplementation(() => { /* no-op */ });
@@ -48,7 +48,7 @@ describe('LazyPromise', () => {
         expect(listener).toHaveBeenCalledWith(VAL);
 
         expect(l.hasValue).toBe(true);
-        expect(l.busy).toBe(false);
+        expect(l.isLoading).toBe(false);
         expect(l.value).toBe(VAL);
 
         clean();

@@ -3,38 +3,55 @@ import { Loggable } from '../logger/loggable.js';
 import { Model } from '../models/Model.js';
 import type { IMapModel, IValueModel } from '../models/types.js';
 
+/** Represents a state of a cached item. Holds a references to an actual state. */
 export type DeferredGetter<T> = {
+    /** Get current resolved value, if any, or initiates fetching. */
     readonly current: T | null | undefined;
+
+    /** Returns a promise that resolves to the current or fetching value. */
     readonly promise: Promise<T | null>;
-    readonly busy: boolean | undefined;
+
+    /** Returns true if the item is currently being fetched. Returns undefined if fetching has not started yet. */
+    readonly isLoading: boolean | undefined;
 };
 
 export namespace DeferredGetter {
     const _resolvedPromise = Promise.resolve<null>(null);
 
+    /** Empty resolved value. */
     export const Empty = {
         get current(): null { return null; },
         get promise(): Promise<null> { return _resolvedPromise; },
-        get busy() { return false; },
+        get isLoading() { return false; },
     } satisfies DeferredGetter<null>;
 }
 
 const BATCHING_DELAY = 200;
 
-/** Caches items by key which are resolve by a promise.
+/**
+ * Caches items by a key (string or another type) which are resolved by an async fetcher (`Promise`).
  *
  * Supports:
  *  - custom key adapter and parser for non-string keys.
+ *  - direct manual cache manipulation.
  *  - batching of fetches.
  *  - auto-invalidation of cached items.
 */
 export class PromiseCache<T, K = string> extends Loggable {
 
+    /** Stores resolved items in map by id. */
     protected readonly _itemsCache: IMapModel<string, T | null | undefined>;
-    protected readonly _itemsStatus: IMapModel<string, boolean>;
-    protected readonly _busyCount: IValueModel<number>;
 
+    /** Stores items loading state (loading or not) in map by id. */
+    protected readonly _itemsStatus: IMapModel<string, boolean>;
+
+    /** Stores items loading count. */
+    protected readonly _loadingCount: IValueModel<number>;
+
+    /** Stores items Promises state (if still loading) in map by id. */
     private readonly _fetchCache: IMapModel<string, Promise<T | null>>;
+
+    /** Stores items resolve timestamps (for expiration) in map by id. */
     private readonly _timestamps = new Map<string, number>();
 
     private _batch: ThrottleProcessor<K, T[]> | null = null;
@@ -43,6 +60,12 @@ export class PromiseCache<T, K = string> extends Loggable {
 
     private _version = 0;
 
+    /**
+     * Creates an instance of PromiseCache.
+     * @param fetcher Function to fetch data by key.
+     * @param keyAdapter Optional function to adapt non-string keys to strings.
+     * @param keyParser Optional function to parse string keys back to their original type.
+     */
     constructor(
         private readonly fetcher: (id: K) => Promise<T>,
         private readonly keyAdapter?: K extends string ? null : (k: K) => string,
@@ -50,26 +73,58 @@ export class PromiseCache<T, K = string> extends Loggable {
     ) {
         super();
 
-        this._busyCount = this.pure_createBusyCount();
+        this._loadingCount = this.pure_createBusyCount();
         this._itemsCache = this.pure_createItemsCache();
         this._itemsStatus = this.pure_createItemsStatus();
         this._fetchCache = this.pure_createFetchCache();
     }
 
-    public get busyCount(): number { return this._busyCount.value; }
+    public get busyCount(): number { return this._loadingCount.value; }
 
+    /**
+     * @pure @const
+     * Creates a model for tracking the loading state. Override to inject own instance, e.g. for observability.
+     *
+     * Warning: as name indicates, this should be "pure"/"const" function, i.e. should not reference `this`/`super`.
+     *
+     * @returns A value model for the loading count.
+     */
     protected pure_createBusyCount(): IValueModel<number> {
         return new Model(0);
     }
 
+    /**
+     * @pure @const
+     * Creates a map for caching resolved items by id. Override to inject own instance, e.g. for observability.
+     *
+     * Warning: as name indicates, this should be "pure"/"const" function, i.e. should not reference `this`/`super`.
+     *
+     * @returns A map model for the items cache.
+     */
     protected pure_createItemsCache(): IMapModel<string, T | null | undefined> {
         return new Map<string, T | null | undefined>();
     }
 
+    /**
+     * @pure @const
+     * Creates a map for tracking the loading state of items by id. Override to inject own instance, e.g. for observability.
+     *
+     * Warning: as name indicates, this should be "pure"/"const" function, i.e. should not reference `this`/`super`.
+     *
+     * @returns A map model for the items loading state.
+     */
     protected pure_createItemsStatus(): IMapModel<string, boolean> {
         return new Map<string, boolean>();
     }
 
+    /**
+     * @pure @const
+     * Creates a map for caching promises of items by id. Override to inject own instance, e.g. for observability.
+     *
+     * Warning: as name indicates, this should be "pure"/"const" function, i.e. should not reference `this`/`super`.
+     *
+     * @returns A map model for the items promises cache.
+     */
     protected pure_createFetchCache(): IMapModel<string, Promise<T | null>> {
         return new Map<string, Promise<T | null>>();
     }
@@ -90,6 +145,11 @@ export class PromiseCache<T, K = string> extends Loggable {
         return this.keyAdapter(k);
     }
 
+    /**
+     * Creates a logger name for this instance.
+     * @param name The name of the cache instance.
+     * @returns The logger name.
+     */
     protected getLoggerName(name: string | undefined): string {
         return `[PromiseCache:${name || '?'}]`;
     }
@@ -110,6 +170,7 @@ export class PromiseCache<T, K = string> extends Loggable {
      * Enables auto-invalidation of cached items.
      *
      * @param ms Time in milliseconds after which the item will be considered invalid. If null, auto-invalidation is disabled.
+     * @param keepInstance If true, the cached item will not be removed during invalidation, but will be set to `undefined` instead. Defaults to false.
     */
     useInvalidationTime(ms: number | null, keepInstance = false) {
         this._invalidationTimeMs = ms;
@@ -117,16 +178,29 @@ export class PromiseCache<T, K = string> extends Loggable {
         return this;
     }
 
+    /**
+     * Returns a {@link DeferredGetter} object for a specfied key.
+     *
+     * This can be used to access the current value, promise, and loading state of the item.
+     *
+     * @param key The key of the item.
+     */
     getDeferred(key: K): DeferredGetter<T> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
             get current() { return self.getCurrent(key); },
             get promise() { return self.get(key); },
-            get busy() { return self.getIsBusy(key); },
+            get isLoading() { return self.getIsBusy(key); },
         };
     }
 
+    /**
+     * Returns the loading state of an item.
+     *
+     * @param id The id of the item.
+     * @returns The loading state of the item: true if loading, false if loading completed, undefined if loading was not started yet for the specified key.
+     */
     getIsBusy(id: K): boolean | undefined {
         const key = this._pk(id);
         const res = this._itemsStatus.get(key);
@@ -137,6 +211,11 @@ export class PromiseCache<T, K = string> extends Loggable {
         return isInvalid ? undefined : res;
     }
 
+    /**
+     * Returns the current cached value for the specified key, without triggering a fetch.
+     * @param id The id of the item.
+     * @returns The current cached value of the item.
+     */
     protected _getCurrent(id: K) {
         const key = this._pk(id);
         const isInvalid = this.getIsInvalidated(key);
@@ -152,6 +231,12 @@ export class PromiseCache<T, K = string> extends Loggable {
         };
     }
 
+    /**
+     * Returns the current cached value for the specified key, optionally triggering a fetch.
+     * @param id The id of the item.
+     * @param initiateFetch If true, will initiate a fetch if the item is not cached.
+     * @returns The current cached value of the item.
+     */
     getCurrent(id: K, initiateFetch = true): T | null | undefined {
         const { item, key } = this._getCurrent(id);
         if (initiateFetch) {
@@ -162,6 +247,14 @@ export class PromiseCache<T, K = string> extends Loggable {
         return item;
     }
 
+    /**
+     * Returns a promise that resolves to the cached value of the item if loaded already, otherwise starts fetching and the promise will be resolved to the final value.
+     *
+     * Consequent calls will return the same promise until it resolves.
+     *
+     * @param id The id of the item.
+     * @returns A promise that resolves to the result, whether it's cached or freshly fetched.
+     */
     get(id: K): Promise<T | null> {
         const { item, key, isInvalid } = this._getCurrent(id);
 
@@ -186,6 +279,12 @@ export class PromiseCache<T, K = string> extends Loggable {
         return promise;
     }
 
+    /**
+     * Fetches the item asynchronously.
+     * @param id The id of the item.
+     * @param key The cache key.
+     * @returns A promise that resolves to the fetched item.
+     */
     protected _doFetchAsync = async (id: K, key: string) => {
         let isInSameVersion = true;
         try {
@@ -215,22 +314,35 @@ export class PromiseCache<T, K = string> extends Loggable {
         }
     };
 
+    /**
+     * Instantly invalidates the cached item for the specified id, like it was never fetched/accessed.
+     * @param id The id of the item.
+     */
     invalidate(id: K) {
         const key = this._pk(id);
         this._set(key, undefined, undefined, undefined);
     }
 
+    /**
+     * Updates the cached value for the specified id directly, like it was fetched already. Overrides existing value, if any.
+     * @param id The id of the item.
+     * @param value The new value to cache.
+     */
     updateValueDirectly(id: K, value: T | null) {
         const key = this._pk(id);
         this._set(key, value, undefined, undefined);
     }
 
+    /** Returns true if the item is cached or fetching was initiated. Does not initiates fetching. */
     hasKey(id: K) {
         const key = this._pk(id);
         return this._itemsCache.get(key) !== undefined || this._itemsStatus.get(key) !== undefined;
     }
 
+    /** Returns an iterator over the keys of the cached items. */
     keys(iterate: true): MapIterator<string>;
+
+    /** Returns an array of the keys of the cached items. */
     keys(): string[];
 
     keys(iterate: boolean = false) {
@@ -240,7 +352,10 @@ export class PromiseCache<T, K = string> extends Loggable {
             : Array.from(iterator);
     }
 
+    /** Returns an iterator over the parsed keys of the cached items. */
     keysParsed(iterate: true): Generator<K> | null;
+
+    /** Returns an array of the parsed keys of the cached items. */
     keysParsed(): K[] | null;
 
     keysParsed(iterate: boolean = false) {
@@ -261,9 +376,10 @@ export class PromiseCache<T, K = string> extends Loggable {
         })();
     }
 
+    /** Clears the cache and resets the loading state. */
     clear() {
         ++this._version;
-        this._busyCount.value = 0;
+        this._loadingCount.value = 0;
         this._batch?.clear();
 
         this._itemsCache.clear();
@@ -271,12 +387,18 @@ export class PromiseCache<T, K = string> extends Loggable {
         this._fetchCache.clear();
     }
 
+    /** @internal updates all caches states at once. */
     protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, busy: boolean | undefined) {
         _setX(key, this._fetchCache, promise);
         _setX(key, this._itemsStatus, busy);
         _setX(key, this._itemsCache, item);
     }
 
+    /**
+     * Checks if the cached item for the specified key is invalidated (expired).
+     * @param key The cache key.
+     * @returns True if the item is invalidated, false otherwise.
+     */
     protected getIsInvalidated(key: string) {
         if (!this._invalidationTimeMs) {
             return false;
@@ -286,41 +408,41 @@ export class PromiseCache<T, K = string> extends Loggable {
         return ts != null && Date.now() - ts > this._invalidationTimeMs;
     }
 
-    /** @override */
+    /** Updates the loading status for the specified key. Override to add a hook. */
     protected setStatus(key: string, status: boolean) {
         this.logger.log(key, 'status update:', status);
         this._itemsStatus.set(key, status);
     }
 
-    /** @override */
+    /** Updates the promise for the specified key. Override to add a hook. */
     protected setPromise(key: string, promise: Promise<T | null>) {
         this._fetchCache.set(key, promise);
     }
 
-    /** @override */
+    /** Stores the result for the specified key. Override to add a hook. */
     protected storeResult(key: string, res: T | null) {
         this._itemsCache.set(key, res);
         this._timestamps.set(key, Date.now());
     }
 
-    /** @override */
+    /** Hooks into the fetch process before it starts. */
     protected onBeforeFetch(_key: string) {
-        this._busyCount.value = this._busyCount.value + 1;
+        this._loadingCount.value = this._loadingCount.value + 1;
     }
 
-    /** @override */
-    protected prepareResult(res: T | null) {
-        return res || null;
-    }
-
-    /** @override */
+    /** Hooks into the fetch process after it completes. */
     protected onFetchComplete(key: string) {
-        this._busyCount.value = this._busyCount.value - 1;
+        this._loadingCount.value = this._loadingCount.value - 1;
         this._fetchCache.delete(key);
         this._itemsStatus.set(key, false);
     }
 
-    /** @pure */
+    /** Hooks into the result preparation process, before it's stored into the cache. */
+    protected prepareResult(res: T | null) {
+        return res || null;
+    }
+
+    /** @pure Performs a fetch operation in batch mode if available, otherwise uses the regular fetch. */
     protected async tryFetchInBatch(id: K): Promise<T | null> {
         const fetchWrap = () => this.fetcher(id).catch(err => {
             this.logger.warn('fetcher failed', id, err);

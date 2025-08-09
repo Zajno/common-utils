@@ -15,15 +15,15 @@
         "fix-esm-paths": "fix-esm-import-path packages/*/src"
     },
     "devDependencies": {
-        "@faker-js/faker": "^9.7.0",
-        "@types/node": "^22.15.3",
-        "@vitest/coverage-istanbul": "^3.1.2",
+        "@faker-js/faker": "^9.9.0",
+        "@types/node": "^22.17.1",
+        "@vitest/coverage-istanbul": "^3.2.4",
         "cpy-cli": "^5.0.0",
         "fast-check": "^3.23.2",
-        "fix-esm-import-path": "^1.10.1",
-        "jest-extended": "^4.0.2",
+        "fix-esm-import-path": "^1.10.3",
+        "jest-extended": "^6.0.0",
         "rimraf": "^6.0.1",
         "scripty": "^2.1.1",
-        "vitest": "^3.1.2"
+        "vitest": "^3.2.4"
     }
 }

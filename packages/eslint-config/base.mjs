@@ -73,7 +73,7 @@ export default tseslint.config(
             }],
 
             'prefer-spread': 0,
-            '@stylistic/func-call-spacing': 1,
+            '@stylistic/function-call-spacing': 1,
             '@typescript-eslint/require-await': 0,
             'block-spacing': 1,
 
@@ -85,7 +85,6 @@ export default tseslint.config(
             curly: 'off',
             'default-case': 'warn',
             'eol-last': 1,
-            'func-call-spacing': 0,
             'guard-for-in': 'error',
             'id-blacklist': ['error', 'any', 'number', 'String', 'string', 'Boolean', 'boolean'],
             'id-match': 'error',

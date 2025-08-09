@@ -113,16 +113,16 @@ describe('PromiseCache observable', () => {
         const deferred = cache.getDeferred('1');
 
         const doPass = async () => {
-            // busy should be undefined when item is invalidated
-            expect(deferred.busy).toBe(undefined);
+            // isLoading should be undefined when item is invalidated
+            expect(deferred.isLoading).toBe(undefined);
             expect(deferred.current).toBeUndefined();
-            // here busy should be true since fetch is in progress
-            expect(deferred.busy).toBe(true);
+            // here isLoading should be true since fetch is in progress
+            expect(deferred.isLoading).toBe(true);
 
             await setTimeoutAsync(10);
 
             expect(deferred.current).toStrictEqual({ id: '1' });
-            expect(deferred.busy).toBe(false);
+            expect(deferred.isLoading).toBe(false);
 
             expect(fetcher).toHaveBeenCalledTimes(1);
             fetcher.mockClear();
@@ -175,16 +175,16 @@ describe('PromiseCache observable', () => {
 
 
         // PASS 1 - initial fetch
-        // busy should be undefined when item is empty
-        expect(deferred.busy).toBe(undefined);
+        // isLoading should be undefined when item is empty
+        expect(deferred.isLoading).toBe(undefined);
         expect(deferred.current).toBeUndefined();
-        // here busy should be true since fetch is in progress
-        expect(deferred.busy).toBe(true);
+        // here isLoading should be true since fetch is in progress
+        expect(deferred.isLoading).toBe(true);
 
         await setTimeoutAsync(5);
 
         expect(deferred.current).toStrictEqual({ id: '1' });
-        expect(deferred.busy).toBe(false);
+        expect(deferred.isLoading).toBe(false);
 
         expect(fetcher).toHaveBeenCalledTimes(1);
         fetcher.mockClear();
@@ -196,20 +196,20 @@ describe('PromiseCache observable', () => {
 
         // PASS 2 - re-fetch after invalidation
 
-        expect(deferred.busy).toBe(undefined);
+        expect(deferred.isLoading).toBe(undefined);
         expect(fetcher).toHaveBeenCalledTimes(0);
 
         expect(deferred.current).toStrictEqual({ id: '1' }); // returning old value
 
         expect(handler).toHaveBeenCalledTimes(0); // no reaction
 
-        // here busy should be true since fetch is in progress
-        expect(deferred.busy).toBe(true);
+        // here isLoading should be true since fetch is in progress
+        expect(deferred.isLoading).toBe(true);
 
         await setTimeoutAsync(5);
 
         expect(deferred.current).toStrictEqual({ id: '1' });
-        expect(deferred.busy).toBe(false);
+        expect(deferred.isLoading).toBe(false);
 
         expect(fetcher).toHaveBeenCalledTimes(1);
         fetcher.mockClear();

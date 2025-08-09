@@ -2,13 +2,13 @@ import { observable, computed, makeObservable, reaction, action, runInAction } f
 import { createLazy } from '@zajno/common/lazy/light';
 import { FlagModel, type ILabeledFlagModel } from './FlagModel.js';
 import { ValidatableModel } from './Validatable.js';
-import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
+import type { IValueModel, IResettableModel } from '@zajno/common/models/types';
 import { withLabel } from '@zajno/common/models/wrappers';
 import { Getter } from '@zajno/common/types/getter';
 import { Disposer, type IDisposable } from '@zajno/common/functions/disposer';
 import { NumberModel } from './NumberModel.js';
 
-export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string | null>, IResetableModel, IDisposable {
+export class Select<T = any> extends ValidatableModel<T> implements IValueModel<string | null>, IResettableModel, IDisposable {
     private _index: IValueModel<number> = new NumberModel();
 
     private readonly _items: Getter<readonly T[]>;

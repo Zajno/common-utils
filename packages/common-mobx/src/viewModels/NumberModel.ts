@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from 'mobx';
-import type { IValueModel, IResetableModel } from '@zajno/common/models/types';
+import type { IValueModel, IResettableModel } from '@zajno/common/models/types';
 
-export interface INumberModel extends IResetableModel {
+export interface INumberModel extends IResettableModel {
     value: number;
 }
 

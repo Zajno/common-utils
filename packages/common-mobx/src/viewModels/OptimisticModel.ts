@@ -1,4 +1,4 @@
-import type { IResetableModel, IValueModel } from '@zajno/common/models/types';
+import type { IResettableModel, IValueModel } from '@zajno/common/models/types';
 import { Getter } from '@zajno/common/types/getter';
 import { ValueModel } from './ValueModel.js';
 
@@ -13,7 +13,7 @@ import { ValueModel } from './ValueModel.js';
  *
  * Otherwise, if the result is truthy, the model will keep the new value, but will not read it from the getter. This is helpful is the getter can return incorrect value right after the change.
  */
-export class OptimisticModel<T> implements IValueModel<T>, IResetableModel {
+export class OptimisticModel<T> implements IValueModel<T>, IResettableModel {
 
     private readonly _model: ValueModel<T>;
 

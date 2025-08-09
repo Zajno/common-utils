@@ -11,7 +11,7 @@ export interface ILabel<T> {
     readonly label: T;
 }
 
-export interface IResetableModel {
+export interface IResettableModel {
     readonly reset: () => void;
     readonly isDefault?: boolean;
 }
