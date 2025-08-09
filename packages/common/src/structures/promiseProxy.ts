@@ -18,19 +18,27 @@ type NoForbiddenKeys<T> = {
     [K in keyof T]: K extends ForbiddenKeys ? never : T[K];
 };
 
-type Options<T, TFnKeys, TWrap, TLazy> = {
+interface LazyPromiseCtor<K> {
+    new (loader: () => Promise<K>): LazyPromise<K>;
+}
+
+type Options<T, TFnKeys, TWrap, TLazy extends LazyPromiseCtor<T>> = {
+    /** Function returning a promise that resolves to a proxied object */
     loader: () => Promise<T>;
+
+    /** An array of keys that should be treated as functions so that they can be called before the object is resolved */
     fnKeys?: TFnKeys[];
+
+    /** An object that will be used as a wrapper for the proxied object. Can contain any fields that will be copied to the resolved object */
     wrap?: TWrap;
+
+    /** A constructor that creates {@link {LazyPromise}} instance for handling loader */
     lazy?: TLazy;
 };
 
 /**
- * Creates a proxy object that will be resolved to the object returned by the loader function. // Thanks CoPilot for this comment :)
- *
- * @param loader a function returning a promise that resolves to a proxied object
- * @param fnKeys an array of keys that should be treated as functions so that they can be called before the object is resolved
- * @param wrap an object that will be used as a wrapper for the proxied object. can contain any fields that will be copied to the resolved object
+ * Creates a proxy object that will be resolved to the object returned by the loader function.
+ * @param options - Options for creating the proxy, see {@link Options}
  * @returns a proxy object that will be resolved to the object returned by the loader function
  */
 export function createPromiseProxy<T extends NoForbiddenKeys<T>, TFnKeys extends AllowedFnKeys<T> = never, TWrap extends object = object>(

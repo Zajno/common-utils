@@ -10,7 +10,7 @@ describe('PromiseCache', () => {
 
     it('Empty Deferred Getter', async () => {
         expect(DeferredGetter.Empty.current).toBeNull();
-        expect(DeferredGetter.Empty.busy).toBe(false);
+        expect(DeferredGetter.Empty.isLoading).toBe(false);
 
         await expect(DeferredGetter.Empty.promise).resolves.toBeNull();
     });
@@ -34,7 +34,7 @@ describe('PromiseCache', () => {
         let busyCount = 0;
         for (let i = 0; i < COUNT; ++i) {
             const curr = cache.getDeferred(TEST_ID);
-            if (!curr.current && curr.busy) {
+            if (!curr.current && curr.isLoading) {
                 ++busyCount;
             }
         }
@@ -125,7 +125,7 @@ describe('PromiseCache', () => {
 
         const def = cache.getDeferred(1);
         expect(def.current).not.toBeUndefined();
-        expect(def.busy).toBeFalsy();
+        expect(def.isLoading).toBeFalsy();
         await expect(def.promise).resolves.toStrictEqual(getRes(1));
     });
 
@@ -328,7 +328,7 @@ describe('PromiseCache', () => {
         await setTimeoutAsync(105);
 
         expect(cache.getCurrent('1', false)).toBe(previous); // value invalidated but old is returned
-        expect(cache.getDeferred('1').busy).toBeUndefined(); // should indicate that cache is in undefined state
+        expect(cache.getDeferred('1').isLoading).toBeUndefined(); // should indicate that cache is in undefined state
 
         const nextPromise = cache.get('1');
         await expect(nextPromise).resolves.toBeTruthy();

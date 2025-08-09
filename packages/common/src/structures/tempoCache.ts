@@ -45,7 +45,7 @@ export namespace TempoCache {
      *
      * Note a limitation: calling `reset` (or changing the stored value directly in other way) on `lazy` will not affect the value cached by `TempoCache` instance.
     */
-    export function createFromLazy<T>(lazy: ILazy<T>, lifetimeMs: number) {
+    export function createFromLazy<T>(lazy: ILazy<T> & IResetableModel, lifetimeMs: number) {
         const factory = createFactory(lazy, 'value');
         return new TempoCache(factory, lifetimeMs);
     }
@@ -55,7 +55,7 @@ export namespace TempoCache {
      *
      * Note a limitation: calling `reset` (or changing the stored value directly in other way) on `lazy` will not affect the value cached by `TempoCache` instance.
     */
-    export function createFromLazyPromise<T>(lazy: ILazyPromise<T>, lifetimeMs: number) {
+    export function createFromLazyPromise<T>(lazy: ILazyPromise<T> & IResetableModel, lifetimeMs: number) {
         const factory = createFactory(lazy, 'promise');
         return new TempoCache(factory, lifetimeMs);
     }
