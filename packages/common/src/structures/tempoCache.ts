@@ -1,5 +1,5 @@
 import type { ILazy, ILazyPromise } from '../lazy/types.js';
-import type { IResetableModel } from '../models/types.js';
+import type { IResettableModel } from '../models/types.js';
 import { ExpireTracker } from './expire.js';
 
 /**
@@ -31,7 +31,7 @@ export class TempoCache<T> {
 /* istanbul ignore next -- @preserve */
 export namespace TempoCache {
 
-    function createFactory<T extends IResetableModel, P extends keyof T>(source: T, key: P) {
+    function createFactory<T extends IResettableModel, P extends keyof T>(source: T, key: P) {
         return () => {
             // each time factory is called means value is invalidated
             // so we need to reset the lazy
@@ -45,7 +45,7 @@ export namespace TempoCache {
      *
      * Note a limitation: calling `reset` (or changing the stored value directly in other way) on `lazy` will not affect the value cached by `TempoCache` instance.
     */
-    export function createFromLazy<T>(lazy: ILazy<T> & IResetableModel, lifetimeMs: number) {
+    export function createFromLazy<T>(lazy: ILazy<T> & IResettableModel, lifetimeMs: number) {
         const factory = createFactory(lazy, 'value');
         return new TempoCache(factory, lifetimeMs);
     }
@@ -55,7 +55,7 @@ export namespace TempoCache {
      *
      * Note a limitation: calling `reset` (or changing the stored value directly in other way) on `lazy` will not affect the value cached by `TempoCache` instance.
     */
-    export function createFromLazyPromise<T>(lazy: ILazyPromise<T> & IResetableModel, lifetimeMs: number) {
+    export function createFromLazyPromise<T>(lazy: ILazyPromise<T> & IResettableModel, lifetimeMs: number) {
         const factory = createFactory(lazy, 'promise');
         return new TempoCache(factory, lifetimeMs);
     }

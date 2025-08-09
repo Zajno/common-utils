@@ -1,8 +1,8 @@
-import type { IResetableModel, IValueModel } from './types.js';
+import type { IResettableModel, IValueModel } from './types.js';
 import { Getter } from '../types/getter.js';
 import type { Nullable } from '../types/misc.js';
 
-export class Model<T> implements IValueModel<Nullable<T>>, IResetableModel {
+export class Model<T> implements IValueModel<Nullable<T>>, IResettableModel {
     private _value: Getter<Nullable<T>>;
 
     private readonly _defaultValue: Getter<Nullable<T>>;

@@ -1,9 +1,9 @@
 import { tryDispose, type IDisposable } from '../functions/disposer.js';
-import type { IResetableModel } from '../models/types.js';
+import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazyPromise } from './types.js';
 
-export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResetableModel {
+export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettableModel {
 
     private _instance: T | undefined = undefined;
     private _isLoading: boolean | null = null;

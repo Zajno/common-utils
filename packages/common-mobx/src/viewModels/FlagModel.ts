@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from 'mobx';
-import type { IResetableModel, ILabel, IValueModel } from '@zajno/common/models/types';
+import type { IResettableModel, ILabel, IValueModel } from '@zajno/common/models/types';
 
-export interface IFlagModel extends IValueModel<boolean>, IResetableModel {
+export interface IFlagModel extends IValueModel<boolean>, IResettableModel {
     toggle: () => void;
     setTrue: () => boolean | void;
     setFalse: () => boolean | void;

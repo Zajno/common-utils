@@ -1,5 +1,5 @@
 import { Model } from './Model.js';
-import type { IResetableModel, IValueModel } from './types.js';
+import type { IResettableModel, IValueModel } from './types.js';
 
 export type LoadingWorker<T> = () => (T | Promise<T>);
 
@@ -31,9 +31,9 @@ export async function withLoading<T>(this: void, model: IValueModel<boolean>, cb
     }
 }
 
-export class LoadingModel implements IValueModel<boolean>, IResetableModel {
+export class LoadingModel implements IValueModel<boolean>, IResettableModel {
 
-    protected readonly _number: IValueModel<number> & IResetableModel;
+    protected readonly _number: IValueModel<number> & IResettableModel;
     protected _firstInit: boolean;
 
     /**
@@ -83,7 +83,7 @@ export class LoadingModel implements IValueModel<boolean>, IResetableModel {
     /** override me
      *
      * Called in the ctor. Should be pure and should NOT access `this`. */
-    protected pureConstructNumberModel(): IValueModel<number> & IResetableModel {
+    protected pureConstructNumberModel(): IValueModel<number> & IResettableModel {
         return new Model<number>(0);
     }
 }
