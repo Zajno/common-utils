@@ -15,7 +15,7 @@ export class Lazy<T> implements ILazy<T>, IDisposable, IResettableModel {
 
     get value() {
         this.ensureInstance();
-        return this._instance!;
+        return this._instance as T;
     }
 
     get currentValue() {

@@ -1,10 +1,11 @@
-import { Lazy } from '../lazy.js';
-import { LazyPromise } from '../promise.js';
+import { describe, test } from 'vitest';
 import { setTimeoutAsync } from '../../async/timeout.js';
 import { ExpireTracker } from '../../structures/expire.js';
+import { Lazy } from '../lazy.js';
+import { LazyPromise } from '../promise.js';
 
 describe('Lazy', () => {
-    it('simple', () => {
+    test('simple', () => {
         const VAL = 'abc';
         const l = new Lazy(() => VAL);
 
@@ -47,7 +48,7 @@ describe('Lazy', () => {
         expect(incrementor).toBe(2);
     });
 
-    it('disposes', () => {
+    test('disposes', () => {
         {
             const l = new Lazy(() => 42);
             expect(l.value).toBe(42);
@@ -91,7 +92,7 @@ describe('Lazy', () => {
 
 describe('LazyPromise', () => {
 
-    it('simple', async () => {
+    test('simple', async () => {
         const VAL = 'abc';
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
@@ -113,7 +114,7 @@ describe('LazyPromise', () => {
         expect(l.hasValue).toBeFalse();
     });
 
-    it('setInstance', async () => {
+    test('setInstance', async () => {
         const VAL = 'abc1';
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
@@ -183,7 +184,7 @@ describe('LazyPromise', () => {
         expect(l.value).toBe(3);
     });
 
-    it('disposes', async () => {
+    test('disposes', async () => {
         const disposer = vi.fn();
 
         const l = new LazyPromise(async () => ({
@@ -196,11 +197,57 @@ describe('LazyPromise', () => {
         await l.promise;
 
         expect(l.value).toBeDefined();
-        expect(l.value.value).toBe(42);
+        expect(l.value?.value).toBe(42);
         expect(l.hasValue).toBeTrue();
 
         l.dispose();
         expect(l.hasValue).toBeFalse();
         expect(disposer).toHaveBeenCalledTimes(1);
     });
+
+    test('with initial value', async () => {
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            return { result: 42 };
+        }, { result: 10 });
+
+        expect(lazy.hasValue).toBeFalse();
+        expect(lazy.isLoading).toBeNull();
+
+        expect(lazy.value.result).toBe(10);
+        expect(lazy.isLoading).toBeTrue();
+
+        await expect(lazy.promise).resolves.toEqual({ result: 42 });
+
+        expect(lazy.value.result).toBe(42);
+        expect(lazy.hasValue).toBeTrue();
+        expect(lazy.isLoading).toBeFalse();
+    });
+
+    test('with no initial value', async () => {
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            return { result: 42 };
+        });
+
+        expect(lazy.hasValue).toBeFalse();
+        expect(lazy.isLoading).toBeNull();
+        expect(lazy.currentValue).toBeUndefined();
+
+        expect(lazy.value).toBeUndefined();
+        expect(() => {
+            // @ts-expect-error "lazy.value" should be undefined, so expecting error here is correct
+            return lazy.value.result;
+        }).toThrow();
+
+        expect(lazy.isLoading).toBeTrue();
+
+        await expect(lazy.promise).resolves.toEqual({ result: 42 });
+
+        // @ts-expect-error "lazy.value" should be possibly undefined, so expecting error here is correct
+        expect(lazy.value.result).toBe(42);
+        expect(lazy.hasValue).toBeTrue();
+        expect(lazy.isLoading).toBeFalse();
+    });
+
 });

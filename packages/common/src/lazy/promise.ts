@@ -3,19 +3,31 @@ import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazyPromise } from './types.js';
 
-export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettableModel {
+type ValueType<T, TInitial> = TInitial extends undefined ? T | undefined : T;
+type CtorArgs<T, TInitial> = TInitial extends undefined
+    ? [factory: () => Promise<T>, initial?: TInitial]
+    : [factory: () => Promise<T>, initial: TInitial];
 
-    private _instance: T | undefined = undefined;
+export class LazyPromise<T, TInitial extends T | undefined = undefined> implements ILazyPromise<ValueType<T, TInitial>>, IDisposable, IResettableModel {
+
+    private readonly _factory: () => Promise<T>;
+
+    private readonly _initial: TInitial;
+    private _instance: ValueType<T, TInitial>;
+
     private _isLoading: boolean | null = null;
 
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
 
     constructor(
-        private readonly _factory: () => Promise<T>,
-        private readonly initial: T | undefined = undefined,
+        ...args: CtorArgs<T, TInitial>
     ) {
-        this._instance = initial;
+        const [factory, initial] = args;
+        this._factory = factory;
+        this._initial = initial as TInitial;
+
+        this._instance = initial as ValueType<T, TInitial>;
     }
 
     get isLoading() { return this._isLoading; }
@@ -26,13 +38,13 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
         return this._promise!;
     }
 
-    get value() {
+    get value(): ValueType<T, TInitial> {
         this.ensureInstanceLoading();
-        return this._instance!;
+        return this._instance;
     }
 
     /** does not calls factory */
-    get currentValue() {
+    get currentValue(): ValueType<T, TInitial> {
         return this._instance;
     }
 
@@ -62,13 +74,13 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
         return res;
     }
 
-    public setInstance(res: T | undefined) {
+    public setInstance(res: T) {
         this._isLoading = false;
 
         // refresh promise so it won't keep old callbacks
         // + make sure it's resolved with the freshest value
         // also do this before setting the instance... just in case :)
-        this._promise = Promise.resolve(res!);
+        this._promise = Promise.resolve(res);
 
         this._instance = res;
 
@@ -84,7 +96,7 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
 
         const wasDisposed = tryDispose(this._instance);
 
-        this._instance = this.initial;
+        this._instance = this._initial as ValueType<T, TInitial>;
 
         const p = this._promise;
         this._promise = undefined;
