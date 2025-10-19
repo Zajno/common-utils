@@ -250,4 +250,147 @@ describe('LazyPromise', () => {
         expect(lazy.isLoading).toBeFalse();
     });
 
+    test('refresh method', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async (refreshing) => {
+            await setTimeoutAsync(10);
+            counter++;
+            return { value: counter, refreshing };
+        });
+
+        // Initial load
+        await lazy.promise;
+        expect(lazy.value?.value).toBe(1);
+        expect(lazy.value?.refreshing).toBeUndefined();
+        expect(counter).toBe(1);
+
+        // Refresh
+        const refreshResult = await lazy.refresh();
+        expect(refreshResult.value).toBe(2);
+        expect(refreshResult.refreshing).toBe(true);
+        expect(lazy.value?.value).toBe(2);
+        expect(counter).toBe(2);
+
+        // Multiple concurrent refreshes - last one wins
+        const refresh1 = lazy.refresh();
+        const refresh2 = lazy.refresh();
+        const refresh3 = lazy.refresh();
+
+        await Promise.all([refresh1, refresh2, refresh3]);
+
+        // Only the last refresh should update the instance
+        expect(lazy.value?.value).toBe(5);
+        expect(counter).toBe(5);
+    });
+
+    test('refresh with error handling', async () => {
+        let shouldFail = false;
+        let counter = 0;
+
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            counter++;
+            if (shouldFail) {
+                throw new Error('Refresh failed');
+            }
+            return { value: counter };
+        });
+
+        // Initial successful load
+        await lazy.promise;
+        expect(lazy.value?.value).toBe(1);
+        expect(lazy.error).toBeNull();
+
+        // Refresh with error
+        shouldFail = true;
+        const result = await lazy.refresh();
+        expect(result.value).toBe(1); // returns current instance on error
+        expect(lazy.error).toBe('Refresh failed');
+        expect(lazy.value?.value).toBe(1); // value unchanged
+
+        // Refresh successfully after error
+        shouldFail = false;
+        await lazy.refresh();
+        expect(lazy.value?.value).toBe(3);
+        // Error should be cleared on successful refresh
+        expect(lazy.error).toBeNull();
+    });
+
+    test('error handling', () => {
+        {
+            // Test with Error object
+            const l = new Lazy(() => {
+                throw new Error('Error object message');
+            });
+
+            expect(l.hasValue).toBeFalse();
+            expect(l.error).toBeNull();
+            expect(l.value).toBeUndefined();
+            expect(l.hasValue).toBeFalse();
+            expect(l.error).toBe('Error object message');
+        }
+
+        {
+            // Test multiple accesses with error
+            const l = new Lazy(() => {
+                throw new Error('Factory error');
+            });
+
+            expect(l.value).toBeUndefined();
+            expect(l.error).toBe('Factory error');
+            expect(l.value).toBeUndefined();
+            expect(l.error).toBe('Factory error');
+        }
+
+        {
+            // Test error is cleared on reset
+            const l = new Lazy(() => {
+                throw new Error('error');
+            });
+
+            expect(l.value).toBeUndefined();
+            expect(l.error).toBe('error');
+
+            l.reset();
+            expect(l.error).toBeNull();
+        }
+    });
+
+    test('error handling with LazyPromise', async () => {
+        {
+            // Test with Error object
+            const l = new LazyPromise(async () => {
+                throw new Error('async error message');
+            });
+
+            expect(l.error).toBeNull();
+            await l.promise;
+            expect(l.error).toBe('async error message');
+            expect(l.hasValue).toBeTrue();
+            expect(l.value).toBeUndefined();
+        }
+
+        {
+            // Test with another Error
+            const l = new LazyPromise(async () => {
+                throw new Error('async Error object');
+            });
+
+            await l.promise;
+            expect(l.error).toBe('async Error object');
+        }
+
+        {
+            // Test with initial value and error - returns to initial
+            const l = new LazyPromise<string, string>(async () => {
+                throw new Error('error occurred');
+            }, 'initial value');
+
+            expect(l.value).toBe('initial value');
+            await l.promise;
+            expect(l.error).toBe('error occurred');
+            expect(l.value).toBe('initial value'); // falls back to initial
+        }
+    });
+
 });

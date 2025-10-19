@@ -26,13 +26,17 @@ export class LazyPromiseObservable<T, TInitial extends T | undefined = undefined
 
         makeObservable<
             LazyPromise<T, TInitial>,
-            '_instance' | '_isLoading' | 'ensureInstanceLoading' | 'onResolved'
+            '_instance' | '_isLoading' | 'ensureInstanceLoading' | 'onResolved' | 'onRejected' | '_error' | 'setError' | 'clearError'
         >(this, {
             _instance: ObservableTypes.toDecorator(observableType),
             _isLoading: observable,
+            _error: observable,
             setInstance: action,
+            setError: action,
+            clearError: action,
             ensureInstanceLoading: action,
             onResolved: action,
+            onRejected: action,
             reset: action,
         });
     }

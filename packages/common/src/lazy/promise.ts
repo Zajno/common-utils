@@ -3,9 +3,11 @@ import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazyPromise } from './types.js';
 
+type Factory<T> = (refreshing?: boolean) => Promise<T>;
+
 export class LazyPromise<T, TInitial extends T | undefined = undefined> implements ILazyPromise<T, TInitial>, IDisposable, IResettableModel {
 
-    private readonly _factory: () => Promise<T>;
+    private readonly _factory: Factory<T>;
     private readonly _initial: TInitial;
 
     private _instance: T | TInitial;
@@ -14,8 +16,11 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
 
+    private _lastRefreshingPromise: Promise<T> | null = null;
+    private _error: string | null = null;
+
     constructor(
-        factory: () => Promise<T>,
+        factory: Factory<T>,
         initial?: TInitial,
     ) {
         this._factory = factory;
@@ -24,10 +29,11 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         this._instance = initial as T | TInitial; // as ILazyValue<T, TInitial>;
     }
 
-    get isLoading() { return this._isLoading; }
-    get hasValue() { return this._isLoading === false; }
+    public get isLoading() { return this._isLoading; }
+    public get hasValue() { return this._isLoading === false; }
+    public get error() { return this._error; }
 
-    get promise() {
+    public get promise() {
         this.ensureInstanceLoading();
         return this._promise!;
     }
@@ -38,7 +44,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     /** does not calls factory */
-    get currentValue(): T | TInitial {
+    public get currentValue(): T | TInitial {
         return this._instance;
     }
 
@@ -55,8 +61,14 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
 
         if (this._isLoading === null) {
             this._isLoading = true;
-            this._promise = this._factory().then(this.onResolved.bind(this));
+            this.doLoad();
         }
+    }
+
+    protected doLoad() {
+        this._promise = this._factory()
+            .then(this.onResolved.bind(this))
+            .catch(this.onRejected.bind(this));
     }
 
     protected onResolved(res: T) {
@@ -68,8 +80,17 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         return res;
     }
 
+    protected onRejected(e: unknown) {
+        this._isLoading = false;
+        this._instance = this._initial;
+        this._promise = Promise.resolve(this._initial as T);
+        this.setError(e);
+        return this._initial as T;
+    }
+
     public setInstance(res: T) {
         this._isLoading = false;
+        this.clearError(); // clear error on successful set
 
         // refresh promise so it won't keep old callbacks
         // + make sure it's resolved with the freshest value
@@ -85,8 +106,42 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         return res;
     }
 
-    reset() {
+    protected setError(err: unknown) {
+        this._error = this.parseError(err);
+    }
+
+    protected clearError() {
+        this._error = null;
+    }
+
+    public async refresh(): Promise<T> {
+        let myPromise: Promise<T> | null = null;
+        try {
+            myPromise = this._factory(true);
+
+            // every new refresh overrides the previous one
+            // so this one becomes "last"
+            // and previous becomes stale and won't update the value when it resolves
+            this._lastRefreshingPromise = myPromise;
+            const fresh = await myPromise;
+            if (this._lastRefreshingPromise === myPromise) {
+                this.setInstance(fresh);
+            }
+
+            return fresh;
+        } catch (e: unknown) {
+            this.setError(e);
+            return this._instance as T;
+        } finally {
+            if (myPromise != null && this._lastRefreshingPromise === myPromise) {
+                this._lastRefreshingPromise = null;
+            }
+        }
+    }
+
+    public reset() {
         this._isLoading = null;
+        this.clearError();
 
         const wasDisposed = tryDispose(this._instance);
 
@@ -104,7 +159,17 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         }
     }
 
-    dispose() {
+    public dispose() {
         this.reset();
+    }
+
+    protected parseError(err: unknown): string {
+        if (typeof err === 'string') {
+            return err;
+        }
+        if (err instanceof Error) {
+            return err.message;
+        }
+        return String(err) || 'Unknown error';
     }
 }
