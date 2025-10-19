@@ -1,5 +1,6 @@
 import { reaction } from 'mobx';
 import { setTimeoutAsync } from '@zajno/common/async/timeout';
+import { LazyPromise } from '@zajno/common/lazy/promise';
 
 import { LazyObservable, LazyPromiseObservable } from '../observable.js';
 
@@ -161,5 +162,103 @@ describe('LazyPromise', () => {
         expect(errorListener).toHaveBeenCalledWith(null);
 
         cleanError();
+    });
+
+    it('extension returns LazyPromiseObservable instance', async () => {
+        const original = new LazyPromiseObservable(async () => 'hello');
+
+        // Simple logging extension
+        const logs: string[] = [];
+        const extended = original.extend({
+            overrideFactory: (factory) => async (refreshing) => {
+                logs.push(`loading (refreshing=${refreshing})`);
+                const result = await factory(refreshing);
+                logs.push(`loaded: ${result}`);
+                return result;
+            },
+        });
+
+        // Extended instance should still be LazyPromiseObservable
+        expect(extended).toBeInstanceOf(LazyPromiseObservable);
+        expect(extended).toBeInstanceOf(LazyPromise);
+
+        // MobX observability should work
+        const valueListener = vi.fn();
+        const cleanValue = reaction(() => extended.value, val => valueListener(val));
+
+        await extended.promise;
+        expect(valueListener).toHaveBeenCalledWith('hello');
+        expect(logs).toEqual(['loading (refreshing=false)', 'loaded: hello']);
+
+        cleanValue();
+    });
+
+    it('extension with shape preserves MobX observability', async () => {
+        const original = new LazyPromiseObservable(async () => 42);
+
+        // Extension that adds a custom method
+        const extended = original.extend<{ double: () => number | undefined }>({
+            extendShape: (instance) => {
+                return Object.assign(instance, {
+                    double: () => {
+                        const val = instance.currentValue;
+                        return val !== undefined ? val * 2 : undefined;
+                    },
+                });
+            },
+        });
+
+        // Should still be LazyPromiseObservable
+        expect(extended).toBeInstanceOf(LazyPromiseObservable);
+
+        // MobX observability should work for both original and extended properties
+        const valueListener = vi.fn();
+        const errorListener = vi.fn();
+
+        const cleanValue = reaction(() => extended.value, val => valueListener(val));
+        const cleanError = reaction(() => extended.error, err => errorListener(err));
+
+        await extended.promise;
+        expect(valueListener).toHaveBeenCalledWith(42);
+        expect(extended.double()).toBe(84);
+
+        cleanValue();
+        cleanError();
+    });
+
+    it('chained extensions preserve LazyPromiseObservable type', async () => {
+        const original = new LazyPromiseObservable(async () => 10);
+
+        const logs: string[] = [];
+        const withLogging = original.extend({
+            overrideFactory: (factory) => async (refreshing) => {
+                logs.push('loading');
+                return factory(refreshing);
+            },
+        });
+
+        const withRetry = withLogging.extend({
+            overrideFactory: (factory) => async (refreshing) => {
+                try {
+                    return await factory(refreshing);
+                } catch {
+                    logs.push('retrying');
+                    return factory(refreshing);
+                }
+            },
+        });
+
+        // All should be LazyPromiseObservable
+        expect(withLogging).toBeInstanceOf(LazyPromiseObservable);
+        expect(withRetry).toBeInstanceOf(LazyPromiseObservable);
+
+        const listener = vi.fn();
+        const clean = reaction(() => withRetry.value, val => listener(val));
+
+        await withRetry.promise;
+        expect(listener).toHaveBeenCalledWith(10);
+        expect(logs).toEqual(['loading']);
+
+        clean();
     });
 });

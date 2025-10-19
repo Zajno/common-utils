@@ -49,3 +49,52 @@ export interface ILazyPromise<T, TInitial extends T | undefined = undefined> ext
      */
     refresh(): Promise<T>;
 };
+
+export type LazyFactory<T> = (refreshing?: boolean) => Promise<T>;
+
+/**
+ * Extension for LazyPromise instances.
+ *
+ * @template T - The type of value the extension is compatible with. Use `any` for universal extensions.
+ * @template TExtShape - Additional shape added to the extended instance (properties/methods).
+ *
+ * @example
+ * ```typescript
+ * // Type-specific extension (only for numbers)
+ * const doublingExtension: ILazyPromiseExtension<number> = {
+ *   overrideFactory: (original) => async (refreshing) => {
+ *     const result = await original(refreshing);
+ *     return result * 2;
+ *   }
+ * };
+ *
+ * // Universal extension (works with any type)
+ * const loggingExtension: ILazyPromiseExtension<any> = {
+ *   overrideFactory: (original) => async (refreshing) => {
+ *     console.log('Loading...');
+ *     return await original(refreshing);
+ *   }
+ * };
+ * ```
+ */
+export interface ILazyPromiseExtension<T = any, TExtShape extends object = object> {
+  /**
+   * Override or wrap the factory function.
+   * @param original - The original factory function
+   * @param target - The LazyPromise instance being extended
+   * @returns A new factory function
+   */
+  overrideFactory?: <TInitial extends T | undefined = undefined>(
+    original: LazyFactory<T>,
+    target: ILazyPromise<T, TInitial>
+  ) => LazyFactory<T>;
+
+  /**
+   * Extend the instance with additional properties/methods.
+   * @param previous - The LazyPromise instance to extend
+   * @returns The instance with additional shape
+   */
+  extendShape?: <TInitial extends T | undefined = undefined>(
+    previous: ILazyPromise<T, TInitial>
+  ) => ILazyPromise<T, TInitial> & TExtShape;
+}

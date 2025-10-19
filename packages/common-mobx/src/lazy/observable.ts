@@ -17,12 +17,15 @@ export class LazyObservable<T> extends Lazy<T> {
 
 export class LazyPromiseObservable<T, TInitial extends T | undefined = undefined> extends LazyPromise<T, TInitial> {
 
+    private readonly _observableType: ObservableTypes;
+
     constructor(
         factory: () => Promise<T>,
         observableType: ObservableTypes = ObservableTypes.Default,
         initial?: TInitial,
     ) {
         super(factory, initial);
+        this._observableType = observableType;
 
         makeObservable<
             LazyPromise<T, TInitial>,
@@ -39,5 +42,9 @@ export class LazyPromiseObservable<T, TInitial extends T | undefined = undefined
             onRejected: action,
             reset: action,
         });
+    }
+
+    protected createInstance(factory: () => Promise<T>, initial?: TInitial): this {
+        return new LazyPromiseObservable(factory, this._observableType, initial) as this;
     }
 }
