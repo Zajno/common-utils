@@ -3,31 +3,25 @@ import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazyPromise } from './types.js';
 
-type ValueType<T, TInitial> = TInitial extends undefined ? T | undefined : T;
-type CtorArgs<T, TInitial> = TInitial extends undefined
-    ? [factory: () => Promise<T>, initial?: TInitial]
-    : [factory: () => Promise<T>, initial: TInitial];
-
-export class LazyPromise<T, TInitial extends T | undefined = undefined> implements ILazyPromise<ValueType<T, TInitial>>, IDisposable, IResettableModel {
+export class LazyPromise<T, TInitial extends T | undefined = undefined> implements ILazyPromise<T, TInitial>, IDisposable, IResettableModel {
 
     private readonly _factory: () => Promise<T>;
-
     private readonly _initial: TInitial;
-    private _instance: ValueType<T, TInitial>;
 
+    private _instance: T | TInitial;
     private _isLoading: boolean | null = null;
 
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
 
     constructor(
-        ...args: CtorArgs<T, TInitial>
+        factory: () => Promise<T>,
+        initial?: TInitial,
     ) {
-        const [factory, initial] = args;
         this._factory = factory;
         this._initial = initial as TInitial;
 
-        this._instance = initial as ValueType<T, TInitial>;
+        this._instance = initial as T | TInitial; // as ILazyValue<T, TInitial>;
     }
 
     get isLoading() { return this._isLoading; }
@@ -38,13 +32,13 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         return this._promise!;
     }
 
-    get value(): ValueType<T, TInitial> {
+    get value(): T | TInitial {
         this.ensureInstanceLoading();
         return this._instance;
     }
 
     /** does not calls factory */
-    get currentValue(): ValueType<T, TInitial> {
+    get currentValue(): T | TInitial {
         return this._instance;
     }
 
@@ -96,7 +90,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
 
         const wasDisposed = tryDispose(this._instance);
 
-        this._instance = this._initial as ValueType<T, TInitial>;
+        this._instance = this._initial;
 
         const p = this._promise;
         this._promise = undefined;

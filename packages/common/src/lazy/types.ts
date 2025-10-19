@@ -12,7 +12,7 @@ export interface ILazy<T> {
 };
 
 /** Represents a lazily asynchronously loaded value. */
-export interface ILazyPromise<T> extends ILazy<T | undefined> {
+export interface ILazyPromise<T, TInitial extends T | undefined = undefined> extends ILazy<T | TInitial> {
     /** Returns true if loading is in progress, false if loading is completed, null if loading was not initiated. Loading is not triggered. */
     readonly isLoading: boolean | null;
 
