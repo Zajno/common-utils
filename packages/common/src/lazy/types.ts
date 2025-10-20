@@ -69,6 +69,11 @@ export interface IControllableLazyPromise<T, TInitial extends T | undefined = un
     setInstance(value: T): T;
 }
 
+/**
+ * Factory function to retrieve the fresh value.
+ *
+ * @param refreshing - indicates whether manual refresh is requested
+ * */
 export type LazyFactory<T> = (refreshing?: boolean) => Promise<T>;
 
 /**

@@ -403,19 +403,25 @@ describe('LazyPromise', () => {
             });
 
             // Universal extension - works with any type
-            const loggingExtension: ILazyPromiseExtension<any> = {
+            const loggingExtension: ILazyPromiseExtension<any> & { customData: string } = {
                 overrideFactory: (original) => async (refreshing) => {
                     logs.push(`loading:${refreshing ?? 'undefined'}`);
                     const result = await original(refreshing);
                     logs.push(`loaded:${String(result)}`);
                     return result;
                 },
+                customData: 'customValue',
             };
 
             const extended = base.extend(loggingExtension);
 
             // extend() mutates the instance and returns it
             expect(base).toBe(extended);
+
+            // Type is preserved even when extension has extra properties
+            // extended.value should be string | undefined, not any
+            expect(extended.currentValue).toBeUndefined(); // Don't trigger loading
+            expect(extended.isLoading).toBeNull(); // Not started yet
 
             await extended.promise;
             expect(extended.value).toBe('result');

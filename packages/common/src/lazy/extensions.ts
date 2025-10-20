@@ -2,7 +2,7 @@ import type { IKeyedStorage, IKeyedStorageSync } from '../storage/types.js';
 import { extendObject } from '../structures/extendObject.js';
 import type { IControllableLazyPromise, ILazyPromiseExtension } from './types.js';
 
-interface ICachedLazyPromiseExtension<T, TStorage extends IKeyedStorage<T> | IKeyedStorageSync<T>> {
+export interface ICachedLazyPromiseExtension<T, TStorage extends IKeyedStorage<T> | IKeyedStorageSync<T>> {
     readonly cache: TStorage;
 
     /** Resets the current value to undefined and cleans up the cache. */

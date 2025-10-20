@@ -5,26 +5,18 @@ import type { IKeyedStorage, IKeyedStorageSync } from '../../storage/types.js';
 
 describe('createCacheExtension', () => {
     describe('with async storage', () => {
-        let mockStorage: IKeyedStorage<string>;
-        let getValueSpy: ReturnType<typeof vi.fn>;
-        let setValueSpy: ReturnType<typeof vi.fn>;
-        let removeValueSpy: ReturnType<typeof vi.fn>;
-
-        beforeEach(() => {
-            getValueSpy = vi.fn();
-            setValueSpy = vi.fn();
-            removeValueSpy = vi.fn();
-
-            mockStorage = {
-                getValue: getValueSpy,
-                setValue: setValueSpy,
+        const createStorage = () => {
+            return {
+                getValue: vi.fn(),
+                setValue: vi.fn(),
                 hasValue: vi.fn(),
-                removeValue: removeValueSpy,
-            };
-        });
+                removeValue: vi.fn(),
+            } satisfies IKeyedStorage<string>;
+        };
 
         it('should return cached value on initial load if available', async () => {
-            getValueSpy.mockResolvedValue('cached-value');
+            const mockStorage = createStorage();
+            mockStorage.getValue.mockResolvedValue('cached-value');
 
             const factorySpy = vi.fn().mockResolvedValue('fresh-value');
             const lazy = new LazyPromise<string>(factorySpy);
@@ -33,13 +25,14 @@ describe('createCacheExtension', () => {
             const result = await cached.promise;
 
             expect(result).toBe('cached-value');
-            expect(getValueSpy).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getValue).toHaveBeenCalledTimes(1);
             expect(factorySpy).not.toHaveBeenCalled();
-            expect(setValueSpy).not.toHaveBeenCalled();
+            expect(mockStorage.setValue).not.toHaveBeenCalled();
         });
 
         it('should call factory and cache result if no cached value exists', async () => {
-            getValueSpy.mockResolvedValue(null);
+            const mockStorage = createStorage();
+            mockStorage.getValue.mockResolvedValue(null);
 
             const factorySpy = vi.fn().mockResolvedValue('fresh-value');
             const lazy = new LazyPromise<string>(factorySpy);
@@ -48,13 +41,14 @@ describe('createCacheExtension', () => {
             const result = await cached.promise;
 
             expect(result).toBe('fresh-value');
-            expect(getValueSpy).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getValue).toHaveBeenCalledTimes(1);
             expect(factorySpy).toHaveBeenCalledWith(false);
-            expect(setValueSpy).toHaveBeenCalledWith('fresh-value');
+            expect(mockStorage.setValue).toHaveBeenCalledWith('fresh-value');
         });
 
         it('should bypass cache on refresh and update cached value', async () => {
-            getValueSpy.mockResolvedValue('old-cached-value');
+            const mockStorage = createStorage();
+            mockStorage.getValue.mockResolvedValue('old-cached-value');
 
             const factorySpy = vi.fn().mockResolvedValue('refreshed-value');
             const lazy = new LazyPromise<string>(factorySpy);
@@ -62,22 +56,23 @@ describe('createCacheExtension', () => {
 
             // Initial load uses cache
             await cached.promise;
-            expect(getValueSpy).toHaveBeenCalledTimes(1);
+            expect(mockStorage.getValue).toHaveBeenCalledTimes(1);
 
             // Reset spies
-            getValueSpy.mockClear();
-            setValueSpy.mockClear();
+            mockStorage.getValue.mockClear();
+            mockStorage.setValue.mockClear();
 
             // Refresh should bypass cache
             const refreshed = await cached.refresh();
 
             expect(refreshed).toBe('refreshed-value');
             expect(factorySpy).toHaveBeenCalledWith(true);
-            expect(getValueSpy).not.toHaveBeenCalled();
-            expect(setValueSpy).toHaveBeenCalledWith('refreshed-value');
+            expect(mockStorage.getValue).not.toHaveBeenCalled();
+            expect(mockStorage.setValue).toHaveBeenCalledWith('refreshed-value');
         });
 
         it('should expose cache storage via cache property', async () => {
+            const mockStorage = createStorage();
             const lazy = new LazyPromise<string>(async () => 'value');
             const cached = lazy.extend(createCacheExtension(mockStorage));
 
@@ -85,7 +80,8 @@ describe('createCacheExtension', () => {
         });
 
         it('should reset and clear cache with resetWithCache', async () => {
-            getValueSpy.mockResolvedValue(null);
+            const mockStorage = createStorage();
+            mockStorage.getValue.mockResolvedValue(null);
             const factorySpy = vi.fn().mockResolvedValue('value');
             const lazy = new LazyPromise<string>(factorySpy);
             const cached = lazy.extend(createCacheExtension(mockStorage));
@@ -93,17 +89,18 @@ describe('createCacheExtension', () => {
             // Load value
             await cached.promise;
             expect(cached.hasValue).toBe(true);
-            expect(setValueSpy).toHaveBeenCalledWith('value');
+            expect(mockStorage.setValue).toHaveBeenCalledWith('value');
 
             // Reset with cache
             cached.resetWithCache();
 
-            expect(removeValueSpy).toHaveBeenCalledTimes(1);
+            expect(mockStorage.removeValue).toHaveBeenCalledTimes(1);
             expect(cached.hasValue).toBe(false);
             expect(cached.isLoading).toBeNull();
         });
 
         it('should set value and update cache with setCachedInstance', async () => {
+            const mockStorage = createStorage();
             const lazy = new LazyPromise<string>(async () => 'original');
             const cached = lazy.extend(createCacheExtension(mockStorage));
 
@@ -112,27 +109,29 @@ describe('createCacheExtension', () => {
             expect(result).toBe('manual-value');
             expect(cached.currentValue).toBe('manual-value');
             expect(cached.hasValue).toBe(true);
-            expect(setValueSpy).toHaveBeenCalledWith('manual-value');
+            expect(mockStorage.setValue).toHaveBeenCalledWith('manual-value');
         });
 
         it('should remove from cache when setCachedInstance is called with null', async () => {
+            const mockStorage = createStorage();
             const lazy = new LazyPromise<string>(async () => 'value');
             const cached = lazy.extend(createCacheExtension(mockStorage));
 
             cached.setCachedInstance(null as any);
 
-            expect(removeValueSpy).toHaveBeenCalledTimes(1);
-            expect(setValueSpy).not.toHaveBeenCalled();
+            expect(mockStorage.removeValue).toHaveBeenCalledTimes(1);
+            expect(mockStorage.setValue).not.toHaveBeenCalled();
         });
 
         it('should remove from cache when setCachedInstance is called with undefined', async () => {
+            const mockStorage = createStorage();
             const lazy = new LazyPromise<string>(async () => 'value');
             const cached = lazy.extend(createCacheExtension(mockStorage));
 
             cached.setCachedInstance(undefined as any);
 
-            expect(removeValueSpy).toHaveBeenCalledTimes(1);
-            expect(setValueSpy).not.toHaveBeenCalled();
+            expect(mockStorage.removeValue).toHaveBeenCalledTimes(1);
+            expect(mockStorage.setValue).not.toHaveBeenCalled();
         });
 
         it('should handle complex types', async () => {

@@ -1,7 +1,7 @@
 import { tryDispose, type IDisposable } from '../functions/disposer.js';
 import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
-import type { IControllableLazyPromise, ILazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
+import type { IControllableLazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
 
 export class LazyPromise<T, TInitial extends T | undefined = undefined> implements IControllableLazyPromise<T, TInitial>, IDisposable, IResettableModel {
 
@@ -52,73 +52,54 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     /**
-     * Extends this instance with additional functionality.
-     * Mutates the current instance by applying extensions in place.
+     * Extends this instance with additional functionality by applying extensions in place.
      *
-     * **Extension capabilities:**
-     * - `overrideFactory`: Wrap/modify the factory function (logging, retry, caching, etc.)
+     * **Capabilities:**
+     * - `overrideFactory`: Wrap the factory function (logging, retry, caching, etc.)
      * - `extendShape`: Add custom properties/methods to the instance
      *
-     * **Type safety:** Extensions enforce type compatibility via generic `T` parameter.
-     * Use `ILazyPromiseExtension<any>` for universal extensions, or `ILazyPromiseExtension<ConcreteType>`
-     * for type-specific extensions (e.g., number-only operations).
+     * **Type Safety:**
+     * - Use `ILazyPromiseExtension<any>` for universal extensions
+     * - Use `ILazyPromiseExtension<ConcreteType>` for type-specific extensions (e.g., number-only)
      *
-     * **Inheritance support:** Subclasses (e.g., `LazyPromiseObservable`) return their own type
-     * with preserved behavior (MobX observability, etc.).
-     *
-     * **Chaining:** Extensions can be chained and accumulate on the same instance.
+     * **Note:** Extensions mutate the instance and can be chained. Subclasses preserve their type.
      *
      * @param extension - Configuration with factory override and/or shape extensions
-     * @returns The same instance (this) with applied extensions, for chaining
+     * @returns The same instance (this) with applied extensions
      *
      * @example
      * ```typescript
-     * // Logging extension (universal)
-     * const withLogging = lazy.extend({
+     * // Universal logging extension
+     * const logged = lazy.extend({
      *   overrideFactory: (factory) => async (refreshing) => {
-     *     console.log('Loading...', { refreshing });
-     *     const result = await factory(refreshing);
-     *     console.log('Loaded:', result);
-     *     return result;
+     *     console.log('Loading...');
+     *     return await factory(refreshing);
      *   }
      * });
      *
-     * // Retry extension (universal)
-     * const withRetry = lazy.extend({
-     *   overrideFactory: (factory) => async (refreshing) => {
-     *     try {
-     *       return await factory(refreshing);
-     *     } catch (e) {
-     *       console.warn('Retrying...');
-     *       return await factory(refreshing);
-     *     }
-     *   }
-     * });
-     *
-     * // Custom methods (type-specific for numbers)
-     * const withStats = lazyNumber.extend<{ double: () => number | undefined }>({
+     * // Type-specific extension with custom methods
+     * const enhanced = lazyNumber.extend<{ double: () => number | undefined }>({
      *   extendShape: (instance) => Object.assign(instance, {
-     *     double: () => {
-     *       const val = instance.currentValue;
-     *       return val !== undefined ? val * 2 : undefined;
-     *     }
+     *     double: () => instance.currentValue !== undefined
+     *       ? instance.currentValue * 2
+     *       : undefined
      *   })
      * });
      *
-     * // Chaining extensions - all accumulate on the same instance
+     * // Chaining multiple extensions
      * const composed = lazy
      *   .extend(cacheExtension)
-     *   .extend(loggingExtension)
-     *   .extend(retryExtension);
-     * // composed has ALL extension properties: cache, logging, retry
+     *   .extend(loggingExtension);
      * ```
      */
     public extend<TExtShape extends object = object>(
-        extension: ILazyPromiseExtension<T, TExtShape>,
-    ): this & TExtShape {
+        // Partial allows extensions with extra properties beyond the interface
+        // 'any' type parameter doesn't affect return type since we return 'this'
+        extension: Partial<ILazyPromiseExtension<any, TExtShape>>,
+    ): object extends TExtShape ? this : this & TExtShape {
         // Override the factory if provided
         if (extension.overrideFactory) {
-            this._factory = extension.overrideFactory(this._factory, this as ILazyPromise<T, TInitial>);
+            this._factory = extension.overrideFactory(this._factory, this);
         }
 
         // Apply shape extension if provided
