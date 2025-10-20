@@ -1,11 +1,10 @@
 import type { ILogger } from '@zajno/common/logger';
 import type { FirebaseConfig } from '../../config.js';
-import type { Nullable } from '@zajno/common/types/misc.js';
 
 const EmptyAppSettings = {
     functionsEmulator: null! as { url: string },
     firestore: null! as {
-        host: Nullable<string>,
+        host: string | undefined,
         ignoreUndefinedProperties?: boolean,
         experimentalForceLongPolling?: boolean,
         experimentalAutoDetectLongPolling?: boolean,
