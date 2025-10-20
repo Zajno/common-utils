@@ -414,8 +414,8 @@ describe('LazyPromise', () => {
 
             const extended = base.extend(loggingExtension);
 
-            // Original should not be affected
-            expect(base).not.toBe(extended);
+            // extend() mutates the instance and returns it
+            expect(base).toBe(extended);
 
             await extended.promise;
             expect(extended.value).toBe('result');
@@ -534,7 +534,7 @@ describe('LazyPromise', () => {
             expect(extended.value).toBe(2);
         });
 
-        test('original instance remains unchanged', async () => {
+        test('extend() mutates the original instance', async () => {
             const base = new LazyPromise(async () => {
                 await setTimeoutAsync(10);
                 return 'original';
@@ -550,11 +550,14 @@ describe('LazyPromise', () => {
 
             const extended = base.extend(appendExtension);
 
+            // extend() returns the same mutated instance
+            expect(base).toBe(extended);
+
             await extended.promise;
             expect(extended.value).toBe('original-modified');
 
-            await base.promise;
-            expect(base.value).toBe('original');
+            // Base is the same instance, so it's also modified
+            expect(base.value).toBe('original-modified');
         });
 
         test('chaining multiple extensions', async () => {

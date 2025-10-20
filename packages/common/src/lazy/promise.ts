@@ -1,11 +1,11 @@
 import { tryDispose, type IDisposable } from '../functions/disposer.js';
 import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
-import type { ILazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
+import type { IControllableLazyPromise, ILazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
 
-export class LazyPromise<T, TInitial extends T | undefined = undefined> implements ILazyPromise<T, TInitial>, IDisposable, IResettableModel {
+export class LazyPromise<T, TInitial extends T | undefined = undefined> implements IControllableLazyPromise<T, TInitial>, IDisposable, IResettableModel {
 
-    private readonly _factory: LazyFactory<T>;
+    private _factory: LazyFactory<T>;
     private readonly _initial: TInitial;
 
     private _instance: T | TInitial;
@@ -52,20 +52,8 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     /**
-     * Factory method for creating new instances of this class.
-     * Override this in subclasses to ensure `extend()` returns the correct type.
-     *
-     * @param factory - The factory function for the new instance
-     * @param initial - The initial value for the new instance
-     * @returns A new instance of the same class type
-     */
-    protected createInstance(factory: LazyFactory<T>, initial?: TInitial): this {
-        return new LazyPromise(factory, initial) as this;
-    }
-
-    /**
-     * Creates a new extended instance with additional functionality.
-     * Returns a new immutable instance; the original remains unchanged.
+     * Extends this instance with additional functionality.
+     * Mutates the current instance by applying extensions in place.
      *
      * **Extension capabilities:**
      * - `overrideFactory`: Wrap/modify the factory function (logging, retry, caching, etc.)
@@ -78,8 +66,10 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
      * **Inheritance support:** Subclasses (e.g., `LazyPromiseObservable`) return their own type
      * with preserved behavior (MobX observability, etc.).
      *
+     * **Chaining:** Extensions can be chained and accumulate on the same instance.
+     *
      * @param extension - Configuration with factory override and/or shape extensions
-     * @returns New instance of the same class with applied extensions
+     * @returns The same instance (this) with applied extensions, for chaining
      *
      * @example
      * ```typescript
@@ -115,32 +105,28 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
      *   })
      * });
      *
-     * // Chaining extensions
-     * const composed = lazy.extend(loggingExt).extend(retryExt);
+     * // Chaining extensions - all accumulate on the same instance
+     * const composed = lazy
+     *   .extend(cacheExtension)
+     *   .extend(loggingExtension)
+     *   .extend(retryExtension);
+     * // composed has ALL extension properties: cache, logging, retry
      * ```
      */
     public extend<TExtShape extends object = object>(
         extension: ILazyPromiseExtension<T, TExtShape>,
     ): this & TExtShape {
-        // Get the factory to use (potentially overridden)
-        const factory = extension.overrideFactory
-            ? extension.overrideFactory(this._factory, this as ILazyPromise<T, TInitial>)
-            : this._factory;
-
-        // Create new instance with the (potentially modified) factory
-        const extended = this.createInstance(factory, this._initial);
-
-        // Copy expire tracker if present
-        if (this._expireTracker) {
-            extended.withExpire(this._expireTracker);
+        // Override the factory if provided
+        if (extension.overrideFactory) {
+            this._factory = extension.overrideFactory(this._factory, this as ILazyPromise<T, TInitial>);
         }
 
         // Apply shape extension if provided
         if (extension.extendShape) {
-            return extension.extendShape(extended) as this & TExtShape;
+            return extension.extendShape(this) as this & TExtShape;
         }
 
-        return extended as this & TExtShape;
+        return this as this & TExtShape;
     }
 
     protected ensureInstanceLoading() {

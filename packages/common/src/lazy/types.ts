@@ -1,3 +1,5 @@
+import type { IResettableModel } from '../models/types.js';
+
 /** Represents a lazily loaded value. */
 export interface ILazy<T> {
     /** Returns current value. If not loaded, loading is triggered. */
@@ -11,7 +13,7 @@ export interface ILazy<T> {
 
     /** Returns error message if loading failed, null otherwise. Accessing this property does not trigger loading. */
     readonly error: string | null;
-};
+}
 
 /** Represents a lazily asynchronously loaded value. */
 export interface ILazyPromise<T, TInitial extends T | undefined = undefined> extends ILazy<T | TInitial> {
@@ -48,7 +50,24 @@ export interface ILazyPromise<T, TInitial extends T | undefined = undefined> ext
      * @returns Promise that resolves to the refreshed value, or current value if refresh fails.
      */
     refresh(): Promise<T>;
-};
+}
+
+/**
+ * Represents a controllable lazy promise with manual state management capabilities.
+ * Extends ILazyPromise and IResettableModel with methods to manually set values and reset state.
+ * Use this interface in extensions that need direct control over the lazy value lifecycle.
+ */
+export interface IControllableLazyPromise<T, TInitial extends T | undefined = undefined>
+    extends ILazyPromise<T, TInitial>, IResettableModel {
+    /**
+     * Manually sets the instance value and marks loading as complete.
+     * Useful for cache synchronization and manual state management.
+     *
+     * @param value - The value to set
+     * @returns The value that was set
+     */
+    setInstance(value: T): T;
+}
 
 export type LazyFactory<T> = (refreshing?: boolean) => Promise<T>;
 
@@ -91,10 +110,13 @@ export interface ILazyPromiseExtension<T = any, TExtShape extends object = objec
 
   /**
    * Extend the instance with additional properties/methods.
-   * @param previous - The LazyPromise instance to extend
+   * Receives IControllableLazyPromise which includes setInstance() and reset() methods
+   * for manual state management and cache synchronization.
+   *
+   * @param previous - The controllable LazyPromise instance to extend
    * @returns The instance with additional shape
    */
   extendShape?: <TInitial extends T | undefined = undefined>(
-    previous: ILazyPromise<T, TInitial>
-  ) => ILazyPromise<T, TInitial> & TExtShape;
+    previous: IControllableLazyPromise<T, TInitial>
+  ) => IControllableLazyPromise<T, TInitial> & TExtShape;
 }
