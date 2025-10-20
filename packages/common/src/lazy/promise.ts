@@ -1,44 +1,113 @@
 import { tryDispose, type IDisposable } from '../functions/disposer.js';
 import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
-import type { ILazyPromise } from './types.js';
+import type { IControllableLazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
 
-export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettableModel {
+export class LazyPromise<T, TInitial extends T | undefined = undefined> implements IControllableLazyPromise<T, TInitial>, IDisposable, IResettableModel {
 
-    private _instance: T | undefined = undefined;
+    private _factory: LazyFactory<T>;
+    private readonly _initial: TInitial;
+
+    private _instance: T | TInitial;
     private _isLoading: boolean | null = null;
 
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
 
+    private _lastRefreshingPromise: Promise<T> | null = null;
+    private _error: string | null = null;
+
     constructor(
-        private readonly _factory: () => Promise<T>,
-        private readonly initial: T | undefined = undefined,
+        factory: LazyFactory<T>,
+        initial?: TInitial,
     ) {
-        this._instance = initial;
+        this._factory = factory;
+        this._initial = initial as TInitial;
+
+        this._instance = initial as T | TInitial; // as ILazyValue<T, TInitial>;
     }
 
-    get isLoading() { return this._isLoading; }
-    get hasValue() { return this._isLoading === false; }
+    public get isLoading() { return this._isLoading; }
+    public get hasValue() { return this._isLoading === false; }
+    public get error() { return this._error; }
 
-    get promise() {
+    public get promise() {
         this.ensureInstanceLoading();
         return this._promise!;
     }
 
-    get value() {
+    get value(): T | TInitial {
         this.ensureInstanceLoading();
-        return this._instance!;
+        return this._instance;
     }
 
     /** does not calls factory */
-    get currentValue() {
+    public get currentValue(): T | TInitial {
         return this._instance;
     }
 
     public withExpire(tracker: IExpireTracker | undefined) {
         this._expireTracker = tracker;
         return this;
+    }
+
+    /**
+     * Extends this instance with additional functionality by applying extensions in place.
+     *
+     * **Capabilities:**
+     * - `overrideFactory`: Wrap the factory function (logging, retry, caching, etc.)
+     * - `extendShape`: Add custom properties/methods to the instance
+     *
+     * **Type Safety:**
+     * - Use `ILazyPromiseExtension<any>` for universal extensions
+     * - Use `ILazyPromiseExtension<ConcreteType>` for type-specific extensions (e.g., number-only)
+     *
+     * **Note:** Extensions mutate the instance and can be chained. Subclasses preserve their type.
+     *
+     * @param extension - Configuration with factory override and/or shape extensions
+     * @returns The same instance (this) with applied extensions
+     *
+     * @example
+     * ```typescript
+     * // Universal logging extension
+     * const logged = lazy.extend({
+     *   overrideFactory: (factory) => async (refreshing) => {
+     *     console.log('Loading...');
+     *     return await factory(refreshing);
+     *   }
+     * });
+     *
+     * // Type-specific extension with custom methods
+     * const enhanced = lazyNumber.extend<{ double: () => number | undefined }>({
+     *   extendShape: (instance) => Object.assign(instance, {
+     *     double: () => instance.currentValue !== undefined
+     *       ? instance.currentValue * 2
+     *       : undefined
+     *   })
+     * });
+     *
+     * // Chaining multiple extensions
+     * const composed = lazy
+     *   .extend(cacheExtension)
+     *   .extend(loggingExtension);
+     * ```
+     */
+    public extend<TExtShape extends object = object>(
+        // Partial allows extensions with extra properties beyond the interface
+        // 'any' type parameter doesn't affect return type since we return 'this'
+        extension: Partial<ILazyPromiseExtension<any, TExtShape>>,
+    ): object extends TExtShape ? this : this & TExtShape {
+        // Override the factory if provided
+        if (extension.overrideFactory) {
+            this._factory = extension.overrideFactory(this._factory, this);
+        }
+
+        // Apply shape extension if provided
+        if (extension.extendShape) {
+            return extension.extendShape(this) as this & TExtShape;
+        }
+
+        return this as this & TExtShape;
     }
 
     protected ensureInstanceLoading() {
@@ -49,8 +118,14 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
 
         if (this._isLoading === null) {
             this._isLoading = true;
-            this._promise = this._factory().then(this.onResolved.bind(this));
+            this.doLoad();
         }
+    }
+
+    protected doLoad() {
+        this._promise = this._factory(false)
+            .then(this.onResolved.bind(this))
+            .catch(this.onRejected.bind(this));
     }
 
     protected onResolved(res: T) {
@@ -62,13 +137,22 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
         return res;
     }
 
-    public setInstance(res: T | undefined) {
+    protected onRejected(e: unknown) {
         this._isLoading = false;
+        this._instance = this._initial;
+        this._promise = Promise.resolve(this._initial as T);
+        this.setError(e);
+        return this._initial as T;
+    }
+
+    public setInstance(res: T) {
+        this._isLoading = false;
+        this.clearError(); // clear error on successful set
 
         // refresh promise so it won't keep old callbacks
         // + make sure it's resolved with the freshest value
         // also do this before setting the instance... just in case :)
-        this._promise = Promise.resolve(res!);
+        this._promise = Promise.resolve(res);
 
         this._instance = res;
 
@@ -79,12 +163,46 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
         return res;
     }
 
-    reset() {
+    protected setError(err: unknown) {
+        this._error = this.parseError(err);
+    }
+
+    protected clearError() {
+        this._error = null;
+    }
+
+    public async refresh(): Promise<T> {
+        let myPromise: Promise<T> | null = null;
+        try {
+            myPromise = this._factory(true);
+
+            // every new refresh overrides the previous one
+            // so this one becomes "last"
+            // and previous becomes stale and won't update the value when it resolves
+            this._lastRefreshingPromise = myPromise;
+            const fresh = await myPromise;
+            if (this._lastRefreshingPromise === myPromise) {
+                this.setInstance(fresh);
+            }
+
+            return fresh;
+        } catch (e: unknown) {
+            this.setError(e);
+            return this._instance as T;
+        } finally {
+            if (myPromise != null && this._lastRefreshingPromise === myPromise) {
+                this._lastRefreshingPromise = null;
+            }
+        }
+    }
+
+    public reset() {
         this._isLoading = null;
+        this.clearError();
 
         const wasDisposed = tryDispose(this._instance);
 
-        this._instance = this.initial;
+        this._instance = this._initial;
 
         const p = this._promise;
         this._promise = undefined;
@@ -98,7 +216,17 @@ export class LazyPromise<T> implements ILazyPromise<T>, IDisposable, IResettable
         }
     }
 
-    dispose() {
+    public dispose() {
         this.reset();
+    }
+
+    protected parseError(err: unknown): string {
+        if (typeof err === 'string') {
+            return err;
+        }
+        if (err instanceof Error) {
+            return err.message;
+        }
+        return String(err) || 'Unknown error';
     }
 }

@@ -1,10 +1,12 @@
-import { Lazy } from '../lazy.js';
-import { LazyPromise } from '../promise.js';
+import { describe, test } from 'vitest';
 import { setTimeoutAsync } from '../../async/timeout.js';
 import { ExpireTracker } from '../../structures/expire.js';
+import { Lazy } from '../lazy.js';
+import { LazyPromise } from '../promise.js';
+import type { ILazyPromiseExtension } from '../types.js';
 
 describe('Lazy', () => {
-    it('simple', () => {
+    test('simple', () => {
         const VAL = 'abc';
         const l = new Lazy(() => VAL);
 
@@ -47,7 +49,7 @@ describe('Lazy', () => {
         expect(incrementor).toBe(2);
     });
 
-    it('disposes', () => {
+    test('disposes', () => {
         {
             const l = new Lazy(() => 42);
             expect(l.value).toBe(42);
@@ -91,7 +93,7 @@ describe('Lazy', () => {
 
 describe('LazyPromise', () => {
 
-    it('simple', async () => {
+    test('simple', async () => {
         const VAL = 'abc';
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
@@ -113,7 +115,7 @@ describe('LazyPromise', () => {
         expect(l.hasValue).toBeFalse();
     });
 
-    it('setInstance', async () => {
+    test('setInstance', async () => {
         const VAL = 'abc1';
         const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
 
@@ -183,7 +185,7 @@ describe('LazyPromise', () => {
         expect(l.value).toBe(3);
     });
 
-    it('disposes', async () => {
+    test('disposes', async () => {
         const disposer = vi.fn();
 
         const l = new LazyPromise(async () => ({
@@ -196,11 +198,495 @@ describe('LazyPromise', () => {
         await l.promise;
 
         expect(l.value).toBeDefined();
-        expect(l.value.value).toBe(42);
+        expect(l.value?.value).toBe(42);
         expect(l.hasValue).toBeTrue();
 
         l.dispose();
         expect(l.hasValue).toBeFalse();
         expect(disposer).toHaveBeenCalledTimes(1);
     });
+
+    test('with initial value', async () => {
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            return { result: 42 };
+        }, { result: 10 });
+
+        expect(lazy.hasValue).toBeFalse();
+        expect(lazy.isLoading).toBeNull();
+
+        expect(lazy.value.result).toBe(10);
+        expect(lazy.isLoading).toBeTrue();
+
+        await expect(lazy.promise).resolves.toEqual({ result: 42 });
+
+        expect(lazy.value.result).toBe(42);
+        expect(lazy.hasValue).toBeTrue();
+        expect(lazy.isLoading).toBeFalse();
+    });
+
+    test('with no initial value', async () => {
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            return { result: 42 };
+        });
+
+        expect(lazy.hasValue).toBeFalse();
+        expect(lazy.isLoading).toBeNull();
+        expect(lazy.currentValue).toBeUndefined();
+
+        expect(lazy.value).toBeUndefined();
+        expect(() => {
+            // @ts-expect-error "lazy.value" should be undefined, so expecting error here is correct
+            return lazy.value.result;
+        }).toThrow();
+
+        expect(lazy.isLoading).toBeTrue();
+
+        await expect(lazy.promise).resolves.toEqual({ result: 42 });
+
+        // @ts-expect-error "lazy.value" should be possibly undefined, so expecting error here is correct
+        expect(lazy.value.result).toBe(42);
+        expect(lazy.hasValue).toBeTrue();
+        expect(lazy.isLoading).toBeFalse();
+    });
+
+    test('refresh method', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async (refreshing) => {
+            await setTimeoutAsync(10);
+            counter++;
+            return { value: counter, refreshing };
+        });
+
+        // Initial load
+        await lazy.promise;
+        expect(lazy.value?.value).toBe(1);
+        expect(lazy.value?.refreshing).toBe(false);
+        expect(counter).toBe(1);
+
+        // Refresh
+        const refreshResult = await lazy.refresh();
+        expect(refreshResult.value).toBe(2);
+        expect(refreshResult.refreshing).toBe(true);
+        expect(lazy.value?.value).toBe(2);
+        expect(counter).toBe(2);
+
+        // Multiple concurrent refreshes - last one wins
+        const refresh1 = lazy.refresh();
+        const refresh2 = lazy.refresh();
+        const refresh3 = lazy.refresh();
+
+        await Promise.all([refresh1, refresh2, refresh3]);
+
+        // Only the last refresh should update the instance
+        expect(lazy.value?.value).toBe(5);
+        expect(counter).toBe(5);
+    });
+
+    test('refresh with error handling', async () => {
+        let shouldFail = false;
+        let counter = 0;
+
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            counter++;
+            if (shouldFail) {
+                throw new Error('Refresh failed');
+            }
+            return { value: counter };
+        });
+
+        // Initial successful load
+        await lazy.promise;
+        expect(lazy.value?.value).toBe(1);
+        expect(lazy.error).toBeNull();
+
+        // Refresh with error
+        shouldFail = true;
+        const result = await lazy.refresh();
+        expect(result.value).toBe(1); // returns current instance on error
+        expect(lazy.error).toBe('Refresh failed');
+        expect(lazy.value?.value).toBe(1); // value unchanged
+
+        // Refresh successfully after error
+        shouldFail = false;
+        await lazy.refresh();
+        expect(lazy.value?.value).toBe(3);
+        // Error should be cleared on successful refresh
+        expect(lazy.error).toBeNull();
+    });
+
+    test('error handling', () => {
+        {
+            // Test with Error object
+            const l = new Lazy(() => {
+                throw new Error('Error object message');
+            });
+
+            expect(l.hasValue).toBeFalse();
+            expect(l.error).toBeNull();
+            expect(l.value).toBeUndefined();
+            expect(l.hasValue).toBeFalse();
+            expect(l.error).toBe('Error object message');
+        }
+
+        {
+            // Test multiple accesses with error
+            const l = new Lazy(() => {
+                throw new Error('Factory error');
+            });
+
+            expect(l.value).toBeUndefined();
+            expect(l.error).toBe('Factory error');
+            expect(l.value).toBeUndefined();
+            expect(l.error).toBe('Factory error');
+        }
+
+        {
+            // Test error is cleared on reset
+            const l = new Lazy(() => {
+                throw new Error('error');
+            });
+
+            expect(l.value).toBeUndefined();
+            expect(l.error).toBe('error');
+
+            l.reset();
+            expect(l.error).toBeNull();
+        }
+    });
+
+    test('error handling with LazyPromise', async () => {
+        {
+            // Test with Error object
+            const l = new LazyPromise(async () => {
+                throw new Error('async error message');
+            });
+
+            expect(l.error).toBeNull();
+            await l.promise;
+            expect(l.error).toBe('async error message');
+            expect(l.hasValue).toBeTrue();
+            expect(l.value).toBeUndefined();
+        }
+
+        {
+            // Test with another Error
+            const l = new LazyPromise(async () => {
+                throw new Error('async Error object');
+            });
+
+            await l.promise;
+            expect(l.error).toBe('async Error object');
+        }
+
+        {
+            // Test with initial value and error - returns to initial
+            const l = new LazyPromise<string, string>(async () => {
+                throw new Error('error occurred');
+            }, 'initial value');
+
+            expect(l.value).toBe('initial value');
+            await l.promise;
+            expect(l.error).toBe('error occurred');
+            expect(l.value).toBe('initial value'); // falls back to initial
+        }
+    });
+
+    describe('extend', () => {
+        test('overrideFactory - adds logging', async () => {
+            const logs: string[] = [];
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return 'result';
+            });
+
+            // Universal extension - works with any type
+            const loggingExtension: ILazyPromiseExtension<any> & { customData: string } = {
+                overrideFactory: (original) => async (refreshing) => {
+                    logs.push(`loading:${refreshing ?? 'undefined'}`);
+                    const result = await original(refreshing);
+                    logs.push(`loaded:${String(result)}`);
+                    return result;
+                },
+                customData: 'customValue',
+            };
+
+            const extended = base.extend(loggingExtension);
+
+            // extend() mutates the instance and returns it
+            expect(base).toBe(extended);
+
+            // Type is preserved even when extension has extra properties
+            // extended.value should be string | undefined, not any
+            expect(extended.currentValue).toBeUndefined(); // Don't trigger loading
+            expect(extended.isLoading).toBeNull(); // Not started yet
+
+            await extended.promise;
+            expect(extended.value).toBe('result');
+            expect(logs).toEqual(['loading:false', 'loaded:result']);
+
+            logs.length = 0;
+            await extended.refresh();
+            expect(logs).toEqual(['loading:true', 'loaded:result']);
+        });
+
+        test('overrideFactory - adds retry logic', async () => {
+            let attempts = 0;
+            const base = new LazyPromise<string>(async () => {
+                attempts++;
+                if (attempts < 3) {
+                    throw new Error('Retry me');
+                }
+                return 'success';
+            });
+
+            // Universal retry extension
+            const retryExtension: ILazyPromiseExtension<any> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    let retries = 0;
+                    while (retries < 3) {
+                        try {
+                            return await original(refreshing);
+                        } catch (e) {
+                            retries++;
+                            if (retries >= 3) throw e;
+                            await setTimeoutAsync(10);
+                        }
+                    }
+                    throw new Error('Unreachable');
+                },
+            };
+
+            const extended = base.extend(retryExtension);
+
+            await extended.promise;
+            expect(extended.value).toBe('success');
+            expect(attempts).toBe(3);
+        });
+
+        test('extendShape - adds custom methods', async () => {
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return { value: 42 };
+            });
+
+            let loadCount = 0;
+            const extended = base.extend<{ getLoadCount: () => number }>({
+                extendShape: (instance) => {
+                    return Object.assign(instance, {
+                        getLoadCount: () => loadCount,
+                    });
+                },
+                overrideFactory: (original) => async (refreshing) => {
+                    loadCount++;
+                    return await original(refreshing);
+                },
+            });
+
+            expect(extended.getLoadCount()).toBe(0);
+            await extended.promise;
+            expect(extended.getLoadCount()).toBe(1);
+            await extended.refresh();
+            expect(extended.getLoadCount()).toBe(2);
+        });
+
+        test('extendShape - adds computed properties', async () => {
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return { name: 'John', age: 30 };
+            });
+
+            type UserWithInfo = { name: string; age: number };
+            const extended = base.extend<{ getFullInfo: () => string | undefined }>({
+                extendShape: (instance) => {
+                    return Object.assign(instance, {
+                        getFullInfo: () => {
+                            const val = instance.currentValue as UserWithInfo | undefined;
+                            return val ? `${val.name} (${val.age})` : undefined;
+                        },
+                    });
+                },
+            });
+
+            expect(extended.getFullInfo()).toBeUndefined();
+            await extended.promise;
+            expect(extended.value).toEqual({ name: 'John', age: 30 });
+            expect(extended.getFullInfo()).toBe('John (30)');
+        });
+
+        test('preserves expire tracker', async () => {
+            let counter = 0;
+            const expire = new ExpireTracker(10);
+
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(5);
+                return ++counter;
+            }).withExpire(expire);
+
+            const extended = base.extend({
+                overrideFactory: (original) => original,
+            });
+
+            await extended.promise;
+            expect(extended.value).toBe(1);
+            expect(expire.isExpired).toBeFalse();
+
+            await setTimeoutAsync(11);
+            expect(expire.isExpired).toBeTrue();
+
+            await extended.promise;
+            expect(extended.value).toBe(2);
+        });
+
+        test('extend() mutates the original instance', async () => {
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return 'original';
+            });
+
+            // Type-specific extension for strings
+            const appendExtension: ILazyPromiseExtension<string> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    const result = await original(refreshing);
+                    return result + '-modified';
+                },
+            };
+
+            const extended = base.extend(appendExtension);
+
+            // extend() returns the same mutated instance
+            expect(base).toBe(extended);
+
+            await extended.promise;
+            expect(extended.value).toBe('original-modified');
+
+            // Base is the same instance, so it's also modified
+            expect(base.value).toBe('original-modified');
+        });
+
+        test('chaining multiple extensions', async () => {
+            const logs: string[] = [];
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return 10;
+            });
+
+            // Universal logging extension
+            const loggingExtension: ILazyPromiseExtension<any> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    logs.push('log:start');
+                    const result = await original(refreshing);
+                    logs.push('log:end');
+                    return result;
+                },
+            };
+
+            const withLogging = base.extend(loggingExtension);
+
+            // Type-specific extension for numbers only
+            const doublingExtension: ILazyPromiseExtension<number> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    const result = await original(refreshing);
+                    return result * 2;
+                },
+            };
+
+            const withDoubling = withLogging.extend(doublingExtension);
+
+            const withStats = withDoubling.extend<{ getLogCount: () => number }>({
+                extendShape: (instance) => {
+                    return Object.assign(instance, {
+                        getLogCount: () => logs.length,
+                    });
+                },
+            });
+
+            await withStats.promise;
+            expect(withStats.value).toBe(20);
+            expect(logs).toEqual(['log:start', 'log:end']);
+            expect(withStats.getLogCount()).toBe(2);
+        });
+
+        test('extension with initial value', async () => {
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return 100;
+            }, 50);
+
+            // Type-specific extension for numbers
+            const doublingExtension: ILazyPromiseExtension<number> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    const result = await original(refreshing);
+                    return result * 2;
+                },
+            };
+
+            const extended = base.extend(doublingExtension);
+
+            expect(extended.value).toBe(50);
+            expect(extended.isLoading).toBeTrue();
+
+            await extended.promise;
+            expect(extended.value).toBe(200);
+        });
+
+        test('type safety - number extension only works with numbers', async () => {
+            const numberLazy = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return 42;
+            });
+
+            const stringLazy = new LazyPromise(async () => {
+                await setTimeoutAsync(10);
+                return 'hello';
+            });
+
+            // Type-specific extension for numbers
+            const doublingExtension: ILazyPromiseExtension<number> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    const result = await original(refreshing);
+                    return result * 2;
+                },
+            };
+
+            // This should work fine
+            const doubled = numberLazy.extend(doublingExtension);
+            await doubled.promise;
+            expect(doubled.value).toBe(84);
+
+            // This should cause a TypeScript error - demonstrating type safety
+            // TypeScript will prevent this at compile time:
+            // @ts-expect-error - Cannot apply number extension to string LazyPromise
+            const _invalid = stringLazy.extend(doublingExtension);
+            // If we were to run it, it would produce NaN (string * 2 = NaN)
+        });
+
+        test('universal extension works with any type', async () => {
+            // Universal extension that works with any type
+            const loggingExtension: ILazyPromiseExtension<any> = {
+                overrideFactory: (original) => async (refreshing) => {
+                    const result = await original(refreshing);
+                    return result; // just pass through
+                },
+            };
+
+            const numberLazy = new LazyPromise(async () => 42);
+            const stringLazy = new LazyPromise(async () => 'hello');
+            const objectLazy = new LazyPromise(async () => ({ id: 1 }));
+
+            // All should work
+            const extNum = numberLazy.extend(loggingExtension);
+            const extStr = stringLazy.extend(loggingExtension);
+            const extObj = objectLazy.extend(loggingExtension);
+
+            await Promise.all([extNum.promise, extStr.promise, extObj.promise]);
+
+            expect(extNum.value).toBe(42);
+            expect(extStr.value).toBe('hello');
+            expect(extObj.value).toEqual({ id: 1 });
+        });
+    });
+
 });

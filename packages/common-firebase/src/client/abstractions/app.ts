@@ -4,7 +4,7 @@ import type { FirebaseConfig } from '../../config.js';
 const EmptyAppSettings = {
     functionsEmulator: null! as { url: string },
     firestore: null! as {
-        host: string,
+        host: string | undefined,
         ignoreUndefinedProperties?: boolean,
         experimentalForceLongPolling?: boolean,
         experimentalAutoDetectLongPolling?: boolean,

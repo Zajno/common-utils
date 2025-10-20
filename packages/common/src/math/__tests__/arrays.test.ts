@@ -193,4 +193,15 @@ describe('math/arrays', () => {
         check([1, 2, 3], (item: number) => item === 1, [2, 3]);
         check([1, 2, 3], '1', [1, 2, 3]);
     });
+
+    it('chunkify', () => {
+        const source = [1, 2, 3, 4, 5, 6, 7];
+        expect(arrays.chunkify(source, 0)).toStrictEqual([[1],[2],[3],[4],[5],[6],[7]]);
+        expect(arrays.chunkify(source, 1)).toStrictEqual([[1],[2],[3],[4],[5],[6],[7]]);
+        expect(arrays.chunkify(source, 2)).toStrictEqual([[1,2],[3,4],[5,6],[7]]);
+        expect(arrays.chunkify(source, 3)).toStrictEqual([[1,2,3],[4,5,6],[7]]);
+        expect(arrays.chunkify(source, 5)).toStrictEqual([[1,2,3,4,5],[6,7]]);
+        expect(arrays.chunkify(source, 7)).toStrictEqual([[1,2,3,4,5,6,7]]);
+        expect(arrays.chunkify(source, 10)).toStrictEqual([[1,2,3,4,5,6,7]]);
+    });
 });
