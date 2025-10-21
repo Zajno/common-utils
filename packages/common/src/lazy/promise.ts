@@ -3,6 +3,11 @@ import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { IControllableLazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
 
+/**
+ * Asynchronous lazy-loading container that initializes via a promise-based factory.
+ * Handles concurrent operations with "latest wins" semantics: multiple refreshes are automatically
+ * coordinated so all awaiting promises receive the final value. Supports extensions for custom behavior.
+ */
 export class LazyPromise<T, TInitial extends T | undefined = undefined> implements IControllableLazyPromise<T, TInitial>, IDisposable, IResettableModel {
 
     private _factory: LazyFactory<T>;
@@ -44,55 +49,42 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         return this._instance;
     }
 
-    /** does not calls factory */
+    /** Returns current value without triggering loading. */
     public get currentValue(): T | TInitial {
         return this._instance;
     }
 
+    /** Configures automatic cache expiration using an expire tracker. */
     public withExpire(tracker: IExpireTracker | undefined) {
         this._expireTracker = tracker;
         return this;
     }
 
     /**
-     * Extends this instance with additional functionality by applying extensions in place.
+     * Extends this instance with additional functionality via in-place mutation.
      *
      * **Capabilities:**
-     * - `overrideFactory`: Wrap the factory function (logging, retry, caching, etc.)
-     * - `extendShape`: Add custom properties/methods to the instance
+     * - `overrideFactory`: Wrap the factory (logging, retry, caching, etc.)
+     * - `extendShape`: Add custom properties/methods
+     * - `dispose`: Cleanup resources when disposed
      *
      * **Type Safety:**
      * - Use `ILazyPromiseExtension<any>` for universal extensions
-     * - Use `ILazyPromiseExtension<ConcreteType>` for type-specific extensions (e.g., number-only)
+     * - Use `ILazyPromiseExtension<ConcreteType>` for type-specific extensions
      *
-     * **Note:** Extensions mutate the instance and can be chained. Subclasses preserve their type.
+     * **Note:** Extensions mutate the instance and can be chained.
      *
-     * @param extension - Configuration with factory override and/or shape extensions
-     * @returns The same instance (this) with applied extensions
+     * @param extension - Extension configuration
+     * @returns The same instance with applied extensions
      *
      * @example
      * ```typescript
-     * // Universal logging extension
      * const logged = lazy.extend({
      *   overrideFactory: (factory) => async (refreshing) => {
      *     console.log('Loading...');
      *     return await factory(refreshing);
      *   }
      * });
-     *
-     * // Type-specific extension with custom methods
-     * const enhanced = lazyNumber.extend<{ double: () => number | undefined }>({
-     *   extendShape: (instance) => Object.assign(instance, {
-     *     double: () => instance.currentValue !== undefined
-     *       ? instance.currentValue * 2
-     *       : undefined
-     *   })
-     * });
-     *
-     * // Chaining multiple extensions
-     * const composed = lazy
-     *   .extend(cacheExtension)
-     *   .extend(loggingExtension);
      * ```
      */
     public extend<TExtShape extends object = object>(
@@ -126,6 +118,13 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         return extended;
     }
 
+    /**
+     * Manually sets the value and marks loading as complete.
+     * Clears any errors and restarts the expiration tracker if configured.
+     *
+     * @param res - The value to set
+     * @returns The value that was set
+     */
     public setInstance(res: T) {
         this._isLoading = false;
         this.clearError(); // clear error on successful set
@@ -144,15 +143,14 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     /**
-     * Refreshes the value by re-executing the factory function.
+     * Re-executes the factory to get fresh data.
      *
-     * **Key behaviors:**
-     * 1. If initial load is in progress, it will be superseded by the refresh
-     * 2. If another refresh is in progress, it will be superseded by this refresh (latest wins)
-     * 3. Anyone awaiting `lazy.promise` will receive the refreshed value
-     * 4. Multiple concurrent refresh calls are handled - only the latest one updates the instance
+     * **Concurrency handling:**
+     * - Supersedes any in-progress load or refresh
+     * - Multiple concurrent refreshes: latest wins
+     * - All awaiting promises receive the final refreshed value
      *
-     * @returns Promise that resolves to the refreshed value
+     * @returns Promise resolving to the refreshed value
      */
     public async refresh(): Promise<T> {
         this.startLoading(true);
@@ -241,10 +239,6 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
             this._promise = factoryPromise;
         }
     }
-
-    // protected onResolved(res: T) {
-
-    // }
 
     protected onRejected(e: unknown): T | TInitial {
         this._isLoading = false;
