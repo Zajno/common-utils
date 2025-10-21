@@ -1,67 +1,63 @@
 import type { IResettableModel } from '../models/types.js';
 
-/** Represents a lazily loaded value. */
+/** Represents a lazily loaded value that initializes on first access. */
 export interface ILazy<T> {
-    /** Returns current value. If not loaded, loading is triggered. */
+    /** Returns current value, triggering loading if not yet loaded. */
     readonly value: T;
 
-    /** Returns whether has current value. Accessing this property does not trigger loading. */
+    /** Returns true if value has been loaded. Does not trigger loading. */
     readonly hasValue: boolean;
 
-    /** Returns current value or undefined if not present. Accessing this property does not trigger loading. */
+    /** Returns current value or undefined if not loaded. Does not trigger loading. */
     readonly currentValue: T | undefined;
 
-    /** Returns error message if loading failed, null otherwise. Accessing this property does not trigger loading. */
+    /** Returns error message if loading failed, null otherwise. Does not trigger loading. */
     readonly error: string | null;
 }
 
-/** Represents a lazily asynchronously loaded value. */
+/** Represents a lazily asynchronously loaded value with promise-based access. */
 export interface ILazyPromise<T, TInitial extends T | undefined = undefined> extends ILazy<T | TInitial> {
     /**
-     * Returns true if loading is in progress, false if loading is completed, null if loading was not initiated.
-     *
-     * Accessing this property does not trigger loading.
+     * Returns loading state: true (loading), false (loaded), null (not started).
+     * Does not trigger loading.
      */
     readonly isLoading: boolean | null;
 
-    /** Returns the promise for the current value. If not loaded, accessing this property triggers loading. */
+    /** Returns the promise for the value, triggering loading if not started. */
     readonly promise: Promise<T>;
 
     /**
-     * Refreshes the value by re-executing the factory function.
-     * The factory will be called with `refreshing: true` parameter.
-     * If multiple refreshes are called concurrently, only the last one will update the instance.
+     * Re-executes the factory to get fresh data. If concurrent refreshes occur, the latest wins.
+     * All awaiting promises will resolve to the final refreshed value.
      *
-     * **⚠️ Use sparingly:** This method should only be called when you explicitly need fresh data.
-     * Over-using refresh defeats the purpose of lazy loading and caching.
+     * **⚠️ Use sparingly:** Only refresh when explicitly needed for fresh data.
+     * Over-use defeats lazy loading and caching benefits.
      *
-     * **Common valid use cases:**
-     * - User-initiated refresh action (pull-to-refresh, refresh button)
-     * - Cache invalidation after a mutation (e.g., after updating data on server)
-     * - Time-based refresh with proper debouncing/throttling
-     * - Recovery from an error state
+     * **Valid use cases:**
+     * - User-initiated refresh (pull-to-refresh, refresh button)
+     * - Cache invalidation after mutation
+     * - Time-based refresh with throttling
+     * - Error recovery
      *
-     * **Anti-patterns to avoid:**
-     * - Calling refresh on every render or component mount
-     * - Using refresh instead of proper cache expiration (use `withExpire` instead)
-     * - Calling refresh in loops or high-frequency events without debouncing
-     * - Using refresh as a substitute for real-time updates (consider WebSockets/polling instead)
+     * **Avoid:**
+     * - Refreshing on every render/mount
+     * - Using instead of cache expiration (use `withExpire`)
+     * - Calling in loops or high-frequency events without debouncing
      *
-     * @returns Promise that resolves to the refreshed value, or current value if refresh fails.
+     * @returns Promise resolving to the refreshed value
      */
     refresh(): Promise<T>;
 }
 
 /**
- * Represents a controllable lazy promise with manual state management capabilities.
- * Extends ILazyPromise and IResettableModel with methods to manually set values and reset state.
- * Use this interface in extensions that need direct control over the lazy value lifecycle.
+ * Controllable lazy promise with manual state management.
+ * Extends ILazyPromise with methods to manually set values and reset state.
  */
 export interface IControllableLazyPromise<T, TInitial extends T | undefined = undefined>
     extends ILazyPromise<T, TInitial>, IResettableModel {
     /**
-     * Manually sets the instance value and marks loading as complete.
-     * Useful for cache synchronization and manual state management.
+     * Manually sets the value and marks loading as complete.
+     * Useful for cache synchronization and manual state updates.
      *
      * @param value - The value to set
      * @returns The value that was set
@@ -70,29 +66,21 @@ export interface IControllableLazyPromise<T, TInitial extends T | undefined = un
 }
 
 /**
- * Factory function to retrieve the fresh value.
+ * Factory function that retrieves the value for LazyPromise.
  *
- * @param refreshing - indicates whether manual refresh is requested
- * */
+ * @param refreshing - True when called via refresh(), false on initial load
+ */
 export type LazyFactory<T> = (refreshing?: boolean) => Promise<T>;
 
 /**
- * Extension for LazyPromise instances.
+ * Extension for LazyPromise instances, enabling factory wrapping and instance augmentation.
  *
- * @template T - The type of value the extension is compatible with. Use `any` for universal extensions.
- * @template TExtShape - Additional shape added to the extended instance (properties/methods).
+ * @template T - Value type the extension is compatible with (use `any` for universal extensions)
+ * @template TExtShape - Additional properties/methods added to the instance
  *
  * @example
  * ```typescript
- * // Type-specific extension (only for numbers)
- * const doublingExtension: ILazyPromiseExtension<number> = {
- *   overrideFactory: (original) => async (refreshing) => {
- *     const result = await original(refreshing);
- *     return result * 2;
- *   }
- * };
- *
- * // Universal extension (works with any type)
+ * // Universal logging extension
  * const loggingExtension: ILazyPromiseExtension<any> = {
  *   overrideFactory: (original) => async (refreshing) => {
  *     console.log('Loading...');
@@ -102,26 +90,49 @@ export type LazyFactory<T> = (refreshing?: boolean) => Promise<T>;
  * ```
  */
 export interface ILazyPromiseExtension<T = any, TExtShape extends object = object> {
+
   /**
-   * Override or wrap the factory function.
+   * Augment the instance with additional properties/methods.
+   * Receives IControllableLazyPromise with setInstance() and reset() for manual control.
+   *
+   * @param previous - The controllable LazyPromise instance
+   * @returns The instance with additional shape
+   */
+  extendShape?: <TInitial extends T | undefined = undefined>(
+    previous: IControllableLazyPromise<T, TInitial>
+  ) => IControllableLazyPromise<T, TInitial> & TExtShape;
+
+  /**
+   * Wrap or replace the factory function.
+   *
    * @param original - The original factory function
    * @param target - The LazyPromise instance being extended
    * @returns A new factory function
    */
   overrideFactory?: <TInitial extends T | undefined = undefined>(
     original: LazyFactory<T>,
-    target: ILazyPromise<T, TInitial>
+    target: ILazyPromise<T, TInitial> & TExtShape
   ) => LazyFactory<T>;
 
   /**
-   * Extend the instance with additional properties/methods.
-   * Receives IControllableLazyPromise which includes setInstance() and reset() methods
-   * for manual state management and cache synchronization.
+   * Cleanup function called when the LazyPromise is disposed.
+   * Use for cleaning up resources (timers, subscriptions, listeners).
+   * Executes in reverse order: newest extension first, oldest last.
    *
-   * @param previous - The controllable LazyPromise instance to extend
-   * @returns The instance with additional shape
+   * @param instance - The extended LazyPromise instance being disposed
+   *
+   * @example
+   * ```typescript
+   * const intervalExtension: ILazyPromiseExtension<any, { stopTimer: () => void }> = {
+   *   extendShape: (instance) => {
+   *     let intervalId: NodeJS.Timeout | null = null;
+   *     return Object.assign(instance, {
+   *       stopTimer: () => { if (intervalId) clearInterval(intervalId); }
+   *     });
+   *   },
+   *   dispose: (instance) => instance.stopTimer()
+   * };
+   * ```
    */
-  extendShape?: <TInitial extends T | undefined = undefined>(
-    previous: IControllableLazyPromise<T, TInitial>
-  ) => IControllableLazyPromise<T, TInitial> & TExtShape;
+  dispose?: (instance: ILazyPromise<T, any> & TExtShape) => void;
 }

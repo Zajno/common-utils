@@ -117,7 +117,8 @@ describe('LazyPromise', () => {
 
     test('setInstance', async () => {
         const VAL = 'abc1';
-        const l = new LazyPromise(() => setTimeoutAsync(100).then(() => VAL));
+        const factory = vi.fn(() => setTimeoutAsync(10).then(() => VAL));
+        const l = new LazyPromise(factory);
 
         expect(l.hasValue).toBeFalse();
         expect(l.isLoading).toBeNull();
@@ -253,11 +254,13 @@ describe('LazyPromise', () => {
 
     test('refresh method', async () => {
         let counter = 0;
-        const lazy = new LazyPromise(async (refreshing) => {
+        const factory = vi.fn(async (refreshing) => {
             await setTimeoutAsync(10);
             counter++;
             return { value: counter, refreshing };
         });
+
+        const lazy = new LazyPromise(factory);
 
         // Initial load
         await lazy.promise;
@@ -265,11 +268,18 @@ describe('LazyPromise', () => {
         expect(lazy.value?.refreshing).toBe(false);
         expect(counter).toBe(1);
 
+        expect(factory).toHaveBeenCalledExactlyOnceWith(false);
+        factory.mockClear();
+
         // Refresh
         const refreshResult = await lazy.refresh();
-        expect(refreshResult.value).toBe(2);
+        expect(factory).toHaveBeenCalledExactlyOnceWith(true);
+        factory.mockClear();
+
         expect(refreshResult.refreshing).toBe(true);
+        expect(refreshResult.value).toBe(2);
         expect(lazy.value?.value).toBe(2);
+        expect(lazy.value?.refreshing).toBe(true);
         expect(counter).toBe(2);
 
         // Multiple concurrent refreshes - last one wins
@@ -305,6 +315,7 @@ describe('LazyPromise', () => {
         // Refresh with error
         shouldFail = true;
         const result = await lazy.refresh();
+        expect(counter).toBe(2);
         expect(result.value).toBe(1); // returns current instance on error
         expect(lazy.error).toBe('Refresh failed');
         expect(lazy.value?.value).toBe(1); // value unchanged
@@ -315,6 +326,223 @@ describe('LazyPromise', () => {
         expect(lazy.value?.value).toBe(3);
         // Error should be cleared on successful refresh
         expect(lazy.error).toBeNull();
+    });
+
+    test('refresh during initial load - refresh wins', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async () => {
+            counter++;
+            await setTimeoutAsync(50);
+            return counter;
+        });
+
+        // Start initial load (will take 50ms)
+        const initialPromise = lazy.promise;
+        expect(lazy.isLoading).toBe(true);
+
+        // After 10ms, trigger refresh before initial load completes
+        await setTimeoutAsync(10);
+        const refreshPromise = lazy.refresh();
+
+        // Both promises should resolve to the refreshed value (counter=2)
+        const [initialResult, refreshResult] = await Promise.all([initialPromise, refreshPromise]);
+
+        expect(initialResult).toBe(2); // Initial promise gets refreshed value
+        expect(refreshResult).toBe(2); // Refresh promise gets its value
+        expect(lazy.value).toBe(2); // Instance has refreshed value
+        expect(counter).toBe(2); // Factory called twice (initial + refresh)
+    });
+
+    test('multiple concurrent refreshes - latest wins', async () => {
+        const delays = [100, 50, 20]; // Different delays for each call
+        let callIndex = 0;
+
+        const lazy = new LazyPromise(async () => {
+            const myIndex = callIndex++;
+            const myDelay = delays[myIndex - 1] || 10;
+            await setTimeoutAsync(myDelay);
+            return myIndex + 1;
+        });
+
+        {
+            // Initial load
+            await lazy.promise;
+            expect(lazy.value).toBe(1);
+
+            // Trigger 3 concurrent refreshes with different delays
+            const refresh1 = lazy.refresh(); // Takes 60ms, returns 2
+            await setTimeoutAsync(5);
+            const refresh2 = lazy.refresh(); // Takes 40ms, returns 3
+            await setTimeoutAsync(5);
+            const refresh3 = lazy.refresh(); // Takes 20ms, returns 4 (fastest!)
+
+            // Wait for all to complete
+            const [r1, r2, r3] = await Promise.all([refresh1, refresh2, refresh3]);
+
+            // Latest refresh wins, superseding all previous ones
+            expect(lazy.value).toBe(4);
+            expect(r3).toBe(4);
+            expect(r1).toBe(4);
+            expect(r2).toBe(4);
+        }
+
+        lazy.reset();
+        callIndex = 0;
+        // reverse delays
+        delays.length = 0;
+        delays.push(20, 50, 100);
+
+        { // expecting the same behavior for first being fastest
+            // Initial load
+            await lazy.promise;
+            expect(lazy.value).toBe(1);
+
+            // Trigger 3 concurrent refreshes with different delays
+            const refresh1 = lazy.refresh(); // Takes 60ms, returns 2
+            await setTimeoutAsync(5);
+            const refresh2 = lazy.refresh(); // Takes 40ms, returns 3
+            await setTimeoutAsync(5);
+            const refresh3 = lazy.refresh(); // Takes 20ms, returns 4 (fastest!)
+
+            // Wait for all to complete
+            const [r1, r2, r3] = await Promise.all([refresh1, refresh2, refresh3]);
+
+            // Latest refresh wins, superseding all previous ones
+            expect(lazy.value).toBe(4);
+            expect(r3).toBe(4);
+            expect(r1).toBe(4);
+            expect(r2).toBe(4);
+        }
+
+    });
+
+    test('await lazy.promise during refresh gets refreshed value', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async () => {
+            counter++;
+            await setTimeoutAsync(30);
+            return counter;
+        });
+
+        // Initial load
+        await lazy.promise;
+        expect(lazy.value).toBe(1);
+
+        // Start refresh
+        const refreshPromise = lazy.refresh();
+
+        // Another consumer starts waiting on lazy.promise
+        await setTimeoutAsync(5);
+        const promiseResult = await lazy.promise;
+
+        // Should get the refreshed value, not the old one
+        expect(promiseResult).toBe(2);
+        expect(await refreshPromise).toBe(2);
+        expect(lazy.value).toBe(2);
+    });
+
+    test('initial load during refresh joins the refresh', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async () => {
+            counter++;
+            await setTimeoutAsync(30);
+            return counter;
+        });
+
+        // Trigger refresh before any load (isLoading === null)
+        expect(lazy.isLoading).toBeNull();
+        const refreshPromise = lazy.refresh();
+
+        // Now access lazy.promise (tries to start initial load)
+        await setTimeoutAsync(5);
+        const promiseResult = await lazy.promise;
+
+        // Should join the refresh, not start a new load
+        expect(promiseResult).toBe(1);
+        expect(await refreshPromise).toBe(1);
+        expect(counter).toBe(1); // Only one factory call (refresh)
+    });
+
+    test('concurrent load and refresh - refresh supersedes', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async () => {
+            counter++;
+            await setTimeoutAsync(50);
+            return counter;
+        });
+
+        // Start load
+        const loadPromise = lazy.promise;
+        expect(lazy.isLoading).toBe(true);
+
+        // Immediately refresh
+        await setTimeoutAsync(5);
+        const refreshPromise = lazy.refresh();
+
+        // Both should resolve to refreshed value
+        const [loadResult, refreshResult] = await Promise.all([loadPromise, refreshPromise]);
+
+        expect(loadResult).toBe(2); // Load promise gets refreshed value
+        expect(refreshResult).toBe(2); // Refresh promise gets its value
+        expect(lazy.value).toBe(2);
+        expect(counter).toBe(2); // Two factory calls
+    });
+
+    test('old promise reference resolves to new value after refresh', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async () => {
+            counter++;
+            await setTimeoutAsync(30);
+            return counter;
+        });
+
+        // Capture the promise reference BEFORE any loading
+        const promiseRef1 = lazy.promise;
+        expect(lazy.isLoading).toBe(true);
+
+        // Trigger refresh before first load completes
+        await setTimeoutAsync(10);
+        lazy.refresh();
+
+        // The original promise reference should resolve to the refreshed value
+        const result = await promiseRef1;
+        expect(result).toBe(2); // Gets refreshed value, not stale value (1)
+
+        // Verify the instance also has the fresh value
+        expect(lazy.value).toBe(2);
+    });
+
+    test('multiple refreshes - all old promise refs get latest value', async () => {
+        let counter = 0;
+        const lazy = new LazyPromise(async () => {
+            counter++;
+            await setTimeoutAsync(20);
+            return counter;
+        });
+
+        // Capture promise references at different stages
+        const promiseRef1 = lazy.promise; // Initial load
+
+        await setTimeoutAsync(5);
+        lazy.refresh(); // Refresh 1
+        const promiseRef2 = lazy.promise;
+
+        await setTimeoutAsync(5);
+        lazy.refresh(); // Refresh 2
+        const promiseRef3 = lazy.promise;
+
+        // All promise references should resolve to the final value
+        const [result1, result2, result3] = await Promise.all([
+            promiseRef1,
+            promiseRef2,
+            promiseRef3,
+        ]);
+
+        // All should get the latest refreshed value
+        expect(result1).toBe(3);
+        expect(result2).toBe(3);
+        expect(result3).toBe(3);
+        expect(lazy.value).toBe(3);
     });
 
     test('error handling', () => {
@@ -686,6 +914,187 @@ describe('LazyPromise', () => {
             expect(extNum.value).toBe(42);
             expect(extStr.value).toBe('hello');
             expect(extObj.value).toEqual({ id: 1 });
+        });
+
+        test('extension dispose is called on LazyPromise disposal', async () => {
+            const disposeCalls: string[] = [];
+
+            const disposableExtension: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('extension-disposed');
+                },
+            };
+
+            const base = new LazyPromise(async () => 'test');
+            const extended = base.extend(disposableExtension);
+
+            await extended.promise;
+            expect(extended.value).toBe('test');
+            expect(disposeCalls).toEqual([]);
+
+            extended.dispose();
+            expect(disposeCalls).toEqual(['extension-disposed']);
+        });
+
+        test('multiple extension disposers are called in reverse order', async () => {
+            const disposeCalls: string[] = [];
+
+            const extension1: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('ext1-disposed');
+                },
+            };
+
+            const extension2: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('ext2-disposed');
+                },
+            };
+
+            const extension3: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('ext3-disposed');
+                },
+            };
+
+            const base = new LazyPromise(async () => 'test');
+            const extended = base
+                .extend(extension1)
+                .extend(extension2)
+                .extend(extension3);
+
+            await extended.promise;
+            expect(disposeCalls).toEqual([]);
+
+            extended.dispose();
+            // Should be called in reverse order: newest first, oldest last
+            expect(disposeCalls).toEqual(['ext3-disposed', 'ext2-disposed', 'ext1-disposed']);
+        });
+
+        test('extension dispose receives the extended instance', async () => {
+            let disposedInstance: any = null;
+
+            const trackedExtension: ILazyPromiseExtension<string, { tracked: boolean }> = {
+                extendShape: (instance) => {
+                    return Object.assign(instance, {
+                        tracked: true,
+                    });
+                },
+                dispose: (instance) => {
+                    disposedInstance = instance;
+                },
+            };
+
+            const base = new LazyPromise(async () => 'test');
+            const extended = base.extend(trackedExtension);
+
+            await extended.promise;
+            expect(extended.tracked).toBe(true);
+
+            extended.dispose();
+            expect(disposedInstance).toBe(extended);
+            expect(disposedInstance.tracked).toBe(true);
+        });
+
+        test('extension dispose is called even if LazyPromise was never loaded', () => {
+            const disposeCalls: string[] = [];
+
+            const disposableExtension: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('disposed');
+                },
+            };
+
+            const base = new LazyPromise(async () => 'test');
+            const extended = base.extend(disposableExtension);
+
+            // Never access .value or .promise
+            expect(extended.isLoading).toBeNull();
+
+            extended.dispose();
+            expect(disposeCalls).toEqual(['disposed']);
+        });
+
+        test('extension without dispose does not break disposal chain', async () => {
+            const disposeCalls: string[] = [];
+
+            const extension1: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('ext1-disposed');
+                },
+            };
+
+            // No dispose method
+            const extension2: ILazyPromiseExtension<any> = {
+                overrideFactory: (original) => original,
+            };
+
+            const extension3: ILazyPromiseExtension<any> = {
+                dispose: () => {
+                    disposeCalls.push('ext3-disposed');
+                },
+            };
+
+            const base = new LazyPromise(async () => 'test');
+            const extended = base
+                .extend(extension1)
+                .extend(extension2) // No dispose
+                .extend(extension3);
+
+            await extended.promise;
+            extended.dispose();
+
+            // Should still call both disposers
+            expect(disposeCalls).toEqual(['ext3-disposed', 'ext1-disposed']);
+        });
+
+        test('extension dispose can clean up resources', async () => {
+            let intervalId: NodeJS.Timeout | null = null;
+            const ticks: number[] = [];
+
+            const intervalExtension: ILazyPromiseExtension<any, { stopInterval: () => void }> = {
+                extendShape: (instance) => {
+                    return Object.assign(instance, {
+                        stopInterval: () => {
+                            if (intervalId !== null) {
+                                clearInterval(intervalId);
+                                intervalId = null;
+                            }
+                        },
+                    });
+                },
+                overrideFactory: (original) => async (refreshing) => {
+                    // Start interval when loading
+                    intervalId = setInterval(() => {
+                        ticks.push(Date.now());
+                    }, 10);
+                    return await original(refreshing);
+                },
+                dispose: (instance) => {
+                    instance.stopInterval();
+                },
+            };
+
+            const base = new LazyPromise(async () => {
+                await setTimeoutAsync(30);
+                return 'done';
+            });
+            const extended = base.extend(intervalExtension);
+
+            await extended.promise;
+            expect(extended.value).toBe('done');
+
+            // Wait a bit to accumulate ticks
+            await setTimeoutAsync(50);
+            const tickCount = ticks.length;
+            expect(tickCount).toBeGreaterThan(0);
+
+            // Dispose should stop the interval
+            extended.dispose();
+            await setTimeoutAsync(50);
+
+            // No new ticks should be added
+            expect(ticks.length).toBe(tickCount);
         });
     });
 

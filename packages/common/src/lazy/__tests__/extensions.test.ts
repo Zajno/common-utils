@@ -308,5 +308,60 @@ describe('createCacheExtension', () => {
             // Verify they're all on the same instance
             expect(extended).toBe(lazy); // Same instance!
         });
+
+        it('should work correctly with dispose', async () => {
+            const storage: IKeyedStorage<string> = {
+                getValue: vi.fn().mockResolvedValue(null),
+                setValue: vi.fn(),
+                hasValue: vi.fn(),
+                removeValue: vi.fn(),
+            };
+
+            const factorySpy = vi.fn().mockResolvedValue('value');
+            const lazy = new LazyPromise<string>(factorySpy);
+            const cached = lazy.extend(createCacheExtension(storage));
+
+            await cached.promise;
+            expect(cached.value).toBe('value');
+            expect(storage.setValue).toHaveBeenCalledWith('value');
+
+            // Dispose should not throw and should reset the instance
+            cached.dispose();
+
+            expect(cached.currentValue).toBeUndefined();
+            expect(cached.hasValue).toBeFalse();
+            expect(cached.isLoading).toBeNull();
+        });
+
+        it('should allow chaining with extensions that have dispose', async () => {
+            const storage: IKeyedStorage<string> = {
+                getValue: vi.fn().mockResolvedValue(null),
+                setValue: vi.fn(),
+                hasValue: vi.fn(),
+                removeValue: vi.fn(),
+            };
+
+            const disposeCalls: string[] = [];
+
+            const lazy = new LazyPromise<string>(async () => 'value');
+            const extended = lazy
+                .extend(createCacheExtension(storage))
+                .extend({
+                    dispose: () => {
+                        disposeCalls.push('custom-disposed');
+                    },
+                });
+
+            await extended.promise;
+            expect(extended.value).toBe('value');
+
+            extended.dispose();
+
+            // Custom disposer should be called
+            expect(disposeCalls).toEqual(['custom-disposed']);
+            // Instance should be reset
+            expect(extended.hasValue).toBeFalse();
+        });
     });
 });
+
