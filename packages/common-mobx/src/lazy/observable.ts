@@ -2,6 +2,7 @@ import type { Disposer } from '@zajno/common/functions/disposer.js';
 import { Lazy, type ILazyPromise, type ILazyPromiseExtension, type LazyFactory } from '@zajno/common/lazy';
 import { LazyPromise } from '@zajno/common/lazy/promise';
 import { extendObject } from '@zajno/common/structures/extendObject';
+import { assert } from '@zajno/common/functions/assert';
 import { action, makeObservable, observable, Reaction } from 'mobx';
 import { ObservableTypes } from '../observing/types.js';
 
@@ -119,6 +120,8 @@ export function createObservingExtension(options?: ObserveFactoryOptions): ILazy
     return {
 
         extendShape: (instance) => {
+            assert(!('__reaction' in (instance as InstanceData)), 'Observing extension already applied to this instance');
+
             const _reaction = new Reaction(
                 'LazyPromiseObservableFactoryTracker',
                 () => {

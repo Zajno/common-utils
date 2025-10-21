@@ -628,7 +628,7 @@ describe('LazyPromise', () => {
         expect(extended.isLoading).toBeNull();
     });
 
-    it('LazyPromiseObservable preserves type with extensions', async () => {
+    it('preserves type with extensions', async () => {
         const lazy = new LazyPromiseObservable<number>(async () => 42);
 
         const disposeCalls: string[] = [];
@@ -654,5 +654,21 @@ describe('LazyPromise', () => {
 
         extended.dispose();
         expect(disposeCalls).toEqual(['disposed']);
+    });
+
+    it('cannot have multiple observing extensions', async () => {
+        const lazy = new LazyPromiseObservable<number>(async () => 1);
+
+        const firstExtension = lazy.extend(
+            createObservingExtension(),
+        );
+
+        expect(firstExtension).toBeInstanceOf(LazyPromiseObservable);
+
+        expect(() => {
+            firstExtension.extend(
+                createObservingExtension(),
+            );
+        }).toThrowError('Observing extension already applied to this instance');
     });
 });
