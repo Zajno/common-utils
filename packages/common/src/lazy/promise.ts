@@ -14,8 +14,11 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
 
-    private _lastRefreshingPromise: Promise<T> | null = null;
+    // Track the active factory promise to determine "latest wins"
+    private _activeFactoryPromise: Promise<T> | null = null;
     private _error: string | null = null;
+
+    private _ownDisposer?: () => void;
 
     constructor(
         factory: LazyFactory<T>,
@@ -97,52 +100,30 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         // 'any' type parameter doesn't affect return type since we return 'this'
         extension: Partial<ILazyPromiseExtension<any, TExtShape>>,
     ): object extends TExtShape ? this : this & TExtShape {
-        // Override the factory if provided
-        if (extension.overrideFactory) {
-            this._factory = extension.overrideFactory(this._factory, this);
-        }
+
+        let extended = this as this & TExtShape;
 
         // Apply shape extension if provided
         if (extension.extendShape) {
-            return extension.extendShape(this) as this & TExtShape;
+            extended = extension.extendShape(this) as this & TExtShape;
         }
 
-        return this as this & TExtShape;
-    }
-
-    protected ensureInstanceLoading() {
-        if (this.isLoading === false && this._instance !== undefined && this._expireTracker?.isExpired) {
-            // do not reset the instance, just make sure it will be reloaded
-            this._isLoading = null;
+        // Override the factory if provided
+        if (extension.overrideFactory) {
+            this._factory = extension.overrideFactory(this._factory, extended);
         }
 
-        if (this._isLoading === null) {
-            this._isLoading = true;
-            this.doLoad();
+        if (extension.dispose) {
+            const previousDisposer = this._ownDisposer;
+            const nextDisposer = extension.dispose;
+
+            this._ownDisposer = () => {
+                nextDisposer(extended);
+                previousDisposer?.();
+            };
         }
-    }
 
-    protected doLoad() {
-        this._promise = this._factory(false)
-            .then(this.onResolved.bind(this))
-            .catch(this.onRejected.bind(this));
-    }
-
-    protected onResolved(res: T) {
-        // case: during the promise `setInstance` was called
-        if (!this._isLoading && this._instance !== undefined) {
-            return this._instance;
-        }
-        this.setInstance(res);
-        return res;
-    }
-
-    protected onRejected(e: unknown) {
-        this._isLoading = false;
-        this._instance = this._initial;
-        this._promise = Promise.resolve(this._initial as T);
-        this.setError(e);
-        return this._initial as T;
+        return extended;
     }
 
     public setInstance(res: T) {
@@ -153,47 +134,29 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         // + make sure it's resolved with the freshest value
         // also do this before setting the instance... just in case :)
         this._promise = Promise.resolve(res);
+        this._activeFactoryPromise = null;
 
         this._instance = res;
 
-        if (this._expireTracker) {
-            this._expireTracker.restart();
-        }
+        this._expireTracker?.restart();
 
         return res;
     }
 
-    protected setError(err: unknown) {
-        this._error = this.parseError(err);
-    }
-
-    protected clearError() {
-        this._error = null;
-    }
-
+    /**
+     * Refreshes the value by re-executing the factory function.
+     *
+     * **Key behaviors:**
+     * 1. If initial load is in progress, it will be superseded by the refresh
+     * 2. If another refresh is in progress, it will be superseded by this refresh (latest wins)
+     * 3. Anyone awaiting `lazy.promise` will receive the refreshed value
+     * 4. Multiple concurrent refresh calls are handled - only the latest one updates the instance
+     *
+     * @returns Promise that resolves to the refreshed value
+     */
     public async refresh(): Promise<T> {
-        let myPromise: Promise<T> | null = null;
-        try {
-            myPromise = this._factory(true);
-
-            // every new refresh overrides the previous one
-            // so this one becomes "last"
-            // and previous becomes stale and won't update the value when it resolves
-            this._lastRefreshingPromise = myPromise;
-            const fresh = await myPromise;
-            if (this._lastRefreshingPromise === myPromise) {
-                this.setInstance(fresh);
-            }
-
-            return fresh;
-        } catch (e: unknown) {
-            this.setError(e);
-            return this._instance as T;
-        } finally {
-            if (myPromise != null && this._lastRefreshingPromise === myPromise) {
-                this._lastRefreshingPromise = null;
-            }
-        }
+        this.startLoading(true);
+        return this._promise!;
     }
 
     public reset() {
@@ -206,6 +169,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
 
         const p = this._promise;
         this._promise = undefined;
+        this._activeFactoryPromise = null; // Clear active promise reference
 
         // check if loading is still in progress
         // need to dispose abandoned value
@@ -217,7 +181,88 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     public dispose() {
+        this._ownDisposer?.();
         this.reset();
+    }
+
+    protected ensureInstanceLoading() {
+        if (this.isLoading === false && this._instance !== undefined && this._expireTracker?.isExpired) {
+            // do not reset the instance, just make sure it will be reloaded
+            this._isLoading = null;
+        }
+
+        if (this._isLoading === null) {
+            this._isLoading = true;
+            this.startLoading(false);
+        }
+    }
+
+    private startLoading(refreshing: boolean) {
+        if (!refreshing && this._activeFactoryPromise) {
+            // Case when refreshing already is happening - we have an active promise
+            return;
+        }
+
+        const factoryPromise: Promise<T> = this._factory(refreshing)
+            .then(res => {
+                if (!this._activeFactoryPromise) {
+                    // this promise was abandoned: was superseded or reset called
+                    return this._instance ?? this._initial as T;
+                }
+
+                if (this._activeFactoryPromise === factoryPromise) {
+                    // case: during the promise `setInstance` was called manually
+                    if (!refreshing && !this._isLoading && this._instance !== undefined) {
+                        return this._instance;
+                    }
+                    this.setInstance(res);
+                    return res;
+                }
+
+                // Stale promise - return the latest active promise instead
+                // This ensures anyone awaiting this old promise gets the fresh value
+                return this._activeFactoryPromise;
+            })
+            .catch(err => {
+                if (!this._activeFactoryPromise || this._activeFactoryPromise === factoryPromise) {
+                    return this.onRejected(err) as T;
+                }
+                throw err;
+            });
+
+        const hadActive = !!this._activeFactoryPromise;
+
+        // This is now the active promise - any previous one is superseded
+        this._activeFactoryPromise = factoryPromise;
+
+        // don't overwrite an existing promise (e.g., from refresh)
+        // it should pick up the new active promise automatically
+        if (!this._promise || !hadActive) {
+            this._promise = factoryPromise;
+        }
+    }
+
+    // protected onResolved(res: T) {
+
+    // }
+
+    protected onRejected(e: unknown): T | TInitial {
+        this._isLoading = false;
+        // Keep the current instance on error (don't reset to initial)
+        // This allows retaining the last successful value
+        const currentInstance = this._instance !== undefined ? this._instance : this._initial;
+        this._promise = Promise.resolve(currentInstance) as Promise<T>;
+        this._activeFactoryPromise = null;
+        this.setError(e);
+        return currentInstance as T;
+    }
+
+    protected setError(err: unknown) {
+        this._error = this.parseError(err);
+    }
+
+    protected clearError() {
+        this._error = null;
     }
 
     protected parseError(err: unknown): string {

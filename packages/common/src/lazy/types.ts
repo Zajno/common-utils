@@ -102,16 +102,6 @@ export type LazyFactory<T> = (refreshing?: boolean) => Promise<T>;
  * ```
  */
 export interface ILazyPromiseExtension<T = any, TExtShape extends object = object> {
-  /**
-   * Override or wrap the factory function.
-   * @param original - The original factory function
-   * @param target - The LazyPromise instance being extended
-   * @returns A new factory function
-   */
-  overrideFactory?: <TInitial extends T | undefined = undefined>(
-    original: LazyFactory<T>,
-    target: ILazyPromise<T, TInitial>
-  ) => LazyFactory<T>;
 
   /**
    * Extend the instance with additional properties/methods.
@@ -124,4 +114,17 @@ export interface ILazyPromiseExtension<T = any, TExtShape extends object = objec
   extendShape?: <TInitial extends T | undefined = undefined>(
     previous: IControllableLazyPromise<T, TInitial>
   ) => IControllableLazyPromise<T, TInitial> & TExtShape;
+
+  /**
+   * Override or wrap the factory function.
+   * @param original - The original factory function
+   * @param target - The LazyPromise instance being extended
+   * @returns A new factory function
+   */
+  overrideFactory?: <TInitial extends T | undefined = undefined>(
+    original: LazyFactory<T>,
+    target: ILazyPromise<T, TInitial> & TExtShape
+  ) => LazyFactory<T>;
+
+  dispose?: (instance: ILazyPromise<T, any> & TExtShape) => void;
 }
