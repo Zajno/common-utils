@@ -7,7 +7,7 @@ import { catchPromise } from './safe.js';
 type Callback<T> = () => (T | Promise<T>);
 
 /** Runs a callback after a timeout, ignoring all consecutive calls until the first is processed.  */
-export class ThrottleAction<T = any> extends Loggable {
+export class DebounceAction<T = any> extends Loggable {
 
     private _timeoutRef: ReturnType<typeof setTimeout> | null = null;
     private _postponedCb: Callback<T> | null = null;
@@ -72,7 +72,7 @@ export class ThrottleAction<T = any> extends Loggable {
             // This is probably OK since the running call should cover the current one.
             // TODO Maybe just don't start timeout if the lock is set?
             // The reason for not doing that 👆 is there's still a valid case when previous is still working but it's legit to start a new one (e.g. some state has changed already)
-            this.logger.warn('[ThrottleAction] THROTTLE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
+            this.logger.warn('[DebounceAction] DEBOUNCE LOCKED, but another call is forced. Skipping since the behavior is undefined.');
         } else if (cb) {
             let result: T | undefined = undefined;
             const lockId = random(1, 1_000_000);
@@ -99,10 +99,10 @@ export class ThrottleAction<T = any> extends Loggable {
 
 type ProcessorResult<T> = { result: T | undefined, index: number };
 
-export class ThrottleProcessor<TSubject, TResult = any> {
+export class DebounceProcessor<TSubject, TResult = any> {
 
     private readonly _queue: TSubject[] = [];
-    private readonly _action: ThrottleAction<TResult | undefined>;
+    private readonly _action: DebounceAction<TResult | undefined>;
 
     private _promise: ManualPromise<TResult> | null = null;
 
@@ -111,7 +111,7 @@ export class ThrottleProcessor<TSubject, TResult = any> {
             throw new Error('Arg0 expected: process');
         }
 
-        this._action = new ThrottleAction(timeout)
+        this._action = new DebounceAction(timeout)
             .useParallelRuns();
     }
 

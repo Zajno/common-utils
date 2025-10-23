@@ -1,24 +1,24 @@
 import { setTimeoutAsync } from '../../async/timeout.js';
 import { catchPromise } from '../safe.js';
-import { ThrottleAction, ThrottleProcessor } from '../throttle.js';
+import { DebounceAction, DebounceProcessor } from '../debounce.js';
 
-describe('throttle', () => {
+describe('debounce', () => {
 
-    it('should throttle and return last result', async () => {
-        const throttle = new ThrottleAction(100);
+    it('should debounce and return last result', async () => {
+        const debounce = new DebounceAction(100);
         let counter = 1;
         const cb = vi.fn(() => ++counter);
 
-        throttle.tryRun(cb);
-        throttle.tryRun(cb);
+        debounce.tryRun(cb);
+        debounce.tryRun(cb);
         await setTimeoutAsync(10);
-        throttle.tryRun(cb);
+        debounce.tryRun(cb);
         await setTimeoutAsync(10);
-        throttle.tryRun(cb);
+        debounce.tryRun(cb);
 
         expect(cb).not.toHaveBeenCalled();
 
-        const p = throttle.getPromise();
+        const p = debounce.getPromise();
 
         await setTimeoutAsync(100);
 
@@ -27,28 +27,28 @@ describe('throttle', () => {
         expect(cb).toHaveBeenCalledTimes(1);
     });
 
-    it('should throttle and return last result - with arguments', async () => {
-        const throttle = new ThrottleAction<number>(100);
+    it('should debounce and return last result - with arguments', async () => {
+        const debounce = new DebounceAction<number>(100);
         let counter = 1;
         const cb = vi.fn((v: number) => setTimeoutAsync(50).then(() => v));
         const wrapCb = () => cb(++counter);
 
-        throttle.tryRun(wrapCb);
-        throttle.tryRun(wrapCb);
+        debounce.tryRun(wrapCb);
+        debounce.tryRun(wrapCb);
 
         await setTimeoutAsync(10);
-        throttle.tryRun(wrapCb);
+        debounce.tryRun(wrapCb);
 
         await setTimeoutAsync(10);
-        throttle.tryRun(wrapCb, true);
+        debounce.tryRun(wrapCb, true);
 
         expect(cb).not.toHaveBeenCalled();
 
-        const p = throttle.getPromise();
+        const p = debounce.getPromise();
 
         await setTimeoutAsync(10);
 
-        catchPromise(throttle.forceRun());
+        catchPromise(debounce.forceRun());
 
         await setTimeoutAsync(150);
 
@@ -57,14 +57,14 @@ describe('throttle', () => {
         expect(cb).toHaveBeenCalledTimes(1);
     });
 
-    it('ThrottleProcessor throttles and returns a result value', async () => {
+    it('DebounceProcessor debounces and returns a result value', async () => {
         let result: number | null = null;
         const cb = vi.fn(async (values: number[]): Promise<number> => {
             await setTimeoutAsync(50);
             result = values.reduce((a, b) => a + b, 0);
             return result;
         });
-        const processor = new ThrottleProcessor<number, number>(cb, 100);
+        const processor = new DebounceProcessor<number, number>(cb, 100);
 
         const initial = 1;
         let final = initial;
@@ -90,7 +90,7 @@ describe('throttle', () => {
         expect(cb).toHaveBeenCalledTimes(1);
     });
 
-    it('ThrottleProcessor handles subsequent throttles', async () => {
+    it('DebounceProcessor handles subsequent debounces', async () => {
 
         type Result = { id: number };
 
@@ -102,7 +102,7 @@ describe('throttle', () => {
             resultProcessor(res);
             return res;
         });
-        const processor = new ThrottleProcessor(loadMany, 100);
+        const processor = new DebounceProcessor(loadMany, 100);
 
         const doRequests = async (delay = 0, start = 1) => {
             const initial = start;

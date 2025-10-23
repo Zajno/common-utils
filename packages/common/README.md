@@ -22,7 +22,7 @@ The motivation to have this – just to control and organize some shared code th
 
 * [Fields](./src/fields/index.ts): work with object fields: skip/filter falsy, transfer falsy/changed; merge arrays of objects.
 
-* [Functions](./src/functions): [`assert`](./src/functions/assert.ts), [`IDisposable`/`Disposable`/`Disposer`](./src/functions/disposer.ts), [`ThrottleAction`/`ThrottleProcessor`](./src/functions/throttle.ts).
+* [Functions](./src/functions): [`assert`](./src/functions/assert.ts), [`IDisposable`/`Disposable`/`Disposer`](./src/functions/disposer.ts), [`DebounceAction`/`DebounceProcessor`](./src/functions/debounce.ts).
 
 * [Lazy](./src/lazy): [`Lazy`](./src/lazy/singleton.ts) (sync), [`LazyPromise`](./src/lazy/promise.ts).
 
@@ -44,7 +44,7 @@ The motivation to have this – just to control and organize some shared code th
 * [Observing](./src/observing)
     - [`Event`](./src/observing/event.ts): a simple event emitter;
     - [`OneTimeLateEvent`](./src/observing/event.late.ts): an event emitter that can be listened to after it's been emitted;
-    - Others: `ThrottledEvent`, `Timer`, `ProgressTracker` and more.
+    - Others: `DebouncedEvent`, `Timer`, `ProgressTracker` and more.
 
 * [Storage](./src/storage/index.ts): abstractions + helpers for sync/async storages;
 
