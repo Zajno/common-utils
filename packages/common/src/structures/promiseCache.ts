@@ -1,4 +1,4 @@
-import { ThrottleProcessor } from '../functions/throttle.js';
+import { DebounceProcessor } from '../functions/debounce.js';
 import { Loggable } from '../logger/loggable.js';
 import { Model } from '../models/Model.js';
 import type { IMapModel, IValueModel } from '../models/types.js';
@@ -54,7 +54,7 @@ export class PromiseCache<T, K = string> extends Loggable {
     /** Stores items resolve timestamps (for expiration) in map by id. */
     private readonly _timestamps = new Map<string, number>();
 
-    private _batch: ThrottleProcessor<K, T[]> | null = null;
+    private _batch: DebounceProcessor<K, T[]> | null = null;
     private _invalidationTimeMs: number | null = null;
     private _keepInstanceDuringInvalidation = false;
 
@@ -162,7 +162,7 @@ export class PromiseCache<T, K = string> extends Loggable {
      * When provided, effectively replaces the main fetcher; but in case of fail, fallbacks to the main fetcher.
     */
     useBatching(fetcher: (ids: K[]) => Promise<T[]>, delay = BATCHING_DELAY) {
-        this._batch = fetcher ? new ThrottleProcessor(fetcher, delay) : null;
+        this._batch = fetcher ? new DebounceProcessor(fetcher, delay) : null;
         return this;
     }
 
