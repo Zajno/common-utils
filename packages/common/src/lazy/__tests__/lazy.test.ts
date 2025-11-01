@@ -17,7 +17,7 @@ describe('Lazy', () => {
         l.reset();
         expect(l.hasValue).toBeFalse();
         expect(l.currentValue).toBeUndefined();
-        expect(l.currentValue).toBeUndefined(); // second time still undefined
+        expect(l.currentValue).toBeUndefined();
 
         l.prewarm();
 
@@ -126,17 +126,14 @@ describe('LazyPromise', () => {
         expect(l.value).toBeUndefined();
         expect(l.isLoading).toBeTrue();
 
-        // loading started when accessed `value` above
         const p = l.promise;
 
         const VAL2 = 'abc2';
         l.setInstance(VAL2);
 
-        // both old promise and new value should be resolved to the new value
         await expect(p).resolves.toBe(VAL2);
         await expect(l.promise).resolves.toBe(VAL2);
 
-        // after all loading
         const VAL3 = 'abc3';
         l.setInstance(VAL3);
         await expect(l.promise).resolves.toBe(VAL3);
@@ -170,7 +167,7 @@ describe('LazyPromise', () => {
 
         expect(expire.isExpired).toBeTrue();
         expect(l.hasValue).toBeTrue();
-        expect(l.value).toBe(1); // still the same value
+        expect(l.value).toBe(1);
 
         await expect(l.promise).resolves.toBe(2);
         expect(incrementor).toBe(2);
@@ -179,7 +176,7 @@ describe('LazyPromise', () => {
         expire.expire();
         expect(expire.isExpired).toBeTrue();
         expect(l.hasValue).toBeTrue();
-        expect(l.value).toBe(2); // still the same value
+        expect(l.value).toBe(2);
         await expect(l.promise).resolves.toBe(3);
         expect(incrementor).toBe(3);
         expect(expire.isExpired).toBeFalse();
@@ -262,7 +259,6 @@ describe('LazyPromise', () => {
 
         const lazy = new LazyPromise(factory);
 
-        // Initial load
         await lazy.promise;
         expect(lazy.value?.value).toBe(1);
         expect(lazy.value?.refreshing).toBe(false);
@@ -271,7 +267,6 @@ describe('LazyPromise', () => {
         expect(factory).toHaveBeenCalledExactlyOnceWith(false);
         factory.mockClear();
 
-        // Refresh
         const refreshResult = await lazy.refresh();
         expect(factory).toHaveBeenCalledExactlyOnceWith(true);
         factory.mockClear();
@@ -282,14 +277,12 @@ describe('LazyPromise', () => {
         expect(lazy.value?.refreshing).toBe(true);
         expect(counter).toBe(2);
 
-        // Multiple concurrent refreshes - last one wins
         const refresh1 = lazy.refresh();
         const refresh2 = lazy.refresh();
         const refresh3 = lazy.refresh();
 
         await Promise.all([refresh1, refresh2, refresh3]);
 
-        // Only the last refresh should update the instance
         expect(lazy.value?.value).toBe(5);
         expect(counter).toBe(5);
     });
@@ -307,24 +300,20 @@ describe('LazyPromise', () => {
             return { value: counter };
         });
 
-        // Initial successful load
         await lazy.promise;
         expect(lazy.value?.value).toBe(1);
         expect(lazy.error).toBeNull();
 
-        // Refresh with error
         shouldFail = true;
         const result = await lazy.refresh();
         expect(counter).toBe(2);
-        expect(result.value).toBe(1); // returns current instance on error
+        expect(result.value).toBe(1);
         expect(lazy.error).toBe('Refresh failed');
-        expect(lazy.value?.value).toBe(1); // value unchanged
+        expect(lazy.value?.value).toBe(1);
 
-        // Refresh successfully after error
         shouldFail = false;
         await lazy.refresh();
         expect(lazy.value?.value).toBe(3);
-        // Error should be cleared on successful refresh
         expect(lazy.error).toBeNull();
     });
 
@@ -336,25 +325,22 @@ describe('LazyPromise', () => {
             return counter;
         });
 
-        // Start initial load (will take 50ms)
         const initialPromise = lazy.promise;
         expect(lazy.isLoading).toBe(true);
 
-        // After 10ms, trigger refresh before initial load completes
         await setTimeoutAsync(10);
         const refreshPromise = lazy.refresh();
 
-        // Both promises should resolve to the refreshed value (counter=2)
         const [initialResult, refreshResult] = await Promise.all([initialPromise, refreshPromise]);
 
-        expect(initialResult).toBe(2); // Initial promise gets refreshed value
-        expect(refreshResult).toBe(2); // Refresh promise gets its value
-        expect(lazy.value).toBe(2); // Instance has refreshed value
-        expect(counter).toBe(2); // Factory called twice (initial + refresh)
+        expect(initialResult).toBe(2);
+        expect(refreshResult).toBe(2);
+        expect(lazy.value).toBe(2);
+        expect(counter).toBe(2);
     });
 
     test('multiple concurrent refreshes - latest wins', async () => {
-        const delays = [100, 50, 20]; // Different delays for each call
+        const delays = [100, 50, 20];
         let callIndex = 0;
 
         const lazy = new LazyPromise(async () => {
@@ -365,21 +351,17 @@ describe('LazyPromise', () => {
         });
 
         {
-            // Initial load
             await lazy.promise;
             expect(lazy.value).toBe(1);
 
-            // Trigger 3 concurrent refreshes with different delays
-            const refresh1 = lazy.refresh(); // Takes 60ms, returns 2
+            const refresh1 = lazy.refresh();
             await setTimeoutAsync(5);
-            const refresh2 = lazy.refresh(); // Takes 40ms, returns 3
+            const refresh2 = lazy.refresh();
             await setTimeoutAsync(5);
-            const refresh3 = lazy.refresh(); // Takes 20ms, returns 4 (fastest!)
+            const refresh3 = lazy.refresh();
 
-            // Wait for all to complete
             const [r1, r2, r3] = await Promise.all([refresh1, refresh2, refresh3]);
 
-            // Latest refresh wins, superseding all previous ones
             expect(lazy.value).toBe(4);
             expect(r3).toBe(4);
             expect(r1).toBe(4);
@@ -388,26 +370,21 @@ describe('LazyPromise', () => {
 
         lazy.reset();
         callIndex = 0;
-        // reverse delays
         delays.length = 0;
         delays.push(20, 50, 100);
 
-        { // expecting the same behavior for first being fastest
-            // Initial load
+        {
             await lazy.promise;
             expect(lazy.value).toBe(1);
 
-            // Trigger 3 concurrent refreshes with different delays
-            const refresh1 = lazy.refresh(); // Takes 60ms, returns 2
+            const refresh1 = lazy.refresh();
             await setTimeoutAsync(5);
-            const refresh2 = lazy.refresh(); // Takes 40ms, returns 3
+            const refresh2 = lazy.refresh();
             await setTimeoutAsync(5);
-            const refresh3 = lazy.refresh(); // Takes 20ms, returns 4 (fastest!)
+            const refresh3 = lazy.refresh();
 
-            // Wait for all to complete
             const [r1, r2, r3] = await Promise.all([refresh1, refresh2, refresh3]);
 
-            // Latest refresh wins, superseding all previous ones
             expect(lazy.value).toBe(4);
             expect(r3).toBe(4);
             expect(r1).toBe(4);
@@ -424,18 +401,14 @@ describe('LazyPromise', () => {
             return counter;
         });
 
-        // Initial load
         await lazy.promise;
         expect(lazy.value).toBe(1);
 
-        // Start refresh
         const refreshPromise = lazy.refresh();
 
-        // Another consumer starts waiting on lazy.promise
         await setTimeoutAsync(5);
         const promiseResult = await lazy.promise;
 
-        // Should get the refreshed value, not the old one
         expect(promiseResult).toBe(2);
         expect(await refreshPromise).toBe(2);
         expect(lazy.value).toBe(2);
@@ -449,18 +422,15 @@ describe('LazyPromise', () => {
             return counter;
         });
 
-        // Trigger refresh before any load (isLoading === null)
         expect(lazy.isLoading).toBeNull();
         const refreshPromise = lazy.refresh();
 
-        // Now access lazy.promise (tries to start initial load)
         await setTimeoutAsync(5);
         const promiseResult = await lazy.promise;
 
-        // Should join the refresh, not start a new load
         expect(promiseResult).toBe(1);
         expect(await refreshPromise).toBe(1);
-        expect(counter).toBe(1); // Only one factory call (refresh)
+        expect(counter).toBe(1);
     });
 
     test('concurrent load and refresh - refresh supersedes', async () => {
@@ -471,21 +441,18 @@ describe('LazyPromise', () => {
             return counter;
         });
 
-        // Start load
         const loadPromise = lazy.promise;
         expect(lazy.isLoading).toBe(true);
 
-        // Immediately refresh
         await setTimeoutAsync(5);
         const refreshPromise = lazy.refresh();
 
-        // Both should resolve to refreshed value
         const [loadResult, refreshResult] = await Promise.all([loadPromise, refreshPromise]);
 
-        expect(loadResult).toBe(2); // Load promise gets refreshed value
-        expect(refreshResult).toBe(2); // Refresh promise gets its value
+        expect(loadResult).toBe(2);
+        expect(refreshResult).toBe(2);
         expect(lazy.value).toBe(2);
-        expect(counter).toBe(2); // Two factory calls
+        expect(counter).toBe(2);
     });
 
     test('old promise reference resolves to new value after refresh', async () => {
@@ -496,19 +463,15 @@ describe('LazyPromise', () => {
             return counter;
         });
 
-        // Capture the promise reference BEFORE any loading
         const promiseRef1 = lazy.promise;
         expect(lazy.isLoading).toBe(true);
 
-        // Trigger refresh before first load completes
         await setTimeoutAsync(10);
         lazy.refresh();
 
-        // The original promise reference should resolve to the refreshed value
         const result = await promiseRef1;
-        expect(result).toBe(2); // Gets refreshed value, not stale value (1)
+        expect(result).toBe(2);
 
-        // Verify the instance also has the fresh value
         expect(lazy.value).toBe(2);
     });
 
@@ -520,25 +483,22 @@ describe('LazyPromise', () => {
             return counter;
         });
 
-        // Capture promise references at different stages
-        const promiseRef1 = lazy.promise; // Initial load
+        const promiseRef1 = lazy.promise;
 
         await setTimeoutAsync(5);
-        lazy.refresh(); // Refresh 1
+        lazy.refresh();
         const promiseRef2 = lazy.promise;
 
         await setTimeoutAsync(5);
-        lazy.refresh(); // Refresh 2
+        lazy.refresh();
         const promiseRef3 = lazy.promise;
 
-        // All promise references should resolve to the final value
         const [result1, result2, result3] = await Promise.all([
             promiseRef1,
             promiseRef2,
             promiseRef3,
         ]);
 
-        // All should get the latest refreshed value
         expect(result1).toBe(3);
         expect(result2).toBe(3);
         expect(result3).toBe(3);
@@ -547,7 +507,6 @@ describe('LazyPromise', () => {
 
     test('error handling', () => {
         {
-            // Test with Error object
             const l = new Lazy(() => {
                 throw new Error('Error object message');
             });
@@ -560,7 +519,6 @@ describe('LazyPromise', () => {
         }
 
         {
-            // Test multiple accesses with error
             const l = new Lazy(() => {
                 throw new Error('Factory error');
             });
@@ -572,7 +530,6 @@ describe('LazyPromise', () => {
         }
 
         {
-            // Test error is cleared on reset
             const l = new Lazy(() => {
                 throw new Error('error');
             });
@@ -587,7 +544,6 @@ describe('LazyPromise', () => {
 
     test('error handling with LazyPromise', async () => {
         {
-            // Test with Error object
             const l = new LazyPromise(async () => {
                 throw new Error('async error message');
             });
@@ -600,7 +556,6 @@ describe('LazyPromise', () => {
         }
 
         {
-            // Test with another Error
             const l = new LazyPromise(async () => {
                 throw new Error('async Error object');
             });
@@ -610,7 +565,6 @@ describe('LazyPromise', () => {
         }
 
         {
-            // Test with initial value and error - returns to initial
             const l = new LazyPromise<string, string>(async () => {
                 throw new Error('error occurred');
             }, 'initial value');
@@ -618,7 +572,7 @@ describe('LazyPromise', () => {
             expect(l.value).toBe('initial value');
             await l.promise;
             expect(l.error).toBe('error occurred');
-            expect(l.value).toBe('initial value'); // falls back to initial
+            expect(l.value).toBe('initial value');
         }
     });
 
@@ -630,7 +584,6 @@ describe('LazyPromise', () => {
                 return 'result';
             });
 
-            // Universal extension - works with any type
             const loggingExtension: ILazyPromiseExtension<any> & { customData: string } = {
                 overrideFactory: (original) => async (refreshing) => {
                     logs.push(`loading:${refreshing ?? 'undefined'}`);
@@ -643,13 +596,10 @@ describe('LazyPromise', () => {
 
             const extended = base.extend(loggingExtension);
 
-            // extend() mutates the instance and returns it
             expect(base).toBe(extended);
 
-            // Type is preserved even when extension has extra properties
-            // extended.value should be string | undefined, not any
-            expect(extended.currentValue).toBeUndefined(); // Don't trigger loading
-            expect(extended.isLoading).toBeNull(); // Not started yet
+            expect(extended.currentValue).toBeUndefined();
+            expect(extended.isLoading).toBeNull();
 
             await extended.promise;
             expect(extended.value).toBe('result');
@@ -670,7 +620,6 @@ describe('LazyPromise', () => {
                 return 'success';
             });
 
-            // Universal retry extension
             const retryExtension: ILazyPromiseExtension<any> = {
                 overrideFactory: (original) => async (refreshing) => {
                     let retries = 0;
@@ -774,7 +723,6 @@ describe('LazyPromise', () => {
                 return 'original';
             });
 
-            // Type-specific extension for strings
             const appendExtension: ILazyPromiseExtension<string> = {
                 overrideFactory: (original) => async (refreshing) => {
                     const result = await original(refreshing);
@@ -784,13 +732,11 @@ describe('LazyPromise', () => {
 
             const extended = base.extend(appendExtension);
 
-            // extend() returns the same mutated instance
             expect(base).toBe(extended);
 
             await extended.promise;
             expect(extended.value).toBe('original-modified');
 
-            // Base is the same instance, so it's also modified
             expect(base.value).toBe('original-modified');
         });
 
@@ -801,7 +747,6 @@ describe('LazyPromise', () => {
                 return 10;
             });
 
-            // Universal logging extension
             const loggingExtension: ILazyPromiseExtension<any> = {
                 overrideFactory: (original) => async (refreshing) => {
                     logs.push('log:start');
@@ -813,7 +758,6 @@ describe('LazyPromise', () => {
 
             const withLogging = base.extend(loggingExtension);
 
-            // Type-specific extension for numbers only
             const doublingExtension: ILazyPromiseExtension<number> = {
                 overrideFactory: (original) => async (refreshing) => {
                     const result = await original(refreshing);
@@ -843,7 +787,6 @@ describe('LazyPromise', () => {
                 return 100;
             }, 50);
 
-            // Type-specific extension for numbers
             const doublingExtension: ILazyPromiseExtension<number> = {
                 overrideFactory: (original) => async (refreshing) => {
                     const result = await original(refreshing);
@@ -871,7 +814,6 @@ describe('LazyPromise', () => {
                 return 'hello';
             });
 
-            // Type-specific extension for numbers
             const doublingExtension: ILazyPromiseExtension<number> = {
                 overrideFactory: (original) => async (refreshing) => {
                     const result = await original(refreshing);
@@ -879,24 +821,19 @@ describe('LazyPromise', () => {
                 },
             };
 
-            // This should work fine
             const doubled = numberLazy.extend(doublingExtension);
             await doubled.promise;
             expect(doubled.value).toBe(84);
 
-            // This should cause a TypeScript error - demonstrating type safety
-            // TypeScript will prevent this at compile time:
             // @ts-expect-error - Cannot apply number extension to string LazyPromise
             const _invalid = stringLazy.extend(doublingExtension);
-            // If we were to run it, it would produce NaN (string * 2 = NaN)
         });
 
         test('universal extension works with any type', async () => {
-            // Universal extension that works with any type
             const loggingExtension: ILazyPromiseExtension<any> = {
                 overrideFactory: (original) => async (refreshing) => {
                     const result = await original(refreshing);
-                    return result; // just pass through
+                    return result;
                 },
             };
 
@@ -904,7 +841,6 @@ describe('LazyPromise', () => {
             const stringLazy = new LazyPromise(async () => 'hello');
             const objectLazy = new LazyPromise(async () => ({ id: 1 }));
 
-            // All should work
             const extNum = numberLazy.extend(loggingExtension);
             const extStr = stringLazy.extend(loggingExtension);
             const extObj = objectLazy.extend(loggingExtension);
@@ -967,7 +903,6 @@ describe('LazyPromise', () => {
             expect(disposeCalls).toEqual([]);
 
             extended.dispose();
-            // Should be called in reverse order: newest first, oldest last
             expect(disposeCalls).toEqual(['ext3-disposed', 'ext2-disposed', 'ext1-disposed']);
         });
 
@@ -1038,13 +973,12 @@ describe('LazyPromise', () => {
             const base = new LazyPromise(async () => 'test');
             const extended = base
                 .extend(extension1)
-                .extend(extension2) // No dispose
+                .extend(extension2)
                 .extend(extension3);
 
             await extended.promise;
             extended.dispose();
 
-            // Should still call both disposers
             expect(disposeCalls).toEqual(['ext3-disposed', 'ext1-disposed']);
         });
 
@@ -1064,7 +998,6 @@ describe('LazyPromise', () => {
                     });
                 },
                 overrideFactory: (original) => async (refreshing) => {
-                    // Start interval when loading
                     intervalId = setInterval(() => {
                         ticks.push(Date.now());
                     }, 10);
@@ -1084,16 +1017,13 @@ describe('LazyPromise', () => {
             await extended.promise;
             expect(extended.value).toBe('done');
 
-            // Wait a bit to accumulate ticks
             await setTimeoutAsync(50);
             const tickCount = ticks.length;
             expect(tickCount).toBeGreaterThan(0);
 
-            // Dispose should stop the interval
             extended.dispose();
             await setTimeoutAsync(50);
 
-            // No new ticks should be added
             expect(ticks.length).toBe(tickCount);
         });
     });
