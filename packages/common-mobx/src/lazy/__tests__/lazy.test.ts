@@ -43,7 +43,7 @@ describe('LazyPromise', () => {
         expect(l.isLoading).toBe(true);
         expect(l.promise).not.toBeNull();
 
-        const listener = vi.fn().mockImplementation(() => { /* no-op */ });
+        const listener = vi.fn();
         const clean = reaction(() => l.value, vv => listener(vv), { fireImmediately: true });
 
         expect(listener).toHaveBeenCalledWith(undefined);
@@ -72,27 +72,22 @@ describe('LazyPromise', () => {
         const errorListener = vi.fn();
         const cleanError = reaction(() => l.error, err => errorListener(err), { fireImmediately: true });
 
-        // Initially no error
         expect(errorListener).toHaveBeenCalledWith(null);
         expect(l.error).toBeNull();
 
         errorListener.mockClear();
 
-        // Trigger loading
         expect(l.value).toBeUndefined();
         await l.promise;
 
-        // Error should be set and observable
         expect(errorListener).toHaveBeenCalledWith('Test error');
         expect(l.error).toBe('Test error');
 
         errorListener.mockClear();
 
-        // Refresh successfully
         shouldFail = false;
         await l.refresh();
 
-        // Error should be cleared and observable
         expect(errorListener).toHaveBeenCalledWith(null);
         expect(l.error).toBeNull();
         expect(l.value).toBe('success');
@@ -117,21 +112,18 @@ describe('LazyPromise', () => {
         const cleanError = reaction(() => l.error, err => errorListener(err));
         const cleanValue = reaction(() => l.value, val => valueListener(val));
 
-        // Initial successful load
         await l.promise;
         expect(l.value).toBe('value-1');
         expect(l.error).toBeNull();
         expect(errorListener).not.toHaveBeenCalled();
 
-        // Refresh with error
         await l.refresh();
         expect(errorListener).toHaveBeenCalledWith('Refresh error');
         expect(l.error).toBe('Refresh error');
-        expect(l.value).toBe('value-1'); // keeps old value
+        expect(l.value).toBe('value-1');
 
         errorListener.mockClear();
 
-        // Refresh successfully after error
         await l.refresh();
         expect(errorListener).toHaveBeenCalledWith(null);
         expect(l.error).toBeNull();
@@ -153,14 +145,12 @@ describe('LazyPromise', () => {
         expect(errorListener).toHaveBeenCalledWith(null);
         errorListener.mockClear();
 
-        // Trigger error
         await l.promise;
         expect(l.error).toBe('Test error');
         expect(errorListener).toHaveBeenCalledWith('Test error');
 
         errorListener.mockClear();
 
-        // Reset should clear error
         l.reset();
         expect(l.error).toBeNull();
         expect(errorListener).toHaveBeenCalledWith(null);
@@ -171,7 +161,6 @@ describe('LazyPromise', () => {
     it('extension returns LazyPromiseObservable instance', async () => {
         const original = new LazyPromiseObservable(async () => 'hello');
 
-        // Simple logging extension
         const logs: string[] = [];
         const extended = original.extend({
             overrideFactory: (factory) => async (refreshing) => {
@@ -182,11 +171,9 @@ describe('LazyPromise', () => {
             },
         });
 
-        // Extended instance should still be LazyPromiseObservable
         expect(extended).toBeInstanceOf(LazyPromiseObservable);
         expect(extended).toBeInstanceOf(LazyPromise);
 
-        // MobX observability should work
         const valueListener = vi.fn();
         const cleanValue = reaction(() => extended.value, val => valueListener(val));
 
@@ -200,7 +187,6 @@ describe('LazyPromise', () => {
     it('extension with shape preserves MobX observability', async () => {
         const original = new LazyPromiseObservable(async () => 42);
 
-        // Extension that adds a custom method
         const extended = original.extend<{ double: () => number | undefined }>({
             extendShape: (instance) => {
                 return Object.assign(instance, {
@@ -212,10 +198,8 @@ describe('LazyPromise', () => {
             },
         });
 
-        // Should still be LazyPromiseObservable
         expect(extended).toBeInstanceOf(LazyPromiseObservable);
 
-        // MobX observability should work for both original and extended properties
         const valueListener = vi.fn();
         const errorListener = vi.fn();
 
@@ -252,7 +236,6 @@ describe('LazyPromise', () => {
             },
         });
 
-        // All should be LazyPromiseObservable
         expect(withLogging).toBeInstanceOf(LazyPromiseObservable);
         expect(withRetry).toBeInstanceOf(LazyPromiseObservable);
 
@@ -286,7 +269,6 @@ describe('LazyPromise', () => {
 
     test('observing', async () => {
 
-        // tracking source for model
         const ref = new NumberModel(0);
 
         const factory = vi.fn(async () => {
@@ -350,7 +332,6 @@ describe('LazyPromise', () => {
 
         await setTimeoutAsync(20);
 
-        // should not trigger fetch since scope is destroyed
         expect(factory).not.toHaveBeenCalled();
         expect(handler).not.toHaveBeenCalled();
     });
@@ -371,19 +352,16 @@ describe('LazyPromise', () => {
         disposer.add(lazy);
 
         try {
-            // Start loading
             await expect(lazy.promise).resolves.toBe(10);
             expect(factoryCallCount).toBe(1);
             expect(lazy.value).toBe(10);
 
-            // Change dependency after loading completes
             ref.setValue(2);
 
-            // Wait for refresh to complete
             await setTimeoutAsync(40);
 
-            expect(factoryCallCount).toBe(2); // Initial + refresh
-            expect(lazy.value).toBe(20); // Shows result from ref=2
+            expect(factoryCallCount).toBe(2);
+            expect(lazy.value).toBe(20);
         } finally {
             disposer.dispose();
         }
@@ -406,11 +384,9 @@ describe('LazyPromise', () => {
         disposer.add(lazy);
 
         try {
-            // Initial load fails
             await lazy.promise;
             expect(lazy.error).toBe('Fail');
 
-            // Change dependency and succeed
             shouldFail = false;
             ref.setValue(2);
             await setTimeoutAsync(60);
@@ -432,7 +408,6 @@ describe('LazyPromise', () => {
             await setTimeoutAsync(10);
             return ref1.value + ref2.value;
         }).extend(createObservingExtension({
-            // Track multiple dependencies in one extension
             track: () => [ref1.value, ref2.value],
             disposer,
         }));
@@ -443,12 +418,10 @@ describe('LazyPromise', () => {
             await lazy.promise;
             expect(lazy.value).toBe(11);
 
-            // Change ref1, should trigger refresh
             ref1.setValue(2);
             await setTimeoutAsync(20);
             expect(lazy.value).toBe(12);
 
-            // Change ref2, should trigger refresh
             ref2.setValue(20);
             await setTimeoutAsync(20);
             expect(lazy.value).toBe(22);
@@ -458,17 +431,14 @@ describe('LazyPromise', () => {
     });
 
     test('observing + pre-cached', async () => {
-        // we have some initial cached value which is taken by model before reading the trackable source
         const cache = createCache({ value: 999 });
 
         const ref1 = new NumberModel(0);
         const ref2 = new NumberModel(0);
 
-        // extra dependency, manually tracked
         const someOtherRef = new NumberModel(0);
 
         const factory = vi.fn(async () => {
-            // console.log('--- Factory called ---');
             let value = ref1.value;
             if (value) {
                 value += ref2.value;
@@ -506,7 +476,6 @@ describe('LazyPromise', () => {
 
             expect(model.error).toBeNull();
 
-            // value was pre-cached so it should be used first
             expect(factory).not.toHaveBeenCalled();
             factory.mockClear();
 
@@ -528,7 +497,6 @@ describe('LazyPromise', () => {
             expect(handler).toHaveBeenCalledWith({ value: 123 });
             handler.mockClear();
 
-            // triggering another change while the fetch is in progress
             ref2.setValue(1);
 
             expect(factory).toHaveBeenCalledTimes(1);
@@ -559,7 +527,6 @@ describe('LazyPromise', () => {
             expect(handler).toHaveBeenCalledWith({ value: 579 });
             handler.mockClear();
 
-            // triggering re-fetch when unrelated but tracked value changes
             someOtherRef.setValue(111);
 
             expect(factory).toHaveBeenCalledTimes(1);
@@ -583,7 +550,6 @@ describe('LazyPromise', () => {
 
         await setTimeoutAsync(60);
 
-        // should not trigger fetch since scope is destroyed
         expect(factory).not.toHaveBeenCalled();
         expect(handler).not.toHaveBeenCalled();
     });
@@ -616,10 +582,8 @@ describe('LazyPromise', () => {
         expect(extended.value).toBe('value-modified');
         expect(listener).toHaveBeenCalledWith('value-modified');
 
-        // Clean up reaction before dispose to avoid triggering reactions
         clean();
 
-        // Dispose should call extension disposer and reset state
         extended.dispose();
 
         expect(disposeCalls).toEqual(['extension-disposed']);
@@ -639,7 +603,6 @@ describe('LazyPromise', () => {
             },
         });
 
-        // Should still be LazyPromiseObservable (MobX observable)
         expect(extended).toBeInstanceOf(LazyPromiseObservable);
         expect(extended).toBeInstanceOf(LazyPromise);
 
@@ -649,7 +612,6 @@ describe('LazyPromise', () => {
         await extended.promise;
         expect(extended.value).toBe(42);
 
-        // Clean up reaction before dispose
         clean();
 
         extended.dispose();
@@ -670,5 +632,204 @@ describe('LazyPromise', () => {
                 createObservingExtension(),
             );
         }).toThrowError('Observing extension already applied to this instance');
+    });
+
+    it('derivative updates when parent changes', async () => {
+        const parent = new LazyPromiseObservable<number>(async () => {
+            await setTimeoutAsync(10);
+            return 42;
+        });
+
+        const derivative = new LazyPromiseObservable<number>(
+            async () => {
+                const parentValue = parent.value;
+                return (parentValue ?? 0) * 2;
+            },
+            { observing: true },
+        );
+
+        const derivativeListener = vi.fn();
+        const cleanDerivative = reaction(
+            () => derivative.value,
+            val => derivativeListener(val),
+        );
+
+        try {
+            expect(parent.hasValue).toBe(false);
+            expect(parent.currentValue).toBeUndefined();
+            expect(derivative.hasValue).toBe(false);
+            expect(derivative.currentValue).toBeUndefined();
+
+            const parentPromise = parent.promise;
+            expect(parent.isLoading).toBe(true);
+
+            await parentPromise;
+            expect(parent.value).toBe(42);
+            expect(parent.hasValue).toBe(true);
+            expect(parent.isLoading).toBe(false);
+            expect(parent.currentValue).toBe(42);
+
+            const derivativePromise = derivative.promise;
+
+            await derivativePromise;
+            expect(derivative.value).toBe(84);
+            expect(derivative.hasValue).toBe(true);
+            expect(derivative.isLoading).toBe(false);
+            expect(derivative.currentValue).toBe(84);
+
+            parent.setInstance(100);
+            expect(parent.value).toBe(100);
+            expect(parent.currentValue).toBe(100);
+            expect(parent.hasValue).toBe(true);
+            expect(parent.isLoading).toBe(false);
+
+            await setTimeoutAsync(1);
+
+            expect(derivative.value).toBe(200);
+            expect(derivative.currentValue).toBe(200);
+            expect(derivative.hasValue).toBe(true);
+            expect(derivative.isLoading).toBe(false);
+            expect(derivativeListener).toHaveBeenCalledWith(200);
+            derivativeListener.mockClear();
+
+            parent.reset();
+            expect(parent.hasValue).toBe(false);
+            expect(parent.currentValue).toBeUndefined();
+
+            await setTimeoutAsync(1);
+
+            await parent.promise;
+            expect(parent.value).toBe(42);
+            expect(parent.currentValue).toBe(42);
+            expect(parent.hasValue).toBe(true);
+
+            await setTimeoutAsync(20);
+
+            expect(derivative.value).toBe(84);
+            expect(derivative.currentValue).toBe(84);
+            expect(derivative.hasValue).toBe(true);
+            expect(derivativeListener).toHaveBeenCalledWith(84);
+            derivativeListener.mockClear();
+
+            let refreshCount = 1;
+            const parentWithRefresh = new LazyPromiseObservable<number>(async () => {
+                await setTimeoutAsync(50);
+                return ++refreshCount * 10;
+            });
+
+            const derivativeFromRefresh = new LazyPromiseObservable<number>(
+                async () => {
+                    const val = parentWithRefresh.value;
+                    await setTimeoutAsync(20);
+                    return (val ?? 0) + 1;
+                },
+                { observing: true },
+            );
+
+            expect(parentWithRefresh.hasValue).toBe(false);
+            expect(parentWithRefresh.currentValue).toBeUndefined();
+            expect(derivativeFromRefresh.hasValue).toBe(false);
+            expect(derivativeFromRefresh.currentValue).toBeUndefined();
+
+            await parentWithRefresh.promise;
+            expect(parentWithRefresh.value).toBe(20);
+            expect(parentWithRefresh.currentValue).toBe(20);
+            expect(parentWithRefresh.hasValue).toBe(true);
+            expect(parentWithRefresh.isLoading).toBe(false);
+
+            await derivativeFromRefresh.promise;
+            expect(derivativeFromRefresh.value).toBe(21);
+            expect(derivativeFromRefresh.currentValue).toBe(21);
+            expect(derivativeFromRefresh.hasValue).toBe(true);
+            expect(derivativeFromRefresh.isLoading).toBe(false);
+
+            await parentWithRefresh.refresh();
+            expect(parentWithRefresh.value).toBe(30);
+            expect(parentWithRefresh.currentValue).toBe(30);
+            expect(parentWithRefresh.hasValue).toBe(true);
+            expect(parentWithRefresh.isLoading).toBe(false);
+
+            await setTimeoutAsync(100);
+
+            expect(derivativeFromRefresh.value).toBe(31);
+            expect(derivativeFromRefresh.currentValue).toBe(31);
+            expect(derivativeFromRefresh.hasValue).toBe(true);
+            expect(derivativeFromRefresh.isLoading).toBe(false);
+            expect(derivativeFromRefresh.currentValue).toBe(31);
+            expect(derivativeFromRefresh.hasValue).toBe(true);
+            expect(derivativeFromRefresh.isLoading).toBe(false);
+        } finally {
+            cleanDerivative();
+        }
+    });
+
+    it('derivative works independently without exposing parent', async () => {
+        const createDerivative = () => {
+            const parent = new LazyPromiseObservable<number>(async () => {
+                await setTimeoutAsync(10);
+                return 100;
+            });
+
+            const derivative = new LazyPromiseObservable<number>(
+                async () => {
+                    // Must await parent.promise first, then read parent.value
+                    // to ensure parent loads AND establish MobX reactivity tracking
+                    if (!parent.hasValue) {
+                        await parent.promise;
+                    }
+                    const val = parent.value ?? 0;
+                    return val * 2;
+                },
+                { observing: true },
+            );
+
+            return {
+                derivative,
+                updateParent: (newValue: number) => parent.setInstance(newValue),
+                refreshParent: () => parent.refresh(),
+                resetParent: () => parent.reset(),
+            };
+        };
+
+        const { derivative, updateParent, refreshParent, resetParent } = createDerivative();
+
+        const derivativeListener = vi.fn();
+        const clean = reaction(() => derivative.value, val => derivativeListener(val));
+
+        try {
+            expect(derivative.hasValue).toBe(false);
+
+            await derivative.promise;
+            expect(derivative.value).toBe(200);
+            expect(derivative.hasValue).toBe(true);
+
+            updateParent(50);
+
+            await setTimeoutAsync(30);
+
+            expect(derivative.value).toBe(50 * 2);
+            expect(derivativeListener).toHaveBeenCalledWith(50 * 2);
+            derivativeListener.mockClear();
+
+            refreshParent();
+
+            await setTimeoutAsync(40);
+
+            expect(derivative.value).toBe(100 * 2);
+            expect(derivativeListener).toHaveBeenCalledWith(100 * 2);
+            derivativeListener.mockClear();
+
+            resetParent();
+
+            await setTimeoutAsync(5);
+
+            await derivative.promise;
+
+            expect(derivative.value).toBe(100 * 2);
+            expect(derivative.hasValue).toBe(true);
+
+        } finally {
+            clean();
+        }
     });
 });

@@ -15,23 +15,35 @@ import {
 import { wrapAsync } from '@zajno/common/functions/safe';
 import type { Nullable } from '@zajno/common/types';
 
-export type DocumentSnapshotConverterCallback<T> = (item: DocumentSnapshot<T>) => T;
+export type DocumentSnapshotConverterCallback<T> = (item: DocumentSnapshot<T>) => Nullable<T>;
 
-export function documentSnapshot<T extends IdentAny>(doc: DocumentReference<T>): Promise<T>;
-export function documentSnapshot<T extends IdentAny>(doc: DocumentReference<T>,
-    cb: DocumentSnapshotCallback<T>): Promise<T | UnsubscribeSnapshot>;
-export function documentSnapshot<T extends IdentAny>(doc: DocumentReference<T>,
+export function documentSnapshot<T extends IdentAny>(doc: DocumentReference<T>): Promise<Nullable<T>>;
+
+export function documentSnapshot<T extends IdentAny>(
+    doc: DocumentReference<T | null>,
     cb: DocumentSnapshotCallback<T>,
-    converter: DocumentSnapshotConverterCallback<T>): Promise<T | UnsubscribeSnapshot>;
+): Promise<UnsubscribeSnapshot>;
+
+export function documentSnapshot<T extends IdentAny>(
+    doc: DocumentReference<T>,
+    cb: DocumentSnapshotCallback<T>,
+    converter: DocumentSnapshotConverterCallback<T>,
+): Promise<UnsubscribeSnapshot>;
+
+export function documentSnapshot<T extends IdentAny>(
+    doc: DocumentReference<T>,
+    cb?: DocumentSnapshotCallback<T>,
+    converter?: DocumentSnapshotConverterCallback<T>,
+): Promise<Nullable<T> | UnsubscribeSnapshot>;
 
 export async function documentSnapshot<T extends IdentAny>(
     doc: DocumentReference<T>,
-    cb?: DocumentSnapshotCallback<T | null>,
+    cb?: DocumentSnapshotCallback<T>,
     converter?: DocumentSnapshotConverterCallback<T>,
 ): Promise<Nullable<T> | UnsubscribeSnapshot> {
     logDocCount(doc, cb != null);
 
-    const convertSnapshot = (d: DocumentSnapshot<T>): T | null => {
+    const convertSnapshot = (d: DocumentSnapshot<T>): Nullable<T> => {
         if (!d.exists()) {
             return null;
         }
