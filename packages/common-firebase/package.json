@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-firebase",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "description": "Zajno's re-usable Firebase utilities for JS/TS projects",
   "private": false,
   "type": "module",
