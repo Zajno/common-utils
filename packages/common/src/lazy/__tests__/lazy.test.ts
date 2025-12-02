@@ -249,6 +249,29 @@ describe('LazyPromise', () => {
         expect(lazy.isLoading).toBeFalse();
     });
 
+    test('async state change', async () => {
+        const lazy = new LazyPromise(async () => {
+            await setTimeoutAsync(10);
+            return { result: 42 };
+        }).withAsyncStateChange(true);
+
+        expect(lazy.hasValue).toBeFalse();
+        expect(lazy.isLoading).toBeNull();
+        expect(lazy.currentValue).toBeUndefined();
+
+        expect(lazy.value).toBeUndefined();
+        expect(lazy.isLoading).toBeNull();
+
+        await setTimeoutAsync(0);
+        expect(lazy.isLoading).toBeTrue();
+
+        await setTimeoutAsync(11);
+        await expect(lazy.promise).resolves.toEqual({ result: 42 });
+        expect(lazy.isLoading).toBeFalse();
+        expect(lazy.hasValue).toBeTrue();
+        expect(lazy.value!.result).toBe(42);
+    });
+
     test('refresh method', async () => {
         let counter = 0;
         const factory = vi.fn(async (refreshing) => {

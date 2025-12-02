@@ -14,7 +14,11 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     private readonly _initial: TInitial;
 
     private _instance: T | TInitial;
-    private _isLoading: boolean | null = null;
+
+    /** Current loading state: true = loading, false = loaded, null = not started */
+    private _state: boolean | null = null;
+
+    private _isAsyncStateChange = false;
 
     private _promise: Promise<T> | undefined;
     private _expireTracker: IExpireTracker | undefined;
@@ -35,8 +39,9 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         this._instance = initial as T | TInitial; // as ILazyValue<T, TInitial>;
     }
 
-    public get isLoading() { return this._isLoading; }
-    public get hasValue() { return this._isLoading === false; }
+    /** Current loading state: true = loading, false = loaded, null = not started */
+    public get isLoading() { return this._state; }
+    public get hasValue() { return this._state === false; }
     public get error() { return this._error; }
 
     public get promise() {
@@ -57,6 +62,11 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     /** Configures automatic cache expiration using an expire tracker. */
     public withExpire(tracker: IExpireTracker | undefined) {
         this._expireTracker = tracker;
+        return this;
+    }
+
+    public withAsyncStateChange(enabled: boolean) {
+        this._isAsyncStateChange = enabled;
         return this;
     }
 
@@ -126,7 +136,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
      * @returns The value that was set
      */
     public setInstance(res: T) {
-        this._isLoading = false;
+        this.updateState(false);
         this.clearError(); // clear error on successful set
 
         // refresh promise so it won't keep old callbacks
@@ -158,7 +168,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     public reset() {
-        this._isLoading = null;
+        this.updateState(null);
         this.clearError();
 
         const wasDisposed = tryDispose(this._instance);
@@ -183,15 +193,24 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         this.reset();
     }
 
-    protected ensureInstanceLoading() {
+    private ensureInstanceLoading() {
+        let nextState: typeof this._state | undefined;
         if (this.isLoading === false && this._instance !== undefined && this._expireTracker?.isExpired) {
             // do not reset the instance, just make sure it will be reloaded
-            this._isLoading = null;
+            nextState = null;
         }
 
-        if (this._isLoading === null) {
-            this._isLoading = true;
+        if (this._state === null || nextState === null) {
+            nextState = true;
             this.startLoading(false);
+        }
+
+        if (nextState !== undefined) {
+            if (this._isAsyncStateChange) {
+                setImmediate(() => { this.updateState(nextState); });
+            } else {
+                this.updateState(nextState);
+            }
         }
     }
 
@@ -201,7 +220,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
             return;
         }
 
-        const factoryPromise: Promise<T> = this._factory(refreshing)
+        const factoryPromise: Promise<T> = Promise.resolve(this._factory(refreshing))
             .then(res => {
                 if (!this._activeFactoryPromise) {
                     // this promise was abandoned: was superseded or reset called
@@ -210,7 +229,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
 
                 if (this._activeFactoryPromise === factoryPromise) {
                     // case: during the promise `setInstance` was called manually
-                    if (!refreshing && !this._isLoading && this._instance !== undefined) {
+                    if (!refreshing && !this._state && this._instance !== undefined) {
                         return this._instance;
                     }
                     this.setInstance(res);
@@ -241,7 +260,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     protected onRejected(e: unknown): T | TInitial {
-        this._isLoading = false;
+        this.updateState(false);
         // Keep the current instance on error (don't reset to initial)
         // This allows retaining the last successful value
         const currentInstance = this._instance !== undefined ? this._instance : this._initial;
@@ -249,6 +268,10 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
         this._activeFactoryPromise = null;
         this.setError(e);
         return currentInstance as T;
+    }
+
+    protected updateState(isLoading: boolean | null) {
+        this._state = isLoading;
     }
 
     protected setError(err: unknown) {
