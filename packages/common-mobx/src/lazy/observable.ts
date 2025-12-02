@@ -57,15 +57,15 @@ export class LazyPromiseObservable<T, TInitial extends T | undefined = undefined
 
         makeObservable<
             LazyPromise<T, TInitial>,
-            '_instance' | '_isLoading' | 'ensureInstanceLoading' | 'onRejected' | '_error' | 'setError' | 'clearError'
+            '_instance' | '_state' | 'updateState' | 'onRejected' | '_error' | 'setError' | 'clearError'
         >(this, {
             _instance: ObservableTypes.toDecorator(_observableType),
-            _isLoading: observable,
+            _state: observable,
             _error: observable,
             setInstance: action,
+            updateState: action,
             setError: action,
             clearError: action,
-            ensureInstanceLoading: action,
             onRejected: action,
             reset: action,
         });
@@ -117,6 +117,8 @@ export function createObservingExtension(options?: ObserveFactoryOptions): ILazy
         __reaction?: Reaction;
     };
 
+    const nonTrackedSymbol = Symbol('nonTracked');
+
     return {
 
         extendShape: (instance) => {
@@ -146,11 +148,11 @@ export function createObservingExtension(options?: ObserveFactoryOptions): ILazy
         overrideFactory: (original, instance) => {
             return (...args) => {
                 const { __reaction } = instance as InstanceData;
-                if (!__reaction) {
+                if (!__reaction || __reaction.isDisposed) {
                     return original(...args);
                 }
 
-                let result: ReturnType<typeof original>;
+                let result: ReturnType<typeof original> | typeof nonTrackedSymbol = nonTrackedSymbol;
 
                 try {
                     __reaction.track(() => {
@@ -162,7 +164,9 @@ export function createObservingExtension(options?: ObserveFactoryOptions): ILazy
                     return original(...args);
                 }
 
-                return result!;
+                return result === nonTrackedSymbol
+                    ? original(...args)
+                    : result;
             };
 
         },

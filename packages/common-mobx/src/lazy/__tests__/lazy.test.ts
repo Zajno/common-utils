@@ -832,4 +832,23 @@ describe('LazyPromise', () => {
             clean();
         }
     });
+
+    it('observing: handles reaction disposal during factory execution', async () => {
+        const ref = new NumberModel(1);
+        const disposer = new Disposer();
+
+        const lazy = new LazyPromiseObservable(async () => {
+            const value = ref.value;
+            await setTimeoutAsync(50);
+            return value * 10;
+        }, { observing: { disposer } });
+
+        await expect(lazy.promise).resolves.toBe(10);
+
+        disposer.dispose();
+
+        ref.setValue(2);
+
+        await expect(lazy.refresh()).resolves.toBe(20);
+    });
 });
