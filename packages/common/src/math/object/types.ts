@@ -27,7 +27,10 @@ export interface IObjectMath<T extends AnyObject> extends IObjectOps<T> {
     contains(base: Nullable<DeepReadonly<T>>, target: Nullable<DeepReadonly<T>>): boolean;
     inverse(o: Nullable<DeepReadonly<T>>): T;
 
+    abs(o: DeepReadonly<T>, options?: AbsOptions): T;
     abs(o: Nullable<DeepReadonly<T>>, options?: AbsOptions): T | null;
+
+    round(o: DeepReadonly<T>, options?: RoundOptions): T;
     round(o: Nullable<DeepReadonly<T>>, options?: RoundOptions): T | null;
 
     add(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): T;

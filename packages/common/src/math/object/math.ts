@@ -110,6 +110,8 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return res;
     }
 
+    abs(c: DeepReadonly<T>, stripNegatives?: AbsOptions): T;
+    abs(c: Nullable<DeepReadonly<T>>, stripNegatives?: AbsOptions): T | null;
     abs(c: Nullable<DeepReadonly<T>>, stripNegatives: AbsOptions = false): T | null {
         return this.process(c, (val) => {
             if (val == null || val >= 0) {
@@ -130,7 +132,8 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         });
     }
 
-
+    round(c: DeepReadonly<T>, method?: RoundOptions): T;
+    round(c: Nullable<DeepReadonly<T>>, method?: RoundOptions): T | null;
     round(c: Nullable<DeepReadonly<T>>, method: RoundOptions = 'round') {
         return this.process(c, (val) => {
             switch (method) {

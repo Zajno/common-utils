@@ -43,6 +43,8 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
         return doOps(this.innerMath, o, (ops, val) => ops.inverse(val));
     }
 
+    abs(o: DeepReadonly<T>, options?: AbsOptions): T;
+    abs(o: Nullable<DeepReadonly<T>>, options?: AbsOptions): T | null;
     abs(o: Nullable<DeepReadonly<T>>, options?: AbsOptions): T | null {
         if (!o) {
             return null;
@@ -50,6 +52,8 @@ export class CompositeObjectMath<T extends AnyObject> extends CompositeObjectOps
         return doOps(this.innerMath, o, (ops, val) => ops.abs(val, options));
     }
 
+    round(o: DeepReadonly<T>, options?: RoundOptions): T;
+    round(o: Nullable<DeepReadonly<T>>, options?: RoundOptions): T | null;
     round(o: Nullable<DeepReadonly<T>>, options?: RoundOptions): T | null {
         if (!o) {
             return null;
