@@ -79,6 +79,7 @@ describe('math/object/math.composite', () => {
 
         // Partial fields - only common keys are considered
         expect(math.div({ child: { a: 50 } }, { child: { a: 15 } })).toBe(3);
+        expect(math.div({ child: { a: 50 } }, { child: { a: 20 } })).toBe(2);
         expect(math.div({ child: { a: 50 } }, { child: { b: 15 } })).toBe(0); // No common keys
         expect(math.div({ child: { a: 100, b: 20 } }, { child: { b: 10 } })).toBe(2);
         expect(math.div({ child: { a: 100 } }, { child: { a: 25, b: 10 } })).toBe(4);

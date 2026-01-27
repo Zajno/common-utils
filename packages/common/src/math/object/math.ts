@@ -1,5 +1,5 @@
-import type { Nullable, TypedKeys } from '../../types/index.js';
 import type { DeepReadonly, DeepReadonlyPartial } from '../../types/deep.js';
+import type { Nullable, TypedKeys } from '../../types/index.js';
 import { _getValue } from './helpers.js';
 import { ObjectOps } from './ops.js';
 import type { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from './types.js';
@@ -10,9 +10,15 @@ const DELETE: DELETE_TYPE = 'delete';
 
 export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjectMath<T> {
     private returnInfinityOnDivByEmpty = false;
+    private divisionMethod: RoundOptions | null = 'floor';
 
     useInfinityOnDivByEmpty(enable: boolean): this {
         this.returnInfinityOnDivByEmpty = enable;
+        return this;
+    }
+
+    useDivisionMethod(method: RoundOptions | null): this {
+        this.divisionMethod = method;
         return this;
     }
 
@@ -47,11 +53,11 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         }
 
         if (typeof o2 === 'number') {
-            const res = { } as T;
+            const res = {} as T;
             Object.keys(o1).forEach(key => {
                 const kk = key as keyof DeepReadonly<T>;
                 const ov = o1[kk] as number;
-                res[kk as keyof T] = Math.round(ov / o2) as T[keyof T];
+                res[kk as keyof T] = this.getDivisionResult(ov, o2) as T[keyof T];
             });
             return res;
         }
@@ -72,7 +78,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
             }
 
             hasValidDivisor = true;
-            const c = Math.round(dividend / divisor);
+            const c = this.getDivisionResult(dividend, divisor);
             if (min == null || c < min) {
                 min = c;
             }
@@ -171,5 +177,23 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
 
     multiply(c1: Nullable<DeepReadonly<T>>, c2: Nullable<DeepReadonly<T> | number>) {
         return this.calc(c1, c2, (n1, n2) => (n1 || 0) * (n2 || 0));
+    }
+
+    protected getDivisionResult(dividend: number, divisor: number): number {
+        let result = dividend / divisor;
+        switch (this.divisionMethod) {
+            case 'floor':
+                result = Math.floor(result);
+                break;
+            case 'ceil':
+                result = Math.ceil(result);
+                break;
+            case 'round':
+                result = Math.round(result);
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 }
