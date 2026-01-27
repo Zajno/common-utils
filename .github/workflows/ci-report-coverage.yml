@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - 'packages/**'
+  pull_request:
+    types: [ready_for_review, opened, synchronize, reopened]
+    branches: [ main ]
+    paths:
+      - 'packages/**'
   workflow_dispatch:
 
 jobs:
