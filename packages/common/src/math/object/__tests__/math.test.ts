@@ -2,8 +2,8 @@ import { ObjectMath } from '../math.js';
 import type { RoundOptions } from '../types.js';
 
 type Struct = {
-    a: number;
-    b: number;
+    a?: number;
+    b?: number;
 };
 
 describe('math/object/math', () => {
@@ -32,10 +32,39 @@ describe('math/object/math', () => {
         expect(math.div({ a: 4, b: 8 }, 2)).toEqual({ a: 2, b: 4 });
         expect(math.div({ a: 4, b: 8 }, { a: 2, b: 4 })).toBe(2);
         expect(math.div({ a: 4, b: 8 }, { a: 2, b: 0 })).toBe(2);
-        expect(math.div({ a: 4, b: 8 }, { a: 0, b: 0 })).toBe(0);
+        expect(math.div({ a: 4, b: 8 }, { a: 0, b: 0 })).toBe(0); // All divisors are zero
         expect(math.div(null, { a: 2, b: 4 })).toEqual(0);
         expect(math.div({ a: 4, b: 8 }, null)).toEqual(0);
         expect(math.div({ a: 4, b: 8 }, 0)).toEqual(0);
+
+        // Partial fields - only common keys are considered
+        expect(math.div({ a: 50 }, { a: 15 })).toBe(3);
+        expect(math.div({ a: 50 }, { b: 15 })).toBe(0); // No common keys
+        expect(math.div({ a: 100, b: 20 }, { b: 10 })).toBe(2);
+        expect(math.div({ a: 100 }, { a: 25, b: 10 })).toBe(4);
+
+        // Multiple overlapping keys - should find minimum ratio
+        expect(math.div({ a: 100, b: 30 }, { a: 10, b: 10 })).toBe(3); // min(100/10, 30/10) = 3
+        expect(math.div({ a: 50, b: 100 }, { a: 25, b: 10 })).toBe(2); // min(50/25, 100/10) = 2
+
+        // Edge case: one object has zero in common key
+        expect(math.div({ a: 100, b: 0 }, { a: 10 })).toBe(10);
+        expect(math.div({ a: 0, b: 100 }, { b: 10 })).toBe(10);
+
+        expect(math.div({ a: 100 }, {})).toBe(0);
+    });
+
+    it('div with Infinity enabled', () => {
+        const mathWithInfinity = new ObjectMath<Struct>(['a', 'b']).useInfinityOnDivByEmpty(true);
+
+        // Division by null or empty should return Infinity when enabled
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, null)).toBe(Number.POSITIVE_INFINITY);
+        expect(mathWithInfinity.div(null, { a: 2, b: 4 })).toBe(Number.POSITIVE_INFINITY);
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, { a: 0, b: 0 })).toBe(Number.POSITIVE_INFINITY);
+
+        // Normal divisions should still work
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, { a: 2, b: 4 })).toBe(2);
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, 2)).toEqual({ a: 2, b: 4 });
     });
 
     it('abs', () => {

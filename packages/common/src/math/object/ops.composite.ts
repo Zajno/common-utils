@@ -6,11 +6,11 @@ import { _getInnerValue, doOps } from './helpers.js';
 export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
     readonly Empty: Readonly<T>;
 
-    private readonly _ops: OpsPair<T>[];
+    protected readonly innerOps: OpsPair<T>[];
 
     constructor(innerOps: OpsPairsMap<T>) {
         type TKey = StringKeys<T>;
-        this._ops = Object.entries(innerOps)
+        this.innerOps = Object.entries(innerOps)
             .map(pair => {
                 const result: OpsPair<T> = {
                     key: pair[0] as TKey,
@@ -23,19 +23,19 @@ export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
     }
 
     isEmpty(o: Nullable<DeepReadonly<T>>): boolean {
-        return !o || this._ops.every(op => op.ops.isEmpty(_getInnerValue(o, op.key)));
+        return !o || this.innerOps.every(op => op.ops.isEmpty(_getInnerValue(o, op.key)));
     }
 
     getEmpty(): T {
-        return doOps(this._ops, null, ops => ops.getEmpty());
+        return doOps(this.innerOps, null, ops => ops.getEmpty());
     }
 
     clone(o: Nullable<DeepReadonly<T>>): T {
-        return doOps(this._ops, o);
+        return doOps(this.innerOps, o);
     }
 
     isValid(o: Nullable<DeepReadonly<T>>): boolean {
-        return o != null && this._ops.every(op => op.ops.isValid(_getInnerValue(o, op.key)));
+        return o != null && this.innerOps.every(op => op.ops.isValid(_getInnerValue(o, op.key)));
     }
 
     isEquals(a: Nullable<DeepReadonly<T>>, b: Nullable<DeepReadonly<T>>): boolean {
@@ -45,14 +45,14 @@ export class CompositeObjectOps<T extends AnyObject> implements IObjectOps<T> {
         if (!a || !b) {
             return false;
         }
-        return this._ops.every(pair => pair.ops.isEquals(
+        return this.innerOps.every(pair => pair.ops.isEquals(
             _getInnerValue(a, pair.key),
             _getInnerValue(b, pair.key),
         ));
     }
 
     assign(to: T, other: Nullable<DeepReadonly<T>>): void {
-        this._ops.forEach(pair => {
+        this.innerOps.forEach(pair => {
             const val = _getInnerValue(other, pair.key);
             if (val !== undefined) {
                 to[pair.key] = val;

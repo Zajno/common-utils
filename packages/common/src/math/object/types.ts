@@ -33,7 +33,9 @@ export interface IObjectMath<T extends AnyObject> extends IObjectOps<T> {
     add(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): T;
     subtract(base: Nullable<DeepReadonly<T>>, amount: Nullable<DeepReadonly<T> | number>): T;
     multiply(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): T;
-    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): number;
+
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<number>): T;
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): number;
 }
 
 export type BasePair<T extends AnyObject, TKey extends string & keyof T = string & keyof T, TOps extends IObjectOps<T[TKey]> = IObjectOps<T[TKey]>> = { key: TKey, ops: TOps };

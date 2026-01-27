@@ -9,6 +9,12 @@ type NumVal<T extends object> = T[NumKey<T>];
 const DELETE: DELETE_TYPE = 'delete';
 
 export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjectMath<T> {
+    private returnInfinityOnDivByEmpty = false;
+
+    useInfinityOnDivByEmpty(enable: boolean): this {
+        this.returnInfinityOnDivByEmpty = enable;
+        return this;
+    }
 
     getTotal(o: Nullable<DeepReadonlyPartial<T>>) {
         let sum = 0;
@@ -37,7 +43,7 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
     div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): number;
     div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): T | number {
         if (!o1 || !o2) {
-            return 0;
+            return this.returnInfinityOnDivByEmpty ? Number.POSITIVE_INFINITY : 0;
         }
 
         if (typeof o2 === 'number') {
@@ -51,20 +57,38 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         }
 
         let min: number | null = null;
+        let hasValidDivisor = false;
         Object.keys(o2).forEach(key => {
             const kk = key as keyof DeepReadonly<T>;
-            const v = o2[kk] as number;
-            if (!v) {
-                return;
+            const divisor = o2[kk] as number;
+            if (!divisor) {
+                return; // Skip zero divisors
             }
 
-            const b = o1[kk] as number || 0;
-            const c = Math.round(b / v);
+            // Only consider keys that exist in both objects
+            const dividend = o1[kk] as number;
+            if (dividend === undefined) {
+                return; // Skip keys that don't exist in dividend
+            }
+
+            hasValidDivisor = true;
+            const c = Math.round(dividend / divisor);
             if (min == null || c < min) {
                 min = c;
             }
         });
-        return min ?? 0;
+
+        // If no valid divisors found, treat as division by empty/zero
+        if (!hasValidDivisor) {
+            return this.returnInfinityOnDivByEmpty ? Number.POSITIVE_INFINITY : 0;
+        }
+
+        const result = min ?? 0;
+        // Return Infinity only if configured to do so
+        if (!Number.isFinite(result) && !this.returnInfinityOnDivByEmpty) {
+            return 0;
+        }
+        return result;
     }
 
     process(o: Nullable<DeepReadonly<T>>, processor: (val: number, key: NumKey<T>) => number | DELETE_TYPE): T | null {
