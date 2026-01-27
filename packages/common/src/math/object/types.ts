@@ -27,13 +27,18 @@ export interface IObjectMath<T extends AnyObject> extends IObjectOps<T> {
     contains(base: Nullable<DeepReadonly<T>>, target: Nullable<DeepReadonly<T>>): boolean;
     inverse(o: Nullable<DeepReadonly<T>>): T;
 
+    abs(o: DeepReadonly<T>, options?: AbsOptions): T;
     abs(o: Nullable<DeepReadonly<T>>, options?: AbsOptions): T | null;
+
+    round(o: DeepReadonly<T>, options?: RoundOptions): T;
     round(o: Nullable<DeepReadonly<T>>, options?: RoundOptions): T | null;
 
     add(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): T;
     subtract(base: Nullable<DeepReadonly<T>>, amount: Nullable<DeepReadonly<T> | number>): T;
     multiply(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): T;
-    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): number;
+
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<number>): T;
+    div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): number;
 }
 
 export type BasePair<T extends AnyObject, TKey extends string & keyof T = string & keyof T, TOps extends IObjectOps<T[TKey]> = IObjectOps<T[TKey]>> = { key: TKey, ops: TOps };

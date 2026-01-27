@@ -2,8 +2,8 @@ import { ObjectMath } from '../math.js';
 import type { RoundOptions } from '../types.js';
 
 type Struct = {
-    a: number;
-    b: number;
+    a?: number;
+    b?: number;
 };
 
 describe('math/object/math', () => {
@@ -32,10 +32,71 @@ describe('math/object/math', () => {
         expect(math.div({ a: 4, b: 8 }, 2)).toEqual({ a: 2, b: 4 });
         expect(math.div({ a: 4, b: 8 }, { a: 2, b: 4 })).toBe(2);
         expect(math.div({ a: 4, b: 8 }, { a: 2, b: 0 })).toBe(2);
-        expect(math.div({ a: 4, b: 8 }, { a: 0, b: 0 })).toBe(0);
+        expect(math.div({ a: 4, b: 8 }, { a: 0, b: 0 })).toBe(0); // All divisors are zero
         expect(math.div(null, { a: 2, b: 4 })).toEqual(0);
         expect(math.div({ a: 4, b: 8 }, null)).toEqual(0);
         expect(math.div({ a: 4, b: 8 }, 0)).toEqual(0);
+
+        // Partial fields - only common keys are considered
+        expect(math.div({ a: 50 }, { a: 15 })).toBe(3);
+        expect(math.div({ a: 50 }, { a: 20 })).toBe(2);
+        expect(math.div({ a: 50 }, { b: 15 })).toBe(0); // No common keys
+        expect(math.div({ a: 100, b: 20 }, { b: 10 })).toBe(2);
+        expect(math.div({ a: 100 }, { a: 25, b: 10 })).toBe(4);
+
+        // Multiple overlapping keys - should find minimum ratio
+        expect(math.div({ a: 100, b: 30 }, { a: 10, b: 10 })).toBe(3); // min(100/10, 30/10) = 3
+        expect(math.div({ a: 50, b: 100 }, { a: 25, b: 10 })).toBe(2); // min(50/25, 100/10) = 2
+
+        // Edge case: one object has zero in common key
+        expect(math.div({ a: 100, b: 0 }, { a: 10 })).toBe(10);
+        expect(math.div({ a: 0, b: 100 }, { b: 10 })).toBe(10);
+
+        expect(math.div({ a: 100 }, {})).toBe(0);
+    });
+
+    it('div with Infinity enabled', () => {
+        const mathWithInfinity = new ObjectMath<Struct>(['a', 'b']).useInfinityOnDivByEmpty(true);
+
+        // Division by null or empty should return Infinity when enabled
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, null)).toBe(Number.POSITIVE_INFINITY);
+        expect(mathWithInfinity.div(null, { a: 2, b: 4 })).toBe(Number.POSITIVE_INFINITY);
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, { a: 0, b: 0 })).toBe(Number.POSITIVE_INFINITY);
+
+        // Normal divisions should still work
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, { a: 2, b: 4 })).toBe(2);
+        expect(mathWithInfinity.div({ a: 4, b: 8 }, 2)).toEqual({ a: 2, b: 4 });
+    });
+
+    it('div with custom division methods', () => {
+        // Default is 'floor'
+        expect(math.div({ a: 50 }, { a: 20 })).toBe(2);
+        expect(math.div({ a: 50, b: 0 }, 20)).toEqual({ a: 2, b: 0 });
+
+        // Test 'ceil' - rounds up
+        const mathCeil = new ObjectMath<Struct>(['a', 'b']).useDivisionMethod('ceil');
+        expect(mathCeil.div({ a: 50 }, { a: 20 })).toBe(3); // 2.5 -> 3
+        expect(mathCeil.div({ a: 50, b: 0 }, 20)).toEqual({ a: 3, b: 0 });
+        expect(mathCeil.div({ a: 100, b: 31 }, { a: 10, b: 10 })).toBe(4); // min(10, 3.1->4) = 4
+
+        // Test 'round' - standard rounding
+        const mathRound = new ObjectMath<Struct>(['a', 'b']).useDivisionMethod('round');
+        expect(mathRound.div({ a: 50 }, { a: 20 })).toBe(3); // 2.5 -> 3
+        expect(mathRound.div({ a: 49 }, { a: 20 })).toBe(2); // 2.45 -> 2
+        expect(mathRound.div({ a: 50, b: 0 }, 20)).toEqual({ a: 3, b: 0 });
+
+        // Test null - no rounding, returns raw decimal
+        const mathNoRound = new ObjectMath<Struct>(['a', 'b']).useDivisionMethod(null);
+        expect(mathNoRound.div({ a: 50 }, { a: 20 })).toBe(2.5);
+        expect(mathNoRound.div({ a: 100 }, { a: 30 })).toBeCloseTo(3.333333);
+        expect(mathNoRound.div({ a: 50, b: 0 }, 20)).toEqual({ a: 2.5, b: 0 });
+
+        // Test method chaining
+        const mathChained = new ObjectMath<Struct>(['a', 'b'])
+            .useDivisionMethod('ceil')
+            .useInfinityOnDivByEmpty(true);
+        expect(mathChained.div({ a: 50 }, { a: 20 })).toBe(3);
+        expect(mathChained.div({ a: 50 }, null)).toBe(Number.POSITIVE_INFINITY);
     });
 
     it('abs', () => {

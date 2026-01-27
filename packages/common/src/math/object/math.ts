@@ -1,5 +1,5 @@
-import type { Nullable, TypedKeys } from '../../types/index.js';
 import type { DeepReadonly, DeepReadonlyPartial } from '../../types/deep.js';
+import type { Nullable, TypedKeys } from '../../types/index.js';
 import { _getValue } from './helpers.js';
 import { ObjectOps } from './ops.js';
 import type { AbsOptions, DELETE_TYPE, IObjectMath, NumKey, RoundOptions } from './types.js';
@@ -9,6 +9,18 @@ type NumVal<T extends object> = T[NumKey<T>];
 const DELETE: DELETE_TYPE = 'delete';
 
 export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjectMath<T> {
+    private returnInfinityOnDivByEmpty = false;
+    private divisionMethod: RoundOptions | null = 'floor';
+
+    useInfinityOnDivByEmpty(enable: boolean): this {
+        this.returnInfinityOnDivByEmpty = enable;
+        return this;
+    }
+
+    useDivisionMethod(method: RoundOptions | null): this {
+        this.divisionMethod = method;
+        return this;
+    }
 
     getTotal(o: Nullable<DeepReadonlyPartial<T>>) {
         let sum = 0;
@@ -37,34 +49,52 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
     div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T>>): number;
     div(o1: Nullable<DeepReadonly<T>>, o2: Nullable<DeepReadonly<T> | number>): T | number {
         if (!o1 || !o2) {
-            return 0;
+            return this.returnInfinityOnDivByEmpty ? Number.POSITIVE_INFINITY : 0;
         }
 
         if (typeof o2 === 'number') {
-            const res = { } as T;
+            const res = {} as T;
             Object.keys(o1).forEach(key => {
                 const kk = key as keyof DeepReadonly<T>;
                 const ov = o1[kk] as number;
-                res[kk as keyof T] = Math.round(ov / o2) as T[keyof T];
+                res[kk as keyof T] = this.getDivisionResult(ov, o2) as T[keyof T];
             });
             return res;
         }
 
         let min: number | null = null;
+        let hasValidDivisor = false;
         Object.keys(o2).forEach(key => {
             const kk = key as keyof DeepReadonly<T>;
-            const v = o2[kk] as number;
-            if (!v) {
-                return;
+            const divisor = o2[kk] as number;
+            if (!divisor) {
+                return; // Skip zero divisors
             }
 
-            const b = o1[kk] as number || 0;
-            const c = Math.round(b / v);
+            // Only consider keys that exist in both objects
+            const dividend = o1[kk] as number;
+            if (dividend === undefined) {
+                return; // Skip keys that don't exist in dividend
+            }
+
+            hasValidDivisor = true;
+            const c = this.getDivisionResult(dividend, divisor);
             if (min == null || c < min) {
                 min = c;
             }
         });
-        return min ?? 0;
+
+        // If no valid divisors found, treat as division by empty/zero
+        if (!hasValidDivisor) {
+            return this.returnInfinityOnDivByEmpty ? Number.POSITIVE_INFINITY : 0;
+        }
+
+        const result = min ?? 0;
+        // Return Infinity only if configured to do so
+        if (!Number.isFinite(result) && !this.returnInfinityOnDivByEmpty) {
+            return 0;
+        }
+        return result;
     }
 
     process(o: Nullable<DeepReadonly<T>>, processor: (val: number, key: NumKey<T>) => number | DELETE_TYPE): T | null {
@@ -86,6 +116,8 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         return res;
     }
 
+    abs(c: DeepReadonly<T>, stripNegatives?: AbsOptions): T;
+    abs(c: Nullable<DeepReadonly<T>>, stripNegatives?: AbsOptions): T | null;
     abs(c: Nullable<DeepReadonly<T>>, stripNegatives: AbsOptions = false): T | null {
         return this.process(c, (val) => {
             if (val == null || val >= 0) {
@@ -106,7 +138,8 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
         });
     }
 
-
+    round(c: DeepReadonly<T>, method?: RoundOptions): T;
+    round(c: Nullable<DeepReadonly<T>>, method?: RoundOptions): T | null;
     round(c: Nullable<DeepReadonly<T>>, method: RoundOptions = 'round') {
         return this.process(c, (val) => {
             switch (method) {
@@ -144,5 +177,23 @@ export class ObjectMath<T extends object> extends ObjectOps<T> implements IObjec
 
     multiply(c1: Nullable<DeepReadonly<T>>, c2: Nullable<DeepReadonly<T> | number>) {
         return this.calc(c1, c2, (n1, n2) => (n1 || 0) * (n2 || 0));
+    }
+
+    protected getDivisionResult(dividend: number, divisor: number): number {
+        let result = dividend / divisor;
+        switch (this.divisionMethod) {
+            case 'floor':
+                result = Math.floor(result);
+                break;
+            case 'ceil':
+                result = Math.ceil(result);
+                break;
+            case 'round':
+                result = Math.round(result);
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 }
