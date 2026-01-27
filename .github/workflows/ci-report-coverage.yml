@@ -26,24 +26,7 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: Coveralls (common)
+      - name: Coveralls
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          base-path: packages/common
-          flag-name: common
-          parallel: true
-
-      - name: Coveralls (common-mobx)
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          base-path: packages/common-mobx
-          flag-name: common-mobx
-          parallel: true
-
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          parallel-finished: true
