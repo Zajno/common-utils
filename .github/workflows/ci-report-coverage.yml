@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint-build-test:
+  test-report-coverage:
     runs-on: ubuntu-latest
 
     steps:
