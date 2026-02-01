@@ -248,7 +248,12 @@ describe('PromiseCache', () => {
 
         const { ids: ids1, results: results1 } = doRequests(1);
 
-        await setTimeoutAsync(50 + 5);
+        // Wait for first batch to complete:
+        // - 100ms for all requests to queue (10ms * 10)
+        // - 50ms for batch delay
+        // - 50ms for batch processing
+        // - 10ms buffer
+        await setTimeoutAsync(210);
 
         const { ids: ids2, results: results2 } = doRequests(6);
 
