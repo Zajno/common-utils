@@ -83,4 +83,341 @@ describe('TasksQueue', () => {
         expect(cb2).toHaveBeenCalledBefore(cb3);
         expect(cb3).toHaveBeenCalled();
     });
+
+    describe('pending getter', () => {
+        it('returns 0 when queue is empty', () => {
+            const queue = new TasksQueue(1);
+            expect(queue.pending).toBe(0);
+        });
+
+        it('returns number of waiting tasks', async () => {
+            const queue = new TasksQueue(1);
+
+            const res1 = queue.enqueue(createFactory(1));
+            expect(queue.pending).toBe(0); // running, not pending
+
+            queue.enqueue(createFactory(2));
+            expect(queue.pending).toBe(1);
+
+            queue.enqueue(createFactory(3));
+            expect(queue.pending).toBe(2);
+
+            await res1;
+            // After first completes, second starts running, third is pending
+            expect(queue.pending).toBe(1);
+        });
+    });
+
+    describe('delayBetweenTasks option', () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('inserts delay between tasks', async () => {
+            const queue = new TasksQueue<number>(1, { delayBetweenTasks: 200 });
+
+            const order: number[] = [];
+
+            const makeFactory = (val: number) => async () => {
+                order.push(val);
+                return val;
+            };
+
+            const p1 = queue.enqueue(makeFactory(1), 'task-1');
+            const p2 = queue.enqueue(makeFactory(2), 'task-2');
+            const p3 = queue.enqueue(makeFactory(3), 'task-3');
+
+            // Task 1 runs immediately (microtask)
+            await vi.advanceTimersByTimeAsync(0);
+            expect(order).toEqual([1]);
+
+            // After task 1 completes, delay of 200ms before task 2 starts
+            await vi.advanceTimersByTimeAsync(100);
+            expect(order).toEqual([1]); // still waiting for delay
+
+            await vi.advanceTimersByTimeAsync(100);
+            // Delay elapsed, task 2 should run
+            await vi.advanceTimersByTimeAsync(0);
+            expect(order).toEqual([1, 2]);
+
+            // Another 200ms delay before task 3
+            await vi.advanceTimersByTimeAsync(200);
+            await vi.advanceTimersByTimeAsync(0);
+            expect(order).toEqual([1, 2, 3]);
+
+            await expect(p1).resolves.toBe(1);
+            await expect(p2).resolves.toBe(2);
+            await expect(p3).resolves.toBe(3);
+        });
+
+        it('does not delay when queue is empty after task', async () => {
+            const queue = new TasksQueue<number>(1, { delayBetweenTasks: 500 });
+
+            const start = Date.now();
+            const p1 = queue.enqueue(async () => 42, 'single-task');
+
+            await vi.advanceTimersByTimeAsync(0);
+            await expect(p1).resolves.toBe(42);
+
+            // Should complete almost immediately — no 500ms delay since queue was empty
+            const elapsed = Date.now() - start;
+            expect(elapsed).toBeLessThan(100);
+        });
+
+        it('applies delay even after task failure', async () => {
+            const errorHandler = vi.fn();
+            const queue = new TasksQueue<number>(1, {
+                delayBetweenTasks: 200,
+                onTaskError: errorHandler,
+            });
+
+            const order: string[] = [];
+
+            queue.enqueue(async () => {
+                order.push('fail');
+                throw new Error('boom');
+            }, 'failing-task');
+
+            const p2 = queue.enqueue(async () => {
+                order.push('success');
+                return 42;
+            }, 'success-task');
+
+            // Run the failing task
+            await vi.advanceTimersByTimeAsync(0);
+            expect(order).toEqual(['fail']);
+            expect(errorHandler).toHaveBeenCalledWith(expect.any(Error), 'failing-task');
+
+            // Delay should still apply
+            await vi.advanceTimersByTimeAsync(100);
+            expect(order).toEqual(['fail']); // still waiting
+
+            await vi.advanceTimersByTimeAsync(100);
+            await vi.advanceTimersByTimeAsync(0);
+            expect(order).toEqual(['fail', 'success']);
+
+            await expect(p2).resolves.toBe(42);
+        });
+    });
+
+    describe('onTaskError callback', () => {
+        it('catches errors and resolves with undefined when onTaskError is set', async () => {
+            const errorHandler = vi.fn();
+            const queue = new TasksQueue<string>(1, { onTaskError: errorHandler });
+
+            const error = new Error('task failed');
+            const result = await queue.enqueue(async () => {
+                throw error;
+            }, 'my-task');
+
+            expect(result).toBeUndefined();
+            expect(errorHandler).toHaveBeenCalledTimes(1);
+            expect(errorHandler).toHaveBeenCalledWith(error, 'my-task');
+        });
+
+        it('uses factory.name when task name is not provided', async () => {
+            const errorHandler = vi.fn();
+            const queue = new TasksQueue<string>(1, { onTaskError: errorHandler });
+
+            const error = new Error('oops');
+            async function myNamedFactory(): Promise<string> {
+                throw error;
+            }
+
+            await queue.enqueue(myNamedFactory);
+
+            expect(errorHandler).toHaveBeenCalledWith(error, 'myNamedFactory');
+        });
+
+        it('continues processing after error', async () => {
+            const errorHandler = vi.fn();
+            const queue = new TasksQueue<number>(1, { onTaskError: errorHandler });
+
+            const p1 = queue.enqueue(async () => {
+                throw new Error('first fails');
+            }, 'task-1');
+
+            const p2 = queue.enqueue(async () => 42, 'task-2');
+
+            await expect(p1).resolves.toBeUndefined();
+            await expect(p2).resolves.toBe(42);
+            expect(errorHandler).toHaveBeenCalledTimes(1);
+        });
+
+        it('rethrows when onTaskError is not set (default behavior)', async () => {
+            const queue = new TasksQueue<number>(1);
+
+            const error = new Error('should propagate');
+            await expect(
+                queue.enqueue(async () => { throw error; }, 'failing'),
+            ).rejects.toThrow('should propagate');
+        });
+
+        it('handles queued task errors with onTaskError', async () => {
+            const errorHandler = vi.fn();
+            const queue = new TasksQueue<number>(1, { onTaskError: errorHandler });
+
+            // First task succeeds
+            const p1 = queue.enqueue(async () => {
+                await setTimeoutAsync(10);
+                return 1;
+            }, 'task-1');
+
+            // Second task (queued) fails
+            const p2 = queue.enqueue(async () => {
+                throw new Error('queued task fails');
+            }, 'task-2');
+
+            // Third task (queued) succeeds
+            const p3 = queue.enqueue(async () => 3, 'task-3');
+
+            await expect(p1).resolves.toBe(1);
+            await expect(p2).resolves.toBeUndefined();
+            await expect(p3).resolves.toBe(3);
+
+            expect(errorHandler).toHaveBeenCalledTimes(1);
+            expect(errorHandler).toHaveBeenCalledWith(expect.any(Error), 'task-2');
+        });
+    });
+
+    describe('enqueueDelayed', () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('enqueues task after specified delay', async () => {
+            const queue = new TasksQueue<number>(1);
+            const factory = vi.fn(async () => 42);
+
+            queue.enqueueDelayed(factory, 1000, 'delayed-task');
+
+            expect(factory).not.toHaveBeenCalled();
+            expect(queue.running).toBe(0);
+            expect(queue.pending).toBe(0);
+
+            await vi.advanceTimersByTimeAsync(500);
+            expect(factory).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(500);
+            // Timer fired, task should be enqueued and running
+            await vi.advanceTimersByTimeAsync(0);
+            expect(factory).toHaveBeenCalledTimes(1);
+        });
+
+        it('returns a cancel function that prevents enqueue', async () => {
+            const queue = new TasksQueue<number>(1);
+            const factory = vi.fn(async () => 42);
+
+            const cancel = queue.enqueueDelayed(factory, 1000, 'delayed-task');
+
+            await vi.advanceTimersByTimeAsync(500);
+            cancel();
+
+            await vi.advanceTimersByTimeAsync(1000);
+            expect(factory).not.toHaveBeenCalled();
+        });
+
+        it('respects queue limit and ordering', async () => {
+            const queue = new TasksQueue<number>(1);
+            const order: number[] = [];
+
+            // Start a long-running task
+            queue.enqueue(async () => {
+                await setTimeoutAsync(500);
+                order.push(1);
+                return 1;
+            }, 'task-1');
+
+            // Schedule a delayed task
+            queue.enqueueDelayed(async () => {
+                order.push(2);
+                return 2;
+            }, 200, 'delayed-task');
+
+            // After 200ms, delayed task fires but queue is full
+            await vi.advanceTimersByTimeAsync(200);
+            expect(order).toEqual([]);
+            expect(queue.pending).toBe(1); // delayed task is now queued
+
+            // After 500ms total, first task completes, delayed task runs
+            await vi.advanceTimersByTimeAsync(300);
+            await vi.advanceTimersByTimeAsync(0);
+            expect(order).toEqual([1, 2]);
+        });
+    });
+
+    describe('clear', () => {
+        it('removes all pending tasks', async () => {
+            const queue = new TasksQueue<number>(1);
+
+            const p1 = queue.enqueue(createFactory(1));
+            queue.enqueue(createFactory(2));
+            queue.enqueue(createFactory(3));
+
+            expect(queue.pending).toBe(2);
+
+            queue.clear();
+
+            expect(queue.pending).toBe(0);
+            // Running task should still complete
+            expect(queue.running).toBe(1);
+            await expect(p1).resolves.toBe(1);
+        });
+
+        it('cancels delayed enqueues', async () => {
+            vi.useFakeTimers();
+
+            const queue = new TasksQueue<number>(1);
+            const factory = vi.fn(async () => 42);
+
+            queue.enqueueDelayed(factory, 1000, 'delayed-1');
+            queue.enqueueDelayed(factory, 2000, 'delayed-2');
+
+            queue.clear();
+
+            await vi.advanceTimersByTimeAsync(3000);
+            expect(factory).not.toHaveBeenCalled();
+
+            vi.useRealTimers();
+        });
+
+        it('does not cancel running tasks', async () => {
+            const queue = new TasksQueue<number>(1);
+            const cb = vi.fn();
+
+            const p1 = queue.enqueue(createFactory(42, cb));
+            expect(queue.running).toBe(1);
+
+            queue.clear();
+
+            // Running task should still complete
+            await expect(p1).resolves.toBe(42);
+            expect(cb).toHaveBeenCalled();
+            expect(queue.running).toBe(0);
+        });
+    });
+
+    describe('constructor options', () => {
+        it('accepts options as second parameter', () => {
+            const queue = new TasksQueue<void>(1, {
+                delayBetweenTasks: 1000,
+                onTaskError: () => { /* noop */ },
+            });
+            expect(queue).toBeDefined();
+            expect(queue.limit).toBe(1);
+        });
+
+        it('works without options (backward compatible)', () => {
+            const queue = new TasksQueue<void>(1);
+            expect(queue).toBeDefined();
+        });
+    });
 });
