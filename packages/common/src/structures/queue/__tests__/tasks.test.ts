@@ -297,7 +297,7 @@ describe('TasksQueue', () => {
             const queue = new TasksQueue<number>(1);
             const factory = vi.fn(async () => 42);
 
-            queue.enqueueDelayed(factory, 1000, 'delayed-task');
+            const { promise } = queue.enqueueDelayed(factory, 1000, 'delayed-task');
 
             expect(factory).not.toHaveBeenCalled();
             expect(queue.running).toBe(0);
@@ -310,19 +310,81 @@ describe('TasksQueue', () => {
             // Timer fired, task should be enqueued and running
             await vi.advanceTimersByTimeAsync(0);
             expect(factory).toHaveBeenCalledTimes(1);
+            await expect(promise).resolves.toBe(42);
         });
 
-        it('returns a cancel function that prevents enqueue', async () => {
+        it('returns a promise that resolves with the task result', async () => {
+            const queue = new TasksQueue<number>(1);
+
+            const { promise } = queue.enqueueDelayed(async () => 99, 500, 'delayed-result');
+
+            await vi.advanceTimersByTimeAsync(500);
+            await vi.advanceTimersByTimeAsync(0);
+
+            await expect(promise).resolves.toBe(99);
+        });
+
+        it('returns a promise that rejects when the task throws', async () => {
+            const errorHandler = vi.fn();
+            const queue = new TasksQueue<number>(1, { onTaskError: errorHandler });
+
+            const { promise } = queue.enqueueDelayed(async () => {
+                throw new Error('delayed boom');
+            }, 500, 'delayed-fail');
+
+            await vi.advanceTimersByTimeAsync(500);
+            await vi.advanceTimersByTimeAsync(0);
+
+            // With onTaskError, the error is handled internally and promise resolves with undefined
+            await expect(promise).resolves.toBeUndefined();
+            expect(errorHandler).toHaveBeenCalledWith(expect.any(Error), 'delayed-fail');
+        });
+
+        it('returns a promise that rejects when the task throws without onTaskError', async () => {
+            const queue = new TasksQueue<number>(1);
+
+            const { promise } = queue.enqueueDelayed(async () => {
+                throw new Error('delayed boom no handler');
+            }, 500, 'delayed-fail-no-handler');
+
+            // Attach rejection handler before timer fires to prevent unhandled rejection
+            const rejection = expect(promise).rejects.toThrow('delayed boom no handler');
+
+            await vi.advanceTimersByTimeAsync(500);
+            await vi.advanceTimersByTimeAsync(0);
+
+            await rejection;
+        });
+
+        it('cancel prevents enqueue and rejects the promise', async () => {
             const queue = new TasksQueue<number>(1);
             const factory = vi.fn(async () => 42);
 
-            const cancel = queue.enqueueDelayed(factory, 1000, 'delayed-task');
+            const { promise, cancel } = queue.enqueueDelayed(factory, 1000, 'delayed-task');
+
+            // Attach rejection handler before cancel() to prevent unhandled rejection
+            const rejection = expect(promise).rejects.toThrow('Cancelled');
 
             await vi.advanceTimersByTimeAsync(500);
             cancel();
 
             await vi.advanceTimersByTimeAsync(1000);
             expect(factory).not.toHaveBeenCalled();
+            await rejection;
+        });
+
+        it('cancel is a no-op after task has started', async () => {
+            const queue = new TasksQueue<number>(1);
+
+            const { promise, cancel } = queue.enqueueDelayed(async () => 42, 100, 'delayed-task');
+
+            await vi.advanceTimersByTimeAsync(100);
+            await vi.advanceTimersByTimeAsync(0);
+
+            // Task already started, cancel should be a no-op
+            cancel();
+
+            await expect(promise).resolves.toBe(42);
         });
 
         it('respects queue limit and ordering', async () => {
@@ -337,7 +399,7 @@ describe('TasksQueue', () => {
             }, 'task-1');
 
             // Schedule a delayed task
-            queue.enqueueDelayed(async () => {
+            const { promise: delayedPromise } = queue.enqueueDelayed(async () => {
                 order.push(2);
                 return 2;
             }, 200, 'delayed-task');
@@ -351,18 +413,53 @@ describe('TasksQueue', () => {
             await vi.advanceTimersByTimeAsync(300);
             await vi.advanceTimersByTimeAsync(0);
             expect(order).toEqual([1, 2]);
+            await expect(delayedPromise).resolves.toBe(2);
+        });
+
+        it('does not cause unhandled rejection when delayed task throws without onTaskError', async () => {
+            const queue = new TasksQueue<number>(1);
+
+            const unhandledRejections: unknown[] = [];
+            const processHandler = (err: unknown) => {
+                unhandledRejections.push(err);
+            };
+            process.on('unhandledRejection', processHandler);
+
+            const { promise } = queue.enqueueDelayed(async () => {
+                throw new Error('delayed task boom');
+            }, 100, 'failing-delayed');
+
+            // Attach handler before timer fires to prevent unhandled rejection
+            const rejection = expect(promise).rejects.toThrow('delayed task boom');
+
+            await vi.advanceTimersByTimeAsync(100);
+            await vi.advanceTimersByTimeAsync(0);
+
+            // Give microtasks a chance to propagate
+            await vi.advanceTimersByTimeAsync(0);
+
+            await rejection;
+
+            process.off('unhandledRejection', processHandler);
+
+            expect(unhandledRejections).toHaveLength(0);
         });
     });
 
     describe('clear', () => {
-        it('removes all pending tasks', async () => {
+        it('removes all pending tasks and rejects their promises', async () => {
             const queue = new TasksQueue<number>(1);
 
             const p1 = queue.enqueue(createFactory(1));
-            queue.enqueue(createFactory(2));
-            queue.enqueue(createFactory(3));
+            const p2 = queue.enqueue(createFactory(2));
+            const p3 = queue.enqueue(createFactory(3));
 
             expect(queue.pending).toBe(2);
+
+            // Attach rejection handlers before clear() so Node doesn't flag them as unhandled
+            // while we await p1 (which takes ~50ms to complete)
+            const p2Rejection = expect(p2).rejects.toThrow('TasksQueue cleared');
+            const p3Rejection = expect(p3).rejects.toThrow('TasksQueue cleared');
 
             queue.clear();
 
@@ -370,21 +467,31 @@ describe('TasksQueue', () => {
             // Running task should still complete
             expect(queue.running).toBe(1);
             await expect(p1).resolves.toBe(1);
+            // Cleared pending promises should have rejected
+            await p2Rejection;
+            await p3Rejection;
         });
 
-        it('cancels delayed enqueues', async () => {
+        it('cancels delayed enqueues and rejects their promises', async () => {
             vi.useFakeTimers();
 
             const queue = new TasksQueue<number>(1);
             const factory = vi.fn(async () => 42);
 
-            queue.enqueueDelayed(factory, 1000, 'delayed-1');
-            queue.enqueueDelayed(factory, 2000, 'delayed-2');
+            const d1 = queue.enqueueDelayed(factory, 1000, 'delayed-1');
+            const d2 = queue.enqueueDelayed(factory, 2000, 'delayed-2');
+
+            // Attach rejection handlers before clear()
+            const d1Rejection = expect(d1.promise).rejects.toThrow('Cancelled');
+            const d2Rejection = expect(d2.promise).rejects.toThrow('Cancelled');
 
             queue.clear();
 
             await vi.advanceTimersByTimeAsync(3000);
             expect(factory).not.toHaveBeenCalled();
+
+            await d1Rejection;
+            await d2Rejection;
 
             vi.useRealTimers();
         });
