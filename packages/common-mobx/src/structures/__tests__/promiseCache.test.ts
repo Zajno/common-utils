@@ -1,9 +1,16 @@
 import { Disposer } from '@zajno/common/functions/disposer';
 import { PromiseCacheObservable } from '../promiseCache.js';
 import { reaction, runInAction } from 'mobx';
-import { setTimeoutAsync } from '@zajno/common/async/timeout';
 
 describe('PromiseCache observable', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('reacts on change', async () => {
         const cache = new PromiseCacheObservable(
             async (id: string) => id,
@@ -84,7 +91,11 @@ describe('PromiseCache observable', () => {
     });
 
     it('handles invalidation by timeout', async () => {
-        const fetcher = vi.fn(async (id: string) => setTimeoutAsync(10).then(() => ({ id })));
+        const fetcher = vi.fn(async (id: string) => {
+            // Simulate async work with a 10ms delay
+            await new Promise<void>(resolve => setTimeout(resolve, 10));
+            return { id };
+        });
 
         const cache = new PromiseCacheObservable(fetcher)
             .useInvalidationTime(10)
@@ -119,7 +130,8 @@ describe('PromiseCache observable', () => {
             // here isLoading should be true since fetch is in progress
             expect(deferred.isLoading).toBe(true);
 
-            await setTimeoutAsync(10);
+            // Advance past the 10ms fetcher delay
+            await vi.advanceTimersByTimeAsync(10);
 
             expect(deferred.current).toStrictEqual({ id: '1' });
             expect(deferred.isLoading).toBe(false);
@@ -133,8 +145,8 @@ describe('PromiseCache observable', () => {
         // PASS 1 - initial fetch
         await doPass();
 
-        // WAITING FOR INVALIDATION
-        await setTimeoutAsync(20);
+        // WAITING FOR INVALIDATION (advance past the 10ms invalidation threshold)
+        await vi.advanceTimersByTimeAsync(20);
 
         // PASS 2 - re-fetch after invalidation
 
@@ -173,7 +185,6 @@ describe('PromiseCache observable', () => {
 
         const deferred = cache.getDeferred('1');
 
-
         // PASS 1 - initial fetch
         // isLoading should be undefined when item is empty
         expect(deferred.isLoading).toBe(undefined);
@@ -181,7 +192,8 @@ describe('PromiseCache observable', () => {
         // here isLoading should be true since fetch is in progress
         expect(deferred.isLoading).toBe(true);
 
-        await setTimeoutAsync(5);
+        // Let the microtask-based fetcher resolve
+        await vi.advanceTimersByTimeAsync(0);
 
         expect(deferred.current).toStrictEqual({ id: '1' });
         expect(deferred.isLoading).toBe(false);
@@ -191,8 +203,8 @@ describe('PromiseCache observable', () => {
 
         checkHandler('1');
 
-        // WAITING FOR INVALIDATION
-        await setTimeoutAsync(20);
+        // WAITING FOR INVALIDATION (advance past the 10ms invalidation threshold)
+        await vi.advanceTimersByTimeAsync(20);
 
         // PASS 2 - re-fetch after invalidation
 
@@ -206,7 +218,8 @@ describe('PromiseCache observable', () => {
         // here isLoading should be true since fetch is in progress
         expect(deferred.isLoading).toBe(true);
 
-        await setTimeoutAsync(5);
+        // Let the microtask-based fetcher resolve
+        await vi.advanceTimersByTimeAsync(0);
 
         expect(deferred.current).toStrictEqual({ id: '1' });
         expect(deferred.isLoading).toBe(false);
