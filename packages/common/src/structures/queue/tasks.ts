@@ -5,13 +5,13 @@ type Factory<T> = () => Promise<T>;
 
 type QueueItem<T> = {
     factory: Factory<T>;
-    promise: ManualPromise<T>;
+    promise: ManualPromise<T | undefined>;
     name?: string;
 };
 
 export type DelayedTask<T> = {
     /** Promise that resolves with the task result, or rejects if the task throws or is cancelled. */
-    readonly promise: Promise<T>;
+    readonly promise: Promise<T | undefined>;
     /** Cancel the delayed task. If the task hasn't started yet, the promise rejects with a 'Cancelled' error. */
     readonly cancel: () => void;
 };
@@ -51,7 +51,13 @@ export class TasksQueue<T> {
         return this;
     }
 
-    public enqueue(factory: Factory<T>, name?: string): Promise<T> {
+    /**
+     * Enqueue a task factory to run when a slot is available.
+     *
+     * **Note:** When `onTaskError` is provided in the constructor options and the factory throws,
+     * the error is passed to `onTaskError` and the returned promise resolves with `undefined`.
+     */
+    public enqueue(factory: Factory<T>, name?: string): Promise<T | undefined> {
         if (typeof factory !== 'function') {
             throw new Error('Invalid arg: factory not a function');
         }
@@ -60,7 +66,7 @@ export class TasksQueue<T> {
 
             const item: QueueItem<T> = {
                 factory,
-                promise: createManualPromise<T>(),
+                promise: createManualPromise<T | undefined>(),
                 name,
             };
 
@@ -68,12 +74,13 @@ export class TasksQueue<T> {
             return item.promise.promise;
         }
 
-        return this._runFactory(factory, name);
+        return this._runFactory(factory, name)
+            .then(res => res.ok === true ? res.result : undefined);
     }
 
     /** Enqueue a task to run after `delay` ms. Returns a promise and a cancel function. */
     public enqueueDelayed(factory: Factory<T>, delay: number, name?: string): DelayedTask<T> {
-        const mp = createManualPromise<T>();
+        const mp = createManualPromise<T | undefined>();
         let started = false;
 
         const timer = setTimeout(() => {
@@ -117,15 +124,15 @@ export class TasksQueue<T> {
         this._delayedTasks.clear();
     }
 
-    private _runFactory = async (factory: Factory<T>, name?: string): Promise<T> => {
+    private _runFactory = async (factory: Factory<T>, name?: string) => {
         this._running++;
         try {
             const result = await factory();
-            return result;
+            return { ok: true as const, result };
         } catch (err) {
             if (this._onTaskError) {
                 this._onTaskError(err, name || factory.name || undefined);
-                return undefined as T;
+                return { ok: false as const };
             }
             this._logger?.warn(`Factory "${name || factory.name || '<unknown>'}" thrown. Rethrowing...`);
             throw err;
@@ -148,10 +155,9 @@ export class TasksQueue<T> {
             return;
         }
 
-        let result: T;
         try {
-            result = await this._runFactory(next.factory, next.name);
-            next.promise.resolve(result);
+            const res = await this._runFactory(next.factory, next.name);
+            next.promise.resolve(res.ok === true ? res.result : undefined);
         } catch (err) {
             next.promise.reject(err as Error);
         }
