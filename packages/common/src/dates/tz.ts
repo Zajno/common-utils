@@ -40,7 +40,7 @@ export namespace Timezones {
             result *= -1;
         }
 
-        return result;
+        return result || 0;
     }
 
     /** Returns a new date with the specified timezone offset applied.
