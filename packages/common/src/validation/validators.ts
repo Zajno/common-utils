@@ -21,7 +21,7 @@ export const ValidatorsRegExps = {
     creditCardNumber: /^\d+$/,
     expiryDateCard: /^\d+$/,
     cvv: /^\d+$/,
-    website: /^(https?:\/\/)?((\p{N}|\p{L})+((((-?(\p{N}|\p{L})+)+)?)\.))+\p{L}{2,}(:[0-9]+)?(\/.*)?$/iu,
+    website: /^(https?:\/\/)?([\p{L}\p{N}]+(-[\p{L}\p{N}]+)*\.)+\p{L}{2,}(:[0-9]+)?(\/.*)?$/iu,
     linkedin: /^(https?:\/\/)?([a-z]+\d*[a-z]*\.)?linkedin\.com\/.*$/i,
 };
 
