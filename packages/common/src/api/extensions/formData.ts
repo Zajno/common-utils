@@ -1,4 +1,5 @@
 import type { AnyObject } from '../../types/misc.js';
+import { isPlainObject } from '../../types/isPlainObject.js';
 import type { ApiEndpoint } from '../endpoint.js';
 import type { IEndpointInfo } from '../endpoint.types.js';
 import type { CallerHooks } from '../hooks.js';
@@ -42,6 +43,12 @@ export interface FormDataSerializerOptions {
  */
 export function createFormDataSerializer(options?: FormDataSerializerOptions): IFormDataSerializer {
     const Ctor = options?.FormData ?? globalThis.FormData;
+    if (typeof Ctor !== 'function') {
+        throw new TypeError(
+            'FormData is not available in this environment. '
+            + 'Pass a FormData constructor via options.FormData (e.g., from the `form-data` npm package).',
+        );
+    }
     const serializeValue = options?.serializeValue ?? 'json';
 
     return (data: Record<string, unknown>): FormData => {
@@ -148,6 +155,11 @@ export namespace IEndpointFormData {
         return {
             beforeRequest: (config) => {
                 if (!guard(config._meta.api) || !config.data) {
+                    return;
+                }
+
+                // Skip if data was already transformed by a previous hook (e.g., to FormData, Blob, string)
+                if (!isPlainObject(config.data)) {
                     return;
                 }
 

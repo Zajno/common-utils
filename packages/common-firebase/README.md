@@ -22,14 +22,14 @@ See usage & distribution notes from `@zajno/common`'s [README](../common/README.
 
 * [Firestore helpers](./src/database/firestore/index.ts)
 * [Realtime DB helpers](./src/database/realtime/index.ts)
-* [HTTP Functions definitions](#function-definitions) – abstract definitions to be used on a middle-layer with in/out type definitions.
-    * [Composite functions](#composite-functions) – abstraction for defining multiple logic endpoints on a single Firebase Function.
+* [HTTP Functions definitions](./docs/functions.md#function-definitions) – abstract definitions to be used on a middle-layer with in/out type definitions.
+    * [Composite functions](./docs/functions.md#composite-functions) – abstraction for defining multiple logic endpoints on a single Firebase Function.
 
 * [Server-side helpers](./src/server/) – for Firebase Functions
-    * [Functions Wrapper](#functionfactory--server-side-endpoint-construction): construct functions (v1) from Endpoint definitions, with [`Middlewares`](#middleware-system) for code reuse and better readability.
-    * [Composite Factory](#functioncompositefactory--server-side-composite-handling): server-side handler for composite endpoints.
-    * [Async Loaders](#async-loaders): lazy-load function handlers for cold-start optimization.
-    * [Pubsub helpers](#pubsub-manager) – for Firebase Pub/Sub topics.
+    * [Functions Wrapper](./docs/functions.md#functionfactory--server-side-endpoint-construction): construct functions (v1) from Endpoint definitions, with [`Middlewares`](./docs/functions.md#middleware-system) for code reuse and better readability.
+    * [Composite Factory](./docs/functions.md#functioncompositefactory--server-side-composite-handling): server-side handler for composite endpoints.
+    * [Async Loaders](./docs/functions.md#async-loaders): lazy-load function handlers for cold-start optimization.
+    * [Pubsub helpers](./docs/functions.md#pubsub-manager) – for Firebase Pub/Sub topics.
     * Various: [`Storage`](./src/server/storage.ts), [`Admin`](./src/server/admin.ts), [`Logger`](./src/server/logger.ts) and more.
 
 See full Functions API reference in [docs](./docs/functions.md).

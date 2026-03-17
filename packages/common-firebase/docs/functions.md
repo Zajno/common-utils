@@ -2,29 +2,29 @@
 
 The library provides a **three-layer architecture** for Firebase Cloud Functions:
 
-1. **Definition layer** (shared) – type-safe function contracts ([`FunctionDefinition`](./src/functions/definition.ts:8)) shared between client and server.
-2. **Server layer** – [`FunctionFactory`](./src/server/functions/factory.ts:18) + [`Middleware`](./src/server/functions/middleware.ts:36) pipeline to build Firebase HTTPS Callable endpoints.
-3. **Client layer** – [`FunctionFactory`](./src/client/abstractions/functions/factory.ts:21) (client) that calls the endpoint, applying arg/result processors automatically.
+1. **Definition layer** (shared) – type-safe function contracts ([`FunctionDefinition`](../src/functions/definition.ts:8)) shared between client and server.
+2. **Server layer** – [`FunctionFactory`](../src/server/functions/factory.ts:18) + [`Middleware`](../src/server/functions/middleware.ts:36) pipeline to build Firebase HTTPS Callable endpoints.
+3. **Client layer** – [`FunctionFactory`](../src/client/abstractions/functions/factory.ts:21) (client) that calls the endpoint, applying arg/result processors automatically.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                  Shared Definition Layer                 │
+│                  Shared Definition Layer                │
 │  FunctionDefinition<TArg, TResult>                      │
 │  FunctionComposite<T>                                   │
 └──────────────┬──────────────────────┬───────────────────┘
                │                      │
-       ┌───────▼───────┐      ┌───────▼───────┐
-       │  Server Layer  │      │  Client Layer  │
+       ┌───────▼─────────┐      ┌───────▼─────────┐
+       │  Server Layer   │      │  Client Layer   │
        │ FunctionFactory │      │ FunctionFactory │
-       │ + Middleware    │      │ + execute()    │
-       └───────────────┘      └───────────────┘
+       │ + Middleware    │      │ + execute()     │
+       └─────────────────┘      └─────────────────┘
 ```
 
 ---
 
 ## Function Definitions
 
-[`FunctionDefinition<TArg, TResult>`](./src/functions/definition.ts:8) is the core building block. It defines a callable function's **name**, **namespace**, **runtime options**, and optional **arg/result processors** (converters).
+[`FunctionDefinition<TArg, TResult>`](../src/functions/definition.ts:8) is the core building block. It defines a callable function's **name**, **namespace**, **runtime options**, and optional **arg/result processors** (converters).
 
 ### Creating a Definition
 
@@ -44,7 +44,7 @@ console.log(GreetEndpoint.CallableName); // => 'api-greet'
 
 ### Arg & Result Processors
 
-Processors transform data before sending (client) or after receiving (server). Use [`specify()`](./src/functions/definition.ts:30) to create a derived definition with different types:
+Processors transform data before sending (client) or after receiving (server). Use [`specify()`](../src/functions/definition.ts:30) to create a derived definition with different types:
 
 ```ts
 // Original definition works with raw DB types
@@ -64,18 +64,18 @@ const GetUserClient = GetUser.specify<
 
 | Property | Description |
 |---|---|
-| [`Name`](./src/functions/definition.ts:23) | Function name |
-| [`Namespace`](./src/functions/definition.ts:24) | Optional namespace prefix |
-| [`CallableName`](./src/functions/definition.ts:21) | Combined `namespace-name` (or just `name` if no namespace) |
-| [`Options`](./src/functions/definition.ts:25) | Firebase runtime options (`memory`, `timeoutSeconds`, etc.) |
-| [`ArgProcessor`](./src/functions/definition.ts:17) | Transforms input arguments |
-| [`ResultProcessor`](./src/functions/definition.ts:18) | Transforms output results |
+| [`Name`](../src/functions/definition.ts:23) | Function name |
+| [`Namespace`](../src/functions/definition.ts:24) | Optional namespace prefix |
+| [`CallableName`](../src/functions/definition.ts:21) | Combined `namespace-name` (or just `name` if no namespace) |
+| [`Options`](../src/functions/definition.ts:25) | Firebase runtime options (`memory`, `timeoutSeconds`, etc.) |
+| [`ArgProcessor`](../src/functions/definition.ts:17) | Transforms input arguments |
+| [`ResultProcessor`](../src/functions/definition.ts:18) | Transforms output results |
 
 ---
 
 ## Composite Functions
 
-[`FunctionComposite<T>`](./src/functions/composite.ts:42) allows defining **multiple logical endpoints** under a single Firebase Function. This reduces the number of deployed functions while maintaining type safety.
+[`FunctionComposite<T>`](../src/functions/composite.ts:42) allows defining **multiple logical endpoints** under a single Firebase Function. This reduces the number of deployed functions while maintaining type safety.
 
 ### Why Composite?
 
@@ -83,7 +83,7 @@ Firebase charges per function deployment and cold starts affect each function in
 
 ### Defining a Composite Endpoint
 
-Use [`spec<TArg, TResult>()`](./src/functions/composite.ts:9) to declare each sub-endpoint's type signature:
+Use [`spec<TArg, TResult>()`](../src/functions/composite.ts:9) to declare each sub-endpoint's type signature:
 
 ```ts
 import { FunctionComposite, spec, createCompositionExport } from '@zajno/common-firebase/functions/composite';
@@ -108,7 +108,7 @@ export const UserAPI = createCompositionExport(
 
 ### Accessing Individual Specs
 
-The [`createCompositionExport()`](./src/functions/composite.ts:99) helper returns a callable that also exposes each spec as a property. Each spec is a full [`IFunctionDefinition`](./src/functions/interface.ts:18) with automatic arg/result wrapping:
+The [`createCompositionExport()`](../src/functions/composite.ts:99) helper returns a callable that also exposes each spec as a property. Each spec is a full [`IFunctionDefinition`](../src/functions/interface.ts:18) with automatic arg/result wrapping:
 
 ```ts
 // Access individual endpoint definitions (for client-side use)
@@ -142,11 +142,11 @@ For nested specs like `UserAPI.admin.deleteUser`:
 
 ## Middleware System
 
-The [`Middleware<TArg, TResult, TContext>`](./src/server/functions/middleware.ts:36) class implements a **Koa-style middleware chain** for processing function requests on the server side.
+The [`Middleware<TArg, TResult, TContext>`](../src/server/functions/middleware.ts:36) class implements a **Koa-style middleware chain** for processing function requests on the server side.
 
 ### How It Works
 
-Each middleware handler receives a [`HandlerContext`](./src/server/functions/interface.ts:19) and a `next` function. The context carries `input`, `output`, auth info, logger, and custom `data`:
+Each middleware handler receives a [`HandlerContext`](../src/server/functions/interface.ts:19) and a `next` function. The context carries `input`, `output`, auth info, logger, and custom `data`:
 
 ```ts
 import { Middleware } from '@zajno/common-firebase/server/functions/middleware';
@@ -166,12 +166,12 @@ const myMiddleware = new Middleware<string, string>()
 
 | Method | Description |
 |---|---|
-| [`.use(handler)`](./src/server/functions/middleware.ts:83) | Add a middleware handler `(ctx, next) => Promise<void>`. **Must call `next()`**. |
-| [`.useBeforeAll(handler)`](./src/server/functions/middleware.ts:89) | Prepend a handler before all existing ones. |
-| [`.useHandler(handler)`](./src/server/functions/middleware.ts:95) | Add a handler `(ctx) => Promise<void>` that auto-calls `next()`. |
-| [`.useFunction(func)`](./src/server/functions/middleware.ts:99) | Add an endpoint function `(input, ctx) => Promise<output>` that sets `ctx.output` and auto-calls `next()`. |
-| [`.useAuth()`](./src/server/functions/middleware.ts:103) | Add built-in authentication check (throws if `ctx.auth.uid` is missing). |
-| [`.useContextPopulist(fn)`](./src/server/functions/middleware.ts:107) | Add a context populator that enriches `ctx` before downstream handlers. |
+| [`.use(handler)`](../src/server/functions/middleware.ts:83) | Add a middleware handler `(ctx, next) => Promise<void>`. **Must call `next()`**. |
+| [`.useBeforeAll(handler)`](../src/server/functions/middleware.ts:89) | Prepend a handler before all existing ones. |
+| [`.useHandler(handler)`](../src/server/functions/middleware.ts:95) | Add a handler `(ctx) => Promise<void>` that auto-calls `next()`. |
+| [`.useFunction(func)`](../src/server/functions/middleware.ts:99) | Add an endpoint function `(input, ctx) => Promise<output>` that sets `ctx.output` and auto-calls `next()`. |
+| [`.useAuth()`](../src/server/functions/middleware.ts:103) | Add built-in authentication check (throws if `ctx.auth.uid` is missing). |
+| [`.useContextPopulist(fn)`](../src/server/functions/middleware.ts:107) | Add a context populator that enriches `ctx` before downstream handlers. |
 
 ### Safe Next Enforcement
 
@@ -198,11 +198,11 @@ const middleware = new Middleware<InputType, OutputType, MyContext>()
     });
 ```
 
-Use [`.mergeContext<C>()`](./src/server/functions/middleware.ts:114) to combine multiple context types when composing middlewares from different modules.
+Use [`.mergeContext<C>()`](../src/server/functions/middleware.ts:114) to combine multiple context types when composing middlewares from different modules.
 
 ### Aggregating Middlewares
 
-[`Middleware.aggregate()`](./src/server/functions/middleware.ts:231) combines multiple middleware instances so that a single `.use()` call applies to all of them:
+[`Middleware.aggregate()`](../src/server/functions/middleware.ts:231) combines multiple middleware instances so that a single `.use()` call applies to all of them:
 
 ```ts
 import { Middleware } from '@zajno/common-firebase/server/functions/middleware';
@@ -217,7 +217,7 @@ Middleware.aggregate(handlers.getUser, handlers.updateProfile)
 
 ## `FunctionFactory` – Server-Side Endpoint Construction
 
-[`FunctionFactory<TArg, TResult, TContext>`](./src/server/functions/factory.ts:18) extends `Middleware` and creates a Firebase HTTPS Callable endpoint from a [`FunctionDefinition`](./src/functions/definition.ts:8).
+[`FunctionFactory<TArg, TResult, TContext>`](../src/server/functions/factory.ts:18) extends `Middleware` and creates a Firebase HTTPS Callable endpoint from a [`FunctionDefinition`](../src/functions/definition.ts:8).
 
 ### Basic Usage
 
@@ -243,14 +243,14 @@ module.exports = endpoints;
 
 ### Features
 
-- **Automatic error handling**: wraps all errors into [`HttpsError`](./src/server/utils/AppHttpError.ts:34) via [`tryConvertToHttpError()`](./src/server/utils/LogicErrorAdapter.ts:27).
-- **Request logging**: generates a unique request ID and logger per invocation (configurable via [`.setLogging()`](./src/server/functions/factory.ts:44)).
+- **Automatic error handling**: wraps all errors into [`HttpsError`](../src/server/utils/AppHttpError.ts:34) via [`tryConvertToHttpError()`](../src/server/utils/LogicErrorAdapter.ts:27).
+- **Request logging**: generates a unique request ID and logger per invocation (configurable via [`.setLogging()`](../src/server/functions/factory.ts:44)).
 - **Meta support**: extracts `__meta` from input data for cross-cutting concerns.
-- **Error logging**: controlled by [`FunctionFactory.DefaultLogErrors`](./src/server/functions/factory.ts:25) (default: `true`).
+- **Error logging**: controlled by [`FunctionFactory.DefaultLogErrors`](../src/server/functions/factory.ts:25) (default: `true`).
 
 ### Global Runtime Options
 
-Set default runtime options for all functions via [`GlobalRuntimeOptions`](./src/server/functions/globalSettings.ts:4):
+Set default runtime options for all functions via [`GlobalRuntimeOptions`](../src/server/functions/globalSettings.ts:4):
 
 ```ts
 import { GlobalRuntimeOptions } from '@zajno/common-firebase/server/functions/globalSettings';
@@ -265,7 +265,7 @@ GlobalRuntimeOptions.value = {
 
 ## `FunctionCompositeFactory` – Server-Side Composite Handling
 
-[`FunctionCompositeFactory<T, TContext>`](./src/server/functions/composite.ts:38) extends `FunctionFactory` to handle composite endpoints. It creates a **handlers map** mirroring the composite's shape, where each leaf is a [`MiddlewareChild`](./src/server/functions/middleware.ts:125).
+[`FunctionCompositeFactory<T, TContext>`](../src/server/functions/composite.ts:38) extends `FunctionFactory` to handle composite endpoints. It creates a **handlers map** mirroring the composite's shape, where each leaf is a [`MiddlewareChild`](../src/server/functions/middleware.ts:125).
 
 ### Basic Setup
 
@@ -311,7 +311,7 @@ IFirebaseFunction.addTo(endpoints, true, UserEndpoint);
 
 ### Skipping Parent Middlewares
 
-Individual handlers can opt out of parent middleware chains using [`.skipParentMiddlewares()`](./src/server/functions/middleware.ts:135):
+Individual handlers can opt out of parent middleware chains using [`.skipParentMiddlewares()`](../src/server/functions/middleware.ts:135):
 
 ```ts
 // This endpoint won't require auth
@@ -324,7 +324,7 @@ UserEndpoint.handlers.getUser
 
 ### Using Functions Map
 
-Instead of configuring handlers one by one, use [`.useFunctionsMap()`](./src/server/functions/composite.ts:177) to assign all endpoint functions at once:
+Instead of configuring handlers one by one, use [`.useFunctionsMap()`](../src/server/functions/composite.ts:177) to assign all endpoint functions at once:
 
 ```ts
 UserEndpoint.useFunctionsMap({
@@ -339,17 +339,17 @@ UserEndpoint.useFunctionsMap({
 
 ### Cloning
 
-Use [`.clone()`](./src/server/functions/composite.ts:189) to create a copy of the factory with the same handler configuration (useful for testing or creating variants).
+Use [`.clone()`](../src/server/functions/composite.ts:189) to create a copy of the factory with the same handler configuration (useful for testing or creating variants).
 
 ---
 
 ## Async Loaders
 
-The [loader utilities](./src/server/functions/loader.ts) help with **lazy-loading** function implementations to reduce cold-start times. The actual handler code is loaded only on the first invocation.
+The [loader utilities](../src/server/functions/loader.ts) help with **lazy-loading** function implementations to reduce cold-start times. The actual handler code is loaded only on the first invocation.
 
 ### `useAsyncInitLoader`
 
-[`useAsyncInitLoader()`](./src/server/functions/loader.ts:19) lazily initializes a middleware with an async loader:
+[`useAsyncInitLoader()`](../src/server/functions/loader.ts:19) lazily initializes a middleware with an async loader:
 
 ```ts
 import { useAsyncInitLoader } from '@zajno/common-firebase/server/functions/loader';
@@ -370,7 +370,7 @@ useAsyncInitLoader(MyEndpoint.asMiddleware, async () => {
 
 ### `useAsyncInitCompositionLoader`
 
-[`useAsyncInitCompositionLoader()`](./src/server/functions/loader.ts:35) is a convenience wrapper for composite factories:
+[`useAsyncInitCompositionLoader()`](../src/server/functions/loader.ts:35) is a convenience wrapper for composite factories:
 
 ```ts
 import { useAsyncInitCompositionLoader } from '@zajno/common-firebase/server/functions/loader';
@@ -410,25 +410,25 @@ export const webhook = createAsyncHttpsRequestFunction(
 
 ## Helper Functions for Creating Endpoints
 
-The [`create.ts`](./src/server/functions/create.ts) module provides low-level factory functions:
+The [`create.ts`](../src/server/functions/create.ts) module provides low-level factory functions:
 
 | Function | Description |
 |---|---|
-| [`createHttpsCallFunction()`](./src/server/functions/create.ts:12) | Creates a Firebase HTTPS Callable function from an endpoint worker. |
-| [`createHttpsRequestFunction()`](./src/server/functions/create.ts:26) | Creates a Firebase HTTPS Request function (for webhooks, REST APIs). |
-| [`createScheduledFunction()`](./src/server/functions/create.ts:30) | Creates a scheduled (cron) function. |
-| [`createTopicListener()`](./src/server/functions/create.ts:39) | Creates a Pub/Sub topic listener. |
-| [`FilterRequestMethod()`](./src/server/functions/create.ts:50) | Middleware that filters by HTTP method (default: POST only). |
+| [`createHttpsCallFunction()`](../src/server/functions/create.ts:12) | Creates a Firebase HTTPS Callable function from an endpoint worker. |
+| [`createHttpsRequestFunction()`](../src/server/functions/create.ts:26) | Creates a Firebase HTTPS Request function (for webhooks, REST APIs). |
+| [`createScheduledFunction()`](../src/server/functions/create.ts:30) | Creates a scheduled (cron) function. |
+| [`createTopicListener()`](../src/server/functions/create.ts:39) | Creates a Pub/Sub topic listener. |
+| [`FilterRequestMethod()`](../src/server/functions/create.ts:50) | Middleware that filters by HTTP method (default: POST only). |
 
 ---
 
 ## Type-Safe Helpers (`SpecTo` / `ContextTo`)
 
-The [`helpers.ts`](./src/server/functions/helpers.ts) module provides namespace utilities for type inference:
+The [`helpers.ts`](../src/server/functions/helpers.ts) module provides namespace utilities for type inference:
 
 ### `SpecTo`
 
-[`SpecTo`](./src/server/functions/helpers.ts:8) helpers infer types from a function definition spec:
+[`SpecTo`](../src/server/functions/helpers.ts:8) helpers infer types from a function definition spec:
 
 ```ts
 import { SpecTo } from '@zajno/common-firebase/server/functions';
@@ -453,7 +453,7 @@ myMiddleware.useAuth().useFunction(myFunction);
 
 ### `ContextTo`
 
-[`ContextTo`](./src/server/functions/helpers.ts:31) helpers infer types from a context type:
+[`ContextTo`](../src/server/functions/helpers.ts:31) helpers infer types from a context type:
 
 ```ts
 import { ContextTo } from '@zajno/common-firebase/server/functions';
@@ -471,7 +471,7 @@ const populateUser = ContextTo.Populist(DefaultContext, async (ctx) => {
 
 ## `AppHttpError` – Structured Error Responses
 
-[`AppHttpError`](./src/server/utils/AppHttpError.ts:4) provides factory functions for creating Firebase [`HttpsError`](https://firebase.google.com/docs/reference/functions/providers_https_.httpserror) instances with standard error codes:
+[`AppHttpError`](../src/server/utils/AppHttpError.ts:4) provides factory functions for creating Firebase [`HttpsError`](https://firebase.google.com/docs/reference/functions/providers_https_.httpserror) instances with standard error codes:
 
 ```ts
 import AppHttpError from '@zajno/common-firebase/server/utils/AppHttpError';
@@ -493,7 +493,7 @@ throw AppHttpError.Construct('resource-exhausted', 'Rate limit exceeded');
 
 ## PubSub Manager
 
-The [`PubSub.Manager`](./src/server/pubsub/index.ts:16) class provides a high-level API for creating and managing Pub/Sub topics with type-safe message publishing and handling.
+The [`PubSub.Manager`](../src/server/pubsub/index.ts:16) class provides a high-level API for creating and managing Pub/Sub topics with type-safe message publishing and handling.
 
 ### Setup
 
@@ -545,7 +545,7 @@ topic.addRegistration(async () => {
 
 ## Client-Side Functions
 
-The client-side [`Functions`](./src/client/web/functions.ts:41) object creates callable wrappers from function definitions:
+The client-side [`Functions`](../src/client/web/functions.ts:41) object creates callable wrappers from function definitions:
 
 ### Calling a Simple Endpoint
 
@@ -597,7 +597,7 @@ FirebaseApp.Settings = {
 
 ### Factory Hook
 
-Use [`OnFactoryCreated`](./src/client/abstractions/functions/factory.ts:10) to intercept all function factory creations (e.g., for adding global metadata):
+Use [`OnFactoryCreated`](../src/client/abstractions/functions/factory.ts:10) to intercept all function factory creations (e.g., for adding global metadata):
 
 ```ts
 import { OnFactoryCreated } from '@zajno/common-firebase/client/abstractions/functions/factory';
@@ -613,7 +613,7 @@ OnFactoryCreated.subscribe((hook) => {
 
 ### Admin Initialization
 
-[`Admin`](./src/server/admin.ts) auto-initializes `firebase-admin` using `GOOGLE_SERVICE_ACCOUNT` env variable or default credentials:
+[`Admin`](../src/server/admin.ts) auto-initializes `firebase-admin` using `GOOGLE_SERVICE_ACCOUNT` env variable or default credentials:
 
 ```ts
 import Admin, { ProjectId, AdminLib } from '@zajno/common-firebase/server/admin';
@@ -621,7 +621,7 @@ import Admin, { ProjectId, AdminLib } from '@zajno/common-firebase/server/admin'
 
 ### Firebase Logger Adapter
 
-[`firebaseLogger`](./src/server/logger.ts:4) adapts Firebase's built-in logger to the `ILogger` interface from `@zajno/common`:
+[`firebaseLogger`](../src/server/logger.ts:4) adapts Firebase's built-in logger to the `ILogger` interface from `@zajno/common`:
 
 ```ts
 import { firebaseLogger } from '@zajno/common-firebase/server/logger';
@@ -631,7 +631,7 @@ firebaseLogger.log('Hello from Firebase Functions');
 
 ### `IFirebaseFunction.addTo()`
 
-[`IFirebaseFunction.addTo()`](./src/server/functions/interface.ts:47) registers function endpoints on an export object, optionally grouping by namespace:
+[`IFirebaseFunction.addTo()`](../src/server/functions/interface.ts:47) registers function endpoints on an export object, optionally grouping by namespace:
 
 ```ts
 import { IFirebaseFunction } from '@zajno/common-firebase/server/functions/interface';
@@ -647,7 +647,7 @@ module.exports = exports;
 
 ## Full Example
 
-See the complete working example in [`src/examples/compositeFunctionExample.ts`](./src/examples/compositeFunctionExample.ts) which demonstrates:
+See the complete working example in [`src/examples/compositeFunctionExample.ts`](../src/examples/compositeFunctionExample.ts) which demonstrates:
 
 - Defining composite endpoints with nested namespaces
 - Client-side function calls
