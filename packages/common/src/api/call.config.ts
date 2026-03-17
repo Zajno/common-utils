@@ -1,4 +1,5 @@
 import { type AnyObject } from '../types/misc.js';
+import { isPlainObject } from '../types/isPlainObject.js';
 import type { EndpointCallArgs, IRequestConfig, IRequestMeta, RequestExtra } from './call.types.js';
 import { EndpointsPathsConfig } from './config.js';
 import type { IEndpointInfo } from './endpoint.types.js';
@@ -19,6 +20,18 @@ export function createConfig<T extends IEndpointInfo, TExtra extends object = Re
         noLoader,
         ...restExtra
     } = extra || {};
+
+    // Guard against non-plain objects (e.g. FormData, Blob) that would be destroyed by spread.
+    // Only plain objects can be spread for path/query extraction.
+    if (data != null && typeof data === 'object' && !isPlainObject(data)) {
+        const name = data.constructor?.name ?? typeof data;
+        throw new TypeError(
+            `API caller received a non-plain object as data (got ${name}). `
+            + 'Only plain objects are supported because data is spread for path/query extraction. '
+            + 'For FormData/multipart uploads, pass a plain object and use the IEndpointFormData extension '
+            + 'with .asFormData(), or use a beforeRequest hook to replace config.data.',
+        );
+    }
 
     const resultInput = data && { ...data };
     const pathInputs: Record<string, string | number> = {};
