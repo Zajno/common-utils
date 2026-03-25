@@ -33,7 +33,7 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
         this.disposer.add(this._observers);
     }
 
-    public get loadingCount() { return this._cache.busyCount; }
+    public get loadingCount() { return this._cache.loadingCount; }
     public get observersCount() { return this._observers.count; }
 
     useObservingStrategy(observe: ObserveStrategy) {
