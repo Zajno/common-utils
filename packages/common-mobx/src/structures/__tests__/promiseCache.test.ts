@@ -231,4 +231,120 @@ describe('PromiseCache observable', () => {
 
         disposer.dispose();
     });
+
+    // ─── New tests for added functionality ───────────────────────────────
+
+    it('observable error tracking', async () => {
+        const fetchError = new Error('Observable fetch error');
+
+        const cache = new PromiseCacheObservable<string, string>(
+            async (id) => {
+                if (id === 'fail') throw fetchError;
+                return id;
+            },
+        );
+
+        const errorHandler = vi.fn();
+        const disposer = new Disposer();
+
+        disposer.add(
+            reaction(
+                () => cache.getLastError('fail'),
+                v => errorHandler(v),
+                { fireImmediately: true },
+            ),
+        );
+
+        // Initially no error
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        expect(errorHandler).toHaveBeenCalledWith(null);
+        errorHandler.mockClear();
+
+        // Trigger fetch that will fail
+        await cache.get('fail');
+
+        // Error should be observable
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        expect(errorHandler).toHaveBeenCalledWith(fetchError);
+        errorHandler.mockClear();
+
+        // Clear should remove error
+        cache.clear();
+        expect(errorHandler).toHaveBeenCalledTimes(1);
+        expect(errorHandler).toHaveBeenCalledWith(null);
+
+        disposer.dispose();
+    });
+
+    it('observable counts', async () => {
+        const cache = new PromiseCacheObservable<string, string>(
+            async (id) => {
+                await new Promise<void>(resolve => setTimeout(resolve, 10));
+                return id;
+            },
+        );
+
+        expect(cache.loadingCount).toBe(0);
+        expect(cache.cachedCount).toBe(0);
+        expect(cache.promisesCount).toBe(0);
+
+        const loadingHandler = vi.fn();
+        const disposer = new Disposer();
+
+        disposer.add(
+            reaction(
+                () => cache.loadingCount,
+                v => loadingHandler(v),
+            ),
+        );
+
+        const p = cache.get('a');
+        expect(cache.loadingCount).toBe(1);
+        expect(cache.promisesCount).toBe(1);
+
+        await vi.advanceTimersByTimeAsync(10);
+        await p;
+
+        expect(cache.loadingCount).toBe(0);
+        expect(cache.cachedCount).toBe(1);
+        expect(cache.promisesCount).toBe(0);
+
+        // loadingHandler should have been called for 1 -> 0 transition
+        expect(loadingHandler).toHaveBeenCalledWith(0);
+
+        disposer.dispose();
+    });
+
+    it('sanitize works as action', async () => {
+        const cache = new PromiseCacheObservable<string, string>(
+            async (id) => id,
+        ).useInvalidationTime(10);
+
+        await cache.get('a');
+        await cache.get('b');
+
+        expect(cache.cachedCount).toBe(2);
+
+        await vi.advanceTimersByTimeAsync(20);
+
+        expect(cache.invalidCount).toBe(2);
+
+        const removed = cache.sanitize();
+        expect(removed).toBe(2);
+        expect(cache.cachedCount).toBe(0);
+    });
+
+    it('DeferredGetter error is observable', async () => {
+        const fetchError = new Error('Deferred observable error');
+
+        const cache = new PromiseCacheObservable<string, string>(
+            async () => { throw fetchError; },
+        );
+
+        const deferred = cache.getDeferred('fail');
+        expect(deferred.error).toBeNull();
+
+        await deferred.promise;
+        expect(deferred.error).toBe(fetchError);
+    });
 });

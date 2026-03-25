@@ -4,6 +4,7 @@ import { NumberModel } from '../viewModels/NumberModel.js';
 import type { IMapModel, IValueModel } from '@zajno/common/models/types.js';
 
 export { DeferredGetter } from '@zajno/common/structures/promiseCache';
+export type { InvalidationConfig, InvalidationCallback, ErrorCallback } from '@zajno/common/structures/promiseCache';
 
 export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
 
@@ -26,6 +27,7 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
             | 'onFetchComplete'
             | '_set'
             | 'clear'
+            | 'sanitize'
         >(this, {
             setStatus: action,
             setPromise: action,
@@ -34,6 +36,7 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
             onFetchComplete: action,
             _set: action,
             clear: action,
+            sanitize: action,
         });
 
         this._observeItems = observeItems;
@@ -44,7 +47,7 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
         return this;
     }
 
-    protected pure_createBusyCount(): IValueModel<number> {
+    protected pure_createLoadingCount(): IValueModel<number> {
         return new NumberModel();
     }
 
@@ -56,11 +59,15 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
         return observable.map<string, boolean>();
     }
 
+    protected pure_createErrorsMap(): IMapModel<string, unknown> {
+        return observable.map<string, unknown>(undefined, { deep: false });
+    }
 
     /** @override */
     protected prepareResult(res: Awaited<T>) {
-        return res
-            ? (this._observeItems ? observable.object(res) : res)
-            : null;
+        if (res == null) {
+            return res;
+        }
+        return this._observeItems ? observable.object(res) : res;
     }
 }
