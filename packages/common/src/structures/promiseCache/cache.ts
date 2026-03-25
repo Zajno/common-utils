@@ -2,10 +2,6 @@ import { DebounceProcessor } from '../../functions/debounce.js';
 import { PromiseCacheCore } from './core.js';
 import type { ErrorCallback, InvalidationConfig } from './types.js';
 
-export type { InvalidationCallback, InvalidationConfig, ErrorCallback } from './types.js';
-export { DeferredGetter } from './types.js';
-export { PromiseCacheCore } from './core.js';
-
 const BATCHING_DELAY = 200;
 
 /**
@@ -186,13 +182,21 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
      * @param key The cache key.
      * @returns A promise that resolves to the fetched item.
      */
-    protected _doFetchAsync = async (id: K, key: string) => {
+    protected async _doFetchAsync(id: K, key: string) {
         let isInSameVersion = true;
         try {
             this.onBeforeFetch(key);
             const v = this._version;
 
-            let res: T | null = await this.tryFetchInBatch(id);
+            let res: T | null;
+            let fetchFailed = false;
+            try {
+                res = await this.tryFetchInBatch(id);
+            } catch (err) {
+                this._handleError(id, err);
+                fetchFailed = true;
+                res = null;
+            }
 
             if (v !== this._version) {
                 isInSameVersion = false;
@@ -203,7 +207,9 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
             if (this._fetchCache.get(key) != null) {
                 this.logger.log(key, 'item\'s <promise> resolved to', res);
                 res = this.prepareResult(res);
-                this.storeResult(key, res);
+                if (!fetchFailed) {
+                    this.storeResult(key, res);
+                }
             }
             return res;
         } finally {
@@ -213,17 +219,12 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
                 this.logger.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
             }
         }
-    };
+    }
 
-    /** @pure Performs a fetch operation in batch mode if available, otherwise uses the regular fetch. */
+    /** Performs a fetch operation in batch mode if available, otherwise uses the regular fetch. Throws on error. */
     protected async tryFetchInBatch(id: K): Promise<T | null> {
-        const fetchWrap = () => this.fetcher(id).catch(err => {
-            this._handleError(id, err);
-            return null;
-        });
-
         if (!this._batch) {
-            return fetchWrap();
+            return this.fetcher(id);
         }
 
         const res = await this._batch.push(id)
@@ -232,8 +233,8 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
                 return null;
             });
         if (!res || !res.result || res.result[res.index] === undefined) {
-            // If we got to batch call, should we fallback to the direct one?
-            return fetchWrap();
+            // batch call failed or returned no result — fallback to the direct fetcher
+            return this.fetcher(id);
         }
 
         return res.result[res.index];

@@ -2,7 +2,7 @@
 import { setTimeoutAsync } from '../../../async/timeout.js';
 import { type ILogger, LoggersManager } from '../../../logger/index.js';
 import { random } from '../../../math/index.js';
-import { DeferredGetter, PromiseCache } from '../cache.js';
+import { DeferredGetter, PromiseCache } from '../index.js';
 
 describe('PromiseCache', () => {
 

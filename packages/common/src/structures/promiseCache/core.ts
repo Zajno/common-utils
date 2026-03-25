@@ -57,9 +57,6 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     /** Returns the number of items currently being fetched. */
     public get loadingCount(): number { return this._loadingCount.value; }
 
-    /** @deprecated Use {@link loadingCount} instead. */
-    public get busyCount(): number { return this._loadingCount.value; }
-
     /** Returns the number of cached items (resolved values). */
     public get cachedCount(): number { return this._itemsCache.size; }
 
@@ -154,7 +151,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     // ─── Public API: reading ─────────────────────────────────────────────
 
     /**
-     * Returns a {@link DeferredGetter} object for a specfied key.
+     * Returns a {@link DeferredGetter} object for a specified key.
      *
      * This can be used to access the current value, promise, loading state, and last error of the item.
      */
@@ -164,7 +161,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
         return {
             get current() { return self.getCurrent(key); },
             get promise() { return self.get(key); },
-            get isLoading() { return self.getIsBusy(key); },
+            get isLoading() { return self.getIsLoading(key); },
             get error() { return self.getLastError(key); },
         };
     }
@@ -174,7 +171,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
      *
      * @returns true if loading, false if loading completed, undefined if loading was not started yet.
      */
-    getIsBusy(id: K): boolean | undefined {
+    getIsLoading(id: K): boolean | undefined {
         const key = this._pk(id);
         const res = this._itemsStatus.get(key);
         if (res) {
@@ -328,9 +325,9 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     protected abstract getIsInvalidated(key: string): boolean;
 
     /** @internal updates all caches states at once. */
-    protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, busy: boolean | undefined) {
+    protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, isLoading: boolean | undefined) {
         PromiseCacheCore._setMapX(key, this._fetchCache, promise);
-        PromiseCacheCore._setMapX(key, this._itemsStatus, busy);
+        PromiseCacheCore._setMapX(key, this._itemsStatus, isLoading);
         PromiseCacheCore._setMapX(key, this._itemsCache, item);
     }
 
@@ -349,11 +346,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     protected storeResult(key: string, res: T | null) {
         this._itemsCache.set(key, res);
         this._timestamps.set(key, Date.now());
-        // Only clear error on successful (non-null) result;
-        // null result may come from a caught fetch error
-        if (res != null) {
-            this._errorsMap.delete(key);
-        }
+        this._errorsMap.delete(key);
     }
 
     /** Hooks into the fetch process before it starts. */
@@ -370,7 +363,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
 
     /** Hooks into the result preparation process, before it's stored into the cache. */
     protected prepareResult(res: T | null) {
-        return res || null;
+        return res;
     }
 
     /** @internal Helper to set or delete a value in a map. */

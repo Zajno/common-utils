@@ -65,8 +65,9 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
 
     /** @override */
     protected prepareResult(res: Awaited<T>) {
-        return res
-            ? (this._observeItems ? observable.object(res) : res)
-            : null;
+        if (res == null) {
+            return res;
+        }
+        return this._observeItems ? observable.object(res) : res;
     }
 }
