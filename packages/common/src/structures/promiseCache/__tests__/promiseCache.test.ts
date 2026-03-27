@@ -33,6 +33,18 @@ describe('PromiseCache', () => {
         await expect(DeferredGetter.Empty.promise).resolves.toBeUndefined();
     });
 
+    it('getDeferred (deprecated) still works', async () => {
+        const cache = new PromiseCache<string>(async (id) => `value-${id}`);
+
+        const deferred = cache.getDeferred('x');
+        expect(deferred.error).toBeNull();
+        expect(deferred.isLoading).toBeUndefined();
+
+        await deferred.promise;
+        expect(deferred.current).toBe('value-x');
+        expect(deferred.isLoading).toBe(false);
+    });
+
     it('hard load', async () => {
         const COUNT = 1000;
         const TEST_ID = '123';

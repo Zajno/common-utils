@@ -119,6 +119,18 @@ describe('PromiseCache getLazy', () => {
         expect(lazy.isLoading).toBe(false);
     });
 
+    it('errorMessage returns null', async () => {
+        const cache = new PromiseCache<string>(async () => { throw new Error('fail'); });
+
+        const lazy = cache.getLazy('a');
+        expect(lazy.errorMessage).toBeNull();
+
+        await lazy.promise;
+        // errorMessage is always null on cache getLazy (errors are raw)
+        expect(lazy.errorMessage).toBeNull();
+        expect(lazy.error).toBeInstanceOf(Error);
+    });
+
     it('isLoading returns null after invalidation', async () => {
         const cache = new PromiseCache<string>(async id => id)
             .useInvalidationTime(50);
