@@ -1,5 +1,8 @@
 
-/** Represents a state of a cached item. Holds a references to an actual state. */
+/**
+ * Represents a state of a cached item. Holds a references to an actual state.
+ * @deprecated Use `ILazyPromise<T>` from `@zajno/common/lazy` instead, obtained via `cache.getLazy(key)`.
+ */
 export type DeferredGetter<T> = {
     /** Get current resolved value, if any, or initiates fetching. */
     readonly current: T | undefined;

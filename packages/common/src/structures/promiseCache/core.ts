@@ -1,3 +1,4 @@
+import type { ILazyPromise } from '../../lazy/types.js';
 import { Loggable } from '../../logger/loggable.js';
 import { Model } from '../../models/Model.js';
 import type { IMapModel, IValueModel } from '../../models/types.js';
@@ -151,9 +152,47 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     // ─── Public API: reading ─────────────────────────────────────────────
 
     /**
+     * Returns an {@link ILazyPromise} handle for a specified cache key.
+     *
+     * The returned object implements the same interface as a standalone `LazyPromise`,
+     * allowing consumers to use a single `ILazyPromise<T>` interface regardless of whether
+     * the data comes from a single lazy value or a keyed cache.
+     *
+     * - `value` / `promise` trigger a fetch if not started.
+     * - `currentValue` reads without triggering.
+     * - `refresh()` invalidates and re-fetches.
+     */
+    getLazy(key: K): ILazyPromise<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return {
+            get value() { return self.getCurrent(key) as T; },
+            get currentValue() { return self.getCurrent(key, false); },
+            get hasValue() {
+                const k = self._pk(key);
+                return self._itemsCache.has(k) && self._itemsCache.get(k) !== undefined;
+            },
+            get error() { return self.getLastError(key); },
+            get errorMessage() { return null; },
+            get isLoading() {
+                const v = self.getIsLoading(key);
+                return v === undefined ? null : v;
+            },
+            get promise() { return self.get(key) as Promise<T>; },
+            refresh() {
+                self.invalidate(key);
+                return self.get(key) as Promise<T>;
+            },
+        };
+    }
+
+    /**
      * Returns a {@link DeferredGetter} object for a specified key.
      *
      * This can be used to access the current value, promise, loading state, and last error of the item.
+     *
+     * @deprecated Use {@link getLazy} instead — it returns an `ILazyPromise<T>` which is the standard
+     * interface shared with standalone `LazyPromise` instances.
      */
     getDeferred(key: K): DeferredGetter<T> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias

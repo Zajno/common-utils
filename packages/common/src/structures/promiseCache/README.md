@@ -3,7 +3,7 @@
 A key-value cache for async data that goes well beyond a simple `Map<string, Promise>`. Provide a fetcher function, and `PromiseCache` handles the rest:
 
 - **Deduplication** — concurrent `get()` calls for the same key share a single in-flight promise
-- **Synchronous access** — `getCurrent()` returns the resolved value instantly; `getDeferred()` gives a reactive handle with `current`, `promise`, `isLoading`, and `error`
+- **Synchronous access** — `getCurrent()` returns the resolved value instantly; `getLazy()` gives a reactive `ILazyPromise<T>` handle
 - **Per-key error tracking** — fetch failures are stored, logged, and forwarded to an optional callback
 - **Invalidation** — time-based TTL, custom callback, or both; with optional stale-while-revalidate (`keepInstance`)
 - **Max-items eviction** — LRU-like eviction that removes invalid items first, then oldest; never evicts in-flight fetches
@@ -15,7 +15,7 @@ A key-value cache for async data that goes well beyond a simple `Map<string, Pro
 
 | File | Description |
 |---|---|
-| [`types.ts`](types.ts) | Type definitions — `DeferredGetter<T>`, `InvalidationCallback<T>`, `ErrorCallback<K>`, `InvalidationConfig<T>` |
+| [`types.ts`](types.ts) | Type definitions — `DeferredGetter<T>` *(deprecated)*, `InvalidationCallback<T>`, `ErrorCallback<K>`, `InvalidationConfig<T>` |
 | [`core.ts`](core.ts) | Abstract base class `PromiseCacheCore<T, K>` — storage, state tracking, hooks, `pure_create*` factory methods |
 | [`cache.ts`](cache.ts) | Concrete implementation `PromiseCache<T, K>` — fetching, batching, invalidation, error handling, max-items eviction |
 | [`index.ts`](index.ts) | Barrel re-export of all public API |
@@ -37,12 +37,14 @@ const user = await userCache.get('user-42');
 // 3. Read synchronously (returns cached value or undefined; triggers fetch by default)
 const current = userCache.getCurrent('user-42');
 
-// 4. Get a deferred handle with reactive-friendly getters
-const deferred = userCache.getDeferred('user-42');
-deferred.current;   // T | null | undefined
-deferred.isLoading; // boolean | undefined
-deferred.error;     // unknown
-await deferred.promise; // Promise<T | null>
+// 4. Get a lazy handle — same ILazyPromise<T> interface as standalone LazyPromise
+const lazy = userCache.getLazy('user-42');
+lazy.value;         // T (triggers fetch if not started)
+lazy.currentValue;  // T | undefined (passive, no fetch)
+lazy.isLoading;     // boolean | null (null = not started)
+lazy.error;         // unknown
+await lazy.promise; // Promise<T>
+await lazy.refresh(); // invalidates + re-fetches
 ```
 
 ## Non-String Keys
@@ -131,9 +133,10 @@ cache.setLogger(myLoggerInstance);
 
 | Method / Property | Return Type | Description |
 |---|---|---|
-| `get(id)` | `Promise<T \| null>` | Returns cached value or starts a fetch. Concurrent calls for the same key share one promise. |
-| `getCurrent(id, initiateFetch?)` | `T \| null \| undefined` | Returns the cached value synchronously. When `initiateFetch` is `true` (default), also triggers `get()`. |
-| `getDeferred(id)` | `DeferredGetter<T>` | Returns a lazy accessor object with `current`, `promise`, `isLoading`, and `error` getters. |
+| `get(id)` | `Promise<T \| undefined>` | Returns cached value or starts a fetch. Concurrent calls for the same key share one promise. |
+| `getCurrent(id, initiateFetch?)` | `T \| undefined` | Returns the cached value synchronously. When `initiateFetch` is `true` (default), also triggers `get()`. |
+| `getLazy(id)` | `ILazyPromise<T>` | Returns an `ILazyPromise<T>` handle — the same interface used by standalone `LazyPromise`. Supports `value`, `currentValue`, `promise`, `isLoading`, `error`, `hasValue`, and `refresh()`. |
+| `getDeferred(id)` | `DeferredGetter<T>` | ⚠️ **Deprecated.** Use `getLazy(id)` instead. |
 | `getIsLoading(id)` | `boolean \| undefined` | `true` if loading, `false` if done, `undefined` if never started (or invalidated). |
 | `getIsValid(id)` | `boolean` | `true` if the item is cached **and** not invalidated. |
 | `getLastError(id)` | `unknown` | Last fetch error for the key, or `null`. |
@@ -175,35 +178,40 @@ cache.setLogger(myLoggerInstance);
 ## Error Handling
 
 When a fetcher throws, the error is:
-1. Stored per-key in the errors map (accessible via `getLastError(id)` or `getDeferred(id).error`)
+1. Stored per-key in the errors map (accessible via `getLastError(id)` or `getLazy(id).error`)
 2. Logged via the attached logger
 3. Forwarded to the `useOnError()` callback (if set)
 
-The failed fetch resolves to `null` (never rejects), but the result is **not** stored in the items cache — only the error is recorded. On a subsequent successful fetch, the error is cleared by `storeResult()`.
+The failed fetch resolves to `undefined` (never rejects), but the result is **not** stored in the items cache — only the error is recorded. On a subsequent successful fetch, the error is cleared by `storeResult()`.
 
 Errors are also cleared by `invalidate()`, `sanitize()`, and `clear()`.
 
-## Types
+## Unified `ILazyPromise<T>` Interface
 
-### `DeferredGetter<T>`
-
-A reactive-friendly handle to a single cache entry:
+`getLazy(key)` returns an `ILazyPromise<T>` — the same interface implemented by standalone `LazyPromise` instances. This means consumers can use a single interface regardless of whether the data comes from a single lazy value or a keyed cache:
 
 ```ts
-type DeferredGetter<T> = {
-    readonly current: T | null | undefined;
-    readonly promise: Promise<T | null>;
-    readonly isLoading: boolean | undefined;
-    readonly error: unknown;
-};
-```
+import type { ILazyPromise } from '@zajno/common/lazy';
 
-A static `DeferredGetter.Empty` sentinel is provided for use as a default/placeholder value.
+function renderItem(data: ILazyPromise<User>) {
+    if (data.isLoading) return <Spinner />;
+    if (data.error) return <Error error={data.error} />;
+    return <UserCard user={data.value} />;
+}
+
+// Works with standalone LazyPromise
+const singleUser = new LazyPromise(() => fetchCurrentUser());
+renderItem(singleUser);
+
+// Works with PromiseCache entry
+const cache = new PromiseCache<User>(fetchUser);
+renderItem(cache.getLazy('user-42'));
+```
 
 ### `InvalidationCallback<T>`
 
 ```ts
-type InvalidationCallback<T> = (key: string, value: T | null | undefined, cachedAt: number) => boolean;
+type InvalidationCallback<T> = (key: string, value: T | undefined, cachedAt: number) => boolean;
 ```
 
 ### `ErrorCallback<K>`
