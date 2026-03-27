@@ -11,17 +11,24 @@ export interface ILazy<T> {
     /** Returns current value or undefined if not loaded. Does not trigger loading. */
     readonly currentValue: T | undefined;
 
-    /** Returns error message if loading failed, null otherwise. Does not trigger loading. */
-    readonly error: string | null;
+    /** Returns the raw error if loading failed, null otherwise. Does not trigger loading. */
+    readonly error: unknown;
+
+    /**
+     * Returns error message (string) if loading failed, null otherwise. Does not trigger loading.
+     * @deprecated Use {@link error} instead — it preserves the original error for typed handling.
+     * If you need a display string, format the error at the presentation layer.
+     */
+    readonly errorMessage: string | null;
 }
 
 /** Represents a lazily asynchronously loaded value with promise-based access. */
 export interface ILazyPromise<T, TInitial extends T | undefined = undefined> extends ILazy<T | TInitial> {
     /**
-     * Returns loading state: true (loading), false (loaded), null (not started).
+     * Returns loading state: true (loading), false (loaded), null/undefined (not started).
      * Does not trigger loading.
      */
-    readonly isLoading: boolean | null;
+    readonly isLoading: boolean | null | undefined;
 
     /** Returns the promise for the value, triggering loading if not started. */
     readonly promise: Promise<T>;

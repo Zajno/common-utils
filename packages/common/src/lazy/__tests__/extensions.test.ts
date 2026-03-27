@@ -236,7 +236,8 @@ describe('createCacheExtension', () => {
             await cached.promise; // Will reject but LazyPromise catches it
 
             expect(storage.setValue).not.toHaveBeenCalled();
-            expect(cached.error).toBe('Network error');
+            expect(cached.error).toBeInstanceOf(Error);
+            expect(cached.errorMessage).toBe('Network error');
         });
     });
 
@@ -364,4 +365,3 @@ describe('createCacheExtension', () => {
         });
     });
 });
-

@@ -1,4 +1,5 @@
 import { tryDispose, type IDisposable } from '../functions/disposer.js';
+import { formatError } from '../functions/safe.js';
 import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { IControllableLazyPromise, ILazyPromiseExtension, LazyFactory } from './types.js';
@@ -25,7 +26,7 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
 
     // Track the active factory promise to determine "latest wins"
     private _activeFactoryPromise: Promise<T> | null = null;
-    private _error: string | null = null;
+    private _error: unknown = null;
 
     private _ownDisposer?: () => void;
 
@@ -42,7 +43,12 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     /** Current loading state: true = loading, false = loaded, null = not started */
     public get isLoading() { return this._state; }
     public get hasValue() { return this._state === false; }
-    public get error() { return this._error; }
+    public get error(): unknown { return this._error; }
+
+    /** @deprecated Use {@link error} instead. */
+    public get errorMessage(): string | null {
+        return this._error != null ? formatError(this._error) : null;
+    }
 
     public get promise() {
         this.ensureInstanceLoading();
@@ -275,20 +281,10 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
     }
 
     protected setError(err: unknown) {
-        this._error = this.parseError(err);
+        this._error = err;
     }
 
     protected clearError() {
         this._error = null;
-    }
-
-    protected parseError(err: unknown): string {
-        if (typeof err === 'string') {
-            return err;
-        }
-        if (err instanceof Error) {
-            return err.message;
-        }
-        return String(err) || 'Unknown error';
     }
 }
