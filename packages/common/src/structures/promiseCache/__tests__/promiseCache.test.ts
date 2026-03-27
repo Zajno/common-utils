@@ -9,11 +9,11 @@ describe('PromiseCache', () => {
     const { createLogger } = new LoggersManager().expose();
 
     it('Empty Deferred Getter', async () => {
-        expect(DeferredGetter.Empty.current).toBeNull();
+        expect(DeferredGetter.Empty.current).toBeUndefined();
         expect(DeferredGetter.Empty.isLoading).toBe(false);
         expect(DeferredGetter.Empty.error).toBeNull();
 
-        await expect(DeferredGetter.Empty.promise).resolves.toBeNull();
+        await expect(DeferredGetter.Empty.promise).resolves.toBeUndefined();
     });
 
     it('hard load', async () => {
@@ -145,11 +145,11 @@ describe('PromiseCache', () => {
                 throw new Error('Batch fetch failed');
             });
 
-        await expect(Promise.all([cache.get(1), cache.get(2)])).resolves.toStrictEqual([null, null]);
+        await expect(Promise.all([cache.get(1), cache.get(2)])).resolves.toStrictEqual([undefined, undefined]);
 
         cache.useBatching(null!);
 
-        await expect(cache.get(3)).resolves.toBeNull();
+        await expect(cache.get(3)).resolves.toBeUndefined();
     });
 
     it('batching fails', async () => {

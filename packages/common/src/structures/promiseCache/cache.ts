@@ -93,7 +93,7 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
      * @param id The id of the item.
      * @returns A promise that resolves to the result, whether it's cached or freshly fetched.
      */
-    get(id: K): Promise<T | null> {
+    get(id: K): Promise<T | undefined> {
         const { item, key, isInvalid } = this._getCurrent(id);
 
         // return cached item if it's not invalidated
@@ -169,7 +169,7 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
     }
 
     /** @override Stores the result for the specified key, enforcing max items. */
-    protected override storeResult(key: string, res: T | null) {
+    protected override storeResult(key: string, res: T) {
         this._enforceMaxItems(key);
         super.storeResult(key, res);
     }
@@ -188,14 +188,14 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
             this.onBeforeFetch(key);
             const v = this._version;
 
-            let res: T | null;
+            let res: T | undefined;
             let fetchFailed = false;
             try {
                 res = await this.tryFetchInBatch(id);
             } catch (err) {
                 this._handleError(id, err);
                 fetchFailed = true;
-                res = null;
+                res = undefined;
             }
 
             if (v !== this._version) {
@@ -206,8 +206,8 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
 
             if (this._fetchCache.get(key) != null) {
                 this.logger.log(key, 'item\'s <promise> resolved to', res);
-                res = this.prepareResult(res);
-                if (!fetchFailed) {
+                if (!fetchFailed && res !== undefined) {
+                    res = this.prepareResult(res);
                     this.storeResult(key, res);
                 }
             }
@@ -222,7 +222,7 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
     }
 
     /** Performs a fetch operation in batch mode if available, otherwise uses the regular fetch. Throws on error. */
-    protected async tryFetchInBatch(id: K): Promise<T | null> {
+    protected async tryFetchInBatch(id: K): Promise<T> {
         if (!this._batch) {
             return this.fetcher(id);
         }
