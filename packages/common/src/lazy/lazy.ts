@@ -1,4 +1,5 @@
 import { tryDispose, type IDisposable } from '../functions/disposer.js';
+import { formatError } from '../functions/safe.js';
 import type { IResettableModel } from '../models/types.js';
 import type { IExpireTracker } from '../structures/expire.js';
 import type { ILazy } from './types.js';
@@ -12,7 +13,7 @@ export class Lazy<T> implements ILazy<T>, IDisposable, IResettableModel {
     protected _instance: T | undefined = undefined;
     private _expireTracker: IExpireTracker | undefined;
     private _disposer?: (prev: T) => void;
-    private _error: string | null = null;
+    private _error: unknown = null;
 
     constructor(protected readonly _factory: (() => T)) { }
 
@@ -24,7 +25,12 @@ export class Lazy<T> implements ILazy<T>, IDisposable, IResettableModel {
     }
 
     public get currentValue() { return this._instance; }
-    public get error() { return this._error; }
+    public get error(): unknown { return this._error; }
+
+    /** @deprecated Use {@link error} instead. */
+    public get errorMessage(): string | null {
+        return this._error != null ? formatError(this._error) : null;
+    }
 
     /** Override me: additional way to make sure instance is valid */
     protected get isValid() {
@@ -94,17 +100,7 @@ export class Lazy<T> implements ILazy<T>, IDisposable, IResettableModel {
             const res = this._factory();
             this.setInstance(res);
         } catch (e: unknown) {
-            this._error = this.parseError(e);
+            this._error = e;
         }
-    }
-
-    protected parseError(err: unknown): string {
-        if (typeof err === 'string') {
-            return err;
-        }
-        if (err instanceof Error) {
-            return err.message;
-        }
-        return String(err) || 'Unknown error';
     }
 }

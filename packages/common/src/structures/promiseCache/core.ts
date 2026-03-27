@@ -1,3 +1,4 @@
+import type { ILazyPromise } from '../../lazy/types.js';
 import { Loggable } from '../../logger/loggable.js';
 import { Model } from '../../models/Model.js';
 import type { IMapModel, IValueModel } from '../../models/types.js';
@@ -20,7 +21,7 @@ import type { DeferredGetter } from './types.js';
 export abstract class PromiseCacheCore<T, K = string> extends Loggable {
 
     /** Stores resolved items in map by id. */
-    protected readonly _itemsCache: IMapModel<string, T | null | undefined>;
+    protected readonly _itemsCache: IMapModel<string, T | undefined>;
 
     /** Stores items loading state (loading or not) in map by id. */
     protected readonly _itemsStatus: IMapModel<string, boolean>;
@@ -29,7 +30,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     protected readonly _loadingCount: IValueModel<number>;
 
     /** Stores items Promises state (if still loading) in map by id. */
-    protected readonly _fetchCache: IMapModel<string, Promise<T | null>>;
+    protected readonly _fetchCache: IMapModel<string, Promise<T | undefined>>;
 
     /** Stores last errors by key. Observable-friendly via IMapModel. */
     protected readonly _errorsMap: IMapModel<string, unknown>;
@@ -92,8 +93,8 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
      *
      * Warning: as name indicates, this should be "pure"/"const" function, i.e. should not reference `this`/`super`.
      */
-    protected pure_createItemsCache(): IMapModel<string, T | null | undefined> {
-        return new Map<string, T | null | undefined>();
+    protected pure_createItemsCache(): IMapModel<string, T | undefined> {
+        return new Map<string, T | undefined>();
     }
 
     /**
@@ -112,8 +113,8 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
      *
      * Warning: as name indicates, this should be "pure"/"const" function, i.e. should not reference `this`/`super`.
      */
-    protected pure_createFetchCache(): IMapModel<string, Promise<T | null>> {
-        return new Map<string, Promise<T | null>>();
+    protected pure_createFetchCache(): IMapModel<string, Promise<T | undefined>> {
+        return new Map<string, Promise<T | undefined>>();
     }
 
     /**
@@ -151,9 +152,47 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     // ─── Public API: reading ─────────────────────────────────────────────
 
     /**
+     * Returns an {@link ILazyPromise} handle for a specified cache key.
+     *
+     * The returned object implements the same interface as a standalone `LazyPromise`,
+     * allowing consumers to use a single `ILazyPromise<T>` interface regardless of whether
+     * the data comes from a single lazy value or a keyed cache.
+     *
+     * - `value` / `promise` trigger a fetch if not started.
+     * - `currentValue` reads without triggering.
+     * - `refresh()` invalidates and re-fetches.
+     */
+    getLazy(key: K): ILazyPromise<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return {
+            get value() { return self.getCurrent(key) as T; },
+            get currentValue() { return self.getCurrent(key, false); },
+            get hasValue() {
+                const k = self._pk(key);
+                return self._itemsCache.has(k) && self._itemsCache.get(k) !== undefined;
+            },
+            get error() { return self.getLastError(key); },
+            get errorMessage() { return null; },
+            get isLoading() {
+                const v = self.getIsLoading(key);
+                return v === undefined ? null : v;
+            },
+            get promise() { return self.get(key) as Promise<T>; },
+            refresh() {
+                self.invalidate(key);
+                return self.get(key) as Promise<T>;
+            },
+        };
+    }
+
+    /**
      * Returns a {@link DeferredGetter} object for a specified key.
      *
      * This can be used to access the current value, promise, loading state, and last error of the item.
+     *
+     * @deprecated Use {@link getLazy} instead — it returns an `ILazyPromise<T>` which is the standard
+     * interface shared with standalone `LazyPromise` instances.
      */
     getDeferred(key: K): DeferredGetter<T> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -205,7 +244,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     }
 
     /** Returns the current cached value, optionally triggering a fetch. */
-    getCurrent(id: K, initiateFetch = true): T | null | undefined {
+    getCurrent(id: K, initiateFetch = true): T | undefined {
         const { item, key } = this._getCurrent(id);
         if (initiateFetch) {
             this.get(id);
@@ -215,7 +254,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     }
 
     /** Returns a promise that resolves to the cached or freshly fetched value. */
-    abstract get(id: K): Promise<T | null>;
+    abstract get(id: K): Promise<T | undefined>;
 
     /** Returns true if the item is cached or fetching was initiated. Does not initiate fetching. */
     hasKey(id: K) {
@@ -271,7 +310,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     }
 
     /** Updates the cached value for the specified id directly, like it was fetched already. */
-    updateValueDirectly(id: K, value: T | null) {
+    updateValueDirectly(id: K, value: T) {
         const key = this._pk(id);
         this._set(key, value, undefined, undefined);
     }
@@ -316,7 +355,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     // ─── Protected hooks ─────────────────────────────────────────────────
 
     /** Returns the current cached value for the specified key, without triggering a fetch. */
-    protected abstract _getCurrent(id: K): { item: T | null | undefined; key: string; isInvalid: boolean };
+    protected abstract _getCurrent(id: K): { item: T | undefined; key: string; isInvalid: boolean };
 
     /**
      * Checks if the cached item for the specified key is invalidated (expired).
@@ -325,7 +364,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     protected abstract getIsInvalidated(key: string): boolean;
 
     /** @internal updates all caches states at once. */
-    protected _set(key: string, item: T | null | undefined, promise: Promise<T> | undefined, isLoading: boolean | undefined) {
+    protected _set(key: string, item: T | undefined, promise: Promise<T> | undefined, isLoading: boolean | undefined) {
         PromiseCacheCore._setMapX(key, this._fetchCache, promise);
         PromiseCacheCore._setMapX(key, this._itemsStatus, isLoading);
         PromiseCacheCore._setMapX(key, this._itemsCache, item);
@@ -338,12 +377,12 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     }
 
     /** Updates the promise for the specified key. Override to add a hook. */
-    protected setPromise(key: string, promise: Promise<T | null>) {
+    protected setPromise(key: string, promise: Promise<T | undefined>) {
         this._fetchCache.set(key, promise);
     }
 
     /** Stores the result for the specified key. Override to add a hook. */
-    protected storeResult(key: string, res: T | null) {
+    protected storeResult(key: string, res: T) {
         this._itemsCache.set(key, res);
         this._timestamps.set(key, Date.now());
         this._errorsMap.delete(key);
@@ -362,7 +401,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     }
 
     /** Hooks into the result preparation process, before it's stored into the cache. */
-    protected prepareResult(res: T | null) {
+    protected prepareResult(res: T) {
         return res;
     }
 

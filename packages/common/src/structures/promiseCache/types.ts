@@ -1,11 +1,14 @@
 
-/** Represents a state of a cached item. Holds a references to an actual state. */
+/**
+ * Represents a state of a cached item. Holds a references to an actual state.
+ * @deprecated Use `ILazyPromise<T>` from `@zajno/common/lazy` instead, obtained via `cache.getLazy(key)`.
+ */
 export type DeferredGetter<T> = {
     /** Get current resolved value, if any, or initiates fetching. */
-    readonly current: T | null | undefined;
+    readonly current: T | undefined;
 
     /** Returns a promise that resolves to the current or fetching value. */
-    readonly promise: Promise<T | null>;
+    readonly promise: Promise<T | undefined>;
 
     /** Returns true if the item is currently being fetched. Returns undefined if fetching has not started yet. */
     readonly isLoading: boolean | undefined;
@@ -15,15 +18,15 @@ export type DeferredGetter<T> = {
 };
 
 export namespace DeferredGetter {
-    const _resolvedPromise = Promise.resolve<null>(null);
+    const _resolvedPromise = Promise.resolve<undefined>(undefined);
 
     /** Empty resolved value. */
     export const Empty = {
-        get current(): null { return null; },
-        get promise(): Promise<null> { return _resolvedPromise; },
+        get current(): undefined { return undefined; },
+        get promise(): Promise<undefined> { return _resolvedPromise; },
         get isLoading() { return false; },
         get error() { return null; },
-    } satisfies DeferredGetter<null>;
+    } satisfies DeferredGetter<never>;
 }
 
 /**
@@ -34,7 +37,7 @@ export namespace DeferredGetter {
  * @param cachedAt The timestamp (ms) when the item was cached.
  * @returns `true` if the item should be considered invalid.
  */
-export type InvalidationCallback<T> = (key: string, value: T | null | undefined, cachedAt: number) => boolean;
+export type InvalidationCallback<T> = (key: string, value: T | undefined, cachedAt: number) => boolean;
 
 /** Callback for handling errors during fetching. */
 export type ErrorCallback<K> = (key: K, error: unknown) => void;

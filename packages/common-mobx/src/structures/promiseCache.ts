@@ -51,8 +51,8 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
         return new NumberModel();
     }
 
-    protected pure_createItemsCache(): IMapModel<string, T | null | undefined> {
-        return observable.map<string, T | null | undefined>(undefined, { deep: false });
+    protected pure_createItemsCache(): IMapModel<string, T | undefined> {
+        return observable.map<string, T | undefined>(undefined, { deep: false });
     }
 
     protected pure_createItemsStatus(): IMapModel<string, boolean> {
@@ -64,10 +64,7 @@ export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
     }
 
     /** @override */
-    protected prepareResult(res: Awaited<T>) {
-        if (res == null) {
-            return res;
-        }
+    protected prepareResult(res: T) {
         return this._observeItems ? observable.object(res) : res;
     }
 }

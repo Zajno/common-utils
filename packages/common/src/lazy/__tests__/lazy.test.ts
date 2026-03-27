@@ -331,7 +331,8 @@ describe('LazyPromise', () => {
         const result = await lazy.refresh();
         expect(counter).toBe(2);
         expect(result.value).toBe(1);
-        expect(lazy.error).toBe('Refresh failed');
+        expect(lazy.error).toBeInstanceOf(Error);
+        expect(lazy.errorMessage).toBe('Refresh failed');
         expect(lazy.value?.value).toBe(1);
 
         shouldFail = false;
@@ -538,7 +539,9 @@ describe('LazyPromise', () => {
             expect(l.error).toBeNull();
             expect(l.value).toBeUndefined();
             expect(l.hasValue).toBeFalse();
-            expect(l.error).toBe('Error object message');
+            expect(l.error).toBeInstanceOf(Error);
+            expect((l.error as Error).message).toBe('Error object message');
+            expect(l.errorMessage).toBe('Error object message');
         }
 
         {
@@ -547,9 +550,10 @@ describe('LazyPromise', () => {
             });
 
             expect(l.value).toBeUndefined();
-            expect(l.error).toBe('Factory error');
+            expect(l.error).toBeInstanceOf(Error);
+            expect(l.errorMessage).toBe('Factory error');
             expect(l.value).toBeUndefined();
-            expect(l.error).toBe('Factory error');
+            expect(l.errorMessage).toBe('Factory error');
         }
 
         {
@@ -558,10 +562,12 @@ describe('LazyPromise', () => {
             });
 
             expect(l.value).toBeUndefined();
-            expect(l.error).toBe('error');
+            expect(l.error).toBeInstanceOf(Error);
+            expect(l.errorMessage).toBe('error');
 
             l.reset();
             expect(l.error).toBeNull();
+            expect(l.errorMessage).toBeNull();
         }
     });
 
@@ -573,7 +579,8 @@ describe('LazyPromise', () => {
 
             expect(l.error).toBeNull();
             await l.promise;
-            expect(l.error).toBe('async error message');
+            expect(l.error).toBeInstanceOf(Error);
+            expect(l.errorMessage).toBe('async error message');
             expect(l.hasValue).toBeTrue();
             expect(l.value).toBeUndefined();
         }
@@ -584,7 +591,8 @@ describe('LazyPromise', () => {
             });
 
             await l.promise;
-            expect(l.error).toBe('async Error object');
+            expect(l.error).toBeInstanceOf(Error);
+            expect(l.errorMessage).toBe('async Error object');
         }
 
         {
@@ -594,7 +602,8 @@ describe('LazyPromise', () => {
 
             expect(l.value).toBe('initial value');
             await l.promise;
-            expect(l.error).toBe('error occurred');
+            expect(l.error).toBeInstanceOf(Error);
+            expect(l.errorMessage).toBe('error occurred');
             expect(l.value).toBe('initial value');
         }
     });
