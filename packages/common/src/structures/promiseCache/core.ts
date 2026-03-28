@@ -1,4 +1,5 @@
 import type { ILazyPromise } from '../../lazy/types.js';
+import { formatError } from '../../functions/safe.js';
 import { Loggable } from '../../logger/loggable.js';
 import { Model } from '../../models/Model.js';
 import type { IMapModel, IValueModel } from '../../models/types.js';
@@ -13,7 +14,7 @@ import type { DeferredGetter } from './types.js';
  *  - promise caching
  *  - error storage
  *  - timestamps for cached items
- *  - direct cache manipulation (invalidate, updateValueDirectly, clear)
+ *  - direct cache manipulation (invalidate, set, clear)
  *  - keys iteration
  *
  * Subclasses are expected to implement fetching logic, invalidation policies, etc.
@@ -38,6 +39,12 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     /** Stores items resolve timestamps (for expiration) in map by id. */
     protected readonly _timestamps = new Map<string, number>();
 
+    /**
+     * Tracks the latest in-flight factory promise per key for "latest wins" refresh semantics.
+     * Separate from `_fetchCache` (which stores the public-facing promise returned to callers).
+     */
+    protected readonly _activeFetchPromises = new Map<string, Promise<T | undefined>>();
+
     protected _version = 0;
 
     constructor(
@@ -55,7 +62,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
 
     // ─── Counts ──────────────────────────────────────────────────────────
 
-    /** Returns the number of items currently being fetched. */
+    /** Returns the number of items currently being fetched (includes background refreshes). */
     public get loadingCount(): number { return this._loadingCount.value; }
 
     /** Returns the number of cached items (resolved values). */
@@ -160,7 +167,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
      *
      * - `value` / `promise` trigger a fetch if not started.
      * - `currentValue` reads without triggering.
-     * - `refresh()` invalidates and re-fetches.
+     * - `refresh()` re-fetches while keeping the stale value available.
      */
     getLazy(key: K): ILazyPromise<T> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -173,15 +180,18 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
                 return self._itemsCache.has(k) && self._itemsCache.get(k) !== undefined;
             },
             get error() { return self.getLastError(key); },
-            get errorMessage() { return null; },
+            /** @deprecated Use {@link error} instead. */
+            get errorMessage() {
+                const err = self.getLastError(key);
+                return err != null ? formatError(err) : null;
+            },
             get isLoading() {
                 const v = self.getIsLoading(key);
                 return v === undefined ? null : v;
             },
             get promise() { return self.get(key) as Promise<T>; },
             refresh() {
-                self.invalidate(key);
-                return self.get(key) as Promise<T>;
+                return self.refresh(key) as Promise<T>;
             },
         };
     }
@@ -256,6 +266,20 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
     /** Returns a promise that resolves to the cached or freshly fetched value. */
     abstract get(id: K): Promise<T | undefined>;
 
+    /**
+     * Re-fetches the value for the specified key while keeping the stale cached value available.
+     *
+     * Implements stale-while-revalidate semantics:
+     * - The current cached value remains accessible via `getCurrent()` / `getLazy().value` during the refresh.
+     * - On success, the cached value is updated.
+     * - On error, the stale value is preserved and the error is stored.
+     * - Multiple concurrent refreshes use "latest wins" semantics.
+     *
+     * @param id The key of the item to refresh.
+     * @returns A promise resolving to the refreshed value, or the stale value on error.
+     */
+    abstract refresh(id: K): Promise<T | undefined>;
+
     /** Returns true if the item is cached or fetching was initiated. Does not initiate fetching. */
     hasKey(id: K) {
         const key = this._pk(id);
@@ -309,10 +333,19 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
         this._timestamps.delete(key);
     }
 
-    /** Updates the cached value for the specified id directly, like it was fetched already. */
-    updateValueDirectly(id: K, value: T) {
+    /** Injects a value into the cache for the specified key, as if it had been fetched. Sets the timestamp and clears any previous error. */
+    set(id: K, value: T) {
         const key = this._pk(id);
         this._set(key, value, undefined, undefined);
+        this._timestamps.set(key, Date.now());
+        this._errorsMap.delete(key);
+    }
+
+    /**
+     * @deprecated Use {@link set} instead.
+     */
+    updateValueDirectly(id: K, value: T) {
+        return this.set(id, value);
     }
 
     /**
@@ -350,6 +383,7 @@ export abstract class PromiseCacheCore<T, K = string> extends Loggable {
         this._fetchCache.clear();
         this._errorsMap.clear();
         this._timestamps.clear();
+        this._activeFetchPromises.clear();
     }
 
     // ─── Protected hooks ─────────────────────────────────────────────────

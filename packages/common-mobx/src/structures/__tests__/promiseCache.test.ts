@@ -43,7 +43,7 @@ describe('PromiseCache observable', () => {
 
         checkHandler(undefined);
 
-        cache.updateValueDirectly('1', '2');
+        cache.set('1', '2');
 
         checkHandler('2');
 
@@ -123,8 +123,9 @@ describe('PromiseCache observable', () => {
 
         const deferred = cache.getDeferred('1');
 
-        const doPass = async () => {
-            // isLoading should be undefined when item is invalidated
+        // PASS 1 - initial fetch
+        {
+            // isLoading should be undefined when item is empty
             expect(deferred.isLoading).toBe(undefined);
             expect(deferred.current).toBeUndefined();
             // here isLoading should be true since fetch is in progress
@@ -140,28 +141,40 @@ describe('PromiseCache observable', () => {
             fetcher.mockClear();
 
             checkHandler('1');
-        };
-
-        // PASS 1 - initial fetch
-        await doPass();
+        }
 
         // WAITING FOR INVALIDATION (advance past the 10ms invalidation threshold)
         await vi.advanceTimersByTimeAsync(20);
 
         // PASS 2 - re-fetch after invalidation
+        {
+            // isLoading should be undefined when item is invalidated
+            expect(deferred.isLoading).toBe(undefined);
+            // Stale value is always kept (stale-while-revalidate)
+            expect(deferred.current).toStrictEqual({ id: '1' });
+            // here isLoading should be true since fetch is in progress
+            expect(deferred.isLoading).toBe(true);
 
-        // here the target item should be invalidated and re-fetched
-        // so the handler should be called with an updated value
-        await doPass();
+            // Advance past the 10ms fetcher delay
+            await vi.advanceTimersByTimeAsync(10);
+
+            expect(deferred.current).toStrictEqual({ id: '1' });
+            expect(deferred.isLoading).toBe(false);
+
+            expect(fetcher).toHaveBeenCalledTimes(1);
+            fetcher.mockClear();
+
+            checkHandler('1');
+        }
 
         disposer.dispose();
     });
 
-    it('handles invalidation by timeout with keepInstance', async () => {
+    it('handles invalidation by timeout (stale-while-revalidate)', async () => {
         const fetcher = vi.fn(async (id: string) => ({ id }));
 
         const cache = new PromiseCacheObservable(fetcher)
-            .useInvalidationTime(10, true)
+            .useInvalidationTime(10)
         ;
 
         const handler = vi.fn();
@@ -346,5 +359,89 @@ describe('PromiseCache observable', () => {
 
         await deferred.promise;
         expect(deferred.error).toBe(fetchError);
+    });
+
+    it('refresh triggers observable reactions', async () => {
+        let counter = 0;
+        const cache = new PromiseCacheObservable<number, string>(
+            async () => {
+                await new Promise<void>(resolve => setTimeout(resolve, 10));
+                return ++counter;
+            },
+        );
+
+        const valueHandler = vi.fn();
+        const disposer = new Disposer();
+
+        // Initial fetch
+        const p1 = cache.get('a');
+        await vi.advanceTimersByTimeAsync(10);
+        await p1;
+        expect(cache.getCurrent('a', false)).toBe(1);
+
+        // Set up reaction on the cached value
+        disposer.add(
+            reaction(
+                () => cache.getCurrent('a', false),
+                v => valueHandler(v),
+            ),
+        );
+
+        // Refresh — should trigger the reaction when the new value arrives
+        const refreshPromise = cache.refresh('a');
+
+        // Stale value still available during refresh
+        expect(cache.getCurrent('a', false)).toBe(1);
+
+        await vi.advanceTimersByTimeAsync(10);
+        await refreshPromise;
+
+        expect(cache.getCurrent('a', false)).toBe(2);
+        expect(valueHandler).toHaveBeenCalledTimes(1);
+        expect(valueHandler).toHaveBeenCalledWith(2);
+
+        disposer.dispose();
+    });
+
+    it('getLazy().refresh() triggers observable reactions', async () => {
+        let counter = 0;
+        const cache = new PromiseCacheObservable<number, string>(
+            async () => {
+                await new Promise<void>(resolve => setTimeout(resolve, 10));
+                return ++counter;
+            },
+        );
+
+        const lazy = cache.getLazy('a');
+
+        // Initial fetch
+        const p1 = lazy.promise;
+        await vi.advanceTimersByTimeAsync(10);
+        await p1;
+        expect(lazy.value).toBe(1);
+
+        const valueHandler = vi.fn();
+        const disposer = new Disposer();
+
+        disposer.add(
+            reaction(
+                () => cache.getCurrent('a', false),
+                v => valueHandler(v),
+            ),
+        );
+
+        // Refresh via lazy handle
+        const refreshPromise = lazy.refresh();
+        expect(lazy.currentValue).toBe(1); // stale value
+
+        await vi.advanceTimersByTimeAsync(10);
+        const refreshed = await refreshPromise;
+
+        expect(refreshed).toBe(2);
+        expect(lazy.value).toBe(2);
+        expect(valueHandler).toHaveBeenCalledTimes(1);
+        expect(valueHandler).toHaveBeenCalledWith(2);
+
+        disposer.dispose();
     });
 });

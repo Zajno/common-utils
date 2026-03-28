@@ -43,6 +43,20 @@ export type InvalidationCallback<T> = (key: string, value: T | undefined, cached
 export type ErrorCallback<K> = (key: K, error: unknown) => void;
 
 /**
+ * Fetcher function signature for PromiseCache.
+ *
+ * @param id The key of the item to fetch.
+ * @param refreshing `true` when called via `refresh()`, `false` on initial `get()`.
+ */
+export type PromiseCacheFetcher<T, K = string> = (id: K, refreshing?: boolean) => Promise<T>;
+
+/** Converts a non-string key to a string for internal cache storage. Resolves to `null` when `K` is `string`. */
+export type PromiseCacheKeyAdapter<K> = K extends string ? null : (k: K) => string;
+
+/** Parses a string key back to the original key type. Resolves to `null` when `K` is `string`. */
+export type PromiseCacheKeyParser<K> = K extends string ? null : (id: string) => K;
+
+/**
  * Configuration for cache invalidation policy.
  *
  * All fields are optional and readonly so consumers can provide dynamic data via getters.
@@ -66,6 +80,9 @@ export interface InvalidationConfig<T> {
      */
     readonly maxItems?: number | null;
 
-    /** If true, the cached item will not be removed during invalidation, but the old instance is kept. */
+    /**
+     * @deprecated This option is now ignored — stale values are always kept during invalidation (stale-while-revalidate).
+     * Use `invalidate()` followed by `get()` if you need to clear the stale value before re-fetching.
+     */
     readonly keepInstance?: boolean;
 }

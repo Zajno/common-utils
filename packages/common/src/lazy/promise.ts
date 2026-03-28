@@ -226,7 +226,14 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
             return;
         }
 
-        const factoryPromise: Promise<T> = Promise.resolve(this._factory(refreshing))
+        let factoryResult: Promise<T> | T;
+        try {
+            factoryResult = this._factory(refreshing);
+        } catch (err) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            factoryResult = Promise.reject(err);
+        }
+        const factoryPromise: Promise<T> = Promise.resolve(factoryResult)
             .then(res => {
                 if (!this._activeFactoryPromise) {
                     // this promise was abandoned: was superseded or reset called
@@ -247,7 +254,11 @@ export class LazyPromise<T, TInitial extends T | undefined = undefined> implemen
                 return this._activeFactoryPromise;
             })
             .catch(err => {
-                if (!this._activeFactoryPromise || this._activeFactoryPromise === factoryPromise) {
+                if (!this._activeFactoryPromise) {
+                    // Abandoned (reset/dispose was called) — don't corrupt state
+                    return this._instance ?? this._initial as T;
+                }
+                if (this._activeFactoryPromise === factoryPromise) {
                     return this.onRejected(err) as T;
                 }
                 throw err;

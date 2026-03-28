@@ -1,19 +1,20 @@
 import { observable, makeObservable, action } from 'mobx';
 import { PromiseCache } from '@zajno/common/structures/promiseCache';
+import type { PromiseCacheFetcher, PromiseCacheKeyAdapter, PromiseCacheKeyParser } from '@zajno/common/structures/promiseCache';
 import { NumberModel } from '../viewModels/NumberModel.js';
 import type { IMapModel, IValueModel } from '@zajno/common/models/types.js';
 
 export { DeferredGetter } from '@zajno/common/structures/promiseCache';
-export type { InvalidationConfig, InvalidationCallback, ErrorCallback } from '@zajno/common/structures/promiseCache';
+export type { InvalidationConfig, InvalidationCallback, ErrorCallback, PromiseCacheFetcher, PromiseCacheKeyAdapter, PromiseCacheKeyParser } from '@zajno/common/structures/promiseCache';
 
 export class PromiseCacheObservable<T, K = string> extends PromiseCache<T, K> {
 
     private _observeItems = false;
 
     constructor(
-        fetcher: (id: K) => Promise<T>,
-        keyAdapter?: K extends string ? null : (k: K) => string,
-        keyParser?: K extends string ? null : (id: string) => K,
+        fetcher: PromiseCacheFetcher<T, K>,
+        keyAdapter?: PromiseCacheKeyAdapter<K>,
+        keyParser?: PromiseCacheKeyParser<K>,
         observeItems = false,
     ) {
         super(fetcher, keyAdapter, keyParser);

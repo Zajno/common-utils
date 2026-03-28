@@ -57,6 +57,58 @@ describe('PromiseCache invalidation', () => {
         });
     });
 
+    describe('set', () => {
+        it('sets a timestamp so time-based invalidation applies', async () => {
+            const cache = new PromiseCache<string, string>(
+                async id => id,
+            ).useInvalidationTime(50);
+
+            cache.set('a', 'manual-value');
+            expect(cache.getCurrent('a', false)).toBe('manual-value');
+            expect(cache.getIsValid('a')).toBe(true);
+
+            // After expiration, the manually set value should be invalidated
+            await vi.advanceTimersByTimeAsync(60);
+            expect(cache.getIsValid('a')).toBe(false);
+            // Stale value still readable
+            expect(cache.getCurrent('a', false)).toBe('manual-value');
+        });
+
+        it('is evictable by maxItems (has a timestamp for oldest-first eviction)', async () => {
+            const cache = new PromiseCache<string, string>(
+                async id => id,
+            ).useInvalidation({ maxItems: 2 });
+
+            // Manually set two values
+            cache.set('a', 'val-a');
+            await vi.advanceTimersByTimeAsync(5);
+            cache.set('b', 'val-b');
+
+            expect(cache.cachedCount).toBe(2);
+
+            // Fetch a third — should evict 'a' (oldest)
+            await cache.get('c');
+
+            expect(cache.cachedCount).toBe(2);
+            expect(cache.hasKey('a')).toBe(false);
+            expect(cache.hasKey('b')).toBe(true);
+            expect(cache.hasKey('c')).toBe(true);
+        });
+
+        it('clears previous error for the key', async () => {
+            const cache = new PromiseCache<string, string>(async () => {
+                throw new Error('fetch failed');
+            });
+
+            await cache.get('a');
+            expect(cache.getLastError('a')).toBeInstanceOf(Error);
+
+            cache.set('a', 'recovered');
+            expect(cache.getLastError('a')).toBeNull();
+            expect(cache.getCurrent('a', false)).toBe('recovered');
+        });
+    });
+
     describe('useInvalidation config', () => {
         it('supports expirationMs', async () => {
             const cache = new PromiseCache<string, string>(
@@ -89,10 +141,10 @@ describe('PromiseCache invalidation', () => {
             expect(cache.getIsValid('a')).toBe(true);
         });
 
-        it('supports keepInstance', async () => {
+        it('always keeps stale value during invalidation (stale-while-revalidate)', async () => {
             const cache = new PromiseCache<string, string>(
                 async id => id,
-            ).useInvalidation({ expirationMs: 50, keepInstance: true });
+            ).useInvalidation({ expirationMs: 50 });
 
             await cache.get('a');
             const value = cache.getCurrent('a', false);
@@ -100,6 +152,7 @@ describe('PromiseCache invalidation', () => {
 
             await vi.advanceTimersByTimeAsync(60);
 
+            // Stale value is always kept — stale-while-revalidate by default
             expect(cache.getCurrent('a', false)).toBe('a');
             expect(cache.getIsValid('a')).toBe(false);
         });
