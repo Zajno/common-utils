@@ -5,7 +5,8 @@ A key-value cache for async data that goes well beyond a simple `Map<string, Pro
 - **Deduplication** — concurrent `get()` calls for the same key share a single in-flight promise
 - **Synchronous access** — `getCurrent()` returns the resolved value instantly; `getLazy()` gives a reactive `ILazyPromise<T>` handle
 - **Per-key error tracking** — fetch failures are stored, logged, and forwarded to an optional callback
-- **Invalidation** — time-based TTL, custom callback, or both; with optional stale-while-revalidate (`keepInstance`)
+- **Stale-while-revalidate** — invalidated items remain readable; `refresh(key)` re-fetches without clearing the stale value
+- **Invalidation** — time-based TTL, custom callback, or both
 - **Max-items eviction** — LRU-like eviction that removes invalid items first, then oldest; never evicts in-flight fetches
 - **Request batching** — collects keys in a time window and dispatches a single batch call, with automatic per-key fallback on failure
 - **Safe `clear()`** — a version counter prevents stale in-flight fetches from silently re-populating the cache
@@ -44,7 +45,7 @@ lazy.currentValue;  // T | undefined (passive, no fetch)
 lazy.isLoading;     // boolean | null (null = not started)
 lazy.error;         // unknown
 await lazy.promise; // Promise<T>
-await lazy.refresh(); // invalidates + re-fetches
+await lazy.refresh(); // re-fetches while keeping stale value available
 ```
 
 ## Non-String Keys
@@ -92,7 +93,6 @@ cache.useInvalidation({
         return value?.isStale === true;
     },
     maxItems: 100,       // LRU-like eviction (invalid first, then oldest)
-    keepInstance: true,   // keep stale value readable while re-fetching
 });
 
 // Disable invalidation
@@ -134,7 +134,8 @@ cache.setLogger(myLoggerInstance);
 | Method / Property | Return Type | Description |
 |---|---|---|
 | `get(id)` | `Promise<T \| undefined>` | Returns cached value or starts a fetch. Concurrent calls for the same key share one promise. |
-| `getCurrent(id, initiateFetch?)` | `T \| undefined` | Returns the cached value synchronously. When `initiateFetch` is `true` (default), also triggers `get()`. |
+| `refresh(id)` | `Promise<T \| undefined>` | Re-fetches the value while keeping the stale cached value available. On error, preserves the stale value. Multiple concurrent refreshes use "latest wins" semantics. |
+| `getCurrent(id, initiateFetch?)` | `T \| undefined` | Returns the cached value synchronously. When `initiateFetch` is `true` (default), also triggers `get()`. Invalidated items still return their stale value. |
 | `getLazy(id)` | `ILazyPromise<T>` | Returns an `ILazyPromise<T>` handle — the same interface used by standalone `LazyPromise`. Supports `value`, `currentValue`, `promise`, `isLoading`, `error`, `hasValue`, and `refresh()`. |
 | `getDeferred(id)` | `DeferredGetter<T>` | ⚠️ **Deprecated.** Use `getLazy(id)` instead. |
 | `getIsLoading(id)` | `boolean \| undefined` | `true` if loading, `false` if done, `undefined` if never started (or invalidated). |
@@ -160,7 +161,7 @@ cache.setLogger(myLoggerInstance);
 | Method | Description |
 |---|---|
 | `invalidate(id)` | Removes the cached item, its error, and timestamp — as if it was never fetched. |
-| `updateValueDirectly(id, value)` | Injects a value into the cache without fetching. |
+| `set(id, value)` | Injects a value into the cache as if it had been fetched. Sets the timestamp and clears any previous error. |
 | `sanitize()` | Removes all currently-invalid items. Returns the count of removed items. |
 | `clear()` | Resets **all** state: items, statuses, promises, errors, timestamps, loading count, and batch queue. |
 
@@ -173,7 +174,8 @@ cache.setLogger(myLoggerInstance);
 | `expirationMs` | `number \| null` | `undefined` | Time-to-live in ms. `null`/`undefined` disables time-based expiration. |
 | `invalidationCheck` | `(key, value, cachedAt) => boolean` | `undefined` | Custom callback; return `true` to mark the item invalid. |
 | `maxItems` | `number \| null` | `undefined` | Maximum cache size. Eviction order: invalid items first, then oldest by timestamp. In-flight items are never evicted. |
-| `keepInstance` | `boolean` | `false` | When `true`, invalidated items remain readable via `getCurrent()` (stale-while-revalidate pattern). |
+
+> **Note:** Invalidated items always remain readable via `getCurrent()` (stale-while-revalidate). To fully clear a value before re-fetching, use `invalidate(id)` followed by `get(id)`.
 
 ## Error Handling
 
@@ -182,7 +184,7 @@ When a fetcher throws, the error is:
 2. Logged via the attached logger
 3. Forwarded to the `useOnError()` callback (if set)
 
-The failed fetch resolves to `undefined` (never rejects), but the result is **not** stored in the items cache — only the error is recorded. On a subsequent successful fetch, the error is cleared by `storeResult()`.
+The failed fetch resolves to `undefined` for initial fetches, or to the **stale cached value** for refreshes (stale-while-revalidate). The error is recorded per-key. On a subsequent successful fetch, the error is cleared by `storeResult()`.
 
 Errors are also cleared by `invalidate()`, `sanitize()`, and `clear()`.
 
@@ -239,3 +241,17 @@ For example, the `@zajno/common-mobx` package provides `PromiseCacheObservable`,
 ## Concurrency & Version Safety
 
 When `clear()` is called while fetches are in-flight, the internal `_version` counter is incremented. Any fetch that started before the clear will still resolve its promise (so callers aren't left hanging), but the result is **not** stored into the cache. This prevents stale data from silently reappearing after a reset.
+
+### Refresh & "Latest Wins"
+
+`refresh(key)` re-fetches the value for a key without clearing the stale cached value. Multiple concurrent refreshes for the same key use "latest wins" semantics — all awaiting promises resolve to the value from the most recent refresh. This mirrors the behavior of `LazyPromise.refresh()`.
+
+```ts
+// Stale-while-revalidate pattern
+const stale = cache.getCurrent('user-42'); // returns stale value immediately
+const fresh = await cache.refresh('user-42'); // re-fetches, stale value stays readable during fetch
+
+// Via ILazyPromise handle
+const lazy = cache.getLazy('user-42');
+const refreshed = await lazy.refresh(); // same behavior
+```

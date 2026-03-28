@@ -158,12 +158,12 @@ describe('PromiseCache', () => {
 
         expect(cache.hasKey(1)).toBe(false);
 
-        cache.updateValueDirectly(1, getRes(1));
+        cache.set(1, getRes(1));
         expect(cache.hasKey(1)).toBe(true);
 
         const lazy = cache.getLazy(1);
         expect(lazy.currentValue).not.toBeUndefined();
-        expect(lazy.isLoading).toBeNull(); // status cleared by updateValueDirectly
+        expect(lazy.isLoading).toBeNull(); // status cleared by set()
         await expect(lazy.promise).resolves.toStrictEqual(getRes(1));
     });
 
@@ -344,14 +344,17 @@ describe('PromiseCache', () => {
 
         await vi.advanceTimersByTimeAsync(51);
 
-        expect(cache.getCurrent('1', false)).toBeUndefined();
+        // Stale value is always kept (stale-while-revalidate)
+        const staleValue = cache.getCurrent('1', false);
+        expect(staleValue).toBeTruthy();
+        expect(cache.getIsValid('1')).toBe(false); // but it's invalidated
 
         const p3 = cache.get('1');
         await vi.advanceTimersByTimeAsync(50);
         await expect(p3).resolves.toBeTruthy();
         checkGenerator(1);
 
-        cache.useInvalidationTime(100, true);
+        cache.useInvalidationTime(100);
 
         const previous = cache.getCurrent('1');
         expect(previous).toBeTruthy();

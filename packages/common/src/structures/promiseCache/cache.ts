@@ -1,6 +1,6 @@
 import { DebounceProcessor } from '../../functions/debounce.js';
 import { PromiseCacheCore } from './core.js';
-import type { ErrorCallback, InvalidationConfig } from './types.js';
+import type { ErrorCallback, InvalidationConfig, PromiseCacheFetcher, PromiseCacheKeyAdapter, PromiseCacheKeyParser } from './types.js';
 
 const BATCHING_DELAY = 200;
 
@@ -27,9 +27,9 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
      * @param keyParser Optional function to parse string keys back to their original type.
      */
     constructor(
-        private readonly fetcher: (id: K) => Promise<T>,
-        keyAdapter?: K extends string ? null : (k: K) => string,
-        keyParser?: K extends string ? null : (id: string) => K,
+        private readonly fetcher: PromiseCacheFetcher<T, K>,
+        keyAdapter?: PromiseCacheKeyAdapter<K>,
+        keyParser?: PromiseCacheKeyParser<K>,
     ) {
         super(keyAdapter, keyParser);
     }
@@ -54,10 +54,12 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
      * This is a convenience wrapper around {@link useInvalidation}.
      *
      * @param ms Time in milliseconds after which the item will be considered invalid. If null, auto-invalidation is disabled.
-     * @param keepInstance If true, the cached item will not be removed during invalidation, but the old instance is kept. Defaults to false.
+     *
+     * @deprecated The `keepInstance` parameter is deprecated and ignored — stale values are now always kept during invalidation.
+     * Use `invalidate()` followed by `get()` if you need to clear the stale value before re-fetching.
     */
-    useInvalidationTime(ms: number | null, keepInstance = false) {
-        return this.useInvalidation(ms != null ? { expirationMs: ms, keepInstance } : null);
+    useInvalidationTime(ms: number | null, _keepInstance?: boolean) {
+        return this.useInvalidation(ms != null ? { expirationMs: ms } : null);
     }
 
     /**
@@ -102,6 +104,7 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
             return Promise.resolve(item);
         }
 
+        // Join an existing in-flight fetch/refresh if one exists
         let promise = this._fetchCache.get(key);
         if (promise != null) {
             this.logger.log(key, 'get: item resolved to <promise>');
@@ -110,7 +113,31 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
 
         this.setStatus(key, true);
 
-        promise = this._doFetchAsync(id, key);
+        promise = this._doFetchAsync(id, key, false);
+
+        this.setPromise(key, promise);
+
+        return promise;
+    }
+
+    /**
+     * Re-fetches the value for the specified key while keeping the stale cached value available.
+     *
+     * Does not change the loading status — consumers reading `getCurrent()` / `getLazy().value`
+     * continue to see the stale value as if nothing happened.
+     *
+     * Implements "latest wins" concurrency: if multiple refreshes are called concurrently,
+     * all promises resolve to the value from the latest refresh.
+     *
+     * On error, the stale value is preserved and the error is stored.
+     *
+     * @param id The key of the item to refresh.
+     * @returns A promise resolving to the refreshed value, or the stale value on error.
+     */
+    refresh(id: K): Promise<T | undefined> {
+        const key = this._pk(id);
+
+        const promise = this._doFetchAsync(id, key, true);
 
         this.setPromise(key, promise);
 
@@ -130,12 +157,13 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
         const isInvalid = this.getIsInvalidated(key);
         // make sure current item is hooked here from the cache (required by observers)
         const item = this._itemsCache.get(key);
-        const keepInstance = !!this._invalidationConfig?.keepInstance;
         if (isInvalid) {
             this.logger.log(key, 'item is invalidated');
         }
         return {
-            item: (isInvalid && !keepInstance) ? undefined : item,
+            // Always keep the stale value visible — stale-while-revalidate by default.
+            // Use `invalidate()` + `get()` to clear the stale value before re-fetching.
+            item,
             key,
             isInvalid,
         };
@@ -177,21 +205,32 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
     // ─── Private ─────────────────────────────────────────────────────────
 
     /**
-     * Fetches the item asynchronously.
-     * @param id The id of the item.
-     * @param key The cache key.
-     * @returns A promise that resolves to the fetched item.
+     * Unified fetch method with "latest wins" semantics.
+     *
+     * - Tracks the active factory promise per key via `_activeFetchPromises`.
+     * - If superseded by a newer fetch, delegates to the newer promise.
+     * - On error, preserves the stale cached value.
+     *
+     * @param id The original key.
+     * @param key The string cache key.
+     * @returns A promise resolving to the fetched/refreshed value, or the stale value on error.
      */
-    protected async _doFetchAsync(id: K, key: string) {
+    protected async _doFetchAsync(id: K, key: string, refreshing: boolean): Promise<T | undefined> {
         let isInSameVersion = true;
+        let isLatest = false;
         try {
             this.onBeforeFetch(key);
             const v = this._version;
 
+            // Create the factory promise and mark it as the active one for this key (latest wins)
+            const factoryPromise: Promise<T | undefined> = this.tryFetchInBatch(id, refreshing)
+                .then(r => r as T | undefined);
+            this._activeFetchPromises.set(key, factoryPromise);
+
             let res: T | undefined;
             let fetchFailed = false;
             try {
-                res = await this.tryFetchInBatch(id);
+                res = await factoryPromise;
             } catch (err) {
                 this._handleError(id, err);
                 fetchFailed = true;
@@ -200,31 +239,60 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
 
             if (v !== this._version) {
                 isInSameVersion = false;
+                this._activeFetchPromises.delete(key);
                 // resolve with actual result but don't store it
                 return res;
             }
 
-            if (this._fetchCache.get(key) != null) {
-                this.logger.log(key, 'item\'s <promise> resolved to', res);
-                if (!fetchFailed && res !== undefined) {
-                    res = this.prepareResult(res);
-                    this.storeResult(key, res);
+            // Check if this is still the active (latest) fetch for this key
+            isLatest = this._activeFetchPromises.get(key) === factoryPromise;
+
+            if (!isLatest) {
+                // Superseded by a newer refresh/fetch — delegate to the latest active promise.
+                // This ensures anyone awaiting this old promise gets the fresh value,
+                // mirroring LazyPromise's "latest wins" behavior.
+                const newerPromise = this._activeFetchPromises.get(key);
+                if (newerPromise) {
+                    // Catch errors from the newer promise — if it fails, fall back to stale value.
+                    // Without this, the raw factory promise error would surface as an unhandled rejection.
+                    return newerPromise.catch(() => this._itemsCache.get(key));
                 }
+                // Fallback: return current cached value
+                return this._itemsCache.get(key);
             }
+
+            // We are the latest — clean up tracking
+            this._activeFetchPromises.delete(key);
+
+            if (!fetchFailed && res !== undefined) {
+                this.logger.log(key, 'item\'s <promise> resolved to', res);
+                res = this.prepareResult(res);
+                this.storeResult(key, res);
+            } else if (fetchFailed) {
+                // Keep stale value — return whatever is in cache
+                return this._itemsCache.get(key);
+            }
+
             return res;
         } finally {
-            if (isInSameVersion) {
+            if (!isInSameVersion) {
+                this.logger.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
+            } else if (isLatest) {
+                // Only the latest fetch should clean up the fetch state.
+                // Superseded fetches delegate to the latest and should not
+                // prematurely clear the fetch cache or loading status.
                 this.onFetchComplete(key);
             } else {
-                this.logger.log(key, 'skipping item\'s resolve due to version change ("clear()" has been called)');
+                // Superseded fetch — only decrement loading count, don't touch fetch cache/status
+                this._loadingCount.value = this._loadingCount.value - 1;
             }
         }
     }
 
     /** Performs a fetch operation in batch mode if available, otherwise uses the regular fetch. Throws on error. */
-    protected async tryFetchInBatch(id: K): Promise<T> {
+    protected async tryFetchInBatch(id: K, refreshing?: boolean): Promise<T> {
         if (!this._batch) {
-            return this.fetcher(id);
+            return this.fetcher(id, refreshing);
         }
 
         const res = await this._batch.push(id)
@@ -234,14 +302,14 @@ export class PromiseCache<T, K = string> extends PromiseCacheCore<T, K> {
             });
         if (!res || !res.result || res.result[res.index] === undefined) {
             // batch call failed or returned no result — fallback to the direct fetcher
-            return this.fetcher(id);
+            return this.fetcher(id, refreshing);
         }
 
         return res.result[res.index];
     }
 
     /** Handles a fetch error: stores it, logs it, and calls the onError callback. */
-    private _handleError(id: K, err: unknown) {
+    protected _handleError(id: K, err: unknown) {
         const key = this._pk(id);
         this._errorsMap.set(key, err);
         this.logger.warn('fetcher failed', id, err);

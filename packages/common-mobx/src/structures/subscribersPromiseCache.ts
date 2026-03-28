@@ -159,12 +159,12 @@ export class SubscribersPromiseCache<T> extends Disposable implements IObserving
             if (current != null) {
                 const result = this._updater(current, item);
                 // re-set existing item but with updated contents
-                this._cache.updateValueDirectly(key, result);
+                this._cache.set(key, result);
                 return;
             }
         }
 
-        this._cache.updateValueDirectly(key, item);
+        this._cache.set(key, item);
     };
 }
 

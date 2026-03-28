@@ -51,7 +51,7 @@ The motivation to have this – just to control and organize some shared code th
 * [Structures](./src/structures)
     - [`Path`](./src/structures/path/index.ts): a helper to build (almost) type-safe dynamic paths (useful for routing definitions);
     - [`Queues`](./src/structures/queue/): [`ParallelQueue`](./src/structures/queue/parallel.ts) (helps run & track multiple prioritized async tasks), [`TasksQueue`](./src/structures/queue/tasks.ts) (a simple queue for async tasks with a limit for concurrent tasks);
-    - [`PromiseCache`](./src/structures/promiseCache.ts): a cache for Promise'd values; supports TTL, invalidation, custom keys, deferred getters and more;
+    - [`PromiseCache`](./src/structures/promiseCache/README.md): a cache for Promise'd values; supports TTL, invalidation, stale-while-revalidate refresh, custom keys, deferred getters and more;
     - [`PromiseExtended`](./src/structures/promiseExtended.ts): a Promise wrapper which never rejects but provides `onSuccess` and `onError` callbacks;
     - [`PromiseProxy`](./src/structures/promiseProxy.ts): a Promise wrapper to mimic (fake) a resolved value's properties until it's actually resolved;
     - [`Enum helpers`](./src/structures/helpers/enum.ts): `EnumHelper`, `EnumStringHelper`, `EnumBitwiseHelper`;

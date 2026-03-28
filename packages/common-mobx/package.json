@@ -1,6 +1,6 @@
 {
   "name": "@zajno/common-mobx",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "Zajno's re-usable utilities for JS/TS projects using MobX",
   "private": false,
   "type": "module",
@@ -40,7 +40,7 @@
     "mobx": "^6.13.7"
   },
   "peerDependencies": {
-    "@zajno/common": "~2.8.8",
+    "@zajno/common": "~2.8.10",
     "mobx": "^6.13",
     "tslib": "^2.8"
   },
